@@ -33,6 +33,16 @@
 | [8020.net — 1010 family](https://8020.net/4042.html) | Cut-to-length, offers the 1/4-20 end-tap machining |
 | Amazon | Stock lengths (24–48") if cutting at home |
 
+#### About the bevel
+
+The MaxLite profile has a **beveled/soft-edged face** that standard 80/20 1010 (square edges, small corner radius) doesn't replicate. Options, best match first:
+
+1. **Genuine Goose Gear extrusion via their mod kits.** They won't sell raw stock, but they DO sell the [Extrusion Frame Modification Kit x.31](https://www.goose-gear.com/products/extrusion-frame-modification-kit-x-31-for-campkitchen-icebox) (~$139) — "includes both Extrusion Bars and hardware," sized for the CampKitchen 2.3 / IceBox 1.3 footprint. Buying one or two mod kits = real MaxLite bars with the exact bevel and anodize. Call Goose Gear for bar lengths before ordering (8-week build-to-order lead time). Their [Anchor Kits](https://www.goose-gear.com/products/goose-gear-anchor-kits) cover matching tie-down hardware.
+2. **TSLOTS (Futura) TS10-10QR "Quarter Round"** — 1" × 1", **two T-slots + large radius outer corner**: slots face the panels, the soft corner faces out. Much closer to the Goose Gear edge than square 1010. Sold by [Framing Tech](https://www.framingtech.com/shop/1-0x1-0-r-240inch-1-x-1-t-slot-profile-2-26-tslots-quarter-round-402620) and [Automation Werks](https://www.automationwerks.com/products/tslots-1012-s-1-in-x-1-in-quarter-round-extrusion-650040/2217522000016375453); 0.26" slots, center bore taps 1/4-20.
+3. **Standard 1010 / 1010-S** — square-edged but visually close at arm's length; cheapest and most available.
+
+Don't chamfer standard 1010 yourself — routed edges expose bare (shinier) aluminum that won't match the anodize.
+
 ### Corner cubes
 
 **80/20 #4042-Black — 10 Series 3-Way Squared Corner Connector.**
