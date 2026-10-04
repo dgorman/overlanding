@@ -31,14 +31,29 @@ import base64
 import json
 import os
 import struct
+import sys
 from dataclasses import dataclass
 
 import cadquery as cq
 
+# ----------------------------------------------------------------------------
+# Variants:  python cage.py cube     (v4: 487 mm cube from 12 uncut kit bars)
+#            python cage.py icebox   (v5: a second IceBox 1.3 frame, gutted)
+# ----------------------------------------------------------------------------
+VARIANT = next((a for a in sys.argv[1:] if not a.startswith("-")), os.environ.get("CAGE_VARIANT", "cube"))
+VARIANTS = {
+    "cube":   dict(frame_source="kit", frame_W=None, frame_H=None, frame_D=None,
+                   batt_layout="row3_top1", dist_forward=False),
+    "icebox": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=635.0,
+                   batt_layout="stack2x2", dist_forward=True),
+}
+assert VARIANT in VARIANTS, f"unknown variant {VARIANT}; pick one of {list(VARIANTS)}"
+
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, "out")
-STL = os.path.join(HERE, "..", "stl")
+OUT = os.path.join(HERE, "out", VARIANT)
+STL = os.path.join(HERE, "..", "stl", VARIANT)
 VIEWER = os.path.join(HERE, "..", "viewer")
+RENDERS = os.path.join(HERE, "..", "renders", VARIANT)
 
 # ----------------------------------------------------------------------------
 # Parameters (mm)
@@ -96,6 +111,7 @@ P = dict(
     socket_panel_t=5.0,
     vent_rows=3,         # vent slots in the front panel over the MultiPlus band
 )
+P.update(VARIANTS[VARIANT])
 
 
 @dataclass
@@ -143,13 +159,16 @@ UPPER_CARD_LAYOUT = [
 # Front-panel 12 V / USB sockets: (y centre, hole dia)
 SOCKETS = [(70, 29), (115, 29), (160, 29), (205, 29), (255, 22)]
 # Anderson SB50s in the inboard side panel, rear layer: (x centre, z centre)
-ANDERSONS = [(395, 100), (395, 150)]   # inboard side panel, front layer
+ANDERSONS = None   # set after in_D is known: inboard side panel, front layer, 42 mm behind the front panel
 
 # ----------------------------------------------------------------------------
 # Derived
 # ----------------------------------------------------------------------------
 B, C, T = P["bar"], P["cube"], P["panel_t"]
-out_W = out_H = out_D = P["bar_stock"] + 2 * C         # cube: every rail is one uncut bar
+if P["frame_source"] == "kit":
+    out_W = out_H = out_D = P["bar_stock"] + 2 * C     # cube: every rail is one uncut bar
+else:
+    out_W, out_H, out_D = P["frame_W"], P["frame_H"], P["frame_D"]   # a stock IceBox 1.3 frame
 in_W = out_W - 2 * B                                   # clear width between the vertical bars
 in_H = out_H - 2 * B - T                               # floor panel (on the bottom rails) to the top rails
 in_D = out_D - 2 * B
@@ -163,10 +182,15 @@ upper_h = in_H - lower_h - 6                           # 6 mm under the top rail
 batt = COMPONENTS["battery"]
 batt_top = COMPONENTS["battery_side"]
 row_W = P["n_batt_row"] * (batt.w + 4) + 4             # tray row width incl. walls
-dist_x = card_x + P["card_t"] + COMPONENTS["multiplus"].d + P["dist_gap"]   # rear face of the dist card
+if P["dist_forward"]:   # as far forward as the socket bodies allow (12 mm behind them)
+    dist_x = x_in0 + in_D - 40 - 48 - 12 - P["card_t"]
+else:                   # tight behind the MultiPlus
+    dist_x = card_x + P["card_t"] + COMPONENTS["multiplus"].d + P["dist_gap"]
 dist_W, dist_y0 = card_W, card_y0
 dist_h = in_H - 8
 shelf_z = floor_top + 4 + batt.h + P["term_clear"]     # underside of the printed shelf
+ANDERSONS = [(in_D - 42, 100), (in_D - 42, 150)]
+N_BATT = 4
 post_h = in_H                                          # floor panel top to the underside of the top rails
 
 
@@ -331,6 +355,19 @@ def top_shelf_half(side: int):
     return h.union(tab)
 
 
+def stack_shelf():
+    """Printed mid-shelf for an upright 2-high stack: sits on the lower
+    battery's rim, 12 mm lip locates the upper one, a tab bolts back into the
+    back width rail's inner-face slot so the stack can't walk."""
+    wall = 4.0
+    sh = box(batt.d + 2 * wall, batt.w + 2 * wall, P["shelf_t"] + 12)
+    sh = sh.cut(box(batt.d, batt.w, 13, (wall, wall, P["shelf_t"])))
+    sh = sh.cut(box(batt.d - 30, batt.w - 30, P["shelf_t"] + 1, (wall + 15, wall + 15, -0.5)))
+    tab = box(22, 24, P["shelf_t"], (-18, (batt.w + 2 * wall - 24) / 2, 0))
+    tab = tab.cut(cq.Workplane("XY").center(-9, (batt.w + 2 * wall) / 2).circle(3.4).extrude(P["shelf_t"] + 1))
+    return sh.union(tab)
+
+
 def multiplus_feet():
     """Two printed feet on the lower card that take the MultiPlus weight."""
     return box(40, 50, 10).edges("|Z").fillet(3)
@@ -410,7 +447,12 @@ def build() -> cq.Assembly:
         for j, y in enumerate((0, out_W - C)):
             for k, z in enumerate((0, out_H - C)):
                 add(a, cube.translate((x, y, z)), f"print_cube_{i}{j}{k}", BLACK)
-    runs, _ = allocate_rails()
+    if P["frame_source"] == "icebox":
+        runs = {f"h{i}": [("bar", out_H - 2 * C, None)] for i in range(4)}
+        runs.update({f"w{i}": [("bar", out_W - 2 * C, None)] for i in range(4)})
+        runs.update({f"d{i}": [("bar", out_D - 2 * C, None)] for i in range(4)})
+    else:
+        runs, _ = allocate_rails()
     hi = iter(range(4)); wi = iter(range(4)); di = iter(range(4))
     for x in (0, out_D - B):
         for y in (0, out_W - B):
@@ -453,20 +495,29 @@ def build() -> cq.Assembly:
         add(a, sck, f"socket_{y}", (0.3, 0.3, 0.3))
 
     # --- floor joists: two spare bars under the battery zone ------------------
+    joist_len = out_D - 2 * C
     for j, y in enumerate((row_W * 0.3, row_W * 0.7)):
-        add(a, bar(P["bar_stock"], "x").translate((C, y_in0 + y, B / 2)), f"bar_joist_{j}", GRAY)
+        add(a, bar(joist_len, "x").translate((C, y_in0 + y, B / 2)), f"bar_joist_{j}", GRAY)
 
-    # --- rear layer: three batteries upright in a row, fourth on top -----------
-    for i in range(P["n_batt_row"]):
-        ty = y_in0 + i * (batt.w + 4)
-        add(a, battery_tray().translate((x_in0, ty, floor_top)), f"print_tray_battery_{i}", ORANGE)
-        add(a, box(batt.d, batt.w, batt.h, (x_in0 + 4, ty + 4, floor_top + 4)).edges("|Z").fillet(6), f"battery_{i}", BATT)
-    if P["batt_on_top"]:
+    if P["batt_layout"] == "row3_top1":
+        # --- three batteries upright in a row, fourth on its long side on top ---
+        for i in range(P["n_batt_row"]):
+            ty = y_in0 + i * (batt.w + 4)
+            add(a, battery_tray().translate((x_in0, ty, floor_top)), f"print_tray_battery_{i}", ORANGE)
+            add(a, box(batt.d, batt.w, batt.h, (x_in0 + 4, ty + 4, floor_top + 4)).edges("|Z").fillet(6), f"battery_{i}", BATT)
         for side in (0, 1):
             add(a, top_shelf_half(side).translate((x_in0, y_in0 + side * row_W / 2, shelf_z)), f"print_shelf_top_{side}", ORANGE)
         bx = x_in0 + (batt.d + 8 - batt_top.d) / 2
         by = y_in0 + (row_W - batt_top.w) / 2
         add(a, box(batt_top.d, batt_top.w, batt_top.h, (bx, by, shelf_z + P["shelf_t"])).edges("|X").fillet(6), "battery_top", BATT)
+    else:
+        # --- two upright stacks of two, outboard; needs ~470 mm of height -------
+        for i in range(2):
+            ty = y_in0 + i * (batt.w + 4)
+            add(a, battery_tray().translate((x_in0, ty, floor_top)), f"print_tray_battery_{i}", ORANGE)
+            add(a, box(batt.d, batt.w, batt.h, (x_in0 + 4, ty + 4, floor_top + 4)).edges("|Z").fillet(6), f"battery_{i}_lower", BATT)
+            add(a, stack_shelf().translate((x_in0, ty, shelf_z)), f"print_shelf_stack_{i}", ORANGE)
+            add(a, box(batt.d, batt.w, batt.h, (x_in0 + 4, ty + 4, shelf_z + P["shelf_t"])).edges("|Z").fillet(6), f"battery_{i}_upper", BATT)
 
     # --- distribution card: FRONT layer, parts facing the front panel ---------
     add(a, box(P["card_t"], dist_W, dist_h, (dist_x, dist_y0, floor_top + 2)), "card_dist_plate", DARK)
@@ -536,7 +587,7 @@ def glb_to_json(glb_path: str, json_path: str):
 
 def export(a: cq.Assembly):
     os.makedirs(OUT, exist_ok=True); os.makedirs(VIEWER, exist_ok=True); os.makedirs(STL, exist_ok=True)
-    glb = os.path.join(OUT, "cage.glb"); a.export(glb); glb_to_json(glb, os.path.join(VIEWER, "cage.json"))
+    glb = os.path.join(OUT, "cage.glb"); a.export(glb); glb_to_json(glb, os.path.join(VIEWER, f"cage-{VARIANT}.json"))
     print("== Printed parts (P1P/P1S bed 256 x 256 x 256) ==")
     seen = {}
     for child in a.children:
@@ -553,30 +604,38 @@ def export(a: cq.Assembly):
 
 def report():
     mm = lambda v: f"{v:.0f} mm ({v / 25.4:.2f} in)"
-    print("== Box: 437 mm cube frame from 12 uncut kit bars ==")
-    print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}   (W = IceBox; {P['icebox_H'] - out_H:.0f} mm shorter than the IceBox)")
+    kind = "437 mm cube frame from 12 uncut kit bars" if P["frame_source"] == "kit" else "a second IceBox 1.3 frame, fridge slide removed"
+    print(f"== Variant '{VARIANT}': {kind} ==")
+    print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}   ({P['icebox_H'] - out_H:.0f} mm below the IceBox deck)")
     print(f"inner D x W x H : {mm(in_D)} x {mm(in_W)} x {mm(in_H)}")
     print(f"rear layer {P['rear_depth']:.0f} deep (batteries {batt.d}), main cards at x={card_x - x_in0:.0f}, "
           f"MultiPlus to x={card_x - x_in0 + 6 + COMPONENTS['multiplus'].d:.0f}, dist card at x={dist_x - x_in0:.0f}, "
           f"its parts to x={dist_x - x_in0 + 6 + 48:.0f}, front panel at x={in_D:.0f} (sockets reach back to {in_D - 40:.0f})")
     print(f"cards           : lower {mm(card_W)} x {mm(lower_h)}, upper {mm(card_W)} x {mm(upper_h)}, dist {mm(dist_W)} x {mm(dist_h)}, all 6 mm")
     print(f"lift clearance  : upper card needs {mm(out_H + upper_h)} plate-to-ceiling; lower {mm(out_H + lower_h)}; dist {mm(out_H + dist_h)} (or tilt it out forward)")
-    top = shelf_z - floor_top + P["shelf_t"] + batt_top.h
-    print(f"batteries       : row of {P['n_batt_row']} = {row_W:.0f} of {in_W:.0f} wide; 4th on top -> stack {top:.0f} of {in_H:.0f} tall "
-          f"({in_H - top:.0f} spare); shelf underside {shelf_z - floor_top:.0f} above floor")
-    runs, pool = allocate_rails()
-    print(f"== Rails from {P['kit_bars']} kit bars @ {mm(P['bar_stock'])} (= IceBox width rail; verify on arrival) ==")
+    if P["batt_layout"] == "row3_top1":
+        top = shelf_z - floor_top + P["shelf_t"] + batt_top.h
+        print(f"batteries       : row of {P['n_batt_row']} = {row_W:.0f} of {in_W:.0f} wide; 4th on its side on top -> "
+              f"{top:.0f} of {in_H:.0f} tall ({in_H - top:.0f} spare)")
+    else:
+        top = shelf_z - floor_top + P["shelf_t"] + batt.h + P["term_clear"]
+        print(f"batteries       : 2 upright stacks of 2 = {2 * (batt.w + 4) + 4:.0f} of {in_W:.0f} wide, {batt.d + 8:.0f} deep; "
+              f"stack {top:.0f} of {in_H:.0f} tall incl. lug clearance ({in_H - top:.0f} spare); "
+              f"{in_W - 2 * (batt.w + 4) - 4:.0f} mm free beside them (room for a third stack = 6 batteries)")
+    if P["frame_source"] == "icebox":
+        print("== Rails: stock IceBox 1.3 frame; the 16 kit bars are not needed (2 could be floor joists) ==")
+        runs, pool = {}, []
+    else:
+        runs, pool = allocate_rails()
+        print(f"== Rails from {P['kit_bars']} kit bars @ {mm(P['bar_stock'])} (= IceBox width rail; verify on arrival) ==")
     for name, r in runs.items():
         print(f"  {name:3s} " + " + ".join(f"{k} {ln:.0f}" + (f" (bar {b + 1})" if b is not None else "") for k, ln, b in r))
-    n_print = sum(1 for r in runs.values() for k, _, _ in r if k == "print")
-    n_splice = sum(max(0, len(r) - 1) for r in runs.values())
-    used = [i for i, rem in enumerate(pool) if rem < P["bar_stock"] - 0.01]
-    print(f"  bars touched {len(used)} of {P['kit_bars']}, untouched {P['kit_bars'] - len(used)}, "
-          f"printed rail segments {n_print}, splices {n_splice}")
-    print("  cut plan per bar:")
-    for i in used:
-        pieces = [f"{ln:.0f} -> {name}" for name, r in runs.items() for k, ln, b in r if b == i]
-        print(f"    bar {i + 1:2d}: " + ", ".join(pieces) + f"; offcut {pool[i]:.0f}")
+    if runs:
+        n_print = sum(1 for r in runs.values() for k, _, _ in r if k == "print")
+        n_splice = sum(max(0, len(r) - 1) for r in runs.values())
+        used = [i for i, rem in enumerate(pool) if rem < P["bar_stock"] - 0.01]
+        print(f"  bars touched {len(used)} of {P['kit_bars']}, untouched {P['kit_bars'] - len(used)}, "
+              f"printed rail segments {n_print}, splices {n_splice}")
     print("== Panels (6 mm) ==")
     print(f"  floor + lid   {mm(in_D + 2 * T)} x {mm(in_W + 2 * T)}")
     print(f"  2 sides       {mm(in_D + 2 * T)} x {mm(in_H + 2 * T)}")
@@ -598,7 +657,7 @@ def report():
         if pl["z"] + c.h > dist_h: bad.append("Z overflow")
         if dist_x + P["card_t"] + c.d > x_in0 + in_D - 40 and pl["z"] + c.h > P["socket_z"] - 35: bad.append("behind the sockets")
         print(f"  dist card  {c.name:20s} {c.w:>4.0f}x{c.h:>4.0f}x{c.d:>3.0f} @({pl['y']},{pl['z']}) {' '.join(bad) or 'ok'}")
-    kg = 4 * 9.5 + 6.4 + 1.3 + 0.33 + 0.5 + 0.3 + 0.3 + 1.5 + 3.0 + 5.0
+    kg = N_BATT * 9.5 + 6.4 + 1.3 + 0.33 + 0.5 + 0.3 + 0.3 + 1.5 + 3.0 + (5.0 if P["frame_source"] == "kit" else 19.0)
     print(f"  est. mass ~{kg:.0f} kg; box depth {out_D:.0f} -> tie it to the IceBox panel / plate")
 
 
@@ -606,4 +665,4 @@ if __name__ == "__main__":
     asm = build()
     report()
     export(asm)
-    print("wrote", os.path.abspath(os.path.join(VIEWER, "cage.json")))
+    print("wrote", os.path.abspath(os.path.join(VIEWER, f"cage-{VARIANT}.json")))
