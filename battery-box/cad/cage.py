@@ -1,11 +1,15 @@
-"""4Runner electronics card cage, v3 "cube" — parametric CadQuery model.
+"""4Runner electronics card cage, v4 "cube, four batteries" — CadQuery model.
 
 Every rail is one UNCUT Goose Gear mod-kit bar (437 mm, the IceBox 1.3 width
 rail), so the frame is a 487.4 mm cube: the IceBox's width in all three
 directions, 71 mm shorter than the IceBox.  It stands against the IceBox's
-slotted back panel.  Two batteries sit end to end in depth at the back; a
-distribution card drops in beside them; two main cards (MultiPlus, then the
-charge sources) drop into printed posts bolted to the rails.
+slotted back panel.
+
+Rear layer: three SuperPacks upright in a row plus a fourth lying on its
+long side on a printed shelf above them (Victron allows upright or long
+side).  Main cards (MultiPlus; then MPPT + Orion) drop into printed posts
+bolted to the rails.  The distribution card stands in the FRONT layer,
+facing the removable front panel, so every output is next to the sockets.
 
 Run:  .venv/bin/python cage.py          (from battery-box/cad)
 Out:  ../viewer/cage.json                glTF with embedded buffer for the web viewer
@@ -54,10 +58,13 @@ P = dict(
     card_t=6.0,
     card_clear=0.6,
 
-    # Depth budget inside a 437 mm cube: rear layer holds the two batteries
-    # end to end in depth (2 x 138 + tray walls) plus the distribution card;
-    # what's left in front of the cards (~136) holds the MultiPlus (100).
-    rear_depth=292.0,
+    # Depth budget inside a 437 mm cube: rear layer = battery depth (229) +
+    # tray walls; the front layer holds the MultiPlus (100) off the lower
+    # card, then the distribution card dist_gap behind the MultiPlus face.
+    rear_depth=240.0,
+    dist_gap=6.0,
+    n_batt_row=3,        # upright batteries across the width
+    batt_on_top=True,    # fourth battery on its long side on a printed shelf
 
     # Frame sourcing: NO off-the-shelf extrusion, NO printed rail, and NO
     # cutting: all 12 rails are full kit bars (8 kits = 16 bars, 4 spare).
@@ -84,8 +91,7 @@ P = dict(
     # cards: lower carries the MultiPlus, upper the small electronics,
     # dist card (rear layer, beside the batteries) the shunt/breakers/bus/Cerbo
     lower_card_h=254.0,
-    dist_card_x=14.0,    # rear face of the dist card from the inner face of the back rails
-    socket_z=345.0,      # 12V socket centreline on the front panel (above the MultiPlus band)
+    socket_z=385.0,      # 12V socket centreline on the front panel: top band, above the dist card's parts
     socket_panel_h=60.0,
     socket_panel_t=5.0,
     vent_rows=3,         # vent slots in the front panel over the MultiPlus band
@@ -102,12 +108,13 @@ class Comp:
 
 
 COMPONENTS = {
-    "battery":   Comp("battery", 229, 138, 213, "Victron Lithium SuperPack 12.8V/60Ah, 9.5 kg, M6 top terminals (x2, end to end in depth)"),
+    "battery":   Comp("battery", 138, 229, 213, "Victron Lithium SuperPack 12.8V/60Ah, 9.5 kg, M6 top terminals: 3 upright in a row"),
+    "battery_side": Comp("battery_top", 229, 213, 138, "4th SuperPack on its long side on the shelf (Victron: upright or long side only)"),
     "multiplus": Comp("victron_multiplus", 360, 100, 240, "MultiPlus 12/800/35-16 120V on its side on the lower card (6.4 kg)"),
     "mppt":      Comp("victron_mppt", 186, 70, 130, "SmartSolar MPPT 100/30, upright, terminals down (1.3 kg)"),
     "orion":     Comp("victron_orion", 123, 40, 137, "Orion XS 12/12-50A, upright, terminals down (0.33 kg)"),
     "cerbo":     Comp("victron_cerbo", 154, 48, 78, "Cerbo GX"),
-    "garmin":    Comp("garmin_powerswitch", 75, 32, 125, "Garmin PowerSwitch, turned 90 deg (any orientation OK)"),
+    "garmin":    Comp("garmin_powerswitch", 125, 32, 75, "Garmin PowerSwitch"),
     "shunt":     Comp("power_shunt", 120, 46, 54, "SmartShunt 500A"),
     "busbar_p":  Comp("power_busbar_pos", 155, 35, 32, "5-stud covered bus bar (+)"),
     "busbar_n":  Comp("power_busbar_neg", 155, 35, 32, "5-stud covered bus bar (-)"),
@@ -118,25 +125,25 @@ COMPONENTS = {
 
 # Distribution card (rear layer, inboard of the battery column, slides down
 # its own guides).  y, z = lower-left corner relative to the card.
-DIST_CARD_LAYOUT = [
+DIST_CARD_LAYOUT = [   # full-width card in the front layer; keep parts below z=350 (sockets above)
     dict(comp="breaker_a", y=20,  z=12),
     dict(comp="breaker_b", y=85,  z=12),
-    dict(comp="shunt",     y=20,  z=100),
-    dict(comp="busbar_n",  y=8,   z=170),
-    dict(comp="busbar_p",  y=8,   z=216),
-    dict(comp="cerbo",     y=8,   z=270),
+    dict(comp="shunt",     y=160, z=20),
+    dict(comp="busbar_n",  y=20,  z=110),
+    dict(comp="busbar_p",  y=20,  z=160),
+    dict(comp="cerbo",     y=20,  z=230),
+    dict(comp="garmin",    y=200, z=230),
 ]
-# Upper card (charge sources + loads), y, z relative to the card's lower-left.
+# Upper card (charge sources), y, z relative to the card's lower-left.
 UPPER_CARD_LAYOUT = [
-    dict(comp="mppt",   y=10,  z=12),
-    dict(comp="orion",  y=206, z=12),
-    dict(comp="garmin", y=339, z=12),
+    dict(comp="mppt",   y=20,  z=12),
+    dict(comp="orion",  y=240, z=12),
 ]
 # Lower card: MultiPlus on its side, centred.
 # Front-panel 12 V / USB sockets: (y centre, hole dia)
 SOCKETS = [(70, 29), (115, 29), (160, 29), (205, 29), (255, 22)]
 # Anderson SB50s in the inboard side panel, rear layer: (x centre, z centre)
-ANDERSONS = [(200, 100), (200, 150)]
+ANDERSONS = [(395, 100), (395, 150)]   # inboard side panel, front layer
 
 # ----------------------------------------------------------------------------
 # Derived
@@ -154,11 +161,12 @@ card_y0 = y_in0 + (in_W - card_W) / 2
 lower_h = P["lower_card_h"]
 upper_h = in_H - lower_h - 6                           # 6 mm under the top rails
 batt = COMPONENTS["battery"]
-col_W = batt.w + 8                                     # battery column width incl. tray walls
-dist_post_y = y_in0 + col_W + 2                        # divider post between batteries and dist card
-dist_y0 = dist_post_y + P["post_d"] - P["slot_depth"] + P["card_clear"]
-dist_W = (out_W - B - (P["post_d"] - P["slot_depth"]) - P["card_clear"]) - dist_y0
+batt_top = COMPONENTS["battery_side"]
+row_W = P["n_batt_row"] * (batt.w + 4) + 4             # tray row width incl. walls
+dist_x = card_x + P["card_t"] + COMPONENTS["multiplus"].d + P["dist_gap"]   # rear face of the dist card
+dist_W, dist_y0 = card_W, card_y0
 dist_h = in_H - 8
+shelf_z = floor_top + 4 + batt.h + P["term_clear"]     # underside of the printed shelf
 post_h = in_H                                          # floor panel top to the underside of the top rails
 
 
@@ -298,25 +306,29 @@ def guide_post_segments(foot_dir="y", foot_hole=None):
 
 
 def battery_tray():
-    """One bay per battery (two trays butt end to end in depth so each fits
-    the bed): 20 mm lips, a strap slot across Y, 4 mm walls."""
+    """One bay per upright battery (three butt side by side across the
+    width so each fits the bed): 20 mm lips, a strap slot across X, 4 mm walls."""
     lip, wall = P["tray_lip"], 4.0
     t = box(batt.d + 2 * wall, batt.w + 2 * wall, lip + 4)
     t = t.cut(box(batt.d, batt.w, lip + 5, (wall, wall, 4)))
-    t = t.cut(box(30, batt.w + 2 * wall + 2, 6, (batt.d / 2 + wall - 15, -1, 6)))
+    t = t.cut(box(batt.d + 2 * wall + 2, 30, 6, (-1, batt.w / 2 + wall - 15, 6)))
     return t
 
 
-def mid_shelf():
-    """Printed cradle that sits on the lower battery and locates the upper one.
-    A 10 mm plate with a 12 mm lip on the upper side; bolts to the side rail."""
+def top_shelf_half(side: int):
+    """Printed shelf over the three upright batteries carrying the fourth on
+    its long side; two halves (bed size) that meet at the row centre.  Flat
+    bearing surface the full size of the battery face, 12 mm lip, 10 mm thick."""
     wall = 4.0
-    s = box(batt.d + 2 * wall, batt.w + 2 * wall, P["shelf_t"] + 12)
-    s = s.cut(box(batt.d, batt.w, 13, (wall, wall, P["shelf_t"])))
-    s = s.cut(box(batt.d - 30, batt.w - 30, P["shelf_t"] + 1, (wall + 15, wall + 15, -0.5)))  # weight-saving window
-    # tab reaching the back-outboard corner bar: bolts into its inner-face slot
-    tab = box(30, 20, P["shelf_t"], (-30 + 4, -4, 0)).cut(cq.Workplane("XY").center(-30 + 4 + 12, 6).circle(3.4).extrude(P["shelf_t"] + 1))
-    return s.union(tab)
+    W = row_W / 2
+    h = box(batt.d + 2 * wall, W, P["shelf_t"] + 12)
+    px = (batt.d + 2 * wall - batt_top.d) / 2
+    py = (row_W - batt_top.w) / 2 - side * W
+    h = h.cut(box(batt_top.d, batt_top.w, 13, (px, py, P["shelf_t"])))
+    tx = -22 + 4
+    ty = -4 if side == 0 else W - 16
+    tab = box(22, 20, P["shelf_t"], (tx, ty, 0)).cut(cq.Workplane("XY").center(tx + 9, ty + 10).circle(3.4).extrude(P["shelf_t"] + 1))
+    return h.union(tab)
 
 
 def multiplus_feet():
@@ -423,7 +435,7 @@ def build() -> cq.Assembly:
             f"socket_anderson_{int(z)}", (0.3, 0.3, 0.3))
     add(a, inboard, "panel_side_inboard", PANEL)
     back = box(T, out_W, out_H, (-T, 0, 0))
-    back = back.cut(box(T + 2, 120, 30, (-T - 1, y_in0 + col_W + 20, floor_top + 40)))
+    back = back.cut(box(T + 2, 120, 30, (-T - 1, y_in0 + in_W / 2 - 60, floor_top + 40)))   # fridge cable to the IceBox slots
     add(a, back, "panel_back_icebox_side", PANEL)
     front = box(T, out_W, out_H, (out_D, 0, 0))
     for r in range(P["vent_rows"]):
@@ -440,27 +452,35 @@ def build() -> cq.Assembly:
                .extrude(-40).translate((out_D, 0, 0)))
         add(a, sck, f"socket_{y}", (0.3, 0.3, 0.3))
 
-    # --- rear layer: two batteries end to end in depth, outboard ----------------
-    for i in range(2):
-        tx = x_in0 + i * (batt.d + 8)
-        add(a, battery_tray().translate((tx, y_in0, floor_top)), f"print_tray_battery_{i}", ORANGE)
-        add(a, box(batt.d, batt.w, batt.h, (tx + 4, y_in0 + 4, floor_top + 4)).edges("|Z").fillet(6), f"battery_{i}", BATT)
+    # --- floor joists: two spare bars under the battery zone ------------------
+    for j, y in enumerate((row_W * 0.3, row_W * 0.7)):
+        add(a, bar(P["bar_stock"], "x").translate((C, y_in0 + y, B / 2)), f"bar_joist_{j}", GRAY)
 
-    # --- rear layer: distribution card, inboard of the batteries ---------------
-    dx = x_in0 + P["dist_card_x"]
-    add(a, box(P["card_t"], dist_W, dist_h, (dx, dist_y0, floor_top + 2)), "card_dist_plate", DARK)
+    # --- rear layer: three batteries upright in a row, fourth on top -----------
+    for i in range(P["n_batt_row"]):
+        ty = y_in0 + i * (batt.w + 4)
+        add(a, battery_tray().translate((x_in0, ty, floor_top)), f"print_tray_battery_{i}", ORANGE)
+        add(a, box(batt.d, batt.w, batt.h, (x_in0 + 4, ty + 4, floor_top + 4)).edges("|Z").fillet(6), f"battery_{i}", BATT)
+    if P["batt_on_top"]:
+        for side in (0, 1):
+            add(a, top_shelf_half(side).translate((x_in0, y_in0 + side * row_W / 2, shelf_z)), f"print_shelf_top_{side}", ORANGE)
+        bx = x_in0 + (batt.d + 8 - batt_top.d) / 2
+        by = y_in0 + (row_W - batt_top.w) / 2
+        add(a, box(batt_top.d, batt_top.w, batt_top.h, (bx, by, shelf_z + P["shelf_t"])).edges("|X").fillet(6), "battery_top", BATT)
+
+    # --- distribution card: FRONT layer, parts facing the front panel ---------
+    add(a, box(P["card_t"], dist_W, dist_h, (dist_x, dist_y0, floor_top + 2)), "card_dist_plate", DARK)
     for pl in DIST_CARD_LAYOUT:
         c = COMPONENTS[pl["comp"]]
-        col = BLUE if c.name.startswith("victron") else GOLD
-        add(a, box(c.d, c.w, c.h, (dx + P["card_t"], dist_y0 + pl["y"], floor_top + 2 + pl["z"])).edges("|X").fillet(3),
+        col = BLUE if c.name.startswith("victron") else (0.08, 0.08, 0.08) if c.name.startswith("garmin") else GOLD
+        add(a, box(c.d, c.w, c.h, (dist_x + P["card_t"], dist_y0 + pl["y"], floor_top + 2 + pl["z"])).edges("|X").fillet(3),
             c.name + "__card", col)
-    # its posts: one on the inboard depth rails, one divider post whose feet
-    # reach back to the back width rails (it stands 14 mm in front of them)
-    gx = dx - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]
-    for k, (z, g) in enumerate(guide_post_segments()):
-        add(a, g.mirror("XZ").translate((gx, out_W - B, floor_top + z)), f"print_post_dist_wall_{k}", ORANGE)
-    for k, (z, g) in enumerate(guide_post_segments(foot_dir="x", foot_hole=B / 2 - gx)):
-        add(a, g.translate((gx, dist_post_y, floor_top + z)), f"print_post_dist_div_{k}", ORANGE)
+    gx = dist_x - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]
+    for j, y in enumerate((y_in0, out_W - B - P["post_d"])):
+        for k, (z, g) in enumerate(guide_post_segments()):
+            if j == 1:
+                g = g.mirror("XZ").translate((0, P["post_d"], 0))
+            add(a, g.translate((gx, y, floor_top + z)), f"print_post_dist_{j}_{k}", ORANGE)
 
     # --- guide posts for the main cards: bolt to the top/bottom depth rails ---
     px = card_x - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]
@@ -471,7 +491,10 @@ def build() -> cq.Assembly:
             add(a, g.translate((px, y, floor_top + z)), f"print_post_main_{j}_{k}", ORANGE)
 
     # --- lower card: MultiPlus on its side -----------------------------------
-    add(a, box(P["card_t"], card_W, lower_h, (card_x, card_y0, floor_top + 2)), "card_lower_plate", DARK)
+    lower = box(P["card_t"], card_W, lower_h, (card_x, card_y0, floor_top + 2))
+    for y in (card_y0 + 12, card_y0 + card_W - 72):   # 60 x 60 notches: 6 AWG battery runs pass under
+        lower = lower.cut(box(P["card_t"] + 2, 60, 60, (card_x - 1, y, floor_top + 2 - 1)))
+    add(a, lower, "card_lower_plate", DARK)
     mp = COMPONENTS["multiplus"]
     mpy = card_y0 + (card_W - mp.w) / 2; mpz = floor_top + 2 + 10
     for y in (mpy + 30, mpy + mp.w - 80):
@@ -533,11 +556,14 @@ def report():
     print("== Box: 437 mm cube frame from 12 uncut kit bars ==")
     print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}   (W = IceBox; {P['icebox_H'] - out_H:.0f} mm shorter than the IceBox)")
     print(f"inner D x W x H : {mm(in_D)} x {mm(in_W)} x {mm(in_H)}")
-    print(f"rear layer {P['rear_depth']:.0f} deep (batteries {batt.d}), cards at x={card_x - x_in0:.0f}, front layer {P['front_depth']:.0f} deep (MultiPlus {COMPONENTS['multiplus'].d})")
+    print(f"rear layer {P['rear_depth']:.0f} deep (batteries {batt.d}), main cards at x={card_x - x_in0:.0f}, "
+          f"MultiPlus to x={card_x - x_in0 + 6 + COMPONENTS['multiplus'].d:.0f}, dist card at x={dist_x - x_in0:.0f}, "
+          f"its parts to x={dist_x - x_in0 + 6 + 48:.0f}, front panel at x={in_D:.0f} (sockets reach back to {in_D - 40:.0f})")
     print(f"cards           : lower {mm(card_W)} x {mm(lower_h)}, upper {mm(card_W)} x {mm(upper_h)}, dist {mm(dist_W)} x {mm(dist_h)}, all 6 mm")
     print(f"lift clearance  : upper card needs {mm(out_H + upper_h)} plate-to-ceiling; lower {mm(out_H + lower_h)}; dist {mm(out_H + dist_h)} (or tilt it out forward)")
-    print(f"batteries       : 2 end to end = {2 * batt.d + 16:.0f} of {P['rear_depth']:.0f} rear depth; "
-          f"{batt.h + 4:.0f} tall vs {in_H:.0f} inner -> {in_H - batt.h - 4 - P['term_clear']:.0f} mm above the lugs")
+    top = shelf_z - floor_top + P["shelf_t"] + batt_top.h
+    print(f"batteries       : row of {P['n_batt_row']} = {row_W:.0f} of {in_W:.0f} wide; 4th on top -> stack {top:.0f} of {in_H:.0f} tall "
+          f"({in_H - top:.0f} spare); shelf underside {shelf_z - floor_top:.0f} above floor")
     runs, pool = allocate_rails()
     print(f"== Rails from {P['kit_bars']} kit bars @ {mm(P['bar_stock'])} (= IceBox width rail; verify on arrival) ==")
     for name, r in runs.items():
@@ -570,9 +596,9 @@ def report():
         bad = []
         if pl["y"] + c.w > dist_W: bad.append("Y overflow")
         if pl["z"] + c.h > dist_h: bad.append("Z overflow")
-        if P["dist_card_x"] + P["card_t"] + c.d > P["rear_depth"]: bad.append("too deep")
+        if dist_x + P["card_t"] + c.d > x_in0 + in_D - 40 and pl["z"] + c.h > P["socket_z"] - 35: bad.append("behind the sockets")
         print(f"  dist card  {c.name:20s} {c.w:>4.0f}x{c.h:>4.0f}x{c.d:>3.0f} @({pl['y']},{pl['z']}) {' '.join(bad) or 'ok'}")
-    kg = 2 * 9.5 + 6.4 + 1.3 + 0.33 + 0.5 + 0.3 + 0.3 + 1.0 + 3.0 + 4.0
+    kg = 4 * 9.5 + 6.4 + 1.3 + 0.33 + 0.5 + 0.3 + 0.3 + 1.5 + 3.0 + 5.0
     print(f"  est. mass ~{kg:.0f} kg; box depth {out_D:.0f} -> tie it to the IceBox panel / plate")
 
 
