@@ -56,7 +56,7 @@
 <div id="hud">
   <div class="panel" id="controls">
     <h1>4Runner card cage</h1>
-    <div class="muted">A half-depth twin of the IceBox 1.3 standing against its back panel. Drag to orbit, scroll to zoom. Lid hidden; uncheck panels to see inside.</div>
+    <div class="muted">A 487 mm cube from 12 uncut kit bars, standing against the IceBox 1.3 back panel. Drag to orbit, scroll to zoom. Lid hidden; uncheck panels to see inside.</div>
     <div class="row">
       <button data-view="iso">Iso</button><button data-view="front">Front</button><button data-view="inboard">Inboard</button><button data-view="top">Top</button><button data-view="back">IceBox side</button>
       <button id="card" class="primary">Lift cards</button>
@@ -67,15 +67,14 @@
       <summary class="eyebrow" style="cursor:pointer">Legend</summary>
       <div id="legend"></div>
     </details>
-    <div class="eyebrow">Box (outer, = IceBox W × H)</div>
+    <div class="eyebrow">Cube frame, 12 uncut kit bars</div>
     <dl>
-      <dt>Depth</dt><dd>317.5 mm (½ IceBox)</dd>
-      <dt>Width</dt><dd>487.4 mm (19-3/16")</dd>
-      <dt>Height</dt><dd>558.8 mm (22")</dd>
-      <dt>Lower card</dt><dd>401 × 254, MultiPlus</dd>
-      <dt>Upper card</dt><dd>401 × 236, MPPT · Orion · Garmin</dd>
-      <dt>Dist card</dt><dd>162 × 488, shunt · breakers · bus · Cerbo</dd>
-      <dt>Batteries</dt><dd>2 × SuperPack, stacked</dd>
+      <dt>Outer</dt><dd>487.4 mm each way</dd>
+      <dt>vs IceBox</dt><dd>same width, 71 mm lower</dd>
+      <dt>Lower card</dt><dd>419 × 254, MultiPlus</dd>
+      <dt>Upper card</dt><dd>419 × 171, MPPT · Orion · Garmin</dd>
+      <dt>Dist card</dt><dd>180 × 423, shunt · breakers · bus · Cerbo</dd>
+      <dt>Batteries</dt><dd>2 × SuperPack, end to end</dd>
     </dl>
   </div>
 </div>
@@ -109,8 +108,8 @@ const fill = new THREE.DirectionalLight(0xffffff, 0.5); fill.position.set(-800, 
 // name prefix -> [label, colour, opacity]
 const GROUPS = {
   icebox:   ['IceBox 1.3 (reference)',      0x7a7f86, 0.45],
-  bar:      ['Kit extrusion bars (16, cut)', 0xb8bcc2, 1],
-  print:    ['3D-printed parts (PETG/ASA)', 0xd9541f, 1],
+  bar:      ['Kit extrusion bars (12, uncut)', 0xb8bcc2, 1],
+  print:    ['Printed: cubes, splices, guide posts, tray', 0xd9541f, 1],
   panel:    ['6 mm panels, bulkhead',       0x2a2a2a, 0.3],
   lid:      ['Lid',                         0x2a2a2a, 0.25],
   card:     ['Cards (3, drop in from top)', 0x3a3a3a, 0.95],
@@ -200,7 +199,7 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 (function loop() {
   requestAnimationFrame(loop);
   if (cardRoot) {
-    const target = cardLifted ? 520 : 0;
+    const target = cardLifted ? 450 : 0;
     cardRoot.position.y = reduce ? target : cardRoot.position.y + (target - cardRoot.position.y) * 0.08;
   }
   controls.update(); renderer.render(scene, camera);

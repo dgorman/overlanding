@@ -90,7 +90,7 @@ if __name__ == "__main__":
     asm = cage.build()
     os.makedirs(cage.OUT, exist_ok=True)
     d = os.path.join(cage.HERE, "..", "renders"); os.makedirs(d, exist_ok=True)
-    render(asm, os.path.join(d, "with-icebox.png"), 22, 35, hide=("lid",), title="Half-depth twin of the IceBox 1.3, standing against its slotted back panel")
+    render(asm, os.path.join(d, "with-icebox.png"), 22, 35, hide=("lid",), title="487 mm cube from 12 uncut kit bars, standing against the IceBox 1.3 slotted back panel")
     render(asm, os.path.join(d, "iso-front.png"), 24, 35, hide=("lid", "panel", "icebox"), title="Front-inboard iso, panels hidden: lower card (MultiPlus), upper card, dist card behind")
     render(asm, os.path.join(d, "iso-back.png"), 24, 215, hide=("lid", "panel", "icebox"), title="Back-outboard iso, panels hidden: stacked batteries, dist card")
     render(asm, os.path.join(d, "cards-lifted.png"), 24, 35, hide=("lid", "panel", "icebox"), lift=cage.in_H * 0.8, title="All three cards lifted out the top")
