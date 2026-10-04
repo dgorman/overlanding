@@ -77,7 +77,7 @@
     </dl>
   </div>
 </div>
-<div id="status">Loading cage.glb…</div>
+<div id="status">Loading model…</div>
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -130,7 +130,29 @@ for (const [k, [label, col]] of Object.entries(GROUPS)) {
 }
 
 let bbox = new THREE.Box3(); let cardRoot = null, cardLifted = false;
-new GLTFLoader().load('cage.glb', gltf => {
+
+// The model ships as JSON glTF with its buffer embedded as base64.  Fetching a
+// data: URI is blocked in sandboxed hosts, so decode it here and hand the
+// loader a GLB built in memory.
+async function loadModel() {
+  const js = await (await fetch('cage.json')).json();
+  const b64 = js.buffers[0].uri.split(',')[1]; delete js.buffers[0].uri;
+  const raw = atob(b64); const bin = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) bin[i] = raw.charCodeAt(i);
+  const enc = new TextEncoder().encode(JSON.stringify(js));
+  const pad4 = n => (4 - n % 4) % 4;
+  const jp = pad4(enc.length), bp = pad4(bin.length);
+  const total = 12 + 8 + enc.length + jp + 8 + bin.length + bp;
+  const buf = new ArrayBuffer(total); const dv = new DataView(buf); const u8 = new Uint8Array(buf);
+  dv.setUint32(0, 0x46546C67, true); dv.setUint32(4, 2, true); dv.setUint32(8, total, true);
+  let o = 12;
+  dv.setUint32(o, enc.length + jp, true); dv.setUint32(o + 4, 0x4E4F534A, true);
+  u8.set(enc, o + 8); u8.fill(0x20, o + 8 + enc.length, o + 8 + enc.length + jp); o += 8 + enc.length + jp;
+  dv.setUint32(o, bin.length + bp, true); dv.setUint32(o + 4, 0x004E4942, true); u8.set(bin, o + 8);
+  return new Promise((res, rej) => new GLTFLoader().parse(buf, '', res, rej));
+}
+
+loadModel().then(gltf => {
   const root = gltf.scene;
   root.traverse(o => {
     if (!o.isMesh) return;
@@ -151,8 +173,8 @@ new GLTFLoader().load('cage.glb', gltf => {
   groupObjs.lid.forEach(o => o.visible = false);
   document.getElementById('g-lid').checked = false;
   setView('iso');
-  document.getElementById('status').textContent = `cage.glb loaded · ${liftable.length} parts ride on the card · units mm`;
-}, undefined, err => { document.getElementById('status').textContent = 'Could not load cage.glb: ' + err; });
+  document.getElementById('status').textContent = `Model loaded · ${liftable.length} parts ride on the card · units mm`;
+}).catch(err => { document.getElementById('status').textContent = 'Could not load model: ' + err; });
 
 function setView(v) {
   const c = bbox.getCenter(new THREE.Vector3()); const s = bbox.getSize(new THREE.Vector3()); const r = s.length() * 0.9;

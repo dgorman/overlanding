@@ -1,7 +1,7 @@
 """4Runner electronics card cage — parametric CadQuery model.
 
 Run:  .venv/bin/python cage.py          (from battery-box/cad)
-Out:  ../viewer/cage.glb                 coloured assembly for the web viewer
+Out:  ../viewer/cage.json                coloured assembly (glTF, embedded buffer) for the web viewer
       ../stl/*.stl                       one STL per printable part (committed)
       ../renders/*.png                   shaded views (render.py)
       out/views/*.svg|png                line drawings (gitignored)
@@ -18,7 +18,10 @@ Dimensions tagged "verify" have not been measured on the real part yet.
 """
 from __future__ import annotations
 
+import base64
+import json
 import os
+import struct
 import subprocess
 from dataclasses import dataclass
 
@@ -345,11 +348,33 @@ def build() -> cq.Assembly:
 # ----------------------------------------------------------------------------
 # Export + report
 # ----------------------------------------------------------------------------
+def glb_to_json(glb_path: str, json_path: str):
+    """Rewrite a GLB as JSON glTF with the binary chunk embedded as base64.
+    The web viewer can fetch a .json next to the page where it cannot fetch a
+    .glb (artifact hosting serves a fixed list of types)."""
+    d = open(glb_path, "rb").read()
+    assert d[:4] == b"glTF"
+    off, js, binary = 12, None, None
+    while off < len(d):
+        ln, typ = struct.unpack("<II", d[off:off + 8])
+        chunk = d[off + 8:off + 8 + ln]
+        off += 8 + ln
+        if typ == 0x4E4F534A:
+            js = json.loads(chunk)
+        elif typ == 0x004E4942:
+            binary = chunk
+    js["buffers"][0]["uri"] = "data:application/octet-stream;base64," + base64.b64encode(binary).decode()
+    with open(json_path, "w") as f:
+        json.dump(js, f)
+
+
 def export(a: cq.Assembly):
     os.makedirs(os.path.join(OUT, "views"), exist_ok=True)
     os.makedirs(VIEWER, exist_ok=True)
     os.makedirs(STL, exist_ok=True)
-    a.export(os.path.join(VIEWER, "cage.glb"))
+    glb = os.path.join(OUT, "cage.glb")
+    a.export(glb)
+    glb_to_json(glb, os.path.join(VIEWER, "cage.json"))
     print("== Printed parts (P1P/P1S bed 256 x 256 x 256) ==")
     for child in a.children:
         if child.name.startswith("print_"):
@@ -420,4 +445,4 @@ if __name__ == "__main__":
     asm = build()
     report()
     export(asm)
-    print("wrote", os.path.abspath(os.path.join(VIEWER, "cage.glb")))
+    print("wrote", os.path.abspath(os.path.join(VIEWER, "cage.json")))
