@@ -58,7 +58,7 @@
     <h1>4Runner card cage</h1>
     <div class="muted">Drag to orbit, scroll to zoom, right-drag to pan. Lid is hidden so you can see inside.</div>
     <div class="row">
-      <button data-view="iso">Iso</button><button data-view="inboard">Inboard</button><button data-view="top">Top</button><button data-view="end">IceBox end</button>
+      <button data-view="iso">Iso</button><button data-view="inboard">Inboard</button><button data-view="top">Top</button><button data-view="end">Far end</button>
       <button id="card" class="primary">Lift card</button>
     </div>
   </div>
@@ -106,7 +106,8 @@ const fill = new THREE.DirectionalLight(0xffffff, 0.5); fill.position.set(-800, 
 
 // name prefix -> [label, colour, opacity]
 const GROUPS = {
-  bar:      ['MaxLite 1" extrusion bars',    0xb8bcc2, 1],
+  icebox:   ['IceBox 1.3 (reference)',      0x7a7f86, 0.45],
+  bar:      ['Kit extrusion bars',          0xb8bcc2, 1],
   print:    ['3D-printed parts (PETG/ASA)', 0xd9541f, 1],
   panel:    ['6 mm panels, bulkhead',       0x2a2a2a, 0.3],
   lid:      ['Lid',                         0x2a2a2a, 0.25],
@@ -115,8 +116,7 @@ const GROUPS = {
   battery:  ['SuperPack 60 Ah ×2',          0x3b82f6, 0.9],
   garmin:   ['Garmin PowerSwitch',          0x111111, 1],
   power:    ['Bus bars, breakers, shunt',   0xc9a227, 1],
-  misc:     ['Unidentified (see README)',   0xd4d4d4, 1],
-  socket:   ['Panel-mount sockets',         0x444444, 1],
+  socket:   ['Sockets + Anderson SB50s',    0x444444, 1],
 };
 const legend = document.getElementById('legend');
 const groupObjs = {};
@@ -179,7 +179,7 @@ loadModel().then(gltf => {
 function setView(v) {
   const c = bbox.getCenter(new THREE.Vector3()); const s = bbox.getSize(new THREE.Vector3()); const r = s.length() * 0.9;
   // glTF is Y-up: model X = length, Y = up, Z = -width (inboard is +Z after conversion)
-  const d = { iso: [0.9, 0.75, 1.1], inboard: [0.05, 0.25, 1], top: [0, 1, 0.001], end: [-1, 0.25, 0.001] }[v];
+  const d = { iso: [0.9, 0.75, 1.1], inboard: [0.05, 0.25, 1], top: [0, 1, 0.001], end: [1, 0.25, 0.001] }[v];
   camera.position.set(c.x + d[0] * r, c.y + d[1] * r, c.z + d[2] * r);
   controls.target.copy(c); controls.update();
 }

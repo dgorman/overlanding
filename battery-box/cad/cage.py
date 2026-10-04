@@ -43,6 +43,19 @@ P = dict(
     in_H=260.0,    # SuperPack 213 + tray 4 + ~40 for M6 terminals / cables
 
     bar=25.4,        # Goose Gear MaxLite 1" extrusion (profile verify)
+    # Frame sourcing: NO off-the-shelf extrusion.  The 4 Goose Gear mod kits
+    # supply the aluminium (assumed 2 bars per kit); everything else prints.
+    kit_bars=8,
+    bar_stock=635.0,   # length of one kit bar.  UNKNOWN until they arrive (verify)
+    rail_seg_max=250.0,  # printed rail segments must fit the 256 mm bed
+    splice_len=60.0,     # printed internal splice between a bar and a printed segment
+
+    # IceBox 1.3, 25" deep: 19-3/16 W x 22 H x 25 D (Goose Gear).  Its slotted
+    # back panel faces the cage's x=0 end.
+    icebox_W=487.4, icebox_H=558.8, icebox_D=635.0,
+    icebox_gap=0.0,    # air gap between IceBox back panel and the cage end
+    icebox_y=0.0,      # IceBox outboard face offset from the cage's outboard face
+    show_icebox=True,
     cube=25.4,       # printed 3-way corner cube, same section as the bar
     panel_t=6.0,     # side/floor/lid panels: 6 mm phenolic ply or HDPE
     card_t=6.0,      # card plate thickness
@@ -81,7 +94,7 @@ class Comp:
 # Component envelopes AS MOUNTED (box-aligned, not datasheet h x w x d).
 COMPONENTS = {
     # lower level (on the floor)
-    "multiplus": Comp("victron_multiplus", 406, 250, 100, "MultiPlus 12/1200/50-16, lying flat as today (8.2 kg)"),
+    "multiplus": Comp("victron_multiplus", 360, 240, 100, "MultiPlus 12/800/35-16 120V, lying flat as today (6.4 kg)"),
     "mppt":      Comp("victron_mppt", 186, 70, 130, "SmartSolar MPPT 100/30, vertical, terminals down (1.3 kg)"),
     "battery":   Comp("battery", 229, 138, 213, "Victron Lithium SuperPack 12.8V/60Ah, 9.5 kg, M6 terminals (x2)"),
     # on the card, top face
@@ -93,9 +106,8 @@ COMPONENTS = {
     "busbar_n":  Comp("power_busbar_neg", 155, 32, 35, "5-stud covered bus bar (-)"),
     "breaker_a": Comp("power_breaker_a", 48, 74, 43, "surface-mount breaker"),
     "breaker_b": Comp("power_breaker_b", 48, 74, 43, "surface-mount breaker"),
-    "misc_bt":   Comp("misc_bt_dongle", 90, 45, 25, "white Bluetooth dongle (identify)"),
-    # on the card, underside
-    "finned":    Comp("misc_finned", 130, 90, 40, "finned unit under the old shelf (identify)"),
+    # end-panel ingress for the solar panels: 2 x Anderson SB50 panel mounts
+    "anderson":  Comp("socket_anderson", 10, 48, 36, "Anderson SB50 panel-mount, solar in (verify hole 48 x 36)"),
 }
 
 # Lower level: x from the IceBox end; y centred across the box unless given.
@@ -119,9 +131,11 @@ CARD_LAYOUT = [
     dict(comp="garmin",    x=270, y=190, side="top"),
     # far end: brains
     dict(comp="cerbo",     x=430, y=20,  side="top"),
-    dict(comp="misc_bt",   x=430, y=140, side="top"),
-    dict(comp="finned",    x=460, y=150, side="bottom"),   # under the card, beside the MPPT
 ]
+
+# Anderson SB50 panel mounts in the far end panel, lower level, near the MPPT:
+# (y centre, z centre above floor panel)
+ANDERSONS = [(150, 60), (215, 60)]
 
 # Panel-mount sockets on the inboard wall insert: (x centre, hole dia)
 SOCKETS = [(580, 29), (625, 29), (670, 29), (715, 29), (765, 22)]
@@ -163,6 +177,102 @@ def bar(length: float, axis: str):
     elif axis == "z":
         b = b.rotate((0, 0, 0), (0, 1, 0), -90)
     return b
+
+
+def allocate_rails():
+    """Decide which rails are kit aluminium and which are printed.
+
+    Short rails (4 width + 4 height) come first: one bar yields one width rail
+    plus one height rail when stock >= their sum, otherwise one rail per bar.
+    Whatever bars remain go to the long rails, one bar each, with the
+    remainder of each long rail printed in segments.  Returns a dict of
+    rail name -> list of (kind, length) runs along the rail."""
+    stock = P["bar_stock"]; bars = P["kit_bars"]
+    L_long, L_w, L_h = out_L - 2 * C, out_W - 2 * C, out_H - 2 * C
+    runs = {}
+    short = [("w", L_w)] * 4 + [("h", L_h)] * 4
+    pairs = stock >= L_w + L_h
+    bars_short = 4 if pairs else 8
+    bars_used = min(bars, bars_short)
+    covered = bars_used * (2 if pairs else 1)
+    for i, (k, ln) in enumerate(short):
+        runs[f"{k}{i % 4}"] = [("bar" if i < covered else "print", ln)]
+    left = bars - bars_used
+    for i in range(4):
+        if left > 0 and stock > 0:
+            left -= 1
+            bar_ln = min(stock, L_long)
+            segs = [("bar", bar_ln)]
+            rest = L_long - bar_ln
+        else:
+            segs, rest = [], L_long
+        while rest > 0.5:
+            seg = min(P["rail_seg_max"], rest)
+            segs.append(("print", seg)); rest -= seg
+        runs[f"l{i}"] = segs
+    return runs
+
+
+def printed_rail(length: float):
+    """Printed 1" square rail segment with a T-slot on each face, a 6.8 mm
+    centre bore for a through-bolt / splice pin.  Same envelope as the bar so
+    cubes, guides and ledges don't care which one they touch."""
+    r = bar(length, "x")
+    r = r.cut(cq.Workplane("YZ").circle(3.4).extrude(length))
+    return r
+
+
+def splice():
+    """Printed internal splice: a cross-shaped key that slides into the four
+    T-slots of both the bar and the printed segment it joins."""
+    k = cq.Workplane("YZ").rect(6.2, B - 3).extrude(P["splice_len"])
+    k = k.union(cq.Workplane("YZ").rect(B - 3, 6.2).extrude(P["splice_len"]))
+    return k
+
+
+def icebox_parts():
+    """Reference model of the IceBox 1.3 (25" deep) sitting with its slotted
+    back panel against the cage's x=0 end.  Names start with icebox_ so the
+    viewer can ghost/toggle it.  Slot pattern is approximated from photos."""
+    W, H, D = P["icebox_W"], P["icebox_H"], P["icebox_D"]
+    x0 = -D - P["icebox_gap"]; y0 = P["icebox_y"]
+    parts = []
+    cube = corner_cube()
+    for i, x in enumerate((x0, x0 + D - C)):
+        for j, y in enumerate((y0, y0 + W - C)):
+            for k, z in enumerate((0, H - C)):
+                parts.append((f"icebox_cube_{i}{j}{k}", cube.translate((x, y, z))))
+    for y in (y0, y0 + W - B):
+        for z in (0, H - B):
+            parts.append((f"icebox_bar_x_{int(y)}_{int(z)}", bar(D - 2 * C, "x").translate((x0 + C, y + B / 2, z + B / 2))))
+    for x in (x0, x0 + D - B):
+        for z in (0, H - B):
+            parts.append((f"icebox_bar_y_{int(x)}_{int(z)}", bar(W - 2 * C, "y").translate((x + B / 2, y0 + C, z + B / 2))))
+        for y in (y0, y0 + W - B):
+            parts.append((f"icebox_bar_z_{int(x)}_{int(y)}", bar(H - 2 * C, "z").translate((x + B / 2, y + B / 2, C))))
+    # panels: top deck, floor, two sides, slotted back
+    parts.append(("icebox_panel_top", box(D - 2 * B, W - 2 * B, T, (x0 + B, y0 + B, H - B - T))))
+    parts.append(("icebox_panel_floor", box(D - 2 * B, W - 2 * B, T, (x0 + B, y0 + B, B))))
+    parts.append(("icebox_panel_side_out", box(D - 2 * B, T, H - 2 * B, (x0 + B, y0 + B, B))))
+    parts.append(("icebox_panel_side_in", box(D - 2 * B, T, H - 2 * B, (x0 + B, y0 + W - B - T, B))))
+    back = box(T, W - 2 * B, H - 2 * B, (x0 + D - B - T, y0 + B, B))
+    slot_w, slot_h, pitch_y, pitch_z = 72.0, 22.0, 92.0, 46.0
+    rows = int((H - 2 * B - 120) / pitch_z)
+    for r in range(rows):
+        z = B + 60 + r * pitch_z
+        off = (pitch_y / 2) if r % 2 else 0
+        y = y0 + B + 40 + off
+        while y + slot_w < y0 + W - B - 30:
+            cutter = (cq.Workplane("YZ").center(y + slot_w / 2, z + slot_h / 2)
+                      .slot2D(slot_w, slot_h).extrude(T + 2).translate((x0 + D - B - T - 1, 0, 0)))
+            back = back.cut(cutter)
+            y += pitch_y
+    parts.append(("icebox_panel_back_slotted", back))
+    # fridge tray: a shallow open box on the floor, pulled 60 mm proud of the front
+    tray = box(D - 2 * B + 60, 381, 40, (x0 + B - 60, y0 + (W - 381) / 2, B + T))
+    tray = tray.cut(box(D - 2 * B + 60 - 8, 381 - 8, 40, (x0 + B - 56, y0 + (W - 381) / 2 + 4, B + T + 4)))
+    parts.append(("icebox_tray", tray))
+    return parts
 
 
 def corner_cube():
@@ -266,14 +376,33 @@ def build() -> cq.Assembly:
         for j, y in enumerate((0, out_W - C)):
             for k, z in enumerate((0, out_H - C)):
                 add(a, cube.translate((x, y, z)), f"print_cube_{i}{j}{k}", BLACK)
-    for y in (0, out_W - B):
-        for z in (0, out_H - B):
-            add(a, bar(out_L - 2 * C, "x").translate((C, y + B / 2, z + B / 2)), f"bar_x_{int(y)}_{int(z)}", GRAY)
-    for x in (0, out_L - B):
-        for z in (0, out_H - B):
-            add(a, bar(out_W - 2 * C, "y").translate((x + B / 2, C, z + B / 2)), f"bar_y_{int(x)}_{int(z)}", GRAY)
-        for y in (0, out_W - B):
-            add(a, bar(out_H - 2 * C, "z").translate((x + B / 2, y + B / 2, C)), f"bar_z_{int(x)}_{int(y)}", GRAY)
+    runs = allocate_rails()
+    long_pos = [(y, z) for y in (0, out_W - B) for z in (0, out_H - B)]
+    for i, (y, z) in enumerate(long_pos):
+        x = C
+        for j, (kind, ln) in enumerate(runs[f"l{i}"]):
+            if kind == "bar":
+                add(a, bar(ln, "x").translate((x, y + B / 2, z + B / 2)), f"bar_long_{i}_{j}", GRAY)
+            else:
+                add(a, printed_rail(ln).translate((x, y + B / 2, z + B / 2)), f"print_rail_{i}_{j}", ORANGE)
+            if j > 0:  # splice straddling the joint
+                add(a, splice().translate((x - P["splice_len"] / 2, y + B / 2, z + B / 2)), f"print_splice_{i}_{j}", ORANGE)
+            x += ln
+    for i, x in enumerate((0, out_L - B)):
+        for k, z in enumerate((0, out_H - B)):
+            kind = runs[f"w{i * 2 + k}"][0][0]
+            shp = bar(out_W - 2 * C, "y").translate((x + B / 2, C, z + B / 2))
+            add(a, shp, f"{'bar' if kind == 'bar' else 'print_rail'}_w_{i}{k}", GRAY if kind == "bar" else ORANGE)
+        for k, y in enumerate((0, out_W - B)):
+            kind = runs[f"h{i * 2 + k}"][0][0]
+            shp = bar(out_H - 2 * C, "z").translate((x + B / 2, y + B / 2, C))
+            add(a, shp, f"{'bar' if kind == 'bar' else 'print_rail'}_h_{i}{k}", GRAY if kind == "bar" else ORANGE)
+
+    # --- IceBox 1.3 reference -------------------------------------------------
+    if P["show_icebox"]:
+        for nm, shp in icebox_parts():
+            col = BLACK if "cube" in nm else GRAY if "bar" in nm else (0.35, 0.35, 0.35)
+            add(a, shp, nm, col)
 
     # --- panels (phenolic ply / HDPE, cut to size; not printed) --------------
     add(a, box(in_L + 2 * T, in_W + 2 * T, T, (B, B, B)), "panel_floor", PANEL)
@@ -284,7 +413,11 @@ def build() -> cq.Assembly:
     inboard = inboard.cut(box(bb.xlen, T + 2, bb.zlen, (bb.xmin, out_W - B - T - 1, bb.zmin)))
     add(a, inboard, "panel_side_inboard", PANEL)
     add(a, box(T, in_W, in_H + 2 * T, (B, B + T, B)), "panel_end_icebox", PANEL)
-    add(a, box(T, in_W, in_H + 2 * T, (out_L - B - T, B + T, B)), "panel_end_far", PANEL)
+    far = box(T, in_W, in_H + 2 * T, (out_L - B - T, B + T, B))
+    ca = COMPONENTS["anderson"]
+    for (y, z) in ANDERSONS:
+        far = far.cut(box(T + 2, ca.h, ca.d, (out_L - B - T - 1, B + T + y - ca.h / 2, floor_top + z - ca.d / 2)))
+    add(a, far, "panel_end_far", PANEL)
     add(a, box(in_L + 2 * T, in_W + 2 * T, T, (B, B, out_H - B - T)), "lid_panel", PANEL)
     for x in (out_L * 0.3, out_L * 0.7):
         add(a, lid_handle().translate((x - 30, out_W / 2 - 6, out_H - B)), f"lid_handle_{int(x)}", BLACK)
@@ -342,6 +475,10 @@ def build() -> cq.Assembly:
         s = (cq.Workplane("XZ").center(x, floor_top + P["socket_z"]).circle(dia / 2 + 3)
              .extrude(40).translate((0, out_W - B - T, 0)))
         add(a, s, f"socket_{x}", (0.3, 0.3, 0.3))
+    c = COMPONENTS["anderson"]
+    for i, (y, z) in enumerate(ANDERSONS):
+        body = box(50, c.h, c.d, (out_L - B - T - 40, B + T + y - c.h / 2, floor_top + z - c.d / 2))
+        add(a, body, f"socket_anderson_{i}", (0.3, 0.3, 0.3))
     return a
 
 
@@ -384,7 +521,7 @@ def export(a: cq.Assembly):
             flag = "" if dims[0] <= 256 and dims[1] <= 256 else "  <-- exceeds bed, split or rotate"
             print(f"  {child.name:28s} {dims[0]:6.1f} x {dims[1]:6.1f} x {dims[2]:6.1f}{flag}")
     comp = cq.Compound.makeCompound([ch.obj.val() for ch in a.children
-                                     if not ch.name.startswith(("lid", "panel"))])
+                                     if not ch.name.startswith(("lid", "panel", "icebox"))])
     for name, d in {"iso": (1, -1.2, 0.9), "top": (0, 0, 1), "front": (0, -1, 0), "end": (1, 0, 0)}.items():
         svg = os.path.join(OUT, "views", f"{name}.svg")
         cq.exporters.export(comp, svg, opt={"width": 1600, "height": 700, "projectionDir": d,
@@ -400,10 +537,17 @@ def report():
     print(f"inner L x W x H : {mm(in_L)} x {mm(in_W)} x {mm(in_H)}")
     print(f"card            : {mm(card_L)} x {mm(card_W)} x {P['card_t']:.0f} mm, underside {P['card_z']:.0f} mm above floor")
     print(f"headroom on card: {in_H - P['card_z'] - P['card_t']:.0f} mm")
-    print("== Cut list (MaxLite / 1010 bars) ==")
-    print(f"  4 x long   {mm(out_L - 2 * C)}")
-    print(f"  4 x width  {mm(out_W - 2 * C)}")
-    print(f"  4 x height {mm(out_H - 2 * C)}")
+    print(f"== Rails: {P['kit_bars']} kit bars @ {mm(P['bar_stock'])} (stock length UNVERIFIED) ==")
+    print(f"  need 4 x long {mm(out_L - 2 * C)}, 4 x width {mm(out_W - 2 * C)}, 4 x height {mm(out_H - 2 * C)}")
+    runs = allocate_rails()
+    tot_bar = sum(ln for r in runs.values() for k, ln in r if k == "bar")
+    tot_prt = sum(ln for r in runs.values() for k, ln in r if k == "print")
+    for name, r in runs.items():
+        print(f"  {name:3s} " + " + ".join(f"{k} {ln:.0f}" for k, ln in r))
+    print(f"  aluminium used {mm(tot_bar)}, printed rail {mm(tot_prt)} in "
+          f"{sum(1 for r in runs.values() for k, _ in r if k == 'print')} segments")
+    print(f"== IceBox 1.3 next to the cage: cage end {mm(out_W)} wide x {mm(out_H)} tall against a "
+          f"{mm(P['icebox_W'])} x {mm(P['icebox_H'])} slotted panel; cage top is {mm(P['icebox_H'] - out_H)} below the IceBox deck ==")
     print("== Panels (6 mm) ==")
     print(f"  floor + lid  {mm(in_L + 2 * T)} x {mm(in_W + 2 * T)}")
     print(f"  2 sides      {mm(in_L + 2 * T)} x {mm(in_H + 2 * T)}")

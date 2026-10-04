@@ -14,10 +14,11 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import cage
 
 COLORS = {  # name prefix -> rgba
+    "icebox": (0.45, 0.45, 0.47, 0.55),
     "bar": (0.72, 0.74, 0.76, 1),
     "panel": (0.2, 0.2, 0.2, 0.22),
     "lid": (0.2, 0.2, 0.2, 0.15),
-    "misc": (0.85, 0.85, 0.85, 1),
+
     "print": (0.85, 0.33, 0.12, 1),
     "card": (0.18, 0.18, 0.18, 0.95),
     "victron": (0.15, 0.39, 0.92, 1),
@@ -89,6 +90,8 @@ if __name__ == "__main__":
     asm = cage.build()
     os.makedirs(cage.OUT, exist_ok=True)
     d = os.path.join(cage.HERE, "..", "renders"); os.makedirs(d, exist_ok=True)
+    render(asm, os.path.join(d, "with-icebox.png"), 24, -40, hide=("lid",), title="Cage against the IceBox 1.3 slotted back panel (IceBox ghosted)")
+    render(asm, os.path.join(d, "with-icebox-top.png"), 90, -90, hide=("lid",), title="Top-down with the IceBox")
     render(asm, os.path.join(d, "iso-inboard.png"), 28, -35, title="Inboard iso, lid off: battery zone (left), card over the MultiPlus (right)")
     render(asm, os.path.join(d, "iso-outboard.png"), 28, 145, title="Outboard iso, lid off")
     render(asm, os.path.join(d, "iso-card-lifted.png"), 28, -35, lift=cage.in_H * 0.9, title="Card lifted straight up out of its guides")
