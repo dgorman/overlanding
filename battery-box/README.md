@@ -1,10 +1,10 @@
 # 4Runner Electronics Card Cage
 
 **Vehicle:** Toyota 4Runner, Goose Gear plate system
-**Replaces:** the plywood battery box that sits on the plate with one end against the IceBox 1.3 slotted back panel
-**Status:** Concept v1 — parametric CAD done, dimensions awaiting field measurement (2026-10-04)
+**Replaces:** the plywood battery box that sits on the plate against the IceBox 1.3 slotted back panel
+**Status:** Concept v2 "half IceBox" — parametric CAD done, kit bar lengths and cargo-ceiling height still to measure (2026-10-04)
 
-**Goal:** a box that looks like the Goose Gear IceBox (1" extrusion frame, black corner cubes, black panels) with a 3D-printed interior: batteries and the MultiPlus live on the floor, and *all the small electronics live on one removable card* that drops straight down into printed guides and lifts straight out for service. **No off-the-shelf extrusion:** the aluminium comes from the four Goose Gear mod kits, everything else is printed.
+**Goal:** take another IceBox 1.3, cut its depth in half, and lay everything out on cards that drop in from the top. The box is **exactly the IceBox's width and height (19-3/16" × 22") and half its depth (12-1/2")**, standing against the IceBox's slotted back panel so the two read as one unit. Same look (1" extrusion frame, black corner cubes, black panels), 3D-printed interior, and **no off-the-shelf extrusion**: the aluminium comes from the four Goose Gear mod kits, everything else is printed.
 
 | | |
 |---|---|
@@ -15,8 +15,8 @@
 | Photos of the current box | `photos/` |
 
 ![Against the IceBox](renders/with-icebox.png)
-![Inboard iso](renders/iso-inboard.png)
-![Card lifted](renders/iso-card-lifted.png)
+![Front iso, panels hidden](renders/iso-front.png)
+![Cards lifted](renders/cards-lifted.png)
 
 ---
 
@@ -26,121 +26,106 @@ Dimensions are manufacturer figures **as mounted in this design** (X along the b
 
 | # | Component | As-mounted W×D×H (mm) | Weight | Where it goes |
 |---|---|---|---|---|
-| 1 | **Victron Lithium SuperPack 12.8V/60Ah** ×2 (M6 terminals, internal BMS) | 229 × 138 × 213 each | 9.5 kg each | Floor, IceBox end, side by side in a printed 2-bay tray |
-| 2 | **Victron MultiPlus 12/800/35-16 120V** (800 W inverter/charger) | 360 × 240 × 100 lying flat | 6.4 kg | Floor, under the card, in 4 printed corner cradles |
-| 3 | **Victron SmartSolar MPPT 100/30** | 186 × 70 × 130 standing, terminals down | 1.3 kg | Floor, far end, under the card, printed stand with the 176 × 71.5 mm keyhole pattern |
-| 4 | **Victron Cerbo GX** | 154 × 78 × 48 | ~0.5 kg | Card, top |
-| 5 | **Victron Orion XS 12/12-50A** DC-DC charger | 123 × 137 × 40 (flat, as today) | 0.33 kg | Card, top (see orientation note) |
-| 6 | **Victron SmartShunt 500A** | 120 × 54 × 46 | ~0.3 kg | Card, top, between the bus bars |
-| 7 | **Garmin PowerSwitch** (USB, cigarette-lighter and other 12 V loads) | 125 × 75 × 32 | 0.28 kg | Card, top |
-| 8 | Covered 5-stud bus bars ×2 (Blue Sea 2300-class) | 155 × 32 × 35 each | — | Card, top |
-| 9 | Battery circuit breakers ×2 (surface-mount, 285-style) | 48 × 74 × 43 each | — | Card, top, nearest the batteries |
-| 10 | Panel-mount 12 V / USB sockets ×4 + 1 smaller | 29 mm and 22 mm holes | — | Printed insert in the inboard side panel, above the card |
-| 11 | **Anderson SB50** panel mounts ×2, solar ingress | 48 × 36 mm cutouts (verify) | — | Far end panel, lower level, right beside the MPPT |
-| 12 | 6 AWG wiring throughout | — | — | Bend radius ~60 mm; the 150 mm card height leaves room under the card for the battery-to-bus runs |
+| 1 | **Victron Lithium SuperPack 12.8V/60Ah** ×2 (M6 top terminals, internal BMS) | 138 deep × 229 wide × 213 tall each | 9.5 kg each | Rear layer, outboard column, **stacked** in a printed tray + printed mid-shelf |
+| 2 | **Victron MultiPlus 12/800/35-16 120V** (800 W inverter/charger) | 100 deep × 360 wide × 240 tall, on its side | 6.4 kg | **Lower card**, on two printed feet, keyholes bolted through the card |
+| 3 | **Victron SmartSolar MPPT 100/30** | 70 × 186 × 130, upright, terminals down | 1.3 kg | **Upper card**, bottom row |
+| 4 | **Victron Orion XS 12/12-50A** DC-DC charger | 40 × 123 × 137, upright, terminals down | 0.33 kg | **Upper card**, bottom row, next to the MPPT |
+| 5 | **Garmin PowerSwitch** (USB, cigarette-lighter and other 12 V loads) | 32 × 125 × 75 | 0.28 kg | **Upper card**, top row |
+| 6 | **Victron Cerbo GX** | 48 × 154 × 78 | ~0.5 kg | **Dist card**, top |
+| 7 | **Victron SmartShunt 500A** | 46 × 120 × 54 | ~0.3 kg | **Dist card**, between breakers and bus bars |
+| 8 | Covered 5-stud bus bars ×2 (Blue Sea 2300-class) | 35 × 155 × 32 each | — | **Dist card** |
+| 9 | Battery circuit breakers ×2 (surface-mount, 285-style) | 43 × 48 × 74 each | — | **Dist card**, bottom, 150 mm from the battery terminals |
+| 10 | Panel-mount 12 V / USB sockets ×4 + 1 smaller | 29 mm and 22 mm holes | — | Printed insert in the **front panel**, above the MultiPlus band, facing the cabin |
+| 11 | **Anderson SB50** panel mounts ×2, solar ingress | 48 × 36 mm cutouts (verify) | — | Inboard side panel, rear layer, right by the dist card |
+| 12 | 6 AWG wiring throughout | — | — | Battery → breakers → shunt/bus is all inside the 144 mm rear layer; bus → MultiPlus crosses the card gap at the bottom |
 
 ### Orientation notes
-- **Orion XS:** Victron says "mount vertically on a non-flammable surface with the power terminals facing downwards", ≥10 cm clearance, heatsink to 90 °C. It is flat today and the design keeps it flat for now. If it has been throttling on long drives, stand it on a printed L-bracket at the end of the card (137 mm tall fits under the lid with 104 mm headroom only if the card drops to ~110 mm, which conflicts with the MPPT; so the alternative is to move the MPPT onto the IceBox slotted panel — see Phase 2).
-- **MPPT 100/30:** standing, terminals down, as Victron intends. It is 130 mm tall and lives under the card, which is why the card sits at 150 mm.
-- **MultiPlus 12/800:** the family manual only requires "a dry, well-ventilated and heatproof area" with free space for its vents; it does not mandate vertical. Flat on the floor is fine. Keep its vents clear: no cables bundled over the end grilles, and slot the far end panel for airflow.
+- **Orion XS and MPPT 100/30:** both upright on the upper card with terminals down, exactly as Victron asks (the vertical layout is what made this possible).
+- **MultiPlus 12/800:** on its side (360 wide × 240 tall) on the lower card. The family manual only requires "a dry, well-ventilated and heatproof area" with free space around its vents; it doesn't mandate upright. The front panel has three rows of vent slots over the MultiPlus band, and its 5 mm gap to the panel keeps the vents open.
+- **SuperPacks stacked:** 2 × 213 + lug clearance + tray + shelf = 468 mm of 496 available. This assumes the 213 mm height already includes the terminal posts (verify on the battery). If it doesn't, the stack still fits but the lid is close; the alternative is to lay the upper battery on its side, which Victron's SuperPack manual allows for LiFePO4.
 
 ---
 
 ## 2. Layout
 
+Three layers in depth, inside a 255 mm inner cavity (outer 317.5 mm, half an IceBox):
+
 ```
- IceBox end                                                            far end
- ┌──────────┬──┬──────────────────────────────────────────────────────────┐
- │ SuperPack│bk│  ╔════════════════ card, 726 × 282, @150 mm ═══════════╗ │ inboard side
- │  (inbd)  │hd│  ║ brk  bus+   | Orion    | Cerbo   |  dongle          ║ │ ← socket insert
- │──────────│  │  ║ brk  shunt  |          |         |                  ║ │   (5 holes, above card)
- │ SuperPack│  │  ║      bus−   | Garmin   |         |  [finned, under] ║ │
- │  (outbd) │  │  ╚═════════════════════════════════════════════════════╝ │
- │ 2-bay    │  │   [ MultiPlus 12/1200 lying flat, 406×250 ]  [MPPT ▮ ]    │ outboard side
- └──────────┴──┴──────────────────────────────────────────────────────────┘
-   0       245 251                                                      1000  (mm, inner)
+ side view (looking inboard)            top view, lid off
+ ┌───────────────────────┐  559         ┌─────────┬──┬────────────┐
+ │  lid                  │              │ dist    │  │ upper/lower│  inboard
+ │ ┌─────┐ ┌───────────┐ │              │ card ◄──┼──┼─ cards ────┼──► sockets
+ │ │batt │ │ upper card│ │              ├─────────┤  │  MultiPlus │  on the
+ │ │upper│ │ MPPT Orion│ │              │ battery │  │  (front    │  front
+ │ ├─────┤ ├───────────┤ │              │ stack   │  │   layer)   │  panel
+ │ │batt │ │ lower card│ │              │ (rear   │  │            │
+ │ │lower│ │ MultiPlus │ │              │  layer) │  │            │  outboard
+ └─┴─────┴─┴───────────┴─┘  0           └─────────┴──┴────────────┘
+   IceBox◄ 144 │6│ 105 ►front            IceBox ◄───── 317.5 ─────► front
 ```
 
-Three zones along the length:
+| Layer | Depth | What |
+|---|---|---|
+| **Rear** (against the IceBox) | 144 mm | Outboard: the two SuperPacks stacked in a printed tray with a printed mid-shelf. Inboard: the **dist card** (162 × 488) with breakers, SmartShunt, both bus bars and the Cerbo, in its own pair of guides. Anderson SB50 solar inlets in the inboard side wall. |
+| **Cards** | 6 mm | **Lower card** (401 × 254): the MultiPlus on its side on two printed feet. **Upper card** (401 × 236): MPPT and Orion upright on the bottom row, Garmin PowerSwitch above. Both ride in the same two side-wall guides; the upper sits on the lower's top edge. |
+| **Front** | 105 mm | Nothing but the components standing off the cards. The removable front panel carries vent slots over the MultiPlus and the printed socket insert at 430 mm. |
 
-1. **Battery zone (0–245 mm):** two SuperPacks side by side in a printed two-bay tray with strap slots. Nothing above them but the lid, so terminals and cables have 43 mm of clear air and the batteries never have to move to service electronics.
-2. **Bulkhead (245–251 mm):** a 6 mm panel that stops the batteries sliding under braking and carries two of the four card guides. Cables pass through a slot at the bottom.
-3. **Card zone (251–1000 mm):** MultiPlus flat on the floor in four printed corner cradles, MPPT standing at the far end on a printed stand. Above them at 150 mm, the card.
+Service: lid off, lift the upper card (3 kg, needs **795 mm** plate-to-ceiling), then the lower card (8 kg, 813 mm). The dist card is 488 mm tall and needs 1047 mm straight up, so in the vehicle it comes out by lifting it clear of its guides and tilting forward into the empty front layer. The batteries drop into their tray from the top with the cards out. **Measure the cargo-area ceiling above the plate**: a 5th-gen 4Runner is about 905 mm floor to headliner, so the upper and lower cards should clear, but that is the number that decides whether the cards lift out in place or only with the box out.
 
-The box is inner **1000 × 290 × 260 mm**, outer **1063 × 353 × 323 mm** (41.8 × 13.9 × 12.7 in). That is roughly today's footprint; the IceBox is 559 mm tall, so this is well under it.
-
-### The card
-- 6 mm plate, 726 × 282 mm. Material options, best first: **6 mm black phenolic-faced birch** (matches the IceBox panels, easy to drill, stiff), 1/4" HDPE, or four printed tiles with dovetail joints (each ≤ 256 mm for the P1S).
-- Drops into four printed U-channel guides (two on the bulkhead, two on the far end panel) with a 6 mm flared lead-in, and lands on four printed ledges bolted to the long rails with T-nuts.
-- Everything on it stays wired; the battery leads, MultiPlus DC leads and MPPT output are the only cables that cross from the lower level, so give those enough slack (or Anderson SB50s at the bulkhead) to lift the card ~300 mm and set it on the lid.
-- Component mounts (next iteration): printed clips for the Cerbo, Orion, Garmin and bus bars with heat-set M4 inserts in the plate, so nothing needs a nut on the underside.
+Mass is about 36 kg in a box only 318 mm deep, so it must be tied down: T-nuts in the bottom rails to the plate, and a printed hook plate on the IceBox-side panel into the slotted panel.
 
 ### Printed parts (all in `stl/`)
 
 | Part | Qty | Size (mm) | Notes |
 |---|---|---|---|
-| Corner cube | 8 | 25.4³ | Visual twin of the Goose Gear black corner; three 6.8 mm bores for 1/4-20 end-tap screws. Print in black ASA/PETG. |
-| Card guide | 4 | 133 × 18 × 14 | U-channel, 7.2 mm slot (6 mm card + 0.6 per side), flared top. Bolts to the vertical bar slot. |
-| Card ledge | 4 | 160 × 12 × 8 | Bolts to the long rails at 142 mm; the card sits on these. |
-| Battery tray | 1 (2 halves) | 288 × 237 × 24 | Exceeds the 256 bed, so split at the centre wall; 20 mm lips, 2 strap slots per bay. |
-| MultiPlus cradle | 4 | 40 × 40 × 24 | Corner cups; screw to the floor panel. |
-| MPPT stand | 1 | 202 × 140 × 30 | Victron keyhole pattern 176 × 71.5; screw base to floor and back to the end panel. |
-| Socket insert | 1 | 245 × 70 × 5 | Fills a cutout in the inboard panel; 4 × 29 mm + 1 × 22 mm holes. |
+| Corner cube | 8 | 25.4³ | Visual twin of the Goose Gear black corner; three 6.8 mm bores for 1/4-20 end-tap screws. Black ASA. |
+| Printed rail segment | 4 + 4 | 250 and 17 | Depth rails (267 mm) print as a 250 + 17 pair joined by a splice; same 1" envelope and slots as the bar. |
+| Rail splice | 4 | 60 × 22 × 22 | Cross key sliding into the four slots on both sides of a joint. |
+| Card guide segment | 8 | 250 / 244 × 18 × 14 | U-channel, 7.2 mm slot, flared top; two per side wall for the main cards, two per side for the dist card (one on the wall, one on a printed post next to the batteries). |
+| Battery tray | 1 | 237 × 146 × 24 | 20 mm lips, two strap slots. Fits the bed. |
+| Battery mid-shelf | 1 | 237 × 146 × 22 | Sits on the lower battery, 12 mm lip locates the upper; bolt to the side rail. |
+| MultiPlus feet | 2 | 50 × 40 × 10 | Take the 6.4 kg on the lower card; the keyholes only locate. |
+| Socket insert | 1 | 245 × 60 × 5 | Fills the cutout in the front panel; 4 × 29 mm + 1 × 22 mm. |
 
-Print orientation and materials: PETG or ASA (the box lives in a hot vehicle; PLA will creep). Cubes and cradles at 100 % infill; guides and ledges 4 walls, 40 %.
+PETG or ASA, not PLA (hot vehicle). Cubes, feet and splices at 100 %; guides and rails 4 walls / 40 %.
 
 ### Frame: kit bars + printed rails, nothing off the shelf
 
-The frame needs 4 long rails (1012 mm), 4 width rails (302 mm) and 4 height rails (272 mm). The four Extrusion Frame Modification Kits are assumed to be **2 bars each, ~25" (635 mm)**; Goose Gear doesn't publish either number, so `kit_bars` and `bar_stock` in `cage.py` are placeholders until the kits arrive. With those assumptions the script allocates:
+Rails needed: 4 × height 508 mm, 4 × width 437 mm, 4 × depth 267 mm. Assuming the four kits hold **2 bars each at ~25"** (Goose Gear publishes neither; `kit_bars` / `bar_stock` in `cage.py`), the script hands bars to the height and width rails first, which uses all eight, and prints the four short depth rails (two segments each). Only 1.07 m of rail is printed, and it's the shortest, least-loaded set. If the bars turn out to be 19" they still cover the width rails, and the height rails become a bar plus a printed 21 mm end.
 
-| Rail | Source |
-|---|---|
-| 4 × width (302) + 4 × height (272) | 4 kit bars, each cut into one of each (574 of 635 used) |
-| 4 × long (1012) | 4 kit bars at full 635 length + **printed 250 + 127 mm segments** joined with printed cross-shaped splices |
+Printed rails are fine here because the 6 mm panels are screwed to every edge; the box is a stressed-skin shell and the rails locate. The corner cubes and splices carry the joints, with a 1/4-20 bolt through each splice into the bar's end tap.
 
-So all eight bars get used, and 1.5 m of rail is printed in 8 segments. The printed rail has the same 1" envelope and slot pattern as the bar, so the corner cubes, ledges and guides don't care which they land on. If the bars turn out shorter than 574 mm, the script moves the height rails to printed and says so.
-
-Is a printed rail strong enough? On its own, no match for aluminium. In this box it doesn't have to be: the 6 mm panels are screwed to the rails on every edge, so the box is a stressed-skin shell and the rails are mostly locators. Print rails in ASA or PETG, 4 walls, 40 % gyroid, lying flat. The splices and corner cubes carry the real joints; put a 1/4-20 bolt through the splice into the bar's end tap.
-
-Cut list from `cage.py` (inner 1000 × 290 × 260):
-
-| Item | Qty | Size |
+| Panel (6 mm) | Qty | Size |
 |---|---|---|
-| Floor + lid panel, 6 mm | 2 | 1012 × 302 |
-| Side panels, 6 mm | 2 | 1012 × 272 |
-| End panels, 6 mm | 2 | 290 × 272 (far end gets two 48 × 36 Anderson cutouts) |
-| Bulkhead, 6 mm | 1 | 290 × 258 |
+| Floor + lid | 2 | 267 × 437 |
+| Sides | 2 | 267 × 508 (inboard gets two 48 × 36 Anderson cutouts) |
+| Back (IceBox side) | 1 | 425 × 508, one 120 × 30 cable slot low down, lined up with the IceBox slots |
+| Front (removable) | 1 | 425 × 508, 3 rows of vent slots + socket-insert cutout |
 
 ### How it sits against the IceBox 1.3
 
 ![Top-down with the IceBox](renders/with-icebox-top.png)
 
-The cage's IceBox end is 353 mm wide × 323 mm tall; the IceBox back panel is 487 × 559, so the cage top sits 236 mm below the IceBox deck and the slotted panel has ~134 mm of width to spare. In the model the two outboard faces are flush (`icebox_y = 0`) with no gap (`icebox_gap = 0`); change either if the plate layout differs. The slots on that panel line up with the lower half of the cage end, which is where a printed MOLLE hook plate could tie the two together and where the fridge cable passes through.
+Same 487.4 × 558.8 mm face, so the frames line up corner to corner and the two decks are flush. The model has them touching (`icebox_gap = 0`). The cage's back panel has a cable slot at 40 mm up that lands on the IceBox's bottom row of slots, which is where the fridge cable and a printed hook plate go.
 
 ## 3. Phase 2 envelope check: four SuperPacks + MultiPlus-II 12/3000/120-50
-
-Not designed yet, but the numbers that decide whether it fits in the same box:
 
 | Item | Size (mm) |
 |---|---|
 | MultiPlus-II 12/3000/120-50 120V | 506 × 275 × 147 (h × w × d), ~19 kg (verify) |
-| 4 × SuperPack 60Ah as a 2 × 2 grid | 470 × 288 footprint, 213 tall |
+| 4 × SuperPack 60Ah | 4 × (138 × 229 × 213) |
 
-- **Vertical MultiPlus-II is out:** 506 + floor and lid stack puts the box at ~568 mm, taller than the IceBox (559).
-- **Flat MultiPlus-II works:** 147 tall under a card at ~160 mm; the box height does not change (batteries already set 260 mm inner).
-- **Length is the problem:** 2 × 2 batteries (470) + bulkhead (6) + MultiPlus-II (506) = 982 mm, which fits in 1000 only if the **MPPT moves out of the box**, for example onto the IceBox slotted back panel on a printed MOLLE bracket. Keeping the MPPT inside means a ~1200 mm (47") inner length.
-- Weight on the plate goes from ~30 kg to ~60 kg. Add two more tie-down points.
+- **Height is the hard limit** (559 outer): the MultiPlus-II is 506 tall upright, which does not fit inside 496. On its side it is 275 tall × 506 wide, and 506 is wider than the 425 inner width. So the MultiPlus-II does not fit this footprint in any orientation. Phase 2 with that unit means either a wider box than the IceBox or a different inverter (the MultiPlus 12/1600/70 is 420 × 282 × 100 upright: fits width-wise only on its side at 282 tall, which works).
+- **Four batteries:** a second stacked column needs another 237 mm of width, which the 425 inner doesn't have next to the cards. The honest answer is a second, deeper box or a 1.5-depth version (476 mm) with two battery columns in depth.
 
-Decision for now: build Phase 1 at 1000 mm but **route the MPPT cables so it can be relocated**, and leave the far-end panel removable.
-
----
+Phase 1 is built for exactly what you have today. The parameters that would grow it are `rear_depth` and `icebox_W`.
 
 ## 4. Open questions (answers change the model)
 
-1. **Measure the plywood box:** inner L × W × H, and the max height the plate area allows. `in_L / in_W / in_H` in `cage.py`.
+1. **Cargo ceiling height above the plate** where the box sits: decides whether the cards lift out in the vehicle (needs ~800 mm) or only with the box out.
 2. **Mod kit contents:** bar count and length. This decides how much rail gets printed.
-3. **Which end of the box** should the batteries be on: against the IceBox (as modelled, shortest fridge-cable run) or the far end?
-4. **Cables entering the box:** alternator feed to the Orion, solar PV in, fridge out through the IceBox slots, chassis ground. I have the socket insert on the inboard side; tell me which end the external cables come in and I'll add a printed gland plate.
+3. **Does the SuperPack's 213 mm include the terminal posts?** Decides the stack height margin.
+4. **Cables entering the box:** alternator feed to the Orion and chassis ground. Solar is on the inboard Andersons, the fridge goes through the back-panel slot. Tell me where the alternator feed arrives and I'll add a gland.
 5. **MaxLite slot width:** measure one slot on the IceBox so the T-nut choice is right (1/4-20 roll-in T-nuts are consistent with Goose Gear's anchor kit, but it is not published).
 
 ---
@@ -162,3 +147,4 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-04 | **v2:** re-laid out as a half-depth twin of the IceBox (317.5 × 487.4 × 558.8). Batteries stacked, MultiPlus on its side on a lower card, MPPT/Orion/Garmin on an upper card, distribution on a third card beside the batteries. v1 long-box layout kept in git history (`cad/cage.py` before this commit). |

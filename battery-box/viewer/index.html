@@ -56,10 +56,10 @@
 <div id="hud">
   <div class="panel" id="controls">
     <h1>4Runner card cage</h1>
-    <div class="muted">Drag to orbit, scroll to zoom, right-drag to pan. Lid is hidden so you can see inside.</div>
+    <div class="muted">A half-depth twin of the IceBox 1.3 standing against its back panel. Drag to orbit, scroll to zoom. Lid hidden; uncheck panels to see inside.</div>
     <div class="row">
-      <button data-view="iso">Iso</button><button data-view="inboard">Inboard</button><button data-view="top">Top</button><button data-view="end">Far end</button>
-      <button id="card" class="primary">Lift card</button>
+      <button data-view="iso">Iso</button><button data-view="front">Front</button><button data-view="inboard">Inboard</button><button data-view="top">Top</button><button data-view="back">IceBox side</button>
+      <button id="card" class="primary">Lift cards</button>
     </div>
   </div>
   <div class="panel" id="side">
@@ -67,13 +67,15 @@
       <summary class="eyebrow" style="cursor:pointer">Legend</summary>
       <div id="legend"></div>
     </details>
-    <div class="eyebrow">Box (inner / outer)</div>
+    <div class="eyebrow">Box (outer, = IceBox W × H)</div>
     <dl>
-      <dt>Length</dt><dd>1000 / 1063 mm</dd>
-      <dt>Width</dt><dd>290 / 353 mm</dd>
-      <dt>Height</dt><dd>260 / 323 mm</dd>
-      <dt>Card</dt><dd>726 × 282 × 6 mm @ 150</dd>
-      <dt>IceBox 1.3</dt><dd>559 mm tall</dd>
+      <dt>Depth</dt><dd>317.5 mm (½ IceBox)</dd>
+      <dt>Width</dt><dd>487.4 mm (19-3/16")</dd>
+      <dt>Height</dt><dd>558.8 mm (22")</dd>
+      <dt>Lower card</dt><dd>401 × 254, MultiPlus</dd>
+      <dt>Upper card</dt><dd>401 × 236, MPPT · Orion · Garmin</dd>
+      <dt>Dist card</dt><dd>162 × 488, shunt · breakers · bus · Cerbo</dd>
+      <dt>Batteries</dt><dd>2 × SuperPack, stacked</dd>
     </dl>
   </div>
 </div>
@@ -111,7 +113,7 @@ const GROUPS = {
   print:    ['3D-printed parts (PETG/ASA)', 0xd9541f, 1],
   panel:    ['6 mm panels, bulkhead',       0x2a2a2a, 0.3],
   lid:      ['Lid',                         0x2a2a2a, 0.25],
-  card:     ['Electronics card',            0x3a3a3a, 0.95],
+  card:     ['Cards (3, drop in from top)', 0x3a3a3a, 0.95],
   victron:  ['Victron units',               0x2563eb, 1],
   battery:  ['SuperPack 60 Ah ×2',          0x3b82f6, 0.9],
   garmin:   ['Garmin PowerSwitch',          0x111111, 1],
@@ -177,15 +179,16 @@ loadModel().then(gltf => {
 }).catch(err => { document.getElementById('status').textContent = 'Could not load model: ' + err; });
 
 function setView(v) {
-  const c = bbox.getCenter(new THREE.Vector3()); const s = bbox.getSize(new THREE.Vector3()); const r = s.length() * 0.9;
+  const c = bbox.getCenter(new THREE.Vector3()); const s = bbox.getSize(new THREE.Vector3()); const r = s.length() * 0.8;
   // glTF is Y-up: model X = length, Y = up, Z = -width (inboard is +Z after conversion)
-  const d = { iso: [0.9, 0.75, 1.1], inboard: [0.05, 0.25, 1], top: [0, 1, 0.001], end: [1, 0.25, 0.001] }[v];
+  // glTF is Y-up: model X (depth) = X, model Z (up) = Y, model Y (inboard) = -Z
+  const d = { iso: [1, 0.6, -0.9], front: [1, 0.15, -0.001], inboard: [0.1, 0.2, -1], top: [0.001, 1, -0.001], back: [-1, 0.25, -0.4] }[v];
   camera.position.set(c.x + d[0] * r, c.y + d[1] * r, c.z + d[2] * r);
   controls.target.copy(c); controls.update();
 }
 document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
 document.getElementById('card').addEventListener('click', e => {
-  cardLifted = !cardLifted; e.target.textContent = cardLifted ? 'Seat card' : 'Lift card';
+  cardLifted = !cardLifted; e.target.textContent = cardLifted ? 'Seat cards' : 'Lift cards';
 });
 
 function resize() {
@@ -197,7 +200,7 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 (function loop() {
   requestAnimationFrame(loop);
   if (cardRoot) {
-    const target = cardLifted ? bbox.getSize(new THREE.Vector3()).y * 1.1 : 0;
+    const target = cardLifted ? 520 : 0;
     cardRoot.position.y = reduce ? target : cardRoot.position.y + (target - cardRoot.position.y) * 0.08;
   }
   controls.update(); renderer.render(scene, camera);
