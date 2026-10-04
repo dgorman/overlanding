@@ -2,9 +2,9 @@
 
 **Vehicle:** Toyota 4Runner, Goose Gear plate system
 **Replaces:** the plywood battery box that sits on the plate against the IceBox 1.3 slotted back panel
-**Status:** Concept v2 "half IceBox" — parametric CAD done, kit bar lengths and cargo-ceiling height still to measure (2026-10-04)
+**Status:** Concept v2 "half IceBox" — parametric CAD done; 8 mod kits ordered; cargo-ceiling height still to measure (2026-10-04)
 
-**Goal:** take another IceBox 1.3, cut its depth in half, and lay everything out on cards that drop in from the top. The box is **exactly the IceBox's width and height (19-3/16" × 22") and half its depth (12-1/2")**, standing against the IceBox's slotted back panel so the two read as one unit. Same look (1" extrusion frame, black corner cubes, black panels), 3D-printed interior, and **no off-the-shelf extrusion**: the aluminium comes from the four Goose Gear mod kits, everything else is printed.
+**Goal:** take another IceBox 1.3, cut its depth in half, and lay everything out on cards that drop in from the top. The box is **exactly the IceBox's width and height (19-3/16" × 22") and half its depth (12-1/2")**, standing against the IceBox's slotted back panel so the two read as one unit. Same look (1" extrusion frame, black corner cubes, black panels), 3D-printed interior, and **no off-the-shelf extrusion**: every rail is cut from Goose Gear mod-kit bars (8 kits, 16 bars), everything else is printed.
 
 | | |
 |---|---|
@@ -79,8 +79,7 @@ Mass is about 36 kg in a box only 318 mm deep, so it must be tied down: T-nuts i
 | Part | Qty | Size (mm) | Notes |
 |---|---|---|---|
 | Corner cube | 8 | 25.4³ | Visual twin of the Goose Gear black corner; three 6.8 mm bores for 1/4-20 end-tap screws. Black ASA. |
-| Printed rail segment | 4 + 4 | 250 and 17 | Depth rails (267 mm) print as a 250 + 17 pair joined by a splice; same 1" envelope and slots as the bar. |
-| Rail splice | 4 | 60 × 22 × 22 | Cross key sliding into the four slots on both sides of a joint. |
+| Rail splice | 4 | 60 × 22 × 22 | Cross key sliding into the four slots on both sides of the height-rail joint. |
 | Card guide segment | 8 | 250 / 244 × 18 × 14 | U-channel, 7.2 mm slot, flared top; two per side wall for the main cards, two per side for the dist card (one on the wall, one on a printed post next to the batteries). |
 | Battery tray | 1 | 237 × 146 × 24 | 20 mm lips, two strap slots. Fits the bed. |
 | Battery mid-shelf | 1 | 237 × 146 × 22 | Sits on the lower battery, 12 mm lip locates the upper; bolt to the side rail. |
@@ -89,11 +88,17 @@ Mass is about 36 kg in a box only 318 mm deep, so it must be tied down: T-nuts i
 
 PETG or ASA, not PLA (hot vehicle). Cubes, feet and splices at 100 %; guides and rails 4 walls / 40 %.
 
-### Frame: kit bars + printed rails, nothing off the shelf
+### Frame: 16 kit bars, nothing off the shelf, nothing printed
 
-Rails needed: 4 × height 508 mm, 4 × width 437 mm, 4 × depth 267 mm. Assuming the four kits hold **2 bars each at ~25"** (Goose Gear publishes neither; `kit_bars` / `bar_stock` in `cage.py`), the script hands bars to the height and width rails first, which uses all eight, and prints the four short depth rails (two segments each). Only 1.07 m of rail is printed, and it's the shortest, least-loaded set. If the bars turn out to be 19" they still cover the width rails, and the height rails become a bar plus a printed 21 mm end.
+Each Extrusion Frame Modification Kit x.31 bar is an IceBox width rail: 19-3/16" minus two 1" corner cubes, so **~437 mm** (verify on arrival). Eight kits give 16 bars. The MaxLite die can't be copied on a printer, so every rail is aluminium; the script produces this cut plan:
 
-Printed rails are fine here because the 6 mm panels are screwed to every edge; the box is a stressed-skin shell and the rails locate. The corner cubes and splices carry the joints, with a 1/4-20 bolt through each splice into the bar's end tap.
+| Rail | Need | From |
+|---|---|---|
+| Height ×4 | 508 mm | one full bar (437) + a 71 mm piece, joined with a printed splice; all four 71 mm pieces come out of **bar 2** (151 mm left over) |
+| Width ×4 | 437 mm | one full bar each, no cut |
+| Depth ×4 | 267 mm | one bar each cut to length (170 mm offcut each) |
+
+13 bars touched, 3 untouched, 4 splices, 4 × 170 mm + 1 × 151 mm offcuts (handy for a lid stiffener or the hook plate). The printed splice is a cross key that slides into the four slots on both sides of the joint, with a 1/4-20 bolt into each bar's end tap. The splice sits 71 mm from the top of each height rail, right under the top corner cube, where the panel screws on both sides of the joint carry the load.
 
 | Panel (6 mm) | Qty | Size |
 |---|---|---|
@@ -123,7 +128,7 @@ Phase 1 is built for exactly what you have today. The parameters that would grow
 ## 4. Open questions (answers change the model)
 
 1. **Cargo ceiling height above the plate** where the box sits: decides whether the cards lift out in the vehicle (needs ~800 mm) or only with the box out.
-2. **Mod kit contents:** bar count and length. This decides how much rail gets printed.
+2. **Mod kit contents:** confirm 2 bars per kit and ~437 mm each when they arrive.
 3. **Does the SuperPack's 213 mm include the terminal posts?** Decides the stack height margin.
 4. **Cables entering the box:** alternator feed to the Orion and chassis ground. Solar is on the inboard Andersons, the fridge goes through the back-panel slot. Tell me where the alternator feed arrives and I'll add a gland.
 5. **MaxLite slot width:** measure one slot on the IceBox so the T-nut choice is right (1/4-20 roll-in T-nuts are consistent with Goose Gear's anchor kit, but it is not published).
@@ -147,4 +152,5 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-04 | Ordered 4 more mod kits (8 total, 16 bars). Frame is now all kit aluminium with a cut plan; no printed rail. |
 | 2026-10-04 | **v2:** re-laid out as a half-depth twin of the IceBox (317.5 × 487.4 × 558.8). Batteries stacked, MultiPlus on its side on a lower card, MPPT/Orion/Garmin on an upper card, distribution on a third card beside the batteries. v1 long-box layout kept in git history (`cad/cage.py` before this commit). |

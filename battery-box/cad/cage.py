@@ -57,12 +57,13 @@ P = dict(
     rear_depth=144.0,
     front_depth=104.7,
 
-    # Frame sourcing: NO off-the-shelf extrusion.  4 mod kits, assumed 2 bars
-    # each; stock length unknown until they arrive.  (verify)
-    kit_bars=8,
-    bar_stock=635.0,
-    rail_seg_max=250.0,  # printed rail segments must fit the 256 mm bed
-    splice_len=60.0,
+    # Frame sourcing: NO off-the-shelf extrusion and NO printed rail (the
+    # MaxLite die can't be copied).  8 mod kits = 16 bars; each bar is an
+    # IceBox width rail, i.e. 19-3/16" minus two 1" cubes.  (verify on arrival)
+    kit_bars=16,
+    bar_stock=436.6,
+    rail_seg_max=250.0,  # only used if the bar pool runs out
+    splice_len=60.0,     # printed cross key joining two bar pieces
 
     guide_w=18.0,        # printed U-channel: width along the side wall... (Y is the wall normal here)
     guide_d=14.0,        # stand-off from the side wall into the box
@@ -207,28 +208,32 @@ def corner_cube():
 
 
 def allocate_rails():
-    """Hand kit bars to rails in priority order (height, width, depth); each
-    rail gets at most one bar, the remainder (or the whole rail) prints in
-    segments.  Returns {rail: [(kind, length), ...]}."""
-    stock, bars = P["bar_stock"], P["kit_bars"]
+    """Cut-plan allocator.  Rails are filled from a pool of kit bars in
+    priority order (height, width, depth).  A rail longer than one bar gets a
+    full bar plus a piece cut from the bar with the most left; every joint
+    gets a printed splice.  Printed segments appear only if the pool runs dry.
+    Returns ({rail: [(kind, length, bar_id), ...]}, [remaining per bar])."""
+    pool = [P["bar_stock"]] * P["kit_bars"]
     want = [("h", out_H - 2 * C)] * 4 + [("w", out_W - 2 * C)] * 4 + [("d", out_D - 2 * C)] * 4
     runs, counts = {}, {"h": 0, "w": 0, "d": 0}
     for kind, ln in want:
         name = f"{kind}{counts[kind]}"; counts[kind] += 1
         segs, rest = [], ln
-        if bars > 0 and stock > 0:
-            bars -= 1
-            take = min(stock, ln); segs.append(("bar", take)); rest -= take
         while rest > 0.5:
-            seg = min(P["rail_seg_max"], rest); segs.append(("print", seg)); rest -= seg
+            # prefer a bar that can finish the rail in one piece, else the fullest bar
+            fits = [i for i, r in enumerate(pool) if r >= rest - 0.01]
+            i = min(fits, key=lambda k: pool[k]) if fits else max(range(len(pool)), key=lambda k: pool[k])
+            if pool[i] < 1:
+                seg = min(P["rail_seg_max"], rest); segs.append(("print", seg, None)); rest -= seg; continue
+            take = min(pool[i], rest); pool[i] -= take; segs.append(("bar", take, i)); rest -= take
         runs[name] = segs
-    return runs
+    return runs, pool
 
 
 def add_rail(a, name, axis, origin, segs, color_bar, color_print):
     """Lay segments end to end from origin along axis; splices at joints."""
     x, y, z = origin
-    for j, (kind, ln) in enumerate(segs):
+    for j, (kind, ln, _bar) in enumerate(segs):
         if kind == "bar":
             shp = bar(ln, axis); col = color_bar; tag = f"bar_{name}_{j}"
         else:
@@ -362,7 +367,7 @@ def build() -> cq.Assembly:
         for j, y in enumerate((0, out_W - C)):
             for k, z in enumerate((0, out_H - C)):
                 add(a, cube.translate((x, y, z)), f"print_cube_{i}{j}{k}", BLACK)
-    runs = allocate_rails()
+    runs, _ = allocate_rails()
     hi = iter(range(4)); wi = iter(range(4)); di = iter(range(4))
     for x in (0, out_D - B):
         for y in (0, out_W - B):
@@ -506,12 +511,19 @@ def report():
     print(f"lift clearance  : upper card needs {mm(out_H + upper_h)} plate-to-ceiling; lower {mm(out_H + lower_h)}; dist {mm(out_H + dist_h)} (or tilt it out forward)")
     stack_top = 4 + 2 * batt.h + P["term_clear"] + P["shelf_t"] + P["term_clear"]
     print(f"battery stack   : {stack_top:.0f} mm incl. lug clearance vs {in_H:.0f} inner -> {in_H - stack_top:.0f} mm spare")
-    runs = allocate_rails()
-    print(f"== Rails: {P['kit_bars']} kit bars @ {mm(P['bar_stock'])} (stock UNVERIFIED) ==")
+    runs, pool = allocate_rails()
+    print(f"== Rails from {P['kit_bars']} kit bars @ {mm(P['bar_stock'])} (= IceBox width rail; verify on arrival) ==")
     for name, r in runs.items():
-        print(f"  {name:3s} " + " + ".join(f"{k} {ln:.0f}" for k, ln in r))
-    tot_prt = sum(ln for r in runs.values() for k, ln in r if k == "print")
-    print(f"  printed rail {mm(tot_prt)} in {sum(1 for r in runs.values() for k, _ in r if k == 'print')} segments")
+        print(f"  {name:3s} " + " + ".join(f"{k} {ln:.0f}" + (f" (bar {b + 1})" if b is not None else "") for k, ln, b in r))
+    n_print = sum(1 for r in runs.values() for k, _, _ in r if k == "print")
+    n_splice = sum(max(0, len(r) - 1) for r in runs.values())
+    used = [i for i, rem in enumerate(pool) if rem < P["bar_stock"] - 0.01]
+    print(f"  bars touched {len(used)} of {P['kit_bars']}, untouched {P['kit_bars'] - len(used)}, "
+          f"printed rail segments {n_print}, splices {n_splice}")
+    print("  cut plan per bar:")
+    for i in used:
+        pieces = [f"{ln:.0f} -> {name}" for name, r in runs.items() for k, ln, b in r if b == i]
+        print(f"    bar {i + 1:2d}: " + ", ".join(pieces) + f"; offcut {pool[i]:.0f}")
     print("== Panels (6 mm) ==")
     print(f"  floor + lid   {mm(in_D + 2 * T)} x {mm(in_W + 2 * T)}")
     print(f"  2 sides       {mm(in_D + 2 * T)} x {mm(in_H + 2 * T)}")
