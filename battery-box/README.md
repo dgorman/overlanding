@@ -28,6 +28,30 @@
 | Kit bars | 12 + 2 joists, 2 spare | not needed; return them, or keep 2 as joists |
 | Cost | 8 kits ≈ $1,112 + panels + prints | one IceBox 1.3 $1,345, matching panels included |
 
+**v6 draft: side-mount cards for the MultiPlus-II**
+
+The box can't get taller, so the only axis that takes a 578 mm MultiPlus-II is the depth. In this draft both cards run **front to back along the inboard wall**, sliding down between posts on the back and front width rails:
+
+| From the inboard wall | mm |
+|---|---|
+| post + inverter/charger card plate | 17 |
+| MultiPlus-II 12/3000 on its side, on 12 mm standoffs, terminals toward the front | 148 + 12 |
+| gap | 8 |
+| distribution card plate + parts facing the batteries (≤ 48 deep) | 54 |
+| gap | 8 |
+| **battery column** against the outboard wall | **180** |
+
+- The inverter/charger card is 567 × 494 mm. The MultiPlus-II overhangs it by 5 mm at each end and clears the end rails by 3 mm each side, which is why it sits on standoffs: the overhang has to pass the post bodies. Above it there are 213 mm for the **MPPT and Orion** on the same card.
+- The distribution card carries bus bars, shunt, breakers, the **VE.Bus BMS V2**, Cerbo and Garmin, with the Garmin at the front end near the sockets.
+- The battery column is only 180 mm wide, so it takes one stack: **two Lithium Smart 12.8V/100Ah** (152 wide each) on a printed tray and mid-shelf, 436 of 502 mm tall. That is 200 Ah, 200 A recommended / 400 A maximum: enough for the MultiPlus-II at full output, for about an hour. The shelf has a tab into the back rail and two printed front legs down through the floor into the joist bars, so nothing hangs on a card.
+- Both cards are full height (494 mm), so they only come out with the box out of the vehicle. In the vehicle, everything is reached from the top with the lid off; the MultiPlus-II's terminals face the front panel.
+- Sockets and the Anderson inlets go in the front panel over the battery column's free depth (the stack uses 329 of 584 mm).
+- About 74 kg.
+
+![v6 against the IceBox](renders/bookshelf/with-icebox.png)
+![v6 front iso](renders/bookshelf/iso-front.png)
+![v6 top](renders/bookshelf/top.png)
+
 **v4 cube**
 
 ![Cube against the IceBox](renders/cube/with-icebox.png)
@@ -181,6 +205,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-04 | **v6 draft:** cards turned 90° to run front to back along the inboard wall so a MultiPlus-II 12/3000 fits on its side; one column of two Lithium Smart 100Ah outboard with frame-mounted supports. `python cage.py bookshelf`. |
 | 2026-10-04 | Named the parts: distribution card, inverter/charger card, battery bay. Battery supports noted as needing to be frame-mounted, not card-adjacent; left for the battery decision. |
 | 2026-10-04 | MPPT and Cerbo on the dist card with the Garmin; upper card keeps only the Orion. v5 battery stacks justified to the side walls with a 145 mm channel. Checked the MultiPlus-II 12/3000 and 12/4k: neither fits (578 / 631 mm long) and four SuperPack 60Ah can only supply 120 A continuous, so the 12/800 stays. SuperPack weight corrected to 7.5 kg. |
 | 2026-10-04 | **v5:** second variant in the same script: a stock IceBox 1.3 frame (635 × 487 × 559) with two upright battery stacks and the dist card at the front panel. Viewer gets a version switch. v4 tagged `cage-v4-cube`. |

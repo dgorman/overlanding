@@ -91,11 +91,16 @@ if __name__ == "__main__":
     os.makedirs(cage.OUT, exist_ok=True)
     d = cage.RENDERS; os.makedirs(d, exist_ok=True)
     render(asm, os.path.join(d, "with-icebox.png"), 22, 35, hide=("lid",),
-           title=("487 mm cube from 12 uncut kit bars" if cage.P["frame_source"] == "kit" else "A second IceBox 1.3 frame as the cage")
+           title=("487 mm cube from 12 uncut kit bars" if cage.P["frame_source"] == "kit"
+                  else "v6 draft: side-mount cards front to back, MultiPlus-II on its side" if cage.P["card_plane"] == "xz"
+                  else "A second IceBox 1.3 frame as the cage")
                  + ", standing against the IceBox 1.3 slotted back panel")
-    render(asm, os.path.join(d, "iso-front.png"), 24, 35, hide=("lid", "panel", "icebox"), title="Front-inboard iso, panels hidden: dist card in front, MultiPlus and MPPT/Orion cards behind it, batteries at the back")
+    render(asm, os.path.join(d, "iso-front.png"), 24, 35, hide=("lid", "panel", "icebox"),
+           title=("Front-inboard iso, panels hidden: inverter card along the inboard wall, dist card beside it, batteries outboard" if cage.P["card_plane"] == "xz"
+                  else "Front-inboard iso, panels hidden: dist card in front, inverter/charger card behind it, batteries at the back"))
     render(asm, os.path.join(d, "iso-back.png"), 24, 215, hide=("lid", "panel", "icebox"),
-           title="Back-outboard iso, panels hidden: " + ("three batteries upright, fourth on its long side on the shelf" if cage.P["batt_layout"] == "row3_top1" else "two upright stacks of two batteries"))
+           title="Back-outboard iso, panels hidden: " + ("three batteries upright, fourth on its long side on the shelf" if cage.P["batt_layout"] == "row3_top1"
+                  else "one column of two Lithium Smart 100Ah, cards along the inboard wall" if cage.P["card_plane"] == "xz" else "two upright stacks of two batteries"))
     render(asm, os.path.join(d, "cards-lifted.png"), 24, 35, hide=("lid", "panel", "icebox"), lift=cage.in_H * 0.8, title="All three cards lifted out the top")
     render(asm, os.path.join(d, "front.png"), 0, 0, hide=("lid", "panel", "icebox"), title="Front elevation, panels hidden")
     render(asm, os.path.join(d, "top.png"), 90, -90, hide=("lid", "icebox"), title="Top-down, lid off: rear layer (left) and cards (right)")
