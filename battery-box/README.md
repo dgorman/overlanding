@@ -2,7 +2,7 @@
 
 **Vehicle:** Toyota 4Runner, Goose Gear plate system
 **Replaces:** the plywood battery box that sits on the plate against the IceBox 1.3 slotted back panel
-**Status:** two saved versions, v4 "cube" (tag `cage-v4-cube`) and v5 "second IceBox" — parametric CAD done; 8 mod kits ordered; cargo-ceiling height still to measure (2026-10-04)
+**Status:** v7 is the current direction (narrow, your SuperPack 60Ah, lengthwise cards); v4 (`cage-v4-cube`), v5 and v6 are kept as versions. 8 mod kits ordered; cargo-ceiling height still to measure (2026-10-04)
 
 **Goal:** a cube built from **12 uncut Goose Gear mod-kit bars**. Each bar is the IceBox 1.3 width rail (~437 mm), so the frame is 487.4 mm in every direction: the IceBox's exact width, 71 mm shorter than the IceBox, standing against its slotted back panel. It holds **four SuperPacks** (three upright, one on its long side above them), and everything else is on cards that drop in from the top, with the distribution card right behind the front panel so the output runs are short. Same look (1" extrusion frame, black corner cubes, black panels), 3D-printed interior, **no off-the-shelf extrusion and no saw cuts**.
 
@@ -15,6 +15,23 @@
 | Photos of the current box | `photos/` |
 
 ## Versions
+
+**v7 (current): 345 mm wide, your four SuperPack 60Ah, lengthwise cards** (`python cage.py v7`)
+
+The 200Ah Smarts and the MultiPlus-II are shelved. v7 is built around what you own and the pedal clearance:
+
+| | mm |
+|---|---|
+| Outer | 762 deep × **345 wide (13.6 in)** × 559 tall: **5.6 in narrower than the IceBox**, flush with its right face |
+| Battery bay (IceBox end, on the plate) | two stacks of two SuperPack 60Ah, trays touching: 294 of 294 wide, 266 deep, 468 tall (91 mm under the lid). Printed trays, mid-shelves and 14 mm legs; no vent gaps are required for SuperPacks |
+| Cross-members | two spare kit bars cut to 294 at the bay's front edge, top and bottom, in printed corner brackets. They stop the batteries and carry the rear card posts |
+| Cards | both **lengthwise** in front of the bay, 396 × 494 mm, posts on the cross-bars and the front width rail. Inverter card: **MultiPlus 12/1200 upright, terminals down** (its preferred orientation; the card is too short for it on its side), Orion and the Cerbo beside it. Distribution card: bus bars, shunt, breakers, MPPT, Garmin |
+| Across the front zone, from the inboard wall | 17 post/plate · 110 inverter + standoff · 4 · 52 distribution · **96 mm of cable and Anderson space** against the outboard wall |
+| Bank | 240 Ah, 3.1 kWh, 120 A continuous against the 12/1200's ~105 A; SuperPacks have their own BMS, so no VE.Bus BMS |
+| Frame cuts | 4 width rails + 2 cross-members from kit bars (6 of 16); height and depth rails from the IceBox |
+| Mass | ~63 kg |
+
+Service: lid off, everything is reached from the top; the batteries lift straight out of the bay behind the top cross-bar. The cards are full height and come out with the box out of the truck.
 
 | | v4 cube (`cage-v4-cube`) | v5 second IceBox |
 |---|---|---|
@@ -232,6 +249,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-04 | **v7:** 200Ah Smarts and MultiPlus-II shelved. Four SuperPack 60Ah in two touching stacks at the IceBox end, kit-bar cross-members, both cards lengthwise in front with the 12/1200 upright. 345 mm wide (5.6 in narrower). |
 | 2026-10-04 | Cage right-justified against the IceBox (`align="right"`); noted that a single-card layout would reach 384 mm. |
 | 2026-10-04 | Frame narrowed to 440 mm (sized from the Y stack, for bike pedals beside the box). `bookshelf60` checks the owner's SuperPack 60Ah in the 200Ah trays: fits with spacers. Dimension lines added to the viewer. |
 | 2026-10-04 | Inverter back to the owner's MultiPlus 12/1200/50 (Victron STEP added); v6 column widens to 240 mm; 2 × 2 of 200Ah is now the main v6, two end to end is `bookshelf2`. MPPT STEP flipped terminals-down. |
