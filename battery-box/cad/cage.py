@@ -974,7 +974,7 @@ def build_bookshelf(a):
 # cards lengthwise in front of it (posts on the cross-bars and the front rail).
 # ----------------------------------------------------------------------------
 V7_INV_LAYOUT = [   # inverter card (280 x 494): the 12/1200 upright, terminals down, alone
-    dict(comp="multiplus_1200_up", x=15, z=12),
+    dict(comp="multiplus_1200_up", x=15, z=20),
 ]
 V7_DIST_LAYOUT = [  # distribution card (280 x 494), parts face -Y (toward the outboard cable space)
     dict(comp="breaker_a", x=15,  z=20),     # column A
@@ -1134,8 +1134,8 @@ def build_v7(a):
             c = COMPONENTS[pl["comp"]]
             depth_off = BS["standoff"] if pl["comp"].startswith("multiplus") else 0
             if pl["comp"].startswith("multiplus"):
-                for xx in (pl["x"] + 30, pl["x"] + c.w - 90):
-                    add(a, box(60, BS["standoff"], 10, (g["card_x0"] + xx, py_plate - BS["standoff"], floor_top + 2)), f"print_feet_mp_{int(xx)}__card", ORANGE)
+                for xx in (pl["x"] + 25, pl["x"] + c.w - 85):
+                    add(a, box(60, BS["standoff"] + 4, 18, (g["card_x0"] + xx, py_plate - BS["standoff"] - 4, floor_top + 2 + pl["z"] - 18)), f"print_feet_mp_{int(xx)}__card", ORANGE)
             at = (g["card_x0"] + pl["x"], py_plate - depth_off - c.d, floor_top + 2 + pl["z"])
             col = BLUE if c.name.startswith("victron") else (0.08, 0.08, 0.08) if c.name.startswith("garmin") else GOLD
             add(a, victron_shape(pl["comp"], c.w, c.d, c.h, at, box(c.w, c.d, c.h, at).edges("|Y").fillet(3)), c.name + "__card", col)
@@ -1143,9 +1143,10 @@ def build_v7(a):
     return g
 
 
+FEET_H = 18.0        # printed feet under the MultiPlus: it stands on these, the bolts only hold it to the card
 V8_INV_LAYOUT = [    # inverter card, parts face +X (forward); y from the card's outboard end, z from its bottom
-    dict(comp="multiplus_1200_up", y=13, z=12),
-    dict(comp="shunt", y=80, z=428),
+    dict(comp="multiplus_1200_up", y=13, z=2 + FEET_H),
+    dict(comp="shunt", y=80, z=436),
 ]
 V8_CHARGE_LAYOUT = [
     dict(comp="mppt",  y=12,  z=20),
@@ -1224,8 +1225,8 @@ def build_v8(a):
         for pl in layout:
             c = COMPONENTS[pl["comp"]]
             if pl["comp"].startswith("multiplus"):
-                for yy in (pl["y"] + 30, pl["y"] + c.w - 90):
-                    add(a, box(standoff, 60, 10, (cx + P["card_t"], cy0 + yy, floor_top + 2)), f"print_feet_mp_{int(yy)}__card", ORANGE)
+                for yy in (pl["y"] + 25, pl["y"] + c.w - 85):   # two 60 mm wide feet under the housing, 18 tall, standoff deep
+                    add(a, box(standoff + 4, 60, FEET_H, (cx + P["card_t"], cy0 + yy, floor_top + 2 + pl["z"] - FEET_H)), f"print_feet_mp_{int(yy)}__card", ORANGE)
             at = (cx + P["card_t"] + standoff, cy0 + pl["y"], floor_top + 2 + pl["z"])
             col = BLUE if c.name.startswith("victron") else (0.08, 0.08, 0.08) if c.name.startswith("garmin") else GOLD
             # parts face +X: their depth d runs along X, width w along Y
