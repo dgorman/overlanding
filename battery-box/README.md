@@ -28,19 +28,41 @@ The problem with v8: the battery leads run under card 3, through card 2, up to t
 
 **Connectors.** The v9 cards are **cut down 50 mm (444 tall)** so the connector stack at the top of each card leaves **60 mm under the lid** for the pigtail cables, which leave the mated halves upward. Every card carries its **own fixed Anderson halves at the top of its rear face, standing with the mating face up**: one SB175 on the inverter card; five SB50s in a row on the charge card for the MPPT, the Orion, the Garmin/Cerbo feed, and the solar and alternator inlets. Everything below the connectors is free for the wire bends up to them. The bus deck is extended 40 mm forward over the wiring gap and carries the other fixed halves, **pointing at the cards** with proper spacing. Short pigtails with a flying half at each end join deck to card. To pull a card: lift the pigtail halves straight up off the card's connectors (25 mm for the SB175, 15 mm for an SB50), then lift the card. The deck ends come off forward on the extension if a pigtail ever needs replacing. All of it is reached from above with the lid off; the housings are Anderson's own STEP models.
 
+**Garmin outputs.** The PowerSwitch's four socket circuits leave the charge card through an **Anderson Powerpole PP45 block** (8 poles, 10 AWG contacts, 30 A per Garmin channel) at the top of the card's front face, mating face up like the rest. The harness from the front-panel sockets ends in the mating block; unclip it before the card comes out.
+
+**Battery rack strength.** The batteries never hang on plastic: each upper battery sits on a shelf that rests on the lower battery's rim, and the whole stack is held down by two 25 mm cam straps over the top battery into slots in the tray. What the printed parts resist is the sideways load under braking, about 15 kg per stack at 1 g:
+
+| Part | Spec | What it takes |
+|---|---|---|
+| Trays | 6 mm walls, 30 mm lips, 4 × M6 into the Goose Gear plate, 2 strap slots | the whole stack's sideways load into the plate |
+| Shelves | 10 mm plate, 15 mm lip around the upper battery, 4 × M4 through the end walls into inserts in the legs | the upper battery's sideways load into the legs |
+| Legs | 8 × 12 mm square, two segments on a 6 mm tenon, foot bolted to the plate, M4 inserts at shelf height and in the top boss | locate the shelves, carry the deck (~3 kg) |
+| Deck | two 6 mm halves + extensions, 8 × M4 into the leg bosses | bus bars, breakers, shunt, connectors |
+
+Print the rack in ASA rather than PETG: a closed box in a parked truck exceeds PETG's softening range in summer.
+
 **How it prints and goes together (Bambu P1P/P1S, 256 × 256 × 256 bed).** Every part in `stl/v9/` fits; the script checks each one:
 
 | Part | Qty | Size (mm) | Print | Joins to |
 |---|---|---|---|---|
 | Card tiles | 8 (4 per card) | 138 × 222 × 6 solid | flat, 4 walls, 30 % gyroid, PETG/ASA | each other with 12 splines (60 × 18 × 3) glued across the back; units via heat-set inserts in the pilot holes |
 | Guide posts | 4 posts × 2 segments | 187 / 167 tall, 24 × 18 | standing or flat | 20 mm tenon between segments; feet bolt through the floor panel into the depth-rail T-slots |
-| Battery trays | 2 | 237 × 146 × 24 | flat | M6 into the Goose Gear plate |
-| Mid-shelves | 2 | 237 × 146 × 22 | flat | sit on the lower battery between the legs |
-| Rack legs | 8 × 2 segments | 234 and 246 tall, 12 mm square | standing | 6 mm tenon; foot bolts to the plate; the upper segment ends in a 16 mm boss with an **M4 heat-set insert** for the deck |
-| Bus deck | 2 halves + 2 extension plates + 5 splines | 255 × 147 × 6 and 40 × 147 × 6 | flat | **8 × M4 screws** down into the leg bosses; halves splined at the centre and to the extensions; bus bars, breakers, shunt and the four deck-side Anderson halves screw to it with inserts |
+| Battery trays | 2 | 241 × 150 × 34 | flat | 4 × M6 into the Goose Gear plate |
+| Mid-shelves | 2 | 241 × 150 × 25 | flat | sit on the lower battery; M4 through the end walls into the legs |
+| Rack legs | 8 × 2 segments | 234 and 246 tall, 12 mm square | standing | 6 mm tenon; foot bolts to the plate; M4 inserts at shelf height and in the 16 mm top boss |
+| Bus deck | 2 halves + 2 extension plates + 5 splines | 255 × 147 × 6 and 40 × 147 × 6 | flat | 8 × M4 into the leg bosses; halves splined at the centre and to the extensions; bus bars, breakers, shunt and the four deck-side Anderson halves screw to it with inserts |
 | MultiPlus feet, backing plates, cubes, socket insert | 2, 4, 8, 1 | ≤ 60 mm | any | see "How the units attach" |
 
-Assembly order: trays to the plate → lower batteries → shelves and lower leg segments → upper batteries and upper leg segments → deck halves screwed to the leg bosses, then bus bars, breakers, shunt and connector halves onto the deck → battery leads up to the deck → posts to the rails → cards, wired on the bench, dropped in and plugged in → front panel.
+**Assembly, in order**
+
+1. **Frame.** IceBox height and depth rails (depth rails cut to 606), kit-bar width rails cut to 294, printed corner cubes with 1/4-20 end-tap screws. Floor panel over the card zone only. Side, back and front panels screwed to the outside of the bars with T-nuts; the front panel gets the socket insert, the two SB50 inlets and the L14-30 inlet and outlet before it goes on.
+2. **Battery rack.** Trays to the plate (4 × M6 each). Lower leg segments to the plate. Lower batteries in. Shelves on the lower batteries, M4 into the lower legs. Upper leg segments on their tenons. Upper batteries in. Two cam straps per stack. Battery leads (6 AWG, M6 lugs) left loose on top.
+3. **Bus deck.** Both halves and the extensions splined together on the bench; bus bars, breakers, shunt and the four fixed Anderson halves screwed on with inserts; the four pigtails (SB175 + 3 × SB50, each with a flying half at both ends) plugged into the deck. Deck onto the leg bosses, 8 × M4. Battery leads up through the hand windows to the breakers and bus bars.
+4. **Guide posts.** Four posts, two segments each, feet bolted through the floor panel into the depth rails.
+5. **Each card on the bench.** Glue the four tiles with the splines. Press in the inserts: inverter card M6 for the SB175; charge card M4/M5/M6 per unit plus the SB50 row and the PP45. Mount the units: MultiPlus on its feet with the four M6 through-bolts and backing plates; MPPT, Orion, Cerbo, Garmin on their inserts. Wire every unit to the card's own connectors at the top with the sizes in the table above, and label each lead. Test the card's internal wiring before it goes in.
+6. **Install.** Drop the inverter card into its posts, then the charge card. Plug each pigtail's upper half down onto the card's connectors. Connect the front-panel harnesses: inlet pigtails to the charge card's two inlet SB50s, the socket harness to the PP45, AC cords to the MultiPlus. Lid on.
+7. **Pull a card later:** lid off, lift that card's pigtail halves and harness block straight up, lift the card. Nothing else moves.
+
 
 Cable sizes are Victron's where they publish them; your 6 AWG is right for the Orion and the batteries, and the inverter run is 4 AWG because 2 AWG would not fit its terminals:
 
@@ -311,6 +333,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-05 | Garmin outputs get a PP45 block on the charge card's front face; rack beefed up (6 mm tray walls, 30 mm lips, M6 to the plate, shelves screwed to the legs, cam straps); full assembly procedure written. |
 | 2026-10-05 | v9 cards cut down 50 mm (444 tall) so the upward-facing connector stacks leave 60 mm of cable room under the lid. |
 | 2026-10-05 | Card connectors moved to the top of each card's rear face (wire-bend room below); the charge card's inlet SB50s join the rear row. |
 | 2026-10-05 | Each card gets its own fixed Andersons on its rear face, mating face up (pigtails lift off before the card); deck extended 40 mm forward with its halves pointing at the cards; 657 mm deep. |

@@ -209,6 +209,7 @@ COMPONENTS = {
     "sb175_v":   Comp("socket_sb175", 56, 26, 79, "Anderson SB175 standing on a card's rear face, mating face up"),
     "sb50_v":    Comp("socket_sb50", 37, 16, 48, "Anderson SB50 standing on a card face, mating face up"),
     "shunt_x":   Comp("power_shunt", 54, 120, 46, "SmartShunt turned 90 deg on the deck"),
+    "pp45_v":    Comp("socket_pp45", 32, 16, 25, "Anderson Powerpole PP45 block, 8 poles = 4 circuits, 10 AWG contacts; Garmin outputs to the front-panel sockets; mating face up"),
 }
 
 # Distribution card (rear layer, inboard of the battery column, slides down
@@ -244,7 +245,8 @@ else:
 V8 = dict(bay_gap=10.0, inv_gap=8.0, charge_gap=8.0, dist_gap=8.0, front=8.0, charge_depth=70.0, dist_depth=46.0)
 if P["narrow"] and P["card_plane"] in ("v7", "v8", "v9"):
     _b = COMPONENTS["battery"]
-    V7 = dict(wall=4.0, leg=P.get("leg", 9.0), end_gap=15.0, bay_slack=2.0, bar_gap=5.0)   # 9 mm legs keep the shelf under the 256 mm bed (v9: 12 mm, split legs)
+    V7 = dict(wall=(6.0 if P["card_plane"] == "v9" else 4.0), leg=P.get("leg", 9.0), end_gap=15.0, bay_slack=2.0, bar_gap=5.0,
+              lip=(30.0 if P["card_plane"] == "v9" else 20.0))   # v9 rack: 6 mm walls, 30 mm lips, 12 mm split legs
     V7["tray_w"] = _b.w + 2 * V7["wall"]                          # 146
     V7["bay_W"] = 2 * V7["tray_w"] + V7["bay_slack"]              # two touching stacks
     V7["bay_D"] = V7["end_gap"] + _b.d + 2 * V7["wall"] + V7["leg"]  # back gap (leg inside) + tray + front leg
@@ -344,8 +346,8 @@ STEP_FILES = {   # component key -> Victron STEP file (downloaded into cad/step/
     "sb50_v":       "anderson_sb50_housing.stp",
     "shunt_x":      "SmartShunt-500A.step",
 }
-MATED = {"sb175": 133.4, "sb50": 81.3, "sb175_x": 133.4, "sb50_x": 81.3, "sb175_v": 133.4, "sb50_v": 81.3}   # Anderson mated-pair lengths
-HOUSING = {"sb175": 79.4, "sb50": 48.0}   # housing length along the mating axis
+MATED = {"sb175": 133.4, "sb50": 81.3, "sb175_x": 133.4, "sb50_x": 81.3, "sb175_v": 133.4, "sb50_v": 81.3, "pp45_v": 41.0}   # Anderson mated-pair lengths
+HOUSING = {"sb175": 79.4, "sb50": 48.0, "pp45": 24.6}   # housing length along the mating axis
 _STEP_CACHE = {}
 # extra rotation (axis, degrees) applied after the extents match, for units
 # the matcher lands upside down or backwards; checked in the renders
@@ -1216,7 +1218,7 @@ def _conn_z(kind):
     return (out_H - CONN_LID_ROOM) - (floor_top + 2) - mated
 V9_INV_REAR = [dict(comp="sb175_v", y=150, z=None)]
 V9_CHARGE_REAR = [dict(comp="sb50_v", y=y, z=None) for y in (20, 70, 120, 180, 230)]   # MPPT, Orion, Garmin+Cerbo, solar in, alternator in
-V9_CHARGE_FRONT = []
+V9_CHARGE_FRONT = [dict(comp="pp45_v", y=20, z=None)]   # Garmin -> front-panel sockets: PP45 block at the top of the front face
 V9_INV_LAYOUT = [    # inverter card: the 12/1200; its SB175 pigtail leaves the top rear corner and mates on the deck
     dict(comp="multiplus_1200_up", y=13, z=2 + FEET_H),
 ]
@@ -1252,7 +1254,12 @@ def build_v8(a, nine=False):
     for sidx in range(2):
         ty = y_in0 + 1 + sidx * V7["tray_w"]
         fd, fw = b.d + 2 * wall, V7["tray_w"]
-        tray = box(fd, fw, 24).cut(box(b.d, b.w, 25, (wall, wall, 4)))
+        lip = V7["lip"]
+        tray = box(fd, fw, lip + 4).cut(box(b.d, b.w, lip + 5, (wall, wall, 4)))
+        for sx in (b.d * 0.3, b.d * 0.7):   # strap slots through the floor for 25 mm cam straps
+            tray = tray.cut(box(28, fw + 2, 5, (wall + sx - 14, -1, 2)))
+        for (hx, hy) in ((wall + 20, wall + 20), (wall + b.d - 20, wall + 20), (wall + 20, wall + b.w - 20), (wall + b.d - 20, wall + b.w - 20)):
+            tray = tray.cut(cq.Workplane("XY").center(hx, hy).circle(3.4).extrude(5))   # M6 to the Goose Gear plate
         add(a, tray.translate((tx, ty, 0)), f"print_tray_battery_{sidx}", ORANGE)
         z = 4.0
         for lvl in range(2):
@@ -1261,10 +1268,13 @@ def build_v8(a, nine=False):
             z += b.h
             if lvl == 0:
                 z += P["term_clear"]
-                if nine:   # shelf sits on the lower battery between the legs (237 long: fits the bed)
-                    sh = box(fd, fw, P["shelf_t"] + 12)
-                    sh = sh.cut(box(b.d, b.w, 13, (wall, wall, P["shelf_t"])))
+                if nine:   # shelf sits on the lower battery between the legs, 15 mm lip, screw tabs into the legs
+                    sh = box(fd, fw, P["shelf_t"] + 15)
+                    sh = sh.cut(box(b.d, b.w, 16, (wall, wall, P["shelf_t"])))
                     sh = sh.cut(box(fd - 2 * wall - 30, fw - 2 * wall - 30, P["shelf_t"] + 1, (wall + 15, wall + 15, -0.5)))
+                    # the legs stand at the shelf's end walls: an M4 through each end wall into an insert in the leg
+                    for (hy) in (L / 2, fw - L / 2):
+                        sh = sh.cut(cq.Workplane("YZ").center(hy, P["shelf_t"] / 2 + 4).circle(2.3).extrude(fd + 2).translate((-1, 0, 0)))
                     add(a, sh.translate((tx, ty, z)), f"print_shelf_{sidx}", ORANGE)
                 else:
                     sh = box(fd + 2 * L, fw, P["shelf_t"] + 12)
@@ -1378,6 +1388,7 @@ def build_v8(a, nine=False):
                     if pl["z"] is None:
                         pl["z"] = _conn_z(pl["comp"])
                     cxs = cx - c.d if side == "rear" else cx + P["card_t"]
+                    # the front-face Powerpole sits above the MPPT/Cerbo zone; keep it clear of the 70 mm-deep MPPT
                     at = (cxs, cy0 + pl["y"], floor_top + 2 + pl["z"])
                     add(a, victron_shape(pl["comp"], c.d, c.w, c.h, at, box(c.d, c.w, c.h, at).edges("|Z").fillet(3)),
                         c.name + f"_{name}_{side}_{int(pl['y'])}__card", (0.3, 0.3, 0.3))
@@ -1449,6 +1460,7 @@ CABLE_SPEC = [   # (run, Victron recommendation, fuse, connector)
     ("Solar array -> MPPT PV side", "10 AWG; PV fuse per Victron if > 1 string", "per string", "Anderson SB50 at the front panel"),
     ("Bus deck -> Garmin PowerSwitch feed", "10 AWG (Garmin: 50 A max on the PowerSwitch)", "60 A", "Anderson SB50, 10 AWG contacts"),
     ("Bus deck -> Cerbo GX", "16 AWG", "3 A", "Anderson Powerpole 15"),
+    ("Garmin PowerSwitch outputs -> front-panel sockets", "10 AWG, one circuit per socket (Garmin: 30 A per channel max)", "Garmin's own per-channel protection", "Anderson Powerpole PP45 block (8 poles / 4 circuits) at the top of the charge card's front face; mates upward"),
     ("Shore AC in / inverter AC out", "12 AWG, per the MultiPlus AC in/out ratings", "AC breaker in the MultiPlus", "L14-30 inlet / outlet at the front panel"),
 ]
 
@@ -1492,6 +1504,11 @@ def report_v9():
           f"{o175:.0f}/{o50:.0f} mm: SB175 needs x<={115 + 2 * HOUSING['sb175'] - o175 + o175:.0f} of the deck's {dL:.0f} "
           f"({'ok' if 115 + 2 * HOUSING['sb175'] - o175 + o175 <= dL else 'TOO SHORT'}); SB50s need x<={160 + 2 * HOUSING['sb50'] - o50 + o50:.0f} "
           f"({'ok' if 160 + 2 * HOUSING['sb50'] - o50 + o50 <= dL else 'TOO SHORT'}); deck front edge to the inverter card {x_in0 + V8['x_inv'] - (g.get('deck_x0', 0) + dL):.0f} mm")
+    print("== Battery rack (v9) ==")
+    print(f"  trays: {V7['wall']:.0f} mm walls, {V7['lip']:.0f} mm lips, 4 x M6 into the Goose Gear plate, 2 strap slots each; stacks strapped with two 25 mm cam straps over the top battery into the tray slots")
+    print(f"  legs: 8 x 12 mm PETG/ASA in two segments on a 6 mm tenon; they locate the shelves and carry the deck (~3 kg), not the batteries: the upper battery sits on the shelf, the shelf on the lower battery's rim")
+    print(f"  shelves: 10 mm plate, 15 mm lip, 4 x M4 through the end walls into inserts in the legs so the upper battery's braking load goes to the legs and the strap, not just the lip")
+    print(f"  per stack under 1 g braking: {2 * 7.5:.0f} kg sideways -> tray lip + 4 x M6 + strap; upper battery {7.5:.0f} kg -> shelf lip + 4 x M4 + strap")
     print("== Cables and connectors (Victron manuals) ==")
     for run, size, fuse, conn in CABLE_SPEC:
         print(f"  {run:48s} {size:52s} fuse {fuse:28s} {conn}")
