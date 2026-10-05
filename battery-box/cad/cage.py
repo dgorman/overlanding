@@ -202,7 +202,7 @@ COMPONENTS = {
     "breaker_a": Comp("power_breaker_a", 48, 43, 74, "battery breaker, surface mount"),
     "breaker_b": Comp("power_breaker_b", 48, 43, 74, "battery breaker, surface mount"),
     "anderson":  Comp("socket_anderson", 48, 10, 36, "Anderson SB50 panel mount, solar in (verify hole 48 x 36)"),
-    "sb175":     Comp("socket_sb175", 79, 50, 38, "Anderson SB175 (1/0-4 AWG contacts), inverter DC"),
+    "sb175":     Comp("socket_sb175", 79, 50, 38, "Anderson SB175 with 4 AWG contacts, inverter DC"),
     "sb50":      Comp("socket_sb50", 47, 35, 24, "Anderson SB50 (6-12 AWG contacts)"),
 }
 
@@ -254,6 +254,8 @@ if P["narrow"] and P["card_plane"] in ("v7", "v8", "v9"):
         out_D = in_D + 2 * B
     if P["depth"] == "fit9":
         _inv = COMPONENTS[P["inverter"]]
+        V8["bay_gap"] = 70.0     # wiring room between the deck/battery lugs and the inverter card (pigtails up to the deck)
+        V8["front"] = 45.0       # grace between the charge card's parts and the front-panel inlets/sockets
         V8["x_inv"] = V7["bay_D"] + V8["bay_gap"]
         V8["x_charge"] = V8["x_inv"] + P["card_t"] + 10.0 + _inv.d + V8["inv_gap"]
         in_D = round(V8["x_charge"] + P["card_t"] + V8["charge_depth"] + V8["charge_gap"] + V8["front"], 1)
@@ -1350,8 +1352,10 @@ def dims_v9():
     y = -30; z = 40
     xi, xc = x_in0 + V8["x_inv"], x_in0 + V8["x_charge"]
     dim([x_in0, y, z], [x_in0 + V7["bay_D"], y, z], f"battery bay + bus deck {V7['bay_D']:.0f}", [0, -40, 0])
-    dim([xi, y, z], [xc, y, z], f"inverter card {xc - xi:.0f}", [0, -80, 0])
-    dim([xc, y, z], [x_in0 + in_D, y, z], f"charge card {x_in0 + in_D - xc:.0f}", [0, -40, 0])
+    dim([x_in0 + V7["bay_D"], y, z], [xi, y, z], f"wiring gap {V8['bay_gap']:.0f}", [0, -80, 0])
+    dim([xi, y, z], [xc, y, z], f"inverter card {xc - xi:.0f}", [0, -40, 0])
+    dim([xc, y, z], [x_in0 + in_D - V8["front"], y, z], f"charge card {x_in0 + in_D - V8['front'] - xc:.0f}", [0, -80, 0])
+    dim([x_in0 + in_D - V8["front"], y, z], [x_in0 + in_D, y, z], f"port grace {V8['front']:.0f}", [0, -40, 0])
     dz = g.get("deck_z", 468)
     dim([x_in0 - 30, y_in0 + 60, 0], [x_in0 - 30, y_in0 + 60, dz], f"rack + deck at {dz:.0f}", [-40, 0, 0])
     dim([x_in0 - 30, y_in0 + 60, dz], [x_in0 - 30, y_in0 + 60, out_H], f"{out_H - dz:.0f} over the deck", [-90, 0, 0])
@@ -1360,7 +1364,7 @@ def dims_v9():
 
 CABLE_SPEC = [   # (run, Victron recommendation, fuse, connector)
     ("Battery stacks -> bus deck (per stack, 2 x 60Ah)", "6 AWG (SuperPack 60Ah: 30 A each; Victron M6 terminals)", "breaker per stack on the deck", "lugs on the deck bus bars"),
-    ("Bus deck -> MultiPlus 12/1200", "2 AWG / 35 mm2 (Victron: 12/1200 manual), <= 1.5 m", "150 A (Victron) at the deck", "Anderson SB175 (1/0-4 AWG contacts)"),
+    ("Bus deck -> MultiPlus 12/1200", "4 AWG / 21 mm2 as built (Victron lists 35 mm2; 2 AWG did not fit the terminals), keep the run under 1 m", "150 A (Victron) at the deck", "Anderson SB175 with 4 AWG contacts"),
     ("Bus deck -> Orion XS 12/12-50 output", "6 AWG / 16 mm2 (Victron: 50 A, < 5 m)", "60-70 A", "Anderson SB50, 6 AWG contacts"),
     ("Alternator -> Orion XS input", "6 AWG, 60-70 A fuse at the start battery", "60-70 A", "Anderson SB50 at the front panel"),
     ("Bus deck -> MPPT 100/30 battery side", "10 AWG / 6 mm2 (Victron: 30 A)", "40 A", "Anderson SB50, 10 AWG contacts"),

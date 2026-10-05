@@ -24,14 +24,14 @@ The problem with v8: the battery leads run under card 3, through card 2, up to t
 - **Two cards, each with one plug.** The inverter card carries the MultiPlus 12/1200 and its SB175 pigtail housing at the top rear corner. The charge card carries the MPPT, Orion, Cerbo and Garmin with three SB50s at its top rear corner. Each card is wired completely on the bench.
 - **Service:** lid off, unplug that card at the deck, lift it. Batteries: unplug both cards, unbolt the deck, lift it, lift the batteries. Nothing on any card is wired to another card.
 - **Front panel:** shore-power inlet and inverter outlet (L14-30), the Anderson inlets for the alternator feed and the solar array, and the 12 V sockets in the lower band. All of those are plugs too, so the front panel comes off clean.
-- Losing the distribution card takes 60 mm off the depth: **539 × 345 × 559 mm, 8.8 in shorter and 5.6 in narrower than the IceBox**, same height. ~58 kg.
+- Depth is set by wiring room, not by the parts: a **70 mm gap between the bus deck and the inverter card** for the battery leads and the card pigtails climbing to the deck, and **45 mm between the charge card and the front panel** so the inlet and socket wiring has slack. **636 × 345 × 559 mm (25.0 in deep), 5.0 in shorter and 5.6 in narrower than the IceBox**, same height. ~58 kg.
 
-Cable sizes are Victron's, not mine; your 6 AWG is right for the Orion and the batteries but light for the inverter:
+Cable sizes are Victron's where they publish them; your 6 AWG is right for the Orion and the batteries, and the inverter run is 4 AWG because 2 AWG would not fit its terminals:
 
 | Run | Size (Victron manual) | Fuse / breaker | Connector |
 |---|---|---|---|
 | Battery stack → bus deck, per stack of two 60Ah | 6 AWG (30 A per battery, M6 terminals) | one breaker per stack, on the deck | lugs on the deck bus bars |
-| Bus deck → MultiPlus 12/1200 | **2 AWG / 35 mm²**, run ≤ 1.5 m | **150 A** at the deck | Anderson SB175 (1/0–4 AWG contacts) |
+| Bus deck → MultiPlus 12/1200 | **4 AWG / 21 mm² as built** (Victron lists 35 mm²; 2 AWG would not fit the 12/1200's terminals). Keep this run under 1 m: 4 AWG at 105 A continuous is at the top of its rating | **150 A** at the deck | Anderson SB175 with 4 AWG contacts |
 | Bus deck → Orion XS 12/12-50 output | 6 AWG / 16 mm² (50 A, under 5 m) | 60–70 A | Anderson SB50, 6 AWG contacts |
 | Alternator → Orion XS input | 6 AWG; fuse at the starter battery | 60–70 A | Anderson SB50 inlet, front panel |
 | Bus deck → MPPT 100/30 battery side | 10 AWG / 6 mm² (30 A) | 40 A | Anderson SB50, 10 AWG contacts |
@@ -295,6 +295,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-05 | v9 depth opened up for wiring: 70 mm deck-to-inverter-card, 45 mm card-to-ports; 636 mm (25 in) deep. Inverter run is 4 AWG as built. |
 | 2026-10-05 | **v9:** fixed bus deck on the battery rack with Anderson receptacles; two cards that unplug and lift out alone; 539 deep. Cable sizes from the Victron manuals: 2 AWG + 150 A for the 12/1200, 6 AWG for the Orion, 10 AWG for the MPPT. |
 | 2026-10-05 | All cards printed as solid 6 mm tiles (same as under the inverter) so units can be shifted and re-drilled; cables route under the cards, not through them. |
 | 2026-10-05 | MultiPlus hole pattern corrected to the 374.6 mm body (the 406 figure includes the bracket); card solid under the inverter footprint for micro-adjustment. |

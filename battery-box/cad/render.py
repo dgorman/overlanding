@@ -92,18 +92,21 @@ if __name__ == "__main__":
     d = cage.RENDERS; os.makedirs(d, exist_ok=True)
     render(asm, os.path.join(d, "with-icebox.png"), 22, 35, hide=("lid",),
            title=("487 mm cube from 12 uncut kit bars" if cage.P["frame_source"] == "kit"
+                  else "v9: bus deck on the battery rack, two unpluggable cards, 539 x 345 x 559" if cage.P["card_plane"] == "v9"
                   else "v8: four SuperPack 60Ah in two touching stacks, three cards across, 598 x 345 x 559" if cage.P["card_plane"] == "v8"
                   else "v7: four SuperPack 60Ah in two touching stacks, lengthwise cards in front, 345 mm wide" if cage.P["card_plane"] == "v7"
                   else "v6: side-mount cards front to back" if cage.P["card_plane"] == "xz"
                   else "A second IceBox 1.3 frame as the cage")
                  + ", standing against the IceBox 1.3 slotted back panel")
     render(asm, os.path.join(d, "iso-front.png"), 24, 35, hide=("lid", "panel", "icebox"),
-           title=("Front-inboard iso, panels hidden: three cards across (inverter, charge, distribution), battery stacks behind" if cage.P["card_plane"] == "v8"
+           title=("Front-inboard iso, panels hidden: two cards (inverter, charge) and the bus deck on the battery rack" if cage.P["card_plane"] == "v9"
+                  else "Front-inboard iso, panels hidden: three cards across (inverter, charge, distribution), battery stacks behind" if cage.P["card_plane"] == "v8"
                   else "Front-inboard iso, panels hidden: lengthwise cards in front, two touching battery stacks behind the cross-bar" if cage.P["card_plane"] == "v7"
                   else "Front-inboard iso, panels hidden: inverter card along the inboard wall, dist card beside it, batteries outboard" if cage.P["card_plane"] == "xz"
                   else "Front-inboard iso, panels hidden: dist card in front, inverter/charger card behind it, batteries at the back"))
     render(asm, os.path.join(d, "iso-back.png"), 24, 215, hide=("lid", "panel", "icebox"),
            title="Back-outboard iso, panels hidden: " + ("three batteries upright, fourth on its long side on the shelf" if cage.P["batt_layout"] == "row3_top1"
+                  else "battery rack with the bus deck on top, two cards in front" if cage.P["card_plane"] == "v9"
                   else "two touching stacks of SuperPack 60Ah at the IceBox end, three cards across in front" if cage.P["card_plane"] == "v8"
                   else "two touching stacks of SuperPack 60Ah at the IceBox end, cross-bar, cards in front" if cage.P["card_plane"] == "v7"
                   else ("four Lithium Smart 200Ah in a 2 x 2 printed rack, cards along the inboard wall" if cage.BS["arrange"] == "2x2" else "two Lithium Smart 200Ah end to end in the outboard column, cards along the inboard wall") if cage.P["card_plane"] == "xz" else "two upright stacks of two batteries"))
