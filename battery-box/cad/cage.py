@@ -1208,8 +1208,8 @@ V9_DECK_LAYOUT = [   # deck is ~295 (x, depth) x 294 (y); x from the deck's back
 # fixed halves on the cards themselves, standing with the mating face UP, so the pigtail lifts off before the card
 # v9 cards are cut down CARD_TRIM so the connector stack at the top of each card leaves CONN_LID_ROOM under the
 # lid for the pigtail cables, which exit the mated halves upward.  Connector z is computed from the lid.
-CARD_TRIM = 25.0
-CONN_LID_ROOM = 35.0
+CARD_TRIM = 50.0
+CONN_LID_ROOM = 60.0
 def _conn_z(kind):
     """card-relative z of a card-mounted fixed half so the mated pair tops out CONN_LID_ROOM under the lid"""
     mated = MATED[kind]
@@ -1465,7 +1465,7 @@ def report_v9():
     print(f"bus deck        : printed 6 mm plate on the rack legs at {dz:.0f} mm, {out_H - dz:.0f} mm under the lid; carries bus bars, 2 breakers, shunt, "
           f"SB175 + 3 x SB50 receptacles at its front edge; hand window over the battery lugs")
     cw, ch = g.get("cw", in_W - 17), g.get("ch", in_H - 8)
-    print(f"cards           : 2 x {mm(cw)} x {mm(ch - CARD_TRIM)} solid printed tiles (cut down {CARD_TRIM:.0f} for wire room under the lid)")
+    print(f"cards           : 2 x {mm(cw)} x {mm(ch)} solid printed tiles (cut down {CARD_TRIM:.0f} for wire room under the lid)")
     for name, layout in (("inverter", V9_INV_LAYOUT), ("charge", V9_CHARGE_LAYOUT)):
         for pl in layout:
             c = COMPONENTS[pl["comp"]]; bad = []
