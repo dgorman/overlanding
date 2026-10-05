@@ -204,6 +204,11 @@ COMPONENTS = {
     "anderson":  Comp("socket_anderson", 48, 10, 36, "Anderson SB50 panel mount, solar in (verify hole 48 x 36)"),
     "sb175":     Comp("socket_sb175", 79, 56, 26, "Anderson SB175 housing (Anderson STEP 55.6 x 79.4 x 25.5), 4 AWG contacts, inverter DC; mates along its 79 mm axis, laid across the deck"),
     "sb50":      Comp("socket_sb50", 48, 37, 16, "Anderson SB50 housing (Anderson STEP 36.5 x 48 x 16), 6-12 AWG contacts; mates along its 48 mm axis, laid across the deck"),
+    "sb175_x":   Comp("socket_sb175", 56, 79, 26, "Anderson SB175 on the deck, mating axis along the depth (+X)"),
+    "sb50_x":    Comp("socket_sb50", 37, 48, 16, "Anderson SB50 on the deck, mating axis along the depth (+X)"),
+    "sb175_v":   Comp("socket_sb175", 56, 26, 79, "Anderson SB175 standing on a card's rear face, mating face up"),
+    "sb50_v":    Comp("socket_sb50", 37, 16, 48, "Anderson SB50 standing on a card face, mating face up"),
+    "shunt_x":   Comp("power_shunt", 54, 120, 46, "SmartShunt turned 90 deg on the deck"),
 }
 
 # Distribution card (rear layer, inboard of the battery column, slides down
@@ -256,6 +261,7 @@ if P["narrow"] and P["card_plane"] in ("v7", "v8", "v9"):
         _inv = COMPONENTS[P["inverter"]]
         V8["bay_gap"] = 70.0     # wiring room between the deck/battery lugs and the inverter card (pigtails up to the deck)
         V8["front"] = 45.0       # grace between the charge card's parts and the front-panel inlets/sockets
+        V8["inv_gap"] = 26.0     # the charge card's rear-face SB50s (16 deep) + clearance
         V8["x_inv"] = V7["bay_D"] + V8["bay_gap"]
         V8["x_charge"] = V8["x_inv"] + P["card_t"] + 10.0 + _inv.d + V8["inv_gap"]
         in_D = round(V8["x_charge"] + P["card_t"] + V8["charge_depth"] + V8["charge_gap"] + V8["front"], 1)
@@ -332,8 +338,14 @@ STEP_FILES = {   # component key -> Victron STEP file (downloaded into cad/step/
     "bms":          "VE.Bus-BMS-V2.step",
     "sb175":        "anderson_sb175_housing.stp",
     "sb50":         "anderson_sb50_housing.stp",
+    "sb175_x":      "anderson_sb175_housing.stp",
+    "sb50_x":       "anderson_sb50_housing.stp",
+    "sb175_v":      "anderson_sb175_housing.stp",
+    "sb50_v":       "anderson_sb50_housing.stp",
+    "shunt_x":      "SmartShunt-500A.step",
 }
-MATED = {"sb175": 133.4, "sb50": 81.3}   # Anderson drawings: mated pair length -> overlap = 2 x housing - mated
+MATED = {"sb175": 133.4, "sb50": 81.3, "sb175_x": 133.4, "sb50_x": 81.3, "sb175_v": 133.4, "sb50_v": 81.3}   # Anderson mated-pair lengths
+HOUSING = {"sb175": 79.4, "sb50": 48.0}   # housing length along the mating axis
 _STEP_CACHE = {}
 # extra rotation (axis, degrees) applied after the extents match, for units
 # the matcher lands upside down or backwards; checked in the renders
@@ -1179,19 +1191,24 @@ def build_v7(a):
 
 FEET_H = 18.0        # printed feet under the MultiPlus: it stands on these, the bolts only hold it to the card
 # v9: bus deck on top of the battery rack (x along the depth from the bay's back, y across; parts stand up)
-V9_DECK_LAYOUT = [   # deck is ~255 (x, depth) x 294 (y); bus bars run across (155 along y)
+DECK_EXT = 40.0      # the deck runs forward over the wiring gap by this much, to carry the connector row
+V9_DECK_LAYOUT = [   # deck is ~295 (x, depth) x 294 (y); x from the deck's back edge
     dict(comp="busbar_n",  x=20,  y=20),
     dict(comp="breaker_a", x=20,  y=190),
     dict(comp="breaker_b", x=20,  y=245),
     dict(comp="busbar_p",  x=65,  y=20),
-    dict(comp="shunt",     x=120, y=20),
-    # connectors lie flat on the deck with their mating axis ACROSS the box (+Y): the fixed half is bolted
-    # to the deck, the card's flying half slides on from the +Y side and pulls off sideways, from above
-    dict(comp="sb175",     x=185, y=20),    # inverter DC; flying half mates at y 74-153, unplugs with 25 mm of travel
-    dict(comp="sb50",      x=205, y=190),   # MPPT
-    dict(comp="sb50",      x=160, y=190),   # Orion
-    dict(comp="sb50",      x=115, y=190),   # Garmin + Cerbo feed
+    dict(comp="shunt_x",   x=70,  y=236),
+    # fixed connector halves bolted to the deck, mating axis along the depth, facing the cards (+X).
+    # The pigtail's flying half mates in front and pulls off forward (25 / 15 mm) on the deck's extension.
+    dict(comp="sb175_x",   x=115, y=20),    # inverter DC
+    dict(comp="sb50_x",    x=160, y=90),    # MPPT
+    dict(comp="sb50_x",    x=160, y=135),   # Orion
+    dict(comp="sb50_x",    x=160, y=180),   # Garmin + Cerbo feed
 ]
+# fixed halves on the cards themselves, standing with the mating face UP, so the pigtail lifts off before the card
+V9_INV_REAR = [dict(comp="sb175_v", y=150, z=0)]                                  # inverter card, rear face bottom
+V9_CHARGE_REAR = [dict(comp="sb50_v", y=20, z=0), dict(comp="sb50_v", y=70, z=0), dict(comp="sb50_v", y=120, z=0)]   # to the deck
+V9_CHARGE_FRONT = [dict(comp="sb50_v", y=200, z=0), dict(comp="sb50_v", y=238, z=0)]                                 # from the front-panel inlets (solar, alternator)
 V9_INV_LAYOUT = [    # inverter card: the 12/1200; its SB175 pigtail leaves the top rear corner and mates on the deck
     dict(comp="multiplus_1200_up", y=13, z=2 + FEET_H),
 ]
@@ -1270,7 +1287,11 @@ def build_v8(a, nine=False):
         dz = g["stack_top"]
         dL = min(V7["bay_D"] - V7["end_gap"] + L, 255.0)          # fits the bed; trims 3 mm off each end over the leg bosses
         dx0 = x_in0 + V7["end_gap"] - L + (V7["bay_D"] - V7["end_gap"] + L - dL) / 2
-        g["deck_x0"], g["deck_L"] = dx0, dL
+        g["deck_x0"], g["deck_L"] = dx0, dL + DECK_EXT
+        for half in range(2):   # extension plates over the wiring gap, splined to the main halves
+            hw = V7["bay_W"] / 2
+            add(a, box(DECK_EXT, hw, P["card_t"], (dx0 + dL, y_in0 + 1 + half * hw, dz)), f"print_bus_deck_ext_{half}", ORANGE)
+            add(a, box(60, 18, 3, (dx0 + dL - 30, y_in0 + 1 + half * hw + hw / 2 - 9, dz - 3)), f"print_bus_deck_ext_spline_{half}", ORANGE)
         for half in range(2):   # two printable halves, one over each stack, splined at the centre line, M4 into the leg bosses
             hw = V7["bay_W"] / 2
             deck = box(dL, hw, P["card_t"], (dx0, y_in0 + 1 + half * hw, dz))
@@ -1286,12 +1307,11 @@ def build_v8(a, nine=False):
             at = (dx0 + pl["x"], y_in0 + 1 + pl["y"], dz + P["card_t"])
             col = (0.3, 0.3, 0.3) if c.name.startswith("socket") else GOLD
             add(a, victron_shape(pl["comp"], c.d, c.w, c.h, at, box(c.d, c.w, c.h, at).edges("|Z").fillet(3)), c.name + f"_{int(pl['x'])}_{int(pl['y'])}", col)
-            if pl["comp"] in MATED:   # the card's flying half, mated on the +Y side: it rides with the card in the viewer
-                overlap = 2 * c.w - MATED[pl["comp"]]
-                at2 = (at[0], at[1] + c.w - overlap, at[2])
-                owner = "inverter" if pl["comp"] == "sb175" else "charge"
+            if pl["comp"] in MATED:   # the pigtail's flying half, mated in front (+X); it stays with the pigtail, not the card
+                overlap = 2 * c.d - MATED[pl["comp"]]
+                at2 = (at[0] + c.d - overlap, at[1], at[2])
                 add(a, victron_shape(pl["comp"], c.d, c.w, c.h, at2, box(c.d, c.w, c.h, at2).edges("|Z").fillet(3)),
-                    c.name + f"_plug_{int(pl['x'])}_{int(pl['y'])}__card", BLUE if owner == "inverter" else (0.1, 0.6, 0.4))
+                    c.name + f"_plug_{int(pl['x'])}_{int(pl['y'])}", (0.1, 0.6, 0.4))
         g["deck_z"] = dz
 
     # --- floor panel under the card zone ----------------------------------------
@@ -1305,6 +1325,7 @@ def build_v8(a, nine=False):
     if nine:
         cards = (("inverter", x_in0 + V8["x_inv"], V9_INV_LAYOUT, 10.0),
                  ("charge", x_in0 + V8["x_charge"], V9_CHARGE_LAYOUT, 0.0))
+        card_conn = {"inverter": (V9_INV_REAR, []), "charge": (V9_CHARGE_REAR, V9_CHARGE_FRONT)}
     else:
         cards = (("inverter", x_in0 + V8["x_inv"], V8_INV_LAYOUT, 10.0),
                  ("charge", x_in0 + V8["x_charge"], V8_CHARGE_LAYOUT, 0.0),
@@ -1341,6 +1362,19 @@ def build_v8(a, nine=False):
             # parts face +X: their depth d runs along X, width w along Y
             add(a, victron_shape(pl["comp"], c.d, c.w, c.h, at, box(c.d, c.w, c.h, at).edges("|X").fillet(3)),
                 c.name + f"_{int(pl['y'])}_{int(pl['z'])}__card", col)
+        if nine:   # the card's own fixed connector halves, standing with the mating face up; pigtail halves mated above them
+            rear, front = card_conn[name]
+            for side, lst in (("rear", rear), ("front", front)):
+                for pl in lst:
+                    c = COMPONENTS[pl["comp"]]
+                    cxs = cx - c.d if side == "rear" else cx + P["card_t"]
+                    at = (cxs, cy0 + pl["y"], floor_top + 2 + pl["z"])
+                    add(a, victron_shape(pl["comp"], c.d, c.w, c.h, at, box(c.d, c.w, c.h, at).edges("|Z").fillet(3)),
+                        c.name + f"_{name}_{side}_{int(pl['y'])}__card", (0.3, 0.3, 0.3))
+                    overlap = 2 * c.h - MATED[pl["comp"]]
+                    at2 = (cxs, cy0 + pl["y"], floor_top + 2 + pl["z"] + c.h - overlap)
+                    add(a, victron_shape(pl["comp"], c.d, c.w, c.h, at2, box(c.d, c.w, c.h, at2).edges("|Z").fillet(3)),
+                        c.name + f"_pigtail_{name}_{side}_{int(pl['y'])}", (0.1, 0.6, 0.4))
     BS["_g8"] = g
     return g
 
@@ -1435,11 +1469,15 @@ def report_v9():
         if pl["y"] + c.w > V7["bay_W"]: bad.append("Y overflow")
         if dz + 6 + c.h > out_H: bad.append("hits the lid")
         print(f"  deck     {c.name:20s} {c.d:>4.0f}x{c.w:>4.0f}x{c.h:>3.0f} @({pl['x']},{pl['y']}) {' '.join(bad) or 'ok'}")
-    s175, s50 = COMPONENTS["sb175"], COMPONENTS["sb50"]
-    o175, o50 = 2 * s175.w - MATED["sb175"], 2 * s50.w - MATED["sb50"]
-    print(f"connectors      : fixed halves bolted flat on the deck, mating axis across the box; the card halves on flying leads slide on from the inboard side. "
-          f"Unplug = pull sideways {o175:.0f} mm (SB175) / {o50:.0f} mm (SB50) with the lid off; the SB175's flying half ends at y={20 + 2 * s175.w - o175:.0f}, "
-          f"SB50 row starts at y=190 -> {190 - (20 + 2 * s175.w - o175) - o175:.0f} mm spare; SB50 flying halves end at y={190 + 2 * s50.w - o50:.0f} of {V7['bay_W']:.0f} ({V7['bay_W'] - (190 + 2 * s50.w - o50) - o50:.0f} mm spare)")
+    o175, o50 = 2 * HOUSING["sb175"] - MATED["sb175"], 2 * HOUSING["sb50"] - MATED["sb50"]
+    dL = g.get("deck_L", 295)
+    print(f"connectors      : every card has its own fixed Anderson halves on its rear face at the bottom, mating face UP; the pigtail's half lifts off "
+          f"({o175:.0f} mm SB175 / {o50:.0f} mm SB50 of upward travel) before the card is pulled.  Inverter card: 1 x SB175. "
+          f"Charge card: 3 x SB50 rear (MPPT, Orion, Garmin+Cerbo feed) + 2 x SB50 front (solar in, alternator in from the panel inlets).")
+    print(f"                  deck end: fixed halves point at the cards on the deck's {DECK_EXT:.0f} mm extension; pigtail halves pull forward "
+          f"{o175:.0f}/{o50:.0f} mm: SB175 needs x<={115 + 2 * HOUSING['sb175'] - o175 + o175:.0f} of the deck's {dL:.0f} "
+          f"({'ok' if 115 + 2 * HOUSING['sb175'] - o175 + o175 <= dL else 'TOO SHORT'}); SB50s need x<={160 + 2 * HOUSING['sb50'] - o50 + o50:.0f} "
+          f"({'ok' if 160 + 2 * HOUSING['sb50'] - o50 + o50 <= dL else 'TOO SHORT'}); deck front edge to the inverter card {x_in0 + V8['x_inv'] - (g.get('deck_x0', 0) + dL):.0f} mm")
     print("== Cables and connectors (Victron manuals) ==")
     for run, size, fuse, conn in CABLE_SPEC:
         print(f"  {run:48s} {size:52s} fuse {fuse:28s} {conn}")
