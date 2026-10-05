@@ -181,7 +181,7 @@ COMPONENTS = {
     # inverter candidates, as mounted on their side on the lower card (w along Y, h up, d off the card)
     "multiplus":    Comp("victron_multiplus", 360, 100, 240, "MultiPlus 12/800/35-16 120V on its side (6.4 kg)"),
     "multiplus_1200": Comp("victron_multiplus", 406, 100, 250, "MultiPlus 12/1200/50-16 120V on its side (8.2 kg)"),
-    "multiplus_1200_up": Comp("victron_multiplus", 250, 100, 406, "MultiPlus 12/1200/50-16 120V upright, terminals down (8.2 kg)"),
+    "multiplus_1200_up": Comp("victron_multiplus", 249, 101, 375, "MultiPlus 12/1200/50-16 120V upright, terminals down (8.2 kg); body 374.6 tall, the datasheet's 406 includes the bracket"),
     "cerbo_up":  Comp("victron_cerbo", 78, 48, 154, "Cerbo GX turned 90 deg"),
     "multiplus_ii": Comp("victron_multiplus", 578, 148, 277, "MultiPlus-II 12/3000/120-50 120V on its side (19 kg) - 578 long"),
     "multiplus_4k": Comp("victron_multiplus", 631, 164, 277, "MultiPlus-II 12/4k/160-50 120V on its side (22 kg) - 631 long"),
@@ -1000,7 +1000,7 @@ HOLES = {
     "orion":            [(6.9, 12), (116.2, 12), (6.9, 125), (116.2, 125)],               # 109.3 x 113, 4 x M4
     "mppt":             [(5, 33.5), (181, 33.5), (5, 105), (181, 105)],                   # keyholes 176 x 71.5
     "shunt":            [(9.5, 27), (110.5, 27)],                                         # 2 x M6 at 101
-    "multiplus_1200_up": [(14.7, 99.4), (235.3, 99.4), (14.7, 343.2), (235.3, 343.2)],    # keyholes 220.6 x 243.8, M6
+    "multiplus_1200_up": [(14.2, 68.0), (234.8, 68.0), (14.2, 311.8), (234.8, 311.8)],    # keyholes 220.6 x 243.8, upper pair 62.8 below the body top, M6
     "multiplus_1200":   [(99.4, 14.7), (343.2, 14.7), (99.4, 235.3), (343.2, 235.3)],
     "busbar_n":         [(12, 16), (143, 16)],      # verify
     "busbar_p":         [(12, 16), (143, 16)],      # verify
@@ -1024,7 +1024,7 @@ FASTENER = {   # how each unit attaches to a printed card
 }
 
 
-def lattice_card_tiles(L, H, x0, y_plate, z0, prefix, patches=()):
+def lattice_card_tiles(L, H, x0, y_plate, z0, prefix, patches=(), solids=()):
     """A printable card: ribbed tiles (<= tile_max each way) with a solid
     12 mm border, 8 mm ribs on a 45 mm pitch, 6 mm thick so the edges ride
     in the same post slots as a sheet.  Tiles join with 3 mm printed splines
@@ -1046,6 +1046,11 @@ def lattice_card_tiles(L, H, x0, y_plate, z0, prefix, patches=()):
                         tile = tile.cut(box(w, t + 2, h, (ox, -1, oz)))
                     oz += LAT["pitch"]
                 ox += LAT["pitch"]
+            # solid regions (e.g. under the inverter) so a unit can be shifted and re-drilled
+            for (su, sv, sw, sh) in solids:
+                u0, v0 = su - i * tw, sv - j * th
+                if u0 < tw and v0 < th and u0 + sw > 0 and v0 + sh > 0:
+                    tile = tile.union(box(sw, t, sh, (u0, 0, v0)).intersect(box(tw, t, th)))
             # solid bosses with insert pilot holes where a unit's mounting holes land on this tile
             for (pu, pv) in patches:
                 u, v = pu - i * tw, pv - j * th
@@ -1121,8 +1126,10 @@ def build_v7(a):
     inv = COMPONENTS[P["inverter"]]
     for name, py_plate, layout in (("inverter", g["inv_plate"], V7_INV_LAYOUT), ("dist", g["dist_plate"], V7_DIST_LAYOUT)):
         patches = [(pl["x"] + du, pl["z"] + dv) for pl in layout for (du, dv) in HOLES.get(pl["comp"], [])]
+        solids = [(pl["x"] - 10, pl["z"] - 10, COMPONENTS[pl["comp"]].w + 20, COMPONENTS[pl["comp"]].h + 20)
+                  for pl in layout if pl["comp"].startswith("multiplus")]
         if P["card_style"] == "lattice":
-            for nm, shp in lattice_card_tiles(g["card_L"], plate_h, g["card_x0"], py_plate, floor_top + 2, f"card_{name}", patches):
+            for nm, shp in lattice_card_tiles(g["card_L"], plate_h, g["card_x0"], py_plate, floor_top + 2, f"card_{name}", patches, solids):
                 add(a, shp, nm + "__card", ORANGE if "spline" in nm else DARK)
         else:
             add(a, box(g["card_L"], P["card_t"], plate_h, (g["card_x0"], py_plate, floor_top + 2)), f"card_{name}_plate", DARK)
@@ -1146,7 +1153,7 @@ def build_v7(a):
 FEET_H = 18.0        # printed feet under the MultiPlus: it stands on these, the bolts only hold it to the card
 V8_INV_LAYOUT = [    # inverter card, parts face +X (forward); y from the card's outboard end, z from its bottom
     dict(comp="multiplus_1200_up", y=13, z=2 + FEET_H),
-    dict(comp="shunt", y=80, z=436),
+    dict(comp="shunt", y=80, z=410),
 ]
 V8_CHARGE_LAYOUT = [
     dict(comp="mppt",  y=12,  z=20),
@@ -1205,8 +1212,10 @@ def build_v8(a):
     g.update(cw=cw, cy0=cy0, ch=ch, cards={n: x for n, x, _, _ in cards})
     for name, cx, layout, standoff in cards:
         patches = [(pl["y"] + du, pl["z"] + dv) for pl in layout for (du, dv) in HOLES.get(pl["comp"], [])]
+        solids = [(pl["y"] - 10, pl["z"] - 10, COMPONENTS[pl["comp"]].w + 20, COMPONENTS[pl["comp"]].h + 20)
+                  for pl in layout if pl["comp"].startswith("multiplus")]
         if P["card_style"] == "lattice":
-            for nm, shp in lattice_card_tiles_yz(cw, ch, cx, cy0, floor_top + 2, f"card_{name}", patches):
+            for nm, shp in lattice_card_tiles_yz(cw, ch, cx, cy0, floor_top + 2, f"card_{name}", patches, solids):
                 add(a, shp, nm + "__card", ORANGE if "spline" in nm else DARK)
             for pl in layout:   # backing plates behind the heavy unit's bolts (back face of the card)
                 if pl["comp"].startswith("multiplus"):
@@ -1236,9 +1245,9 @@ def build_v8(a):
     return g
 
 
-def lattice_card_tiles_yz(W, H, x_plate, y0, z0, prefix, patches=()):
+def lattice_card_tiles_yz(W, H, x_plate, y0, z0, prefix, patches=(), solids=()):
     """Same ribbed tiles as lattice_card_tiles, for a card in the YZ plane."""
-    for nm, shp in lattice_card_tiles(W, H, 0.0, 0.0, 0.0, prefix, patches):
+    for nm, shp in lattice_card_tiles(W, H, 0.0, 0.0, 0.0, prefix, patches, solids):
         shp = shp.rotate((0, 0, 0), (0, 0, 1), 90)          # X -> Y
         yield nm, shp.translate((x_plate + LAT["t"], y0, z0))
 
