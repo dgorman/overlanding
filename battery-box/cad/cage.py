@@ -989,10 +989,42 @@ V7_DIST_LAYOUT = [  # distribution card (280 x 494), parts face -Y (toward the o
 ]
 
 
-LAT = dict(rib=8.0, pitch=45.0, border=12.0, t=6.0, tile_max=250.0, spline=(60.0, 18.0, 3.0))
+LAT = dict(rib=8.0, pitch=45.0, border=12.0, t=6.0, tile_max=250.0, spline=(60.0, 18.0, 3.0),
+           boss_r=11.0, insert_hole=4.6)     # M5 heat-set insert: 4.6 mm pilot in a 22 mm solid boss
+
+# Mounting holes per unit, (along, up) from the unit's lower-left as mounted; from the Victron
+# dimension drawings in components.md.  "verify" = not published, measured from photos.
+HOLES = {
+    "cerbo":            [(5.5, 10), (148.5, 10), (5.5, 68), (148.5, 68)],                 # 143 x 58, 4 x M4
+    "cerbo_up":         [(10, 5.5), (10, 148.5), (68, 5.5), (68, 148.5)],
+    "orion":            [(6.9, 12), (116.2, 12), (6.9, 125), (116.2, 125)],               # 109.3 x 113, 4 x M4
+    "mppt":             [(5, 33.5), (181, 33.5), (5, 105), (181, 105)],                   # keyholes 176 x 71.5
+    "shunt":            [(9.5, 27), (110.5, 27)],                                         # 2 x M6 at 101
+    "multiplus_1200_up": [(14.7, 99.4), (235.3, 99.4), (14.7, 343.2), (235.3, 343.2)],    # keyholes 220.6 x 243.8, M6
+    "multiplus_1200":   [(99.4, 14.7), (343.2, 14.7), (99.4, 235.3), (343.2, 235.3)],
+    "busbar_n":         [(12, 16), (143, 16)],      # verify
+    "busbar_p":         [(12, 16), (143, 16)],      # verify
+    "breaker_a":        [(24, 8), (24, 66)],        # verify (285-series: 2 x 1/4")
+    "breaker_b":        [(24, 8), (24, 66)],        # verify
+    "garmin":           [(20, 37), (105, 37)],      # verify (Garmin bracket, 2 screws)
+    "bms":              [(10, 10), (112, 10), (10, 96), (112, 96)],   # verify
+}
+INSERT = {"mppt": "M5", "orion": "M4", "cerbo": "M4", "cerbo_up": "M4", "shunt": "M6", "busbar_n": "M5", "busbar_p": "M5",
+          "breaker_a": "M6", "breaker_b": "M6", "garmin": "M4", "bms": "M4"}
+FASTENER = {   # how each unit attaches to a printed card
+    "multiplus_1200_up": "4 x M6 x 25 through-bolt + printed 40 x 40 backing plate behind each keyhole; weight on the two printed feet",
+    "multiplus_1200":    "4 x M6 x 25 through-bolt + printed backing plates; weight on the two printed feet",
+    "mppt":   "4 x M5 x 10 pan head into heat-set inserts; hang on the keyholes, then tighten",
+    "orion":  "4 x M4 x 10 into M4 heat-set inserts",
+    "cerbo":  "4 x M4 x 8 into M4 heat-set inserts", "cerbo_up": "4 x M4 x 8 into M4 heat-set inserts",
+    "shunt":  "2 x M6 x 12 into M6 heat-set inserts",
+    "busbar_n": "2 x M5 x 10 into inserts", "busbar_p": "2 x M5 x 10 into inserts",
+    "breaker_a": "2 x M6 x 12 into inserts", "breaker_b": "2 x M6 x 12 into inserts",
+    "garmin": "2 x M4 x 10 into inserts through its bracket", "bms": "4 x M4 x 8 into inserts",
+}
 
 
-def lattice_card_tiles(L, H, x0, y_plate, z0, prefix):
+def lattice_card_tiles(L, H, x0, y_plate, z0, prefix, patches=()):
     """A printable card: ribbed tiles (<= tile_max each way) with a solid
     12 mm border, 8 mm ribs on a 45 mm pitch, 6 mm thick so the edges ride
     in the same post slots as a sheet.  Tiles join with 3 mm printed splines
@@ -1014,6 +1046,12 @@ def lattice_card_tiles(L, H, x0, y_plate, z0, prefix):
                         tile = tile.cut(box(w, t + 2, h, (ox, -1, oz)))
                     oz += LAT["pitch"]
                 ox += LAT["pitch"]
+            # solid bosses with insert pilot holes where a unit's mounting holes land on this tile
+            for (pu, pv) in patches:
+                u, v = pu - i * tw, pv - j * th
+                if -LAT["boss_r"] < u < tw + LAT["boss_r"] and -LAT["boss_r"] < v < th + LAT["boss_r"]:
+                    boss = cq.Workplane("XZ").center(u, v).circle(LAT["boss_r"]).extrude(-t).intersect(box(tw, t, th))
+                    tile = tile.union(boss).cut(cq.Workplane("XZ").center(u, v).circle(LAT["insert_hole"] / 2).extrude(-t - 2).translate((0, 1, 0)))
             yield f"print_{prefix}_tile_{i}{j}", tile.translate((x0 + i * tw, y_plate, z0 + j * th))
     sl, sw, st = LAT["spline"]
     for i in range(1, nx):            # vertical joints
@@ -1082,8 +1120,9 @@ def build_v7(a):
     plate_h = in_H - 8
     inv = COMPONENTS[P["inverter"]]
     for name, py_plate, layout in (("inverter", g["inv_plate"], V7_INV_LAYOUT), ("dist", g["dist_plate"], V7_DIST_LAYOUT)):
+        patches = [(pl["x"] + du, pl["z"] + dv) for pl in layout for (du, dv) in HOLES.get(pl["comp"], [])]
         if P["card_style"] == "lattice":
-            for nm, shp in lattice_card_tiles(g["card_L"], plate_h, g["card_x0"], py_plate, floor_top + 2, f"card_{name}"):
+            for nm, shp in lattice_card_tiles(g["card_L"], plate_h, g["card_x0"], py_plate, floor_top + 2, f"card_{name}", patches):
                 add(a, shp, nm + "__card", ORANGE if "spline" in nm else DARK)
         else:
             add(a, box(g["card_L"], P["card_t"], plate_h, (g["card_x0"], py_plate, floor_top + 2)), f"card_{name}_plate", DARK)
@@ -1164,9 +1203,16 @@ def build_v8(a):
              ("dist", x_in0 + V8["x_dist"], V8_DIST_LAYOUT, 0.0))
     g.update(cw=cw, cy0=cy0, ch=ch, cards={n: x for n, x, _, _ in cards})
     for name, cx, layout, standoff in cards:
+        patches = [(pl["y"] + du, pl["z"] + dv) for pl in layout for (du, dv) in HOLES.get(pl["comp"], [])]
         if P["card_style"] == "lattice":
-            for nm, shp in lattice_card_tiles_yz(cw, ch, cx, cy0, floor_top + 2, f"card_{name}"):
+            for nm, shp in lattice_card_tiles_yz(cw, ch, cx, cy0, floor_top + 2, f"card_{name}", patches):
                 add(a, shp, nm + "__card", ORANGE if "spline" in nm else DARK)
+            for pl in layout:   # backing plates behind the heavy unit's bolts (back face of the card)
+                if pl["comp"].startswith("multiplus"):
+                    for (du, dv) in HOLES[pl["comp"]]:
+                        bp = box(6, 40, 40, (cx - 6, cy0 + pl["y"] + du - 20, floor_top + 2 + pl["z"] + dv - 20))
+                        bp = bp.cut(cq.Workplane("YZ").center(cy0 + pl["y"] + du, floor_top + 2 + pl["z"] + dv).circle(3.3).extrude(cx + 1))
+                        add(a, bp, f"print_backing_{name}_{int(du)}_{int(dv)}__card", ORANGE)
         else:
             add(a, box(P["card_t"], cw, ch, (cx, cy0, floor_top + 2)), f"card_{name}_plate", DARK)
         px = cx - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]
@@ -1189,9 +1235,9 @@ def build_v8(a):
     return g
 
 
-def lattice_card_tiles_yz(W, H, x_plate, y0, z0, prefix):
+def lattice_card_tiles_yz(W, H, x_plate, y0, z0, prefix, patches=()):
     """Same ribbed tiles as lattice_card_tiles, for a card in the YZ plane."""
-    for nm, shp in lattice_card_tiles(W, H, 0.0, 0.0, 0.0, prefix):
+    for nm, shp in lattice_card_tiles(W, H, 0.0, 0.0, 0.0, prefix, patches):
         shp = shp.rotate((0, 0, 0), (0, 0, 1), 90)          # X -> Y
         yield nm, shp.translate((x_plate + LAT["t"], y0, z0))
 
@@ -1236,6 +1282,15 @@ def report_v8():
             if pl["y"] + c.w > cw: bad.append("Y overflow")
             if pl["z"] + c.h > ch: bad.append("Z overflow")
             print(f"  {name:8s} {c.name:20s} {c.w:>4.0f}x{c.h:>4.0f}x{c.d:>3.0f} @({pl['y']},{pl['z']}) {' '.join(bad) or 'ok'}")
+    print("== Attachment (printed cards) ==")
+    inserts = {}
+    for name, layout in (("inverter", V8_INV_LAYOUT), ("charge", V8_CHARGE_LAYOUT), ("dist", V8_DIST_LAYOUT)):
+        for pl in layout:
+            k = pl["comp"]; n = len(HOLES.get(k, []))
+            print(f"  {name:8s} {COMPONENTS[k].name:20s} {n} holes: {FASTENER.get(k, 'verify')}")
+            m = INSERT.get(k)
+            if m: inserts[m] = inserts.get(m, 0) + n
+    print(f"  heat-set inserts: " + ", ".join(f"{v} x {k}" for k, v in sorted(inserts.items())) + "; 4 x M6 through-bolts + 4 printed backing plates for the MultiPlus")
     print(f"  sockets in the front panel's lower band (z 50-110) in front of the distribution card, whose parts start at z=140")
     print(f"  bank 4 x SuperPack 60Ah = 240 Ah, 120 A; 12/1200 draws ~105 A; est. mass ~{4 * 7.5 + 8.2 + 1.3 + 0.33 + 0.5 + 0.3 + 0.3 + 1.5 + 4.0 + 14.0:.0f} kg")
 
