@@ -32,7 +32,7 @@ Axis convention: Victron states **h × w × d**. Mounting-hole figures are read 
 
 | Item | What the page says | Source |
 |---|---|---|
-| IceBox 1.3, 25" deep module | "Fridge slide storage unit": enclosure with full-extension fridge tray (15" W × 20" H × 26" D) and gear storage on top. **External 19-3/16" W × 22" H × 25" D**, ~42 lb, $1,345, MaxLite 6063-T6 frame. Slotted back panel: no name, no slot pitch published. | [Page](https://www.goose-gear.com/products/icebox-1-3-25-deep-module) |
+| IceBox 1.3, 25" deep module (the owner's is the **30" deep** version: 762 mm) | "Fridge slide storage unit": enclosure with full-extension fridge tray (15" W × 20" H × 26" D) and gear storage on top. **External 19-3/16" W × 22" H × 25" D**, ~42 lb, $1,345, MaxLite 6063-T6 frame. Slotted back panel: no name, no slot pitch published. | [Page](https://www.goose-gear.com/products/icebox-1-3-25-deep-module) |
 | Extrusion Frame Modification Kit x.31 | PN 4918-GGR-SH, $139. "Includes both Extrusion Bars and hardware needed." Bar count, lengths and hardware **not stated**. Purpose: add a Seat Delete Module height; fits CampKitchen 2.3 and IceBox 1.3. 8-week build to order. | [Page](https://www.goose-gear.com/products/extrusion-frame-modification-kit-x-31-for-campkitchen-icebox) |
 | MaxLite extrusion | No published cross-section, slot width or 80/20 compatibility. 6063-T6, "26 % lighter". Goose Gear Anchors use roll-in T-nuts for 1/4-20 or M6, consistent with a 10-series-class slot (inference). **Measure a slot.** | [MaxLite](https://www.goose-gear.com/blogs/newsroom/goose-gear-introduces-revolutionary-maxlite-technology-in-explore-series) · [Anchors](https://www.goose-gear.com/products/goose-gear-anchor-kits) |
 

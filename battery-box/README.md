@@ -18,11 +18,11 @@
 
 | | v4 cube (`cage-v4-cube`) | v5 second IceBox |
 |---|---|---|
-| Frame | 12 uncut kit bars, 487 × 487 × 487 mm | a stock IceBox 1.3 frame, fridge slide removed: 635 × 487 × 559 mm |
-| vs the IceBox | same width, 71 mm lower, 148 mm shallower | identical; decks flush |
-| Inside | 437 × 437 × 431 | 584 × 437 × 502 |
+| Frame | 12 uncut kit bars, 487 × 487 × 487 mm | a stock 30" IceBox 1.3 frame, fridge slide removed: 762 × 487 × 559 mm |
+| vs the IceBox | same width, 71 mm lower, 275 mm shallower | identical; decks flush |
+| Inside | 437 × 437 × 431 | 711 × 437 × 502 |
 | Batteries (4) | 3 upright + 1 on its long side on a shelf | 2 upright stacks of 2, one at each side wall, 145 mm channel between; a third stack fits in the channel (6) |
-| Cards | lower (MultiPlus), upper (Orion, 171 tall), dist (423 tall, with MPPT + Cerbo + Garmin) tight behind the MultiPlus | same three; upper 242 tall; dist 494 tall pushed forward to the sockets, ~110 mm of free air behind it for a future card |
+| Cards | lower (MultiPlus), upper (Orion, 171 tall), dist (423 tall, with MPPT + Cerbo + Garmin) tight behind the MultiPlus | same three; upper 242 tall; dist 494 tall pushed forward to the sockets, ~240 mm of free air behind it for a future card |
 | Lift out, plate to ceiling | 658 / 741 mm; dist 910 or tilt | 801 / 813 mm; dist 1053 or tilt |
 | Mass | ~49 kg | ~63 kg (frame + panels ~19) |
 | Kit bars | 12 + 2 joists, 2 spare | not needed; return them, or keep 2 as joists |
@@ -30,7 +30,7 @@
 
 **v6 draft: side-mount cards for the MultiPlus-II**
 
-The box can't get taller, so the only axis that takes a 578 mm MultiPlus-II is the depth. In this draft both cards run **front to back along the inboard wall**, sliding down between posts on the back and front width rails:
+The box can't get taller, so the only axis that takes a 578 mm MultiPlus-II is the depth. Your IceBox is the **30" (762 mm) model**, 711 mm inside, which makes this comfortable. Both cards run **front to back along the inboard wall**, sliding down between posts on the back and front width rails:
 
 | From the inboard wall | mm |
 |---|---|
@@ -41,12 +41,12 @@ The box can't get taller, so the only axis that takes a 578 mm MultiPlus-II is t
 | gap | 8 |
 | **battery column** against the outboard wall | **180** |
 
-- The inverter/charger card is 567 × 494 mm. The MultiPlus-II overhangs it by 5 mm at each end and clears the end rails by 3 mm each side, which is why it sits on standoffs: the overhang has to pass the post bodies. Above it there are 213 mm for the **MPPT and Orion** on the same card.
+- The inverter/charger card is 694 × 494 mm; the MultiPlus-II has 116 mm of card to spare and sits on 12 mm standoffs so its case clears the post bodies. Above it there are 213 mm for the **MPPT and Orion** on the same card.
 - The distribution card carries bus bars, shunt, breakers, the **VE.Bus BMS V2**, Cerbo and Garmin, with the Garmin at the front end near the sockets.
-- The battery column is only 180 mm wide, so it takes one stack: **two Lithium Smart 12.8V/100Ah** (152 wide each) on a printed tray and mid-shelf, 436 of 502 mm tall. That is 200 Ah, 200 A recommended / 400 A maximum: enough for the MultiPlus-II at full output, for about an hour. The shelf has a tab into the back rail and two printed front legs down through the floor into the joist bars, so nothing hangs on a card.
+- The battery column is 180 mm wide and 711 mm deep. That takes **two Lithium Smart 12.8V/200Ah end to end** (152 wide, 321 long, 237 tall each): 662 of 711 mm, one printed tray each, no shelf, no legs, nothing stacked. **400 Ah, 400 A recommended / 800 A maximum, 40 kg**, with the VE.Bus BMS V2 on the distribution card. That runs the MultiPlus-II at full output for about two hours and keeps the mass low. Victron allows mixed capacities and ages in parallel, so a 200 + 100 is also fine if you already own one. The 330Ah is 206 mm wide and does not fit the column. If you ever need a stack, `--arrange=stack` builds a printed rack with four legs through the floor into the joists.
 - Both cards are full height (494 mm), so they only come out with the box out of the vehicle. In the vehicle, everything is reached from the top with the lid off; the MultiPlus-II's terminals face the front panel.
-- Sockets and the Anderson inlets go in the front panel over the battery column's free depth (the stack uses 329 of 584 mm).
-- About 74 kg.
+- Sockets and the Anderson inlets go in the front panel over the battery column.
+- About 86 kg with the two 200Ah batteries.
 
 ![v6 against the IceBox](renders/bookshelf/with-icebox.png)
 ![v6 front iso](renders/bookshelf/iso-front.png)
@@ -205,6 +205,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-04 | Owner's IceBox 1.3 is the 30" (762 mm) model, not 25": v5 and v6 re-sized. v6 battery column becomes two Lithium Smart 200Ah end to end (400 Ah), no stack. `--column` / `--arrange` options added to compare batteries. |
 | 2026-10-04 | **v6 draft:** cards turned 90° to run front to back along the inboard wall so a MultiPlus-II 12/3000 fits on its side; one column of two Lithium Smart 100Ah outboard with frame-mounted supports. `python cage.py bookshelf`. |
 | 2026-10-04 | Named the parts: distribution card, inverter/charger card, battery bay. Battery supports noted as needing to be frame-mounted, not card-adjacent; left for the battery decision. |
 | 2026-10-04 | MPPT and Cerbo on the dist card with the Garmin; upper card keeps only the Orion. v5 battery stacks justified to the side walls with a 145 mm channel. Checked the MultiPlus-II 12/3000 and 12/4k: neither fits (578 / 631 mm long) and four SuperPack 60Ah can only supply 120 A continuous, so the 12/800 stays. SuperPack weight corrected to 7.5 kg. |

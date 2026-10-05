@@ -100,7 +100,7 @@ if __name__ == "__main__":
                   else "Front-inboard iso, panels hidden: dist card in front, inverter/charger card behind it, batteries at the back"))
     render(asm, os.path.join(d, "iso-back.png"), 24, 215, hide=("lid", "panel", "icebox"),
            title="Back-outboard iso, panels hidden: " + ("three batteries upright, fourth on its long side on the shelf" if cage.P["batt_layout"] == "row3_top1"
-                  else "one column of two Lithium Smart 100Ah, cards along the inboard wall" if cage.P["card_plane"] == "xz" else "two upright stacks of two batteries"))
+                  else "two Lithium Smart 200Ah end to end in the outboard column, cards along the inboard wall" if cage.P["card_plane"] == "xz" else "two upright stacks of two batteries"))
     render(asm, os.path.join(d, "cards-lifted.png"), 24, 35, hide=("lid", "panel", "icebox"), lift=cage.in_H * 0.8, title="All three cards lifted out the top")
     render(asm, os.path.join(d, "front.png"), 0, 0, hide=("lid", "panel", "icebox"), title="Front elevation, panels hidden")
     render(asm, os.path.join(d, "top.png"), 90, -90, hide=("lid", "icebox"), title="Top-down, lid off: rear layer (left) and cards (right)")
