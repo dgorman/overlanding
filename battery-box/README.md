@@ -23,15 +23,17 @@ The 200Ah Smarts and the MultiPlus-II are shelved. v7 is built around what you o
 | | mm |
 |---|---|
 | Outer | 762 deep × **345 wide (13.6 in)** × 559 tall: **5.6 in narrower than the IceBox**, flush with its right face |
-| Battery bay (IceBox end, on the plate) | two stacks of two SuperPack 60Ah, trays touching: 294 of 294 wide, 266 deep, 468 tall (91 mm under the lid). Printed trays, mid-shelves and 14 mm legs; no vent gaps are required for SuperPacks |
+| Battery bay (IceBox end, on the plate) | two stacks of two SuperPack 60Ah, trays touching: 294 of 294 wide, 256 deep, 468 tall (91 mm under the lid). Printed trays, mid-shelves and 9 mm legs (each carries under 2 kg); no vent gaps are required for SuperPacks |
 | Cross-members | two spare kit bars cut to 294 at the bay's front edge, top and bottom, in printed corner brackets. They stop the batteries and carry the rear card posts |
-| Cards | both **lengthwise** in front of the bay, 396 × 494 mm, posts on the cross-bars and the front width rail. Inverter card: **MultiPlus 12/1200 upright, terminals down** (its preferred orientation; the card is too short for it on its side), Orion and the Cerbo beside it. Distribution card: bus bars, shunt, breakers, MPPT, Garmin |
+| Cards | both **lengthwise** in front of the bay, 401 × 494 mm, posts on the cross-bars and the front width rail. Inverter card: **MultiPlus 12/1200 upright, terminals down** (its preferred orientation; the card is too short for it on its side), Orion and the Cerbo beside it. Distribution card: bus bars, shunt, breakers, MPPT, Garmin |
 | Across the front zone, from the inboard wall | 17 post/plate · 110 inverter + standoff · 4 · 52 distribution · **96 mm of cable and Anderson space** against the outboard wall |
 | Bank | 240 Ah, 3.1 kWh, 120 A continuous against the 12/1200's ~105 A; SuperPacks have their own BMS, so no VE.Bus BMS |
 | Frame cuts | 4 width rails + 2 cross-members from kit bars (6 of 16); height and depth rails from the IceBox |
 | Mass | ~63 kg |
 
 Service: lid off, everything is reached from the top; the batteries lift straight out of the bay behind the top cross-bar. The cards are full height and come out with the box out of the truck.
+
+**Are the cards printable?** Not as one piece: each card is 401 × 494 mm against a 256 × 256 bed. They are meant to be cut from 6 mm sheet (black phenolic ply to match the IceBox, HDPE, or 3 mm aluminium) and drilled from the component hole patterns in `components.md`. If you'd rather print them, each card is four tiles of about 200 × 247 mm joined with printed dovetail splines and a bead of CA, with the heavy units bolted through two tiles. Every other part in `stl/v7/` fits the bed: trays 237 × 146, shelves 255 × 146, posts in two segments, legs, brackets, cubes, socket insert.
 
 | | v4 cube (`cage-v4-cube`) | v5 second IceBox |
 |---|---|---|

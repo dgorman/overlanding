@@ -64,7 +64,8 @@ VARIANTS = {
     "v7": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
                batt_layout="v7", dist_forward=False, inverter="multiplus_1200_up",
                card_plane="v7", column=["battery", "battery"], arrange="2x2", col_on_plate=True,
-               narrow=True, tray_for="battery", align="right"),
+               narrow=True, tray_for="battery", align="right", height="icebox", depth="fit", card_len=280.0,
+               card_style="lattice"),
     # v6 check: the owner's four SuperPack 60Ah dropped into the same 200Ah trays
     "bookshelf60": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
                         batt_layout="column", dist_forward=False, inverter="multiplus_1200",
@@ -145,6 +146,10 @@ P.setdefault("narrow", False)
 P.setdefault("tray_for", None)        # size the battery trays for this battery key (None = the column's own)
 P.setdefault("pedal_gap", 0.0)        # extra width to keep free beside the column (0 = tight)
 P.setdefault("align", "left")         # which IceBox face the (narrower) cage is flush with, as seen in the viewer's Front view
+P.setdefault("height", "icebox")      # "fit": frame height = battery stack + lid clearance (v7)
+P.setdefault("depth", "icebox")       # "fit": frame depth = battery bay + cross-bar + card_len (v7): the port wall comes in to the gear
+P.setdefault("card_len", 280.0)
+P.setdefault("card_style", "sheet")   # "lattice": printed 4-tile ribbed cards instead of 6 mm sheet
 P.update(VARIANTS[VARIANT])
 
 
@@ -217,11 +222,19 @@ else:
     out_W, out_H, out_D = P["frame_W"], P["frame_H"], P["frame_D"]   # a stock IceBox 1.3 frame
 if P["narrow"] and P["card_plane"] == "v7":
     _b = COMPONENTS["battery"]
-    V7 = dict(wall=4.0, leg=14.0, end_gap=15.0, bay_slack=2.0, bar_gap=5.0)
+    V7 = dict(wall=4.0, leg=9.0, end_gap=15.0, bay_slack=2.0, bar_gap=5.0)   # 9 mm legs keep the shelf under the 256 mm bed
     V7["tray_w"] = _b.w + 2 * V7["wall"]                          # 146
     V7["bay_W"] = 2 * V7["tray_w"] + V7["bay_slack"]              # two touching stacks
     V7["bay_D"] = V7["end_gap"] + _b.d + 2 * V7["wall"] + V7["leg"]  # back gap (leg inside) + tray + front leg
     out_W = round(B + V7["bay_W"] + B, 1)
+    if P["height"] == "fit":
+        _stack = 4 + 2 * _b.h + 14.0 + 10.0 + 14.0          # tray floor, two batteries, lug room, shelf, lug room
+        out_H = round(_stack + 6.0, 1)                       # 6 mm under the lid
+        in_H = out_H - 2 * B - T
+    if P["depth"] == "fit":
+        _posts = 2 * (P["post_d"] - P["slot_depth"]) + 2 * P["card_clear"]
+        in_D = round(V7["bay_D"] + V7["bar_gap"] + B + 2 + _posts + P["card_len"] + 1, 1)
+        out_D = in_D + 2 * B
 if P["narrow"] and P["card_plane"] == "xz":
     # width = bar | post+plate | inverter + standoff | gap | dist plate + parts | gap | column (tray + vents) | bar
     _tray = COMPONENTS[P["tray_for"] or P["column"][0]]
@@ -934,20 +947,55 @@ def build_bookshelf(a):
 # a kit-bar cross-member top and bottom at the bay's front edge, and the two
 # cards lengthwise in front of it (posts on the cross-bars and the front rail).
 # ----------------------------------------------------------------------------
-V7_INV_LAYOUT = [   # on the inverter card, parts face -Y; x from the card's back end, z from its bottom
-    dict(comp="multiplus_1200_up", x=12,  z=12),
-    dict(comp="orion",   x=270, z=12),
-    dict(comp="cerbo_up", x=280, z=170),
+V7_INV_LAYOUT = [   # inverter card (280 x 494): the 12/1200 upright, terminals down, alone
+    dict(comp="multiplus_1200_up", x=15, z=12),
 ]
-V7_DIST_LAYOUT = [  # on the distribution card, parts face -Y (toward the outboard wall / cable space)
-    dict(comp="breaker_a", x=15,  z=20),
+V7_DIST_LAYOUT = [  # distribution card (280 x 494), parts face -Y (toward the outboard cable space)
+    dict(comp="breaker_a", x=15,  z=20),     # column A
     dict(comp="breaker_b", x=75,  z=20),
-    dict(comp="shunt",     x=140, z=25),
-    dict(comp="busbar_n",  x=15,  z=120),
-    dict(comp="busbar_p",  x=15,  z=170),
-    dict(comp="mppt",      x=190, z=110),
-    dict(comp="garmin",    x=15,  z=240),
+    dict(comp="busbar_n",  x=15,  z=110),
+    dict(comp="busbar_p",  x=15,  z=155),
+    dict(comp="mppt",      x=15,  z=210),
+    dict(comp="garmin",    x=15,  z=355),
+    dict(comp="shunt",     x=150, z=20),     # column B
+    dict(comp="orion",     x=150, z=95),
+    dict(comp="cerbo_up",  x=190, z=250),
 ]
+
+
+LAT = dict(rib=8.0, pitch=45.0, border=12.0, t=6.0, tile_max=250.0, spline=(60.0, 18.0, 3.0))
+
+
+def lattice_card_tiles(L, H, x0, y_plate, z0, prefix):
+    """A printable card: ribbed tiles (<= tile_max each way) with a solid
+    12 mm border, 8 mm ribs on a 45 mm pitch, 6 mm thick so the edges ride
+    in the same post slots as a sheet.  Tiles join with 3 mm printed splines
+    glued across the ribs on the back (+Y) face.  Yields (name, shape)."""
+    nx = int(-(-L // LAT["tile_max"])); nz = int(-(-H // LAT["tile_max"]))
+    tw, th = L / nx, H / nz
+    t, rib, b = LAT["t"], LAT["rib"], LAT["border"]
+    for i in range(nx):
+        for j in range(nz):
+            tile = box(tw, t, th)
+            # openings between ribs, inside the border
+            ox, oz = b, b
+            while ox + rib < tw - b:
+                w = min(LAT["pitch"] - rib, tw - b - ox)
+                oz = b
+                while oz + rib < th - b:
+                    h = min(LAT["pitch"] - rib, th - b - oz)
+                    if w > 12 and h > 12:
+                        tile = tile.cut(box(w, t + 2, h, (ox, -1, oz)))
+                    oz += LAT["pitch"]
+                ox += LAT["pitch"]
+            yield f"print_{prefix}_tile_{i}{j}", tile.translate((x0 + i * tw, y_plate, z0 + j * th))
+    sl, sw, st = LAT["spline"]
+    for i in range(1, nx):            # vertical joints
+        for zc in (z0 + H * 0.25, z0 + H * 0.5, z0 + H * 0.75):
+            yield f"print_{prefix}_spline_v{i}_{int(zc)}", box(sl, st, sw, (x0 + i * tw - sl / 2, y_plate + t, zc - sw / 2))
+    for j in range(1, nz):            # horizontal joints
+        for xc in (x0 + L * 0.25, x0 + L * 0.5, x0 + L * 0.75):
+            yield f"print_{prefix}_spline_h{j}_{int(xc)}", box(sw, st, sl, (xc - sw / 2, y_plate + t, z0 + j * th - sl / 2))
 
 
 def v7_geometry():
@@ -1008,7 +1056,11 @@ def build_v7(a):
     plate_h = in_H - 8
     inv = COMPONENTS[P["inverter"]]
     for name, py_plate, layout in (("inverter", g["inv_plate"], V7_INV_LAYOUT), ("dist", g["dist_plate"], V7_DIST_LAYOUT)):
-        add(a, box(g["card_L"], P["card_t"], plate_h, (g["card_x0"], py_plate, floor_top + 2)), f"card_{name}_plate", DARK)
+        if P["card_style"] == "lattice":
+            for nm, shp in lattice_card_tiles(g["card_L"], plate_h, g["card_x0"], py_plate, floor_top + 2, f"card_{name}"):
+                add(a, shp, nm + "__card", ORANGE if "spline" in nm else DARK)
+        else:
+            add(a, box(g["card_L"], P["card_t"], plate_h, (g["card_x0"], py_plate, floor_top + 2)), f"card_{name}_plate", DARK)
         py = py_plate - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]
         for end, x in (("back", g["cards_x0"]), ("front", out_D - B - P["post_d"])):
             for k, (z, gp) in enumerate(post_xz(end)):
@@ -1216,22 +1268,29 @@ def report_v7():
     mm = lambda v: f"{v:.0f} mm ({v / 25.4:.2f} in)"
     g = BS.get("_g7") or v7_geometry(); b = COMPONENTS["battery"]; inv = COMPONENTS[P["inverter"]]
     print("== Variant 'v7': IceBox-depth frame, two touching SuperPack stacks at the back, lengthwise cards in front ==")
-    print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}  -> {487.4 - out_W:.0f} mm ({(487.4 - out_W) / 25.4:.1f} in) narrower than the IceBox")
-    print(f"width rails cut to {mm(out_W - 2 * C)} from 437 kit bars; 2 more kit bars cut to {mm(in_W)} as cross-members at x={g['bar_x'] - x_in0:.0f}")
+    print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}  -> {487.4 - out_W:.0f} mm ({(487.4 - out_W) / 25.4:.1f} in) narrower "
+          f"and {558.8 - out_H:.0f} mm ({(558.8 - out_H) / 25.4:.1f} in) shorter than the IceBox")
+    print(f"kit bars: 4 width rails cut to {mm(out_W - 2 * C)} + 2 cross-members cut to {mm(in_W)} (6 of 16); "
+          f"from the IceBox: 4 height rails {mm(out_H - 2 * C)} uncut, 4 depth rails cut from 711 to {mm(out_D - 2 * C)}")
+    if P["card_style"] == "lattice":
+        nx = int(-(-g["card_L"] // LAT["tile_max"])); nz = int(-(-(in_H - 8) // LAT["tile_max"]))
+        print(f"printed cards   : each card = {nx} x {nz} ribbed tiles of {g['card_L'] / nx:.0f} x {(in_H - 8) / nz:.0f} x {LAT['t']:.0f} mm "
+              f"+ {3 * (nx - 1 + nz - 1)} splines; ~{nx * nz * 110:.0f} g PETG and ~{nx * nz * 1.4:.0f} h per card")
     st = g.get("stack_top", 2 * b.h + 4 + 2 * P["term_clear"] + P["shelf_t"])
     print(f"battery bay     : 2 stacks x {V7['tray_w']:.0f} = {V7['bay_W']:.0f} of {in_W:.0f} wide, {V7['bay_D']:.0f} deep, stack {st:.0f} of {out_H:.0f} tall to the lid ({out_H - st:.0f} spare)")
-    print(f"cards           : {mm(g['card_L'])} long x {mm(in_H - 8)} tall; inverter {inv.w}x{inv.h} upright ({'fits' if inv.w <= g['card_L'] and inv.h + 12 <= in_H - 8 else 'DOES NOT FIT'}), "
+    print(f"cards           : {mm(g['card_L'])} long x {mm(in_H - 8)} tall; inverter {inv.w}x{inv.h} "
+          f"({'fits' if inv.w <= g['card_L'] + 6 and inv.h + 12 <= in_H - 8 else 'DOES NOT FIT'}), "
           f"Y stack from the inboard wall: 17 | inverter {inv.d:.0f}+10 | {BS['gap']:.0f} | dist 52 | cable space {g['spare_W']:.0f}")
     for name, layout in (("inverter", V7_INV_LAYOUT), ("dist", V7_DIST_LAYOUT)):
         for pl in layout:
             c = COMPONENTS[pl["comp"]]
             bad = []
-            if pl["x"] + c.w > g["card_L"]: bad.append("X overflow")
+            if pl["x"] + c.w > g["card_L"] + 6: bad.append("X overflow")
             if pl["z"] + c.h > in_H - 8: bad.append("Z overflow")
             print(f"  {name:8s} {c.name:20s} {c.w:>4.0f}x{c.h:>4.0f}x{c.d:>3.0f} @({pl['x']},{pl['z']}) {' '.join(bad) or 'ok'}")
     print(f"  bank 4 x SuperPack 60Ah = 240 Ah (3.1 kWh), 120 A continuous; 12/1200 draws ~105 A at full output, charger 50 A (~4.8 h)")
     print(f"  lift: cards {mm(in_H - 8)} tall -> service from the top; batteries lift straight out of the bay")
-    print(f"  est. mass ~{4 * 7.5 + 8.2 + 1.3 + 0.33 + 0.5 + 0.3 + 0.3 + 1.5 + 4.0 + 17.0:.0f} kg")
+    print(f"  est. mass ~{4 * 7.5 + 8.2 + 1.3 + 0.33 + 0.5 + 0.3 + 0.3 + 1.5 + 4.0 + 15.0:.0f} kg")
 
 
 def report():
