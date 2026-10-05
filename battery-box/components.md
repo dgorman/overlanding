@@ -59,3 +59,7 @@ All from `https://www.victronenergy.com/upload/documents/`. The model keeps only
 | MultiPlus 12/800 (12/24/48V, 120/230V shared housing) | `MultiPlus-12-24-48V-800VA-120V-230V-(step).STEP` |
 | Lithium SuperPack 12.8V/60Ah (M6) | `DimensionDrawing-BAT512060705-Lithium-SuperPack-12,8V60Ah-(M6)-3D.STEP` |
 | VE.Bus BMS V2 (122 × 106 × 23 mm) | `DimensionDrawing-VE.bus-BMS-V2.STP` |
+
+## Anderson connector 3D files (used in v9, `cad/step/`)
+
+Official Anderson STEP housings, pulled from the product pages' embedded CDN links (the "3D Models" buttons are login-gated): SB175 `ap-web_product-assets_default_step-files_SB-175-Std-02-08-STEP` (housing 55.6 × 79.4 × 25.5 mm, mated pair 133.4), SB50 `ap-web_product-assets_default_step-files_SB-50-Std-02-08-STEP` (housing 36.5 × 48 × 16 mm, mated pair 81.3). Drawings 114131S1 and 111923s1 on andersonpower.com.

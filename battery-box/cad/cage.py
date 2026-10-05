@@ -76,7 +76,7 @@ VARIANTS = {
     # v9: v8 with a fixed BUS DECK on top of the battery rack (bus bars, breakers, shunt, connector
     # receptacles) so each of the two remaining cards unplugs and lifts out on its own.
     "v9": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
-               batt_layout="v9", dist_forward=False, inverter="multiplus_1200_up",
+               batt_layout="v9", dist_forward=False, inverter="multiplus_1200_up", leg=12.0,
                card_plane="v9", column=["battery", "battery"], arrange="2x2", col_on_plate=True,
                narrow=True, tray_for="battery", align="right", height="icebox", depth="fit9",
                card_style="solid"),
@@ -202,8 +202,8 @@ COMPONENTS = {
     "breaker_a": Comp("power_breaker_a", 48, 43, 74, "battery breaker, surface mount"),
     "breaker_b": Comp("power_breaker_b", 48, 43, 74, "battery breaker, surface mount"),
     "anderson":  Comp("socket_anderson", 48, 10, 36, "Anderson SB50 panel mount, solar in (verify hole 48 x 36)"),
-    "sb175":     Comp("socket_sb175", 79, 50, 38, "Anderson SB175 with 4 AWG contacts, inverter DC"),
-    "sb50":      Comp("socket_sb50", 47, 35, 24, "Anderson SB50 (6-12 AWG contacts)"),
+    "sb175":     Comp("socket_sb175", 79, 56, 26, "Anderson SB175 housing (Anderson STEP 55.6 x 79.4 x 25.5), 4 AWG contacts, inverter DC; mates along its 79 mm axis, laid across the deck"),
+    "sb50":      Comp("socket_sb50", 48, 37, 16, "Anderson SB50 housing (Anderson STEP 36.5 x 48 x 16), 6-12 AWG contacts; mates along its 48 mm axis, laid across the deck"),
 }
 
 # Distribution card (rear layer, inboard of the battery column, slides down
@@ -239,7 +239,7 @@ else:
 V8 = dict(bay_gap=10.0, inv_gap=8.0, charge_gap=8.0, dist_gap=8.0, front=8.0, charge_depth=70.0, dist_depth=46.0)
 if P["narrow"] and P["card_plane"] in ("v7", "v8", "v9"):
     _b = COMPONENTS["battery"]
-    V7 = dict(wall=4.0, leg=9.0, end_gap=15.0, bay_slack=2.0, bar_gap=5.0)   # 9 mm legs keep the shelf under the 256 mm bed
+    V7 = dict(wall=4.0, leg=P.get("leg", 9.0), end_gap=15.0, bay_slack=2.0, bar_gap=5.0)   # 9 mm legs keep the shelf under the 256 mm bed (v9: 12 mm, split legs)
     V7["tray_w"] = _b.w + 2 * V7["wall"]                          # 146
     V7["bay_W"] = 2 * V7["tray_w"] + V7["bay_slack"]              # two touching stacks
     V7["bay_D"] = V7["end_gap"] + _b.d + 2 * V7["wall"] + V7["leg"]  # back gap (leg inside) + tray + front leg
@@ -330,7 +330,10 @@ STEP_FILES = {   # component key -> Victron STEP file (downloaded into cad/step/
     "cerbo":        "Cerbo-GX.step",
     "shunt":        "SmartShunt-500A.step",
     "bms":          "VE.Bus-BMS-V2.step",
+    "sb175":        "anderson_sb175_housing.stp",
+    "sb50":         "anderson_sb50_housing.stp",
 }
+MATED = {"sb175": 133.4, "sb50": 81.3}   # Anderson drawings: mated pair length -> overlap = 2 x housing - mated
 _STEP_CACHE = {}
 # extra rotation (axis, degrees) applied after the extents match, for units
 # the matcher lands upside down or backwards; checked in the renders
@@ -1182,23 +1185,21 @@ V9_DECK_LAYOUT = [   # deck is ~255 (x, depth) x 294 (y); bus bars run across (1
     dict(comp="breaker_b", x=20,  y=245),
     dict(comp="busbar_p",  x=65,  y=20),
     dict(comp="shunt",     x=120, y=20),
-    dict(comp="sb175",     x=200, y=20),    # inverter DC, at the deck's front edge
-    dict(comp="sb50",      x=200, y=110),   # MPPT
-    dict(comp="sb50",      x=200, y=165),   # Orion
-    dict(comp="sb50",      x=200, y=220),   # Garmin + Cerbo feed
+    # connectors lie flat on the deck with their mating axis ACROSS the box (+Y): the fixed half is bolted
+    # to the deck, the card's flying half slides on from the +Y side and pulls off sideways, from above
+    dict(comp="sb175",     x=185, y=20),    # inverter DC; flying half mates at y 74-153, unplugs with 25 mm of travel
+    dict(comp="sb50",      x=205, y=190),   # MPPT
+    dict(comp="sb50",      x=160, y=190),   # Orion
+    dict(comp="sb50",      x=115, y=190),   # Garmin + Cerbo feed
 ]
-V9_INV_LAYOUT = [    # inverter card: the 12/1200 and its SB175 pigtail housing at the top rear corner
+V9_INV_LAYOUT = [    # inverter card: the 12/1200; its SB175 pigtail leaves the top rear corner and mates on the deck
     dict(comp="multiplus_1200_up", y=13, z=2 + FEET_H),
-    dict(comp="sb175", y=185, z=430),
 ]
 V9_CHARGE_LAYOUT = [
     dict(comp="mppt",  y=12,  z=20),
     dict(comp="orion", y=12,  z=175),
     dict(comp="cerbo", y=12,  z=340),
     dict(comp="garmin", y=145, z=175),
-    dict(comp="sb50",  y=200, z=20),
-    dict(comp="sb50",  y=200, z=60),
-    dict(comp="sb50",  y=200, z=100),
 ]
 V8_INV_LAYOUT = [    # inverter card, parts face +X (forward); y from the card's outboard end, z from its bottom
     dict(comp="multiplus_1200_up", y=13, z=2 + FEET_H),
@@ -1235,29 +1236,62 @@ def build_v8(a, nine=False):
             z += b.h
             if lvl == 0:
                 z += P["term_clear"]
-                sh = box(fd + 2 * L, fw, P["shelf_t"] + 12)
-                sh = sh.cut(box(b.d, b.w, 13, (L + wall, wall, P["shelf_t"])))
-                sh = sh.cut(box(fd - 2 * wall - 30, fw - 2 * wall - 30, P["shelf_t"] + 1, (L + wall + 15, wall + 15, -0.5)))
-                add(a, sh.translate((tx - L, ty, z)), f"print_shelf_{sidx}", ORANGE)
+                if nine:   # shelf sits on the lower battery between the legs (237 long: fits the bed)
+                    sh = box(fd, fw, P["shelf_t"] + 12)
+                    sh = sh.cut(box(b.d, b.w, 13, (wall, wall, P["shelf_t"])))
+                    sh = sh.cut(box(fd - 2 * wall - 30, fw - 2 * wall - 30, P["shelf_t"] + 1, (wall + 15, wall + 15, -0.5)))
+                    add(a, sh.translate((tx, ty, z)), f"print_shelf_{sidx}", ORANGE)
+                else:
+                    sh = box(fd + 2 * L, fw, P["shelf_t"] + 12)
+                    sh = sh.cut(box(b.d, b.w, 13, (L + wall, wall, P["shelf_t"])))
+                    sh = sh.cut(box(fd - 2 * wall - 30, fw - 2 * wall - 30, P["shelf_t"] + 1, (L + wall + 15, wall + 15, -0.5)))
+                    add(a, sh.translate((tx - L, ty, z)), f"print_shelf_{sidx}", ORANGE)
                 leg_h = z if not nine else (4 + 2 * b.h + P["term_clear"] + P["shelf_t"] + P["term_clear"])   # v9: legs run up to the bus deck
                 for (lx, ly) in ((tx - L, ty), (tx - L, ty + fw - L), (tx + fd, ty), (tx + fd, ty + fw - L)):
-                    leg = box(L, L, leg_h)
-                    foot = box(L, L + 16, 6, (0, -8, 0)).cut(cq.Workplane("XY").center(L / 2, L / 2).circle(3.4).extrude(7))
-                    add(a, leg.union(foot).translate((lx, ly, 0)), f"print_leg_{sidx}_{int(lx)}_{int(ly)}", ORANGE)
+                    if nine:
+                        # two printable segments on a 6 mm tenon; the top one ends in a 16 mm boss with an M4 insert for the deck
+                        h1 = leg_h / 2
+                        lower = box(L, L, h1).union(box(6, 6, 12, ((L - 6) / 2, (L - 6) / 2, h1)))
+                        foot = box(L, L + 16, 6, (0, -8, 0)).cut(cq.Workplane("XY").center(L / 2, L / 2).circle(3.4).extrude(7))
+                        add(a, lower.union(foot).translate((lx, ly, 0)), f"print_leg_{sidx}_{int(lx)}_{int(ly)}_lower", ORANGE)
+                        upper = box(L, L, leg_h - h1).cut(box(6.4, 6.4, 12.5, ((L - 6.4) / 2, (L - 6.4) / 2, -0.5)))
+                        boss = box(16, 16, 14, ((L - 16) / 2, (L - 16) / 2, leg_h - h1 - 14)).cut(
+                            cq.Workplane("XY").center(L / 2, L / 2).circle(2.3).extrude(leg_h - h1 + 1).translate((0, 0, leg_h - h1 - 10)))
+                        add(a, upper.union(boss).translate((lx, ly, h1)), f"print_leg_{sidx}_{int(lx)}_{int(ly)}_upper", ORANGE)
+                    else:
+                        leg = box(L, L, leg_h)
+                        foot = box(L, L + 16, 6, (0, -8, 0)).cut(cq.Workplane("XY").center(L / 2, L / 2).circle(3.4).extrude(7))
+                        add(a, leg.union(foot).translate((lx, ly, 0)), f"print_leg_{sidx}_{int(lx)}_{int(ly)}", ORANGE)
                 z += P["shelf_t"]
     g["stack_top"] = z + P["term_clear"]
     g["bay_x1"] = x_in0 + V7["bay_D"]
     if nine:
         # --- bus deck: printed plate on the rack legs, over both stacks ------------
         dz = g["stack_top"]
-        deck = box(V7["bay_D"] - V7["end_gap"] + L, V7["bay_W"], P["card_t"], (x_in0 + V7["end_gap"] - L, y_in0 + 1, dz))
-        deck = deck.cut(box(120, 60, P["card_t"] + 2, (x_in0 + 40, y_in0 + 1 + V7["bay_W"] / 2 - 30, dz - 1)))   # hand/cable window over the lugs
-        add(a, deck, "print_bus_deck", ORANGE)
+        dL = min(V7["bay_D"] - V7["end_gap"] + L, 255.0)          # fits the bed; trims 3 mm off each end over the leg bosses
+        dx0 = x_in0 + V7["end_gap"] - L + (V7["bay_D"] - V7["end_gap"] + L - dL) / 2
+        g["deck_x0"], g["deck_L"] = dx0, dL
+        for half in range(2):   # two printable halves, one over each stack, splined at the centre line, M4 into the leg bosses
+            hw = V7["bay_W"] / 2
+            deck = box(dL, hw, P["card_t"], (dx0, y_in0 + 1 + half * hw, dz))
+            deck = deck.cut(box(120, 60, P["card_t"] + 2, (x_in0 + 40, y_in0 + 1 + half * hw + hw / 2 - 30, dz - 1)))   # hand window over the lugs
+            for (lx, ly) in ((tx - L, y_in0 + 1 + half * V7["tray_w"]), (tx + fd, y_in0 + 1 + half * V7["tray_w"]),
+                             (tx - L, y_in0 + 1 + half * V7["tray_w"] + fw - L), (tx + fd, y_in0 + 1 + half * V7["tray_w"] + fw - L)):
+                deck = deck.cut(cq.Workplane("XY").center(lx + L / 2, ly + L / 2).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1)))
+            add(a, deck, f"print_bus_deck_{half}", ORANGE)
+        for xs in (dL * 0.25, dL * 0.5, dL * 0.75):
+            add(a, box(18, 60, 3, (dx0 + xs - 9, y_in0 + 1 + V7["bay_W"] / 2 - 30, dz - 3)), f"print_bus_deck_spline_{int(xs)}", ORANGE)
         for pl in V9_DECK_LAYOUT:
             c = COMPONENTS[pl["comp"]]
-            at = (x_in0 + V7["end_gap"] - L + pl["x"], y_in0 + 1 + pl["y"], dz + P["card_t"])
+            at = (dx0 + pl["x"], y_in0 + 1 + pl["y"], dz + P["card_t"])
             col = (0.3, 0.3, 0.3) if c.name.startswith("socket") else GOLD
             add(a, victron_shape(pl["comp"], c.d, c.w, c.h, at, box(c.d, c.w, c.h, at).edges("|Z").fillet(3)), c.name + f"_{int(pl['x'])}_{int(pl['y'])}", col)
+            if pl["comp"] in MATED:   # the card's flying half, mated on the +Y side: it rides with the card in the viewer
+                overlap = 2 * c.w - MATED[pl["comp"]]
+                at2 = (at[0], at[1] + c.w - overlap, at[2])
+                owner = "inverter" if pl["comp"] == "sb175" else "charge"
+                add(a, victron_shape(pl["comp"], c.d, c.w, c.h, at2, box(c.d, c.w, c.h, at2).edges("|Z").fillet(3)),
+                    c.name + f"_plug_{int(pl['x'])}_{int(pl['y'])}__card", BLUE if owner == "inverter" else (0.1, 0.6, 0.4))
         g["deck_z"] = dz
 
     # --- floor panel under the card zone ----------------------------------------
@@ -1401,6 +1435,11 @@ def report_v9():
         if pl["y"] + c.w > V7["bay_W"]: bad.append("Y overflow")
         if dz + 6 + c.h > out_H: bad.append("hits the lid")
         print(f"  deck     {c.name:20s} {c.d:>4.0f}x{c.w:>4.0f}x{c.h:>3.0f} @({pl['x']},{pl['y']}) {' '.join(bad) or 'ok'}")
+    s175, s50 = COMPONENTS["sb175"], COMPONENTS["sb50"]
+    o175, o50 = 2 * s175.w - MATED["sb175"], 2 * s50.w - MATED["sb50"]
+    print(f"connectors      : fixed halves bolted flat on the deck, mating axis across the box; the card halves on flying leads slide on from the inboard side. "
+          f"Unplug = pull sideways {o175:.0f} mm (SB175) / {o50:.0f} mm (SB50) with the lid off; the SB175's flying half ends at y={20 + 2 * s175.w - o175:.0f}, "
+          f"SB50 row starts at y=190 -> {190 - (20 + 2 * s175.w - o175) - o175:.0f} mm spare; SB50 flying halves end at y={190 + 2 * s50.w - o50:.0f} of {V7['bay_W']:.0f} ({V7['bay_W'] - (190 + 2 * s50.w - o50) - o50:.0f} mm spare)")
     print("== Cables and connectors (Victron manuals) ==")
     for run, size, fuse, conn in CABLE_SPEC:
         print(f"  {run:48s} {size:52s} fuse {fuse:28s} {conn}")

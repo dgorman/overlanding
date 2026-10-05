@@ -26,6 +26,22 @@ The problem with v8: the battery leads run under card 3, through card 2, up to t
 - **Front panel:** shore-power inlet and inverter outlet (L14-30), the Anderson inlets for the alternator feed and the solar array, and the 12 V sockets in the lower band. All of those are plugs too, so the front panel comes off clean.
 - Depth is set by wiring room, not by the parts: a **70 mm gap between the bus deck and the inverter card** for the battery leads and the card pigtails climbing to the deck, and **45 mm between the charge card and the front panel** so the inlet and socket wiring has slack. **636 × 345 × 559 mm (25.0 in deep), 5.0 in shorter and 5.6 in narrower than the IceBox**, same height. ~58 kg.
 
+**Connectors.** The fixed halves (one SB175, three SB50s) are real Anderson housings from Anderson's own STEP files, bolted flat on the deck's front corner with their mating axis *across* the box. Each card's pigtail ends in the flying half, which slides on from the inboard side and comes off with 25 mm (SB175) or 15 mm (SB50) of sideways pull, all done from above with the lid off. Nothing has to move toward the cards to unplug, which is why they lie across rather than pointing at the cards. In the viewer the flying halves lift with their card.
+
+**How it prints and goes together (Bambu P1P/P1S, 256 × 256 × 256 bed).** Every part in `stl/v9/` fits; the script checks each one:
+
+| Part | Qty | Size (mm) | Print | Joins to |
+|---|---|---|---|---|
+| Card tiles | 8 (4 per card) | 138 × 247 × 6 solid | flat, 4 walls, 30 % gyroid, PETG/ASA | each other with 12 splines (60 × 18 × 3) glued across the back; units via heat-set inserts in the pilot holes |
+| Guide posts | 4 posts × 2 segments | 187 / 167 tall, 24 × 18 | standing or flat | 20 mm tenon between segments; feet bolt through the floor panel into the depth-rail T-slots |
+| Battery trays | 2 | 237 × 146 × 24 | flat | M6 into the Goose Gear plate |
+| Mid-shelves | 2 | 237 × 146 × 22 | flat | sit on the lower battery between the legs |
+| Rack legs | 8 × 2 segments | 234 and 246 tall, 12 mm square | standing | 6 mm tenon; foot bolts to the plate; the upper segment ends in a 16 mm boss with an **M4 heat-set insert** for the deck |
+| Bus deck | 2 halves + 3 splines | 255 × 147 × 6 | flat | **8 × M4 screws** down into the leg bosses; halves splined at the centre; bus bars, breakers, shunt and the four Anderson fixed halves screw to it with inserts |
+| MultiPlus feet, backing plates, cubes, socket insert | 2, 4, 8, 1 | ≤ 60 mm | any | see "How the units attach" |
+
+Assembly order: trays to the plate → lower batteries → shelves and lower leg segments → upper batteries and upper leg segments → deck halves screwed to the leg bosses, then bus bars, breakers, shunt and connector halves onto the deck → battery leads up to the deck → posts to the rails → cards, wired on the bench, dropped in and plugged in → front panel.
+
 Cable sizes are Victron's where they publish them; your 6 AWG is right for the Orion and the batteries, and the inverter run is 4 AWG because 2 AWG would not fit its terminals:
 
 | Run | Size (Victron manual) | Fuse / breaker | Connector |
@@ -295,6 +311,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-05 | Real Anderson SB175/SB50 housings (Anderson STEP files) on the deck, mating axis across the box so the flying halves unplug sideways from above. Rack legs split in two with an M4 boss for the deck; deck in two halves; shelves trimmed: every v9 part now fits the P1S bed. Printing and assembly table added. |
 | 2026-10-05 | v9 depth opened up for wiring: 70 mm deck-to-inverter-card, 45 mm card-to-ports; 636 mm (25 in) deep. Inverter run is 4 AWG as built. |
 | 2026-10-05 | **v9:** fixed bus deck on the battery rack with Anderson receptacles; two cards that unplug and lift out alone; 539 deep. Cable sizes from the Victron manuals: 2 AWG + 150 A for the 12/1200, 6 AWG for the Orion, 10 AWG for the MPPT. |
 | 2026-10-05 | All cards printed as solid 6 mm tiles (same as under the inverter) so units can be shifted and re-drilled; cables route under the cards, not through them. |
