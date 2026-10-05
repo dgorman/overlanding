@@ -40,7 +40,9 @@ Started as the way to fit a MultiPlus-II; kept because it leaves the whole batte
 | distribution card plate + parts facing the batteries (≤ 46 deep) | 52 |
 | gap | 4 |
 | **battery column** against the outboard wall | **193** (tray 160 + Victron's 20 mm vent each side; no spare, by design) |
-| **frame width** | **440 mm (17.3 in)**: 48 mm narrower than the IceBox, to leave room for bike pedals beside the box. The four width rails are kit bars cut to 389 mm. `pedal_gap` in `cage.py` adds width back if you want slack. |
+| **frame width** | **440 mm (17.3 in)**: 48 mm (1.9 in) narrower than the IceBox, to leave room for bike pedals beside the box. The cage sits flush with the IceBox's right face (`align`), so the free strip is on the left. The four width rails are kit bars cut to 389 mm. `pedal_gap` in `cage.py` adds width back if you want slack. |
+
+**Getting closer to 5 in of pedal room.** The width is the sum of what's across the box, and only one layer is optional: the distribution card. Moving its parts (bus bars, shunt, breakers, BMS, Garmin) up onto the inverter/charger card, above the 12/1200 where there is 240 × 694 mm of free card, removes 56 mm and takes the frame to **384 mm (15.1 in), 4.1 in narrower than the IceBox**. Everything else is fixed: the 12/1200 is 100 mm deep in any orientation, the 200Ah Smarts are 152 mm wide plus Victron's 20 mm vents, and the bars are 25 mm each. The cost is one crowded card instead of two and all the DC distribution sharing a card with the inverter. Say the word and the model gets a `single_card` option.
 
 - The inverter/charger card is 694 × 494 mm; the MultiPlus 12/1200 uses 406 of it and sits on 10 mm standoffs so its case clears the post bodies. Above it there are 240 mm for the **MPPT, Orion and Cerbo** on the same card. (A MultiPlus-II 12/3000 still fits this card on its side if that ever comes back; `--inverter=multiplus_ii`.)
 - The distribution card carries bus bars, shunt, breakers, the **VE.Bus BMS V2** and the Garmin at the front end near the sockets. Nothing on it is deeper than 46 mm, which is what buys the battery column its vent gaps.
@@ -230,6 +232,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-04 | Cage right-justified against the IceBox (`align="right"`); noted that a single-card layout would reach 384 mm. |
 | 2026-10-04 | Frame narrowed to 440 mm (sized from the Y stack, for bike pedals beside the box). `bookshelf60` checks the owner's SuperPack 60Ah in the 200Ah trays: fits with spacers. Dimension lines added to the viewer. |
 | 2026-10-04 | Inverter back to the owner's MultiPlus 12/1200/50 (Victron STEP added); v6 column widens to 240 mm; 2 × 2 of 200Ah is now the main v6, two end to end is `bookshelf2`. MPPT STEP flipped terminals-down. |
 | 2026-10-04 | Battery column now stands on the Goose Gear plate (floor cut away under it): +31 mm of height, 43 mm over the top lugs in the 2 × 2. Viewer fetches are cache-busted per publish. Victron STEP geometry replaces the grey boxes where Victron publishes a file. |

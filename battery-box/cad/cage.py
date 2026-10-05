@@ -53,17 +53,17 @@ VARIANTS = {
     "bookshelf": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
                       batt_layout="column", dist_forward=False, inverter="multiplus_1200",
                       card_plane="xz", column=["smart200", "smart200"], arrange="2x2", col_on_plate=True,
-                      narrow=True, tray_for="smart200"),
+                      narrow=True, tray_for="smart200", align="right"),
     # v6 alt: same, two 200Ah end to end (no rack)
     "bookshelf2": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
                        batt_layout="column", dist_forward=False, inverter="multiplus_1200",
                        card_plane="xz", column=["smart200", "smart200"], arrange="inline", col_on_plate=True,
-                       narrow=True, tray_for="smart200"),
+                       narrow=True, tray_for="smart200", align="right"),
     # v6 check: the owner's four SuperPack 60Ah dropped into the same 200Ah trays
     "bookshelf60": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
                         batt_layout="column", dist_forward=False, inverter="multiplus_1200",
                         card_plane="xz", column=["battery", "battery"], arrange="2x2", col_on_plate=True,
-                        narrow=True, tray_for="smart200"),
+                        narrow=True, tray_for="smart200", align="right"),
 }
 # --inverter=multiplus|multiplus_ii|multiplus_4k overrides the variant's inverter
 for _a in sys.argv[1:]:
@@ -138,6 +138,7 @@ P.setdefault("col_on_plate", False)   # True: no floor panel under the battery c
 P.setdefault("narrow", False)
 P.setdefault("tray_for", None)        # size the battery trays for this battery key (None = the column's own)
 P.setdefault("pedal_gap", 0.0)        # extra width to keep free beside the column (0 = tight)
+P.setdefault("align", "left")         # which IceBox face the (narrower) cage is flush with, as seen in the viewer's Front view
 P.update(VARIANTS[VARIANT])
 
 
@@ -534,6 +535,7 @@ def icebox_parts():
     """Reference IceBox 1.3 at x<0, same Y/Z envelope as the cage."""
     W, H, D = P["icebox_W"], P["icebox_H"], P["icebox_D"]
     x0 = -D - P["icebox_gap"]
+    yoff = (out_W - W) if P["align"] == "right" else 0.0     # right-justified: cage +Y face flush with the IceBox +Y face
     parts = []
     cube = corner_cube()
     for i, x in enumerate((x0, x0 + D - C)):
@@ -566,6 +568,8 @@ def icebox_parts():
     tray = box(D - 2 * B + 60, 381, 40, (x0 + B - 60, (W - 381) / 2, B + T))
     tray = tray.cut(box(D - 2 * B + 52, 373, 40, (x0 + B - 56, (W - 381) / 2 + 4, B + T + 4)))
     parts.append(("icebox_tray", tray))
+    if yoff:
+        parts = [(n, shp.translate((0, yoff, 0))) for n, shp in parts]
     return parts
 
 
@@ -1010,7 +1014,7 @@ def report_bookshelf():
     print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}; inner {mm(in_D)} x {mm(in_W)} x {mm(in_H)}")
     if P["narrow"]:
         print(f"NARROW frame    : width {mm(out_W)} instead of the IceBox's 487 -> {487.4 - out_W:.0f} mm ({(487.4 - out_W) / 25.4:.1f} in) narrower; "
-              f"the 4 width rails are cut to {mm(out_W - 2 * C)} (kit bars are 437)")
+              f"the 4 width rails are cut to {mm(out_W - 2 * C)} (kit bars are 437); cage flush with the IceBox's {P['align']} face")
     tray_c = COMPONENTS[P["tray_for"]] if P["tray_for"] else None
     if tray_c and tray_c.name != COMPONENTS[BS["column"][0]].name or (tray_c and P["tray_for"] != BS["column"][0]):
         bc = COMPONENTS[BS["column"][0]]
