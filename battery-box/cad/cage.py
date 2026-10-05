@@ -1206,9 +1206,12 @@ V9_DECK_LAYOUT = [   # deck is ~295 (x, depth) x 294 (y); x from the deck's back
     dict(comp="sb50_x",    x=160, y=180),   # Garmin + Cerbo feed
 ]
 # fixed halves on the cards themselves, standing with the mating face UP, so the pigtail lifts off before the card
-V9_INV_REAR = [dict(comp="sb175_v", y=150, z=0)]                                  # inverter card, rear face bottom
-V9_CHARGE_REAR = [dict(comp="sb50_v", y=20, z=0), dict(comp="sb50_v", y=70, z=0), dict(comp="sb50_v", y=120, z=0)]   # to the deck
-V9_CHARGE_FRONT = [dict(comp="sb50_v", y=200, z=0), dict(comp="sb50_v", y=238, z=0)]                                 # from the front-panel inlets (solar, alternator)
+# Card connectors sit at the TOP of each card's rear face, mating face up, low enough that the mated pigtail
+# half stays 10 mm under the lid; everything below them is free for wire bends.  (card bottom = z 0, top = 494)
+V9_INV_REAR = [dict(comp="sb175_v", y=150, z=383)]                                   # SB175: housing to 462, mated pair to 516 of 526
+V9_CHARGE_REAR = [dict(comp="sb50_v", y=20, z=435), dict(comp="sb50_v", y=70, z=435), dict(comp="sb50_v", y=120, z=435),   # MPPT, Orion, Garmin+Cerbo
+                  dict(comp="sb50_v", y=180, z=435), dict(comp="sb50_v", y=230, z=435)]                                   # solar in, alternator in (from the panel inlets)
+V9_CHARGE_FRONT = []
 V9_INV_LAYOUT = [    # inverter card: the 12/1200; its SB175 pigtail leaves the top rear corner and mates on the deck
     dict(comp="multiplus_1200_up", y=13, z=2 + FEET_H),
 ]
@@ -1471,9 +1474,12 @@ def report_v9():
         print(f"  deck     {c.name:20s} {c.d:>4.0f}x{c.w:>4.0f}x{c.h:>3.0f} @({pl['x']},{pl['y']}) {' '.join(bad) or 'ok'}")
     o175, o50 = 2 * HOUSING["sb175"] - MATED["sb175"], 2 * HOUSING["sb50"] - MATED["sb50"]
     dL = g.get("deck_L", 295)
-    print(f"connectors      : every card has its own fixed Anderson halves on its rear face at the bottom, mating face UP; the pigtail's half lifts off "
-          f"({o175:.0f} mm SB175 / {o50:.0f} mm SB50 of upward travel) before the card is pulled.  Inverter card: 1 x SB175. "
-          f"Charge card: 3 x SB50 rear (MPPT, Orion, Garmin+Cerbo feed) + 2 x SB50 front (solar in, alternator in from the panel inlets).")
+    ch_ = in_H - 8
+    top175 = floor_top + 2 + V9_INV_REAR[0]["z"] + 2 * HOUSING["sb175"] - o175
+    top50 = floor_top + 2 + V9_CHARGE_REAR[0]["z"] + 2 * HOUSING["sb50"] - o50
+    print(f"connectors      : every card has its own fixed Anderson halves at the TOP of its rear face, mating face UP; the pigtail's half lifts off "
+          f"({o175:.0f} mm SB175 / {o50:.0f} mm SB50 of upward travel) before the card is pulled.  Inverter card: 1 x SB175 (mated top at {top175:.0f} of {out_H:.0f}). "
+          f"Charge card: 5 x SB50 rear (MPPT, Orion, Garmin+Cerbo feed, solar in, alternator in; mated tops at {top50:.0f}).  Everything below them is wire-bend room.")
     print(f"                  deck end: fixed halves point at the cards on the deck's {DECK_EXT:.0f} mm extension; pigtail halves pull forward "
           f"{o175:.0f}/{o50:.0f} mm: SB175 needs x<={115 + 2 * HOUSING['sb175'] - o175 + o175:.0f} of the deck's {dL:.0f} "
           f"({'ok' if 115 + 2 * HOUSING['sb175'] - o175 + o175 <= dL else 'TOO SHORT'}); SB50s need x<={160 + 2 * HOUSING['sb50'] - o50 + o50:.0f} "
