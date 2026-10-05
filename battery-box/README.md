@@ -21,10 +21,10 @@
 | Frame | 12 uncut kit bars, 487 × 487 × 487 mm | a stock IceBox 1.3 frame, fridge slide removed: 635 × 487 × 559 mm |
 | vs the IceBox | same width, 71 mm lower, 148 mm shallower | identical; decks flush |
 | Inside | 437 × 437 × 431 | 584 × 437 × 502 |
-| Batteries (4) | 3 upright + 1 on its long side on a shelf | 2 upright stacks of 2; room beside them for a third stack (6) |
-| Cards | lower (MultiPlus), upper (MPPT · Orion, 171 tall), dist (423 tall) tight behind the MultiPlus | same three; upper 242 tall; dist 494 tall pushed forward to the sockets, 132 mm of free air behind it for a future card |
+| Batteries (4) | 3 upright + 1 on its long side on a shelf | 2 upright stacks of 2, one at each side wall, 145 mm channel between; a third stack fits in the channel (6) |
+| Cards | lower (MultiPlus), upper (Orion, 171 tall), dist (423 tall, with MPPT + Cerbo + Garmin) tight behind the MultiPlus | same three; upper 242 tall; dist 494 tall pushed forward to the sockets, ~110 mm of free air behind it for a future card |
 | Lift out, plate to ceiling | 658 / 741 mm; dist 910 or tilt | 801 / 813 mm; dist 1053 or tilt |
-| Mass | ~57 kg | ~71 kg (frame + panels ~19) |
+| Mass | ~49 kg | ~63 kg (frame + panels ~19) |
 | Kit bars | 12 + 2 joists, 2 spare | not needed; return them, or keep 2 as joists |
 | Cost | 8 kits ≈ $1,112 + panels + prints | one IceBox 1.3 $1,345, matching panels included |
 
@@ -47,23 +47,36 @@ Dimensions are manufacturer figures **as mounted in this design** (X along the b
 
 | # | Component | As-mounted W×D×H (mm) | Weight | Where it goes |
 |---|---|---|---|---|
-| 1 | **Victron Lithium SuperPack 12.8V/60Ah** ×4 (M6 top terminals, internal BMS) | 229 deep × 138 wide × 213 tall upright | 9.5 kg each | v4: **three upright in a row** and the **fourth on its long side** on a shelf (Victron permits upright or long side). v5: **two upright stacks of two** on printed mid-shelves. |
+| 1 | **Victron Lithium SuperPack 12.8V/60Ah** ×4 (M6 top terminals, internal BMS; **30 A continuous / 80 A 10 s discharge, 30 A charge**) | 229 deep × 138 wide × 213 tall upright | 7.5 kg each | v4: **three upright in a row** and the **fourth on its long side** on a shelf (Victron permits upright or long side). v5: **two upright stacks of two** on printed mid-shelves, one against each side wall with a 145 mm cable channel between them. |
 | 2 | **Victron MultiPlus 12/800/35-16 120V** (800 W inverter/charger) | 100 deep × 360 wide × 240 tall, on its side | 6.4 kg | **Lower card**, on two printed feet, keyholes bolted through the card |
-| 3 | **Victron SmartSolar MPPT 100/30** | 70 × 186 × 130, upright, terminals down | 1.3 kg | **Upper card**, bottom row |
-| 4 | **Victron Orion XS 12/12-50A** DC-DC charger | 40 × 123 × 137, upright, terminals down | 0.33 kg | **Upper card**, bottom row, next to the MPPT |
+| 3 | **Victron SmartSolar MPPT 100/30** | 70 × 186 × 130, upright, terminals down | 1.3 kg | **Dist card** (front), next to the shunt; the Andersons are in the same layer |
+| 4 | **Victron Orion XS 12/12-50A** DC-DC charger | 40 × 123 × 137, upright, terminals down | 0.33 kg | **Upper card**, alone (room for a second one) |
 | 5 | **Garmin PowerSwitch** (USB, cigarette-lighter and other 12 V loads) | 32 × 125 × 75 | 0.28 kg | **Dist card**, next to the Cerbo, a few inches from the sockets |
-| 6 | **Victron Cerbo GX** | 48 × 154 × 78 | ~0.5 kg | **Dist card**, top row |
+| 6 | **Victron Cerbo GX** | 48 × 154 × 78 | ~0.5 kg | **Dist card**, top row, between the shunt and the MPPT it talks to |
 | 7 | **Victron SmartShunt 500A** | 46 × 120 × 54 | ~0.3 kg | **Dist card**, between breakers and bus bars |
 | 8 | Covered 5-stud bus bars ×2 (Blue Sea 2300-class) | 35 × 155 × 32 each | — | **Dist card** |
 | 9 | Battery circuit breakers ×2 (surface-mount, 285-style) | 43 × 48 × 74 each | — | **Dist card**, bottom, 150 mm from the battery terminals |
 | 10 | Panel-mount 12 V / USB sockets ×4 + 1 smaller | 29 mm and 22 mm holes | — | Printed insert in the **front panel**, above the MultiPlus band, facing the cabin |
 | 11 | **Anderson SB50** panel mounts ×2, solar ingress | 48 × 36 mm cutouts (verify) | — | Inboard side panel, front layer, beside the dist card |
-| 12 | 6 AWG wiring throughout | — | — | Battery runs pass the main cards through 60 × 60 notches in the lower card's bottom corners, then up the dist card |
+| 12 | 6 AWG wiring throughout | — | — | Battery runs pass the main cards through 60 × 60 notches in the lower card's bottom corners, then up the dist card. 6 AWG is good to ~100 A short runs; fine for the 12/800, not for anything bigger (see below) |
 
 ### Orientation notes
 - **Orion XS and MPPT 100/30:** both upright on the upper card with terminals down, exactly as Victron asks (the vertical layout is what made this possible).
 - **MultiPlus 12/800:** on its side (360 wide × 240 tall) on the lower card. The family manual only requires "a dry, well-ventilated and heatproof area" with free space around its vents; it doesn't mandate upright. The front panel has three rows of vent slots over the MultiPlus band, and its 5 mm gap to the panel keeps the vents open.
 - **SuperPacks:** three upright with 14 mm of lug clearance under the shelf; the fourth lies on its long side on a shelf that supports the whole face, which is what Victron asks for. The stack is 379 mm of 431. The top battery comes out first and exposes the lugs of the batteries under it.
+
+### Inverter sizing against four SuperPack 60Ah
+
+| | DC draw at full output | Bank limit (4 × SuperPack 60Ah) | Verdict |
+|---|---|---|---|
+| MultiPlus 12/800/35 (today) | ~70 A | 120 A continuous | fine, with 40 % headroom |
+| MultiPlus 12/1200/50 | ~105 A | 120 A | ok, little headroom |
+| MultiPlus-II 12/3000/120-50 | ~220 A (2400 W ÷ 12.8 V ÷ 0.93) | 120 A continuous, 320 A for 10 s | **no**: the BMSs cut out above ~1.4 kW of AC load. Its 120 A charger is exactly the bank's 30 A × 4 limit. |
+| MultiPlus-II 12/4k/160-50 | ~310 A | same | **no**, and its 160 A charger must be capped at 120 A |
+
+The number that matters is 30 A per battery continuous (Victron datasheet). Four in parallel is 120 A, which is about 1.5 kW. To actually run a 3 kVA inverter you need 220 A: eight 60Ah SuperPacks, or three 100Ah SuperPacks (100 A each), or a different battery. Wiring and bus bars would also move from 6 AWG / 150 A to 2/0 or 4/0 and a 300–400 A class T fuse.
+
+**Physically** the MultiPlus-II does not fit a 437 mm card either way: 578 mm (12/3000) or 631 mm (12/4k) on the long axis, against 437 inside and 502 tall (`python cage.py icebox --inverter=multiplus_ii` prints the fit failure). The model keeps the 12/800.
 
 ---
 
@@ -87,8 +100,8 @@ Inside the cube the clear space is 437 × 437 wide and deep and 431 tall above t
 | Layer | Depth | What |
 |---|---|---|
 | **Rear** (against the IceBox) | 240 mm | Three SuperPacks upright in a row (430 of 437 mm wide, one printed tray each) with the fourth on its long side on a two-piece printed shelf. Two spare kit bars run under the floor panel as joists. |
-| **Main cards** | 6 mm | **Lower card** (419 × 254): the MultiPlus on its side on two printed feet, with 60 mm notches at both bottom corners for the battery cables. **Upper card** (419 × 171): MPPT and Orion upright, terminals down. Same two guide posts; the upper sits on the lower's top edge. |
-| **Front** | 191 mm | 100 mm of MultiPlus, a 6 mm gap, then the **dist card** (419 × 423) facing the front panel: breakers and shunt low, bus bars, then Cerbo and Garmin on the top row, all below 350 mm so the socket bodies in the panel's top band clear them by 9 mm. Anderson SB50s in the inboard side panel. |
+| **Main cards** | 6 mm | **Lower card** (419 × 254): the MultiPlus on its side on two printed feet, with 60 mm notches at both bottom corners for the battery cables. **Upper card** (419 × 171): the Orion upright, terminals down, with room for a second. Same two guide posts; the upper sits on the lower's top edge. |
+| **Front** | 191 mm | 100 mm of MultiPlus, a 6 mm gap, then the **dist card** (419 × 423) facing the front panel: breakers and shunt low, bus bars, the **MPPT** upright beside the shunt, then Cerbo and Garmin on the top row, all below 350 mm so the socket bodies in the panel's top band clear them. Anderson SB50s in the inboard side panel, right beside the MPPT. |
 
 Service order: lid off, dist card out (423 mm tall: 910 mm straight up, or lift clear and tilt forward), upper card (658 mm), lower card (741 mm). Batteries: the top one lifts off its shelf with the cards in place; the three below come out after the shelf halves.
 
@@ -166,6 +179,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-04 | MPPT and Cerbo on the dist card with the Garmin; upper card keeps only the Orion. v5 battery stacks justified to the side walls with a 145 mm channel. Checked the MultiPlus-II 12/3000 and 12/4k: neither fits (578 / 631 mm long) and four SuperPack 60Ah can only supply 120 A continuous, so the 12/800 stays. SuperPack weight corrected to 7.5 kg. |
 | 2026-10-04 | **v5:** second variant in the same script: a stock IceBox 1.3 frame (635 × 487 × 559) with two upright battery stacks and the dist card at the front panel. Viewer gets a version switch. v4 tagged `cage-v4-cube`. |
 | 2026-10-04 | **v4:** four batteries (three upright + one on its long side on a printed shelf), dist card moved to the front layer facing the sockets with the Garmin on it, lower card notched for battery cables, two spare bars as floor joists. |
 | 2026-10-04 | **v3:** cube from 12 uncut bars (487.4 mm each way, 71 mm under the IceBox). Batteries end to end in depth instead of stacked; Garmin joins the upper card turned 90°. Lift clearances drop to 658 / 741 mm. |

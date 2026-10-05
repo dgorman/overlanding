@@ -43,10 +43,14 @@ import cadquery as cq
 VARIANT = next((a for a in sys.argv[1:] if not a.startswith("-")), os.environ.get("CAGE_VARIANT", "cube"))
 VARIANTS = {
     "cube":   dict(frame_source="kit", frame_W=None, frame_H=None, frame_D=None,
-                   batt_layout="row3_top1", dist_forward=False),
+                   batt_layout="row3_top1", dist_forward=False, inverter="multiplus"),
     "icebox": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=635.0,
-                   batt_layout="stack2x2", dist_forward=True),
+                   batt_layout="stack2x2", dist_forward=True, inverter="multiplus"),
 }
+# --inverter=multiplus|multiplus_ii|multiplus_4k overrides the variant's inverter
+for _a in sys.argv[1:]:
+    if _a.startswith("--inverter="):
+        VARIANTS[VARIANT]["inverter"] = _a.split("=", 1)[1]
 assert VARIANT in VARIANTS, f"unknown variant {VARIANT}; pick one of {list(VARIANTS)}"
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -105,7 +109,7 @@ P = dict(
 
     # cards: lower carries the MultiPlus, upper the small electronics,
     # dist card (rear layer, beside the batteries) the shunt/breakers/bus/Cerbo
-    lower_card_h=254.0,
+    lower_card_h=254.0,  # raised automatically if the inverter needs more
     socket_z=385.0,      # 12V socket centreline on the front panel: top band, above the dist card's parts
     socket_panel_h=60.0,
     socket_panel_t=5.0,
@@ -126,7 +130,10 @@ class Comp:
 COMPONENTS = {
     "battery":   Comp("battery", 138, 229, 213, "Victron Lithium SuperPack 12.8V/60Ah, 9.5 kg, M6 top terminals: 3 upright in a row"),
     "battery_side": Comp("battery_top", 229, 213, 138, "4th SuperPack on its long side on the shelf (Victron: upright or long side only)"),
-    "multiplus": Comp("victron_multiplus", 360, 100, 240, "MultiPlus 12/800/35-16 120V on its side on the lower card (6.4 kg)"),
+    # inverter candidates, as mounted on their side on the lower card (w along Y, h up, d off the card)
+    "multiplus":    Comp("victron_multiplus", 360, 100, 240, "MultiPlus 12/800/35-16 120V on its side (6.4 kg)"),
+    "multiplus_ii": Comp("victron_multiplus", 578, 148, 277, "MultiPlus-II 12/3000/120-50 120V on its side (19 kg) - 578 long"),
+    "multiplus_4k": Comp("victron_multiplus", 631, 164, 277, "MultiPlus-II 12/4k/160-50 120V on its side (22 kg) - 631 long"),
     "mppt":      Comp("victron_mppt", 186, 70, 130, "SmartSolar MPPT 100/30, upright, terminals down (1.3 kg)"),
     "orion":     Comp("victron_orion", 123, 40, 137, "Orion XS 12/12-50A, upright, terminals down (0.33 kg)"),
     "cerbo":     Comp("victron_cerbo", 154, 48, 78, "Cerbo GX"),
@@ -147,13 +154,13 @@ DIST_CARD_LAYOUT = [   # full-width card in the front layer; keep parts below z=
     dict(comp="shunt",     y=160, z=20),
     dict(comp="busbar_n",  y=20,  z=110),
     dict(comp="busbar_p",  y=20,  z=160),
+    dict(comp="mppt",      y=225, z=90),    # upright, terminals down, next to the shunt
     dict(comp="cerbo",     y=20,  z=230),
-    dict(comp="garmin",    y=200, z=230),
+    dict(comp="garmin",    y=200, z=235),
 ]
-# Upper card (charge sources), y, z relative to the card's lower-left.
+# Upper card: now only the Orion (room for a second one).
 UPPER_CARD_LAYOUT = [
-    dict(comp="mppt",   y=20,  z=12),
-    dict(comp="orion",  y=240, z=12),
+    dict(comp="orion",  y=20,  z=12),
 ]
 # Lower card: MultiPlus on its side, centred.
 # Front-panel 12 V / USB sockets: (y centre, hole dia)
@@ -177,15 +184,17 @@ x_in0, y_in0, floor_top = B, B, B + T                  # inner origin
 card_x = x_in0 + P["rear_depth"]                       # rear face of the cards
 card_W = in_W - 2 * (P["post_d"] - P["slot_depth"]) - 2 * P["card_clear"]
 card_y0 = y_in0 + (in_W - card_W) / 2
-lower_h = P["lower_card_h"]
+lower_h = max(P["lower_card_h"], COMPONENTS[VARIANTS[VARIANT]["inverter"]].h + 14)
 upper_h = in_H - lower_h - 6                           # 6 mm under the top rails
 batt = COMPONENTS["battery"]
 batt_top = COMPONENTS["battery_side"]
 row_W = P["n_batt_row"] * (batt.w + 4) + 4             # tray row width incl. walls
+INV = COMPONENTS[P["inverter"]]
+dist_deep = max(COMPONENTS[pl["comp"]].d for pl in DIST_CARD_LAYOUT)
 if P["dist_forward"]:   # as far forward as the socket bodies allow (12 mm behind them)
-    dist_x = x_in0 + in_D - 40 - 48 - 12 - P["card_t"]
-else:                   # tight behind the MultiPlus
-    dist_x = card_x + P["card_t"] + COMPONENTS["multiplus"].d + P["dist_gap"]
+    dist_x = x_in0 + in_D - 40 - dist_deep - 12 - P["card_t"]
+else:                   # tight behind the inverter
+    dist_x = card_x + P["card_t"] + INV.d + P["dist_gap"]
 dist_W, dist_y0 = card_W, card_y0
 dist_h = in_H - 8
 shelf_z = floor_top + 4 + batt.h + P["term_clear"]     # underside of the printed shelf
@@ -511,9 +520,9 @@ def build() -> cq.Assembly:
         by = y_in0 + (row_W - batt_top.w) / 2
         add(a, box(batt_top.d, batt_top.w, batt_top.h, (bx, by, shelf_z + P["shelf_t"])).edges("|X").fillet(6), "battery_top", BATT)
     else:
-        # --- two upright stacks of two, outboard; needs ~470 mm of height -------
+        # --- two upright stacks of two, one against each side wall, channel between
         for i in range(2):
-            ty = y_in0 + i * (batt.w + 4)
+            ty = y_in0 if i == 0 else out_W - B - (batt.w + 8)
             add(a, battery_tray().translate((x_in0, ty, floor_top)), f"print_tray_battery_{i}", ORANGE)
             add(a, box(batt.d, batt.w, batt.h, (x_in0 + 4, ty + 4, floor_top + 4)).edges("|Z").fillet(6), f"battery_{i}_lower", BATT)
             add(a, stack_shelf().translate((x_in0, ty, shelf_z)), f"print_shelf_stack_{i}", ORANGE)
@@ -546,7 +555,7 @@ def build() -> cq.Assembly:
     for y in (card_y0 + 12, card_y0 + card_W - 72):   # 60 x 60 notches: 6 AWG battery runs pass under
         lower = lower.cut(box(P["card_t"] + 2, 60, 60, (card_x - 1, y, floor_top + 2 - 1)))
     add(a, lower, "card_lower_plate", DARK)
-    mp = COMPONENTS["multiplus"]
+    mp = INV
     mpy = card_y0 + (card_W - mp.w) / 2; mpz = floor_top + 2 + 10
     for y in (mpy + 30, mpy + mp.w - 80):
         add(a, multiplus_feet().translate((card_x + P["card_t"], y, floor_top + 2)), f"print_feet_mp_{int(y)}__card", ORANGE)
@@ -619,9 +628,9 @@ def report():
               f"{top:.0f} of {in_H:.0f} tall ({in_H - top:.0f} spare)")
     else:
         top = shelf_z - floor_top + P["shelf_t"] + batt.h + P["term_clear"]
-        print(f"batteries       : 2 upright stacks of 2 = {2 * (batt.w + 4) + 4:.0f} of {in_W:.0f} wide, {batt.d + 8:.0f} deep; "
+        print(f"batteries       : 2 upright stacks of 2 against the side walls, {batt.w + 8:.0f} wide each, {batt.d + 8:.0f} deep; "
               f"stack {top:.0f} of {in_H:.0f} tall incl. lug clearance ({in_H - top:.0f} spare); "
-              f"{in_W - 2 * (batt.w + 4) - 4:.0f} mm free beside them (room for a third stack = 6 batteries)")
+              f"centre channel {in_W - 2 * (batt.w + 8):.0f} mm wide (a third stack would fit)")
     if P["frame_source"] == "icebox":
         print("== Rails: stock IceBox 1.3 frame; the 16 kit bars are not needed (2 could be floor joists) ==")
         runs, pool = {}, []
@@ -641,8 +650,11 @@ def report():
     print(f"  2 sides       {mm(in_D + 2 * T)} x {mm(in_H + 2 * T)}")
     print(f"  back + front  {mm(in_W)} x {mm(in_H + 2 * T)}")
     print("== Fit checks ==")
-    mp = COMPONENTS["multiplus"]
-    print(f"  lower card: MultiPlus {mp.w}x{mp.h} on {card_W:.0f}x{lower_h:.0f} -> {'ok' if mp.w <= card_W and mp.h + 10 <= lower_h else 'DOES NOT FIT'}; depth {mp.d} of {P['front_depth']:.0f}")
+    mp = INV
+    fits = mp.w <= card_W and mp.h + 10 <= lower_h and lower_h + 6 <= in_H
+    print(f"  lower card: {mp.note.split(' on')[0]} {mp.w}x{mp.h}x{mp.d} on {card_W:.0f}x{lower_h:.0f} -> "
+          f"{'ok' if fits else 'DOES NOT FIT: ' + ('too long for the card width by %.0f mm' % (mp.w - card_W) if mp.w > card_W else 'too tall')}"
+          f"; upright would need {mp.w + 10:.0f} of {in_H:.0f} mm height")
     for pl in UPPER_CARD_LAYOUT:
         c = COMPONENTS[pl["comp"]]
         bad = []
@@ -657,7 +669,7 @@ def report():
         if pl["z"] + c.h > dist_h: bad.append("Z overflow")
         if dist_x + P["card_t"] + c.d > x_in0 + in_D - 40 and pl["z"] + c.h > P["socket_z"] - 35: bad.append("behind the sockets")
         print(f"  dist card  {c.name:20s} {c.w:>4.0f}x{c.h:>4.0f}x{c.d:>3.0f} @({pl['y']},{pl['z']}) {' '.join(bad) or 'ok'}")
-    kg = N_BATT * 9.5 + 6.4 + 1.3 + 0.33 + 0.5 + 0.3 + 0.3 + 1.5 + 3.0 + (5.0 if P["frame_source"] == "kit" else 19.0)
+    kg = N_BATT * 9.5 + {"multiplus": 6.4, "multiplus_ii": 19.0, "multiplus_4k": 22.0}[P["inverter"]] + 1.3 + 0.33 + 0.5 + 0.3 + 0.3 + 1.5 + 3.0 + (5.0 if P["frame_source"] == "kit" else 19.0)
     print(f"  est. mass ~{kg:.0f} kg; box depth {out_D:.0f} -> tie it to the IceBox panel / plate")
 
 

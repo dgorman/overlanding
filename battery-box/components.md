@@ -11,7 +11,7 @@ Axis convention: Victron states **h × w × d**. Mounting-hole figures are read 
 | SmartSolar MPPT 100/30 | SCC110030210 | h 130 × w 186 × d 70 | 1.3 kg | 4 keyholes (Ø8 head / 5 mm slot); centres **176 × 71.5**; 4.8 mm in from sides, 25 mm below top | Vertical, terminals down | [Drawing](https://www.victronenergy.com/upload/documents/BS-SS-MPPT-100-30.pdf) |
 | SmartShunt 500A/50mV | SHU050150050 | 120 long × 52.5 wide base × 34 tall body (54 with studs) | ~0.32 kg | 2× Ø6 base holes at **101 mm** centres; M10 studs at 55 mm | Any; IP21, keep dry | [Drawing](https://www.victronenergy.com/upload/documents/DimensionDrawing-SmartShunt-500A50mV.pdf) |
 | **MultiPlus 12/800/35-16 120V** (owner-confirmed) | PMP121800100 | **360 × 240 × 100**; siblings 12/500 = 311 × 182 × 100 (4.4 kg), 12/1200 = 406 × 250 × 100 (8.2 kg) | 6.4 kg | 2 top + 2 bottom keyholes, centres **220.6 × 243.8**, upper pair 62.8 from top | Keyhole layout implies vertical, cables down; ≥10 cm clearance all round | [Manual](https://www.victronenergy.com/upload/documents/MultiPlus_12V_500-1200VA_120Vac/155314-MultiPlus_500-1200VA_120Vac-pdf-en.pdf) |
-| Lithium SuperPack 12.8V/60Ah | BAT512060705 | 229 × 138 × 213 (L × W × H) | 9.5 kg | Case only, strap down | Any; internal BMS/switch; M6 terminals | [solar-electric](https://www.solar-electric.com/victron-energy-lithium-superpack-12-8v-60ah-battery.html) |
+| Lithium SuperPack 12.8V/60Ah | BAT512060705 | 229 × 138 × 213 (L × W × H) | 7.5 kg | Case only, strap down | Upright or on its long side; internal BMS; M6; **30 A cont. / 80 A 10 s discharge, 30 A charge, parallel unlimited** | [Datasheet](https://www.victronenergy.com/upload/documents/Datasheet-12,8V-&-25,6-Lithium-SuperPack-EN.pdf) |
 | Lynx Distributor (alternative bus) | LYN060102000 | 288 × 169 × 78 | 2.2 kg | rear slots 178 × 81 | Any | [Drawing](https://www.victronenergy.com/upload/documents/Lynx-Distributor.pdf) |
 
 **Inverter:** owner confirmed MultiPlus 12/800 (800 W). The photographed LED cluster "inverter / charger / alarm" is shared across the 12/500–12/1200 family; dims above are from the family manual, table on p.22.
@@ -36,8 +36,9 @@ Axis convention: Victron states **h × w × d**. Mounting-hole figures are read 
 | Extrusion Frame Modification Kit x.31 | PN 4918-GGR-SH, $139. "Includes both Extrusion Bars and hardware needed." Bar count, lengths and hardware **not stated**. Purpose: add a Seat Delete Module height; fits CampKitchen 2.3 and IceBox 1.3. 8-week build to order. | [Page](https://www.goose-gear.com/products/extrusion-frame-modification-kit-x-31-for-campkitchen-icebox) |
 | MaxLite extrusion | No published cross-section, slot width or 80/20 compatibility. 6063-T6, "26 % lighter". Goose Gear Anchors use roll-in T-nuts for 1/4-20 or M6, consistent with a 10-series-class slot (inference). **Measure a slot.** | [MaxLite](https://www.goose-gear.com/blogs/newsroom/goose-gear-introduces-revolutionary-maxlite-technology-in-explore-series) · [Anchors](https://www.goose-gear.com/products/goose-gear-anchor-kits) |
 
-## Phase 2 candidates (not yet verified against datasheets)
+## Larger inverters (Victron spec page; neither fits a 437 mm card, and four SuperPack 60Ah supply only 120 A)
 
 | Item | Size (mm) | Weight |
 |---|---|---|
-| MultiPlus-II 12/3000/120-50 120V | 506 × 275 × 147 (h × w × d) | ~19 kg |
+| MultiPlus-II 12/3000/120-50 120V | 578 × 277 × 148 (h × w × d), 3000 VA / 2400 W, 5500 W peak, 120 A charger | 19 kg |
+| MultiPlus-II 12/4k/160-50 120V | 631 × 277 × 164, 160 A charger | 22 kg |
