@@ -16,24 +16,42 @@
 
 ## Versions
 
-**v7 (current): 345 mm wide, your four SuperPack 60Ah, lengthwise cards** (`python cage.py v7`)
+**v8 (current): v7's battery bay, three cards across the box** (`python cage.py v8`)
+
+Same frame width and battery bay as v7, but the cards face across the box like v4, so each one only costs its own thickness in depth. More cards across is *less* depth, not more, because the inverter's 100 mm goes along the depth instead of its 250 mm. The box is **598 deep × 345 wide × 559 tall: 6.5 in shorter in depth and 5.6 in narrower than the IceBox**, same height.
+
+| Depth chain, IceBox end to front | mm |
+|---|---|
+| battery bay (two touching stacks of two SuperPack 60Ah, on the plate) | 261 |
+| gap | 10 |
+| **inverter card**: MultiPlus 12/1200 upright on 10 mm standoffs, SmartShunt above it | 6 + 10 + 100 + 8 |
+| **charge card**: MPPT, Orion, Cerbo, Garmin | 6 + 70 + 8 |
+| **distribution card**: bus bars, breakers (parts start at 140 mm up) | 6 + 46 + 8 |
+| front margin; sockets in the front panel's lower band, 50–110 mm up | 8 |
+
+- Cards are 277 × 494 mm, printed as 2 × 2 ribbed tiles of 138 × 247 (see "Printed cards" below), in printed posts bolted to the top and bottom depth rails (the v4 post design). No cross-members: the posts don't need them and the trays and straps hold the batteries.
+- Frame: 4 width rails from kit bars cut to 294; the IceBox's 4 height rails uncut and its 4 depth rails cut to 547.
+- Service: lid off, lift any card straight up (277 wide, 494 tall; needs ~1050 mm plate-to-ceiling, or tilt forward into the gap); batteries lift out of the bay.
+- ~60 kg.
+
+**v7: 345 mm wide, 642 deep, your four SuperPack 60Ah, lengthwise cards** (`python cage.py v7`)
 
 The 200Ah Smarts and the MultiPlus-II are shelved. v7 is built around what you own and the pedal clearance:
 
 | | mm |
 |---|---|
-| Outer | 762 deep × **345 wide (13.6 in)** × 559 tall: **5.6 in narrower than the IceBox**, flush with its right face |
-| Battery bay (IceBox end, on the plate) | two stacks of two SuperPack 60Ah, trays touching: 294 of 294 wide, 256 deep, 468 tall (91 mm under the lid). Printed trays, mid-shelves and 9 mm legs (each carries under 2 kg); no vent gaps are required for SuperPacks |
+| Outer | **642 deep (25.3 in) × 345 wide (13.6 in) × 559 tall**: 5.6 in narrower and 4.7 in shorter in depth than the IceBox, same height, flush with its right face (`depth="fit"`, `card_len=280`) |
+| Battery bay (IceBox end, on the plate) | two stacks of two SuperPack 60Ah, trays touching: 294 of 294 wide, 261 deep, 468 tall (91 mm under the lid). Printed trays, mid-shelves and 9 mm legs (each carries under 2 kg); no vent gaps are required for SuperPacks |
 | Cross-members | two spare kit bars cut to 294 at the bay's front edge, top and bottom, in printed corner brackets. They stop the batteries and carry the rear card posts |
-| Cards | both **lengthwise** in front of the bay, 401 × 494 mm, posts on the cross-bars and the front width rail. Inverter card: **MultiPlus 12/1200 upright, terminals down** (its preferred orientation; the card is too short for it on its side), Orion and the Cerbo beside it. Distribution card: bus bars, shunt, breakers, MPPT, Garmin |
+| Cards | both **lengthwise** in front of the bay, 281 × 494 mm, printed, posts on the cross-bars and the front width rail. Inverter card: the **MultiPlus 12/1200 upright, terminals down**, alone. Distribution card: breakers, bus bars, MPPT and Garmin in one column; shunt, Orion and the Cerbo (turned 90°) in the other |
 | Across the front zone, from the inboard wall | 17 post/plate · 110 inverter + standoff · 4 · 52 distribution · **96 mm of cable and Anderson space** against the outboard wall |
 | Bank | 240 Ah, 3.1 kWh, 120 A continuous against the 12/1200's ~105 A; SuperPacks have their own BMS, so no VE.Bus BMS |
-| Frame cuts | 4 width rails + 2 cross-members from kit bars (6 of 16); height and depth rails from the IceBox |
-| Mass | ~63 kg |
+| Frame cuts | 4 width rails + 2 cross-members from kit bars (6 of 16); the IceBox's 4 height rails uncut, its 4 depth rails cut from 711 to 592 |
+| Mass | ~61 kg |
 
 Service: lid off, everything is reached from the top; the batteries lift straight out of the bay behind the top cross-bar. The cards are full height and come out with the box out of the truck.
 
-**Are the cards printable?** Not as one piece: each card is 401 × 494 mm against a 256 × 256 bed. They are meant to be cut from 6 mm sheet (black phenolic ply to match the IceBox, HDPE, or 3 mm aluminium) and drilled from the component hole patterns in `components.md`. If you'd rather print them, each card is four tiles of about 200 × 247 mm joined with printed dovetail splines and a bead of CA, with the heavy units bolted through two tiles. Every other part in `stl/v7/` fits the bed: trays 237 × 146, shelves 255 × 146, posts in two segments, legs, brackets, cubes, socket insert.
+**Printed cards (v7 and v8).** Each card is a **2 × 2 grid of ribbed tiles, about 140 × 247 × 6 mm**, with a solid 12 mm border and 8 mm ribs on a 45 mm pitch, so the 6 mm edge rides in the same post slots as a sheet and the Victron units bolt through the ribs with M5/M6 hardware and printed backing washers. The four tiles join with six 3 mm printed splines glued across the ribs on the back face. About 440 g of PETG and 6 h of printing per card; print tiles flat, 4 walls, 40 % gyroid, PETG or ASA. Every other part in `stl/v7/` and `stl/v8/` also fits the bed: trays 237 × 146, shelves 255 × 146, posts in two segments, legs, brackets, cubes, socket insert.
 
 | | v4 cube (`cage-v4-cube`) | v5 second IceBox |
 |---|---|---|
@@ -251,6 +269,8 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-04 | **v8:** cards turned across the box (three: inverter, charge, distribution). 598 deep, 6.5 in shorter than the IceBox; v7 kept. |
+| 2026-10-04 | v7: port wall brought in to the gear (642 deep, 4.7 in shorter), height kept at 559; cards are printed 2 × 2 ribbed tiles; 12/1200 upright alone on its card, Orion + Cerbo on the distribution card. |
 | 2026-10-04 | **v7:** 200Ah Smarts and MultiPlus-II shelved. Four SuperPack 60Ah in two touching stacks at the IceBox end, kit-bar cross-members, both cards lengthwise in front with the 12/1200 upright. 345 mm wide (5.6 in narrower). |
 | 2026-10-04 | Cage right-justified against the IceBox (`align="right"`); noted that a single-card layout would reach 384 mm. |
 | 2026-10-04 | Frame narrowed to 440 mm (sized from the Y stack, for bike pedals beside the box). `bookshelf60` checks the owner's SuperPack 60Ah in the 200Ah trays: fits with spacers. Dimension lines added to the viewer. |
