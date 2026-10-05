@@ -39,11 +39,20 @@ Started as the way to fit a MultiPlus-II; kept because it leaves the whole batte
 | gap | 4 |
 | distribution card plate + parts facing the batteries (≤ 46 deep) | 52 |
 | gap | 4 |
-| **battery column** against the outboard wall | **240** (the batteries need 192 with Victron's 20 mm vent gaps; 48 mm spare) |
+| **battery column** against the outboard wall | **193** (tray 160 + Victron's 20 mm vent each side; no spare, by design) |
+| **frame width** | **440 mm (17.3 in)**: 48 mm narrower than the IceBox, to leave room for bike pedals beside the box. The four width rails are kit bars cut to 389 mm. `pedal_gap` in `cage.py` adds width back if you want slack. |
 
 - The inverter/charger card is 694 × 494 mm; the MultiPlus 12/1200 uses 406 of it and sits on 10 mm standoffs so its case clears the post bodies. Above it there are 240 mm for the **MPPT, Orion and Cerbo** on the same card. (A MultiPlus-II 12/3000 still fits this card on its side if that ever comes back; `--inverter=multiplus_ii`.)
 - The distribution card carries bus bars, shunt, breakers, the **VE.Bus BMS V2** and the Garmin at the front end near the sockets. Nothing on it is deeper than 46 mm, which is what buys the battery column its vent gaps.
 - The battery column is 240 mm wide and 711 mm deep, standing on the Goose Gear plate. The build is **four Lithium Smart 12.8V/200Ah, two end to end and two high** (152 wide, 321 long, 237 tall each) in a printed rack: 698 of 711 mm deep with 15 mm end gaps, 516 of 559 mm tall with 43 mm over the top lugs. **800 Ah, 10.2 kWh, 800 A recommended, 80 kg**, with the VE.Bus BMS V2 on the distribution card. The 12/1200 draws ~105 A at full output, so this bank runs it for most of a day; its 50 A charger needs ~16 h from empty, which is why solar and the Orion matter. The two-battery alternative (`bookshelf2`) is 400 Ah with no rack. With 240 mm of column, the Lithium Smart 330Ah (206 wide) would also fit if a single bigger pair is ever preferred.
+
+### Your SuperPack 60Ah in the same trays (`python cage.py bookshelf60`)
+
+They fit: the 200Ah tray pocket is 321 × 152 and a SuperPack 60Ah is 229 × 138, so 92 mm of slack in length and 14 mm in width. The four of them make a 2 × 2 that is 468 mm tall (91 mm under the lid) and only 514 mm deep. The slack needs printed spacer blocks in each pocket so a battery can't shuttle under braking; the straps do the rest. As a bank it is 240 Ah with 120 A of continuous discharge, which still clears the 12/1200's ~105 A draw with little margin. Good as a "use what I have" first fill of the box; the trays, rack and cards don't change when the 200Ah Smarts arrive.
+
+### Dimensions in the viewer
+
+The **Dimensions** checkbox draws the overall depth, width and height, the Y stack across the box (battery tray, gap to the distribution parts, dist parts, gap, inverter), the battery column, the rack depth, the stack height and the card length, each labelled in mm. They come from `dims_bookshelf()` in `cage.py`, so they move with the parameters.
 
 ### Four 200Ah as a 2 × 2 vs two end to end (`bookshelf` vs `bookshelf2`)
 
@@ -221,6 +230,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-04 | Frame narrowed to 440 mm (sized from the Y stack, for bike pedals beside the box). `bookshelf60` checks the owner's SuperPack 60Ah in the 200Ah trays: fits with spacers. Dimension lines added to the viewer. |
 | 2026-10-04 | Inverter back to the owner's MultiPlus 12/1200/50 (Victron STEP added); v6 column widens to 240 mm; 2 × 2 of 200Ah is now the main v6, two end to end is `bookshelf2`. MPPT STEP flipped terminals-down. |
 | 2026-10-04 | Battery column now stands on the Goose Gear plate (floor cut away under it): +31 mm of height, 43 mm over the top lugs in the 2 × 2. Viewer fetches are cache-busted per publish. Victron STEP geometry replaces the grey boxes where Victron publishes a file. |
 | 2026-10-04 | Asked about 4 × 200Ah: added the `bookshelf4` 2 × 2 variant with a six-leg printed rack; it fits with 15 mm end gaps and 11 mm over the top lugs, recommendation stays at 2 × 200Ah. Column widened to 192 mm for Victron's 20 mm vents by moving the Cerbo to the inverter card. |
