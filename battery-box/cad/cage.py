@@ -65,14 +65,14 @@ VARIANTS = {
                batt_layout="v7", dist_forward=False, inverter="multiplus_1200_up",
                card_plane="v7", column=["battery", "battery"], arrange="2x2", col_on_plate=True,
                narrow=True, tray_for="battery", align="right", height="icebox", depth="fit", card_len=280.0,
-               card_style="lattice"),
+               card_style="solid"),
     # v8: v7's battery bay, then THREE cards ACROSS the box (facing like v4): inverter, charge/brains,
     # distribution.  The 12/1200 only costs its 100 mm thickness in depth.
     "v8": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
                batt_layout="v8", dist_forward=False, inverter="multiplus_1200_up",
                card_plane="v8", column=["battery", "battery"], arrange="2x2", col_on_plate=True,
                narrow=True, tray_for="battery", align="right", height="icebox", depth="fit8",
-               card_style="lattice"),
+               card_style="solid"),
     # v6 check: the owner's four SuperPack 60Ah dropped into the same 200Ah trays
     "bookshelf60": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
                         batt_layout="column", dist_forward=False, inverter="multiplus_1200",
@@ -1035,9 +1035,9 @@ def lattice_card_tiles(L, H, x0, y_plate, z0, prefix, patches=(), solids=()):
     for i in range(nx):
         for j in range(nz):
             tile = box(tw, t, th)
-            # openings between ribs, inside the border
+            # openings between ribs, inside the border (card_style "solid" keeps the plate full)
             ox, oz = b, b
-            while ox + rib < tw - b:
+            while P["card_style"] != "solid" and ox + rib < tw - b:
                 w = min(LAT["pitch"] - rib, tw - b - ox)
                 oz = b
                 while oz + rib < th - b:
@@ -1128,7 +1128,7 @@ def build_v7(a):
         patches = [(pl["x"] + du, pl["z"] + dv) for pl in layout for (du, dv) in HOLES.get(pl["comp"], [])]
         solids = [(pl["x"] - 10, pl["z"] - 10, COMPONENTS[pl["comp"]].w + 20, COMPONENTS[pl["comp"]].h + 20)
                   for pl in layout if pl["comp"].startswith("multiplus")]
-        if P["card_style"] == "lattice":
+        if P["card_style"] in ("lattice", "solid"):
             for nm, shp in lattice_card_tiles(g["card_L"], plate_h, g["card_x0"], py_plate, floor_top + 2, f"card_{name}", patches, solids):
                 add(a, shp, nm + "__card", ORANGE if "spline" in nm else DARK)
         else:
@@ -1214,7 +1214,7 @@ def build_v8(a):
         patches = [(pl["y"] + du, pl["z"] + dv) for pl in layout for (du, dv) in HOLES.get(pl["comp"], [])]
         solids = [(pl["y"] - 10, pl["z"] - 10, COMPONENTS[pl["comp"]].w + 20, COMPONENTS[pl["comp"]].h + 20)
                   for pl in layout if pl["comp"].startswith("multiplus")]
-        if P["card_style"] == "lattice":
+        if P["card_style"] in ("lattice", "solid"):
             for nm, shp in lattice_card_tiles_yz(cw, ch, cx, cy0, floor_top + 2, f"card_{name}", patches, solids):
                 add(a, shp, nm + "__card", ORANGE if "spline" in nm else DARK)
             for pl in layout:   # backing plates behind the heavy unit's bolts (back face of the card)
@@ -1283,7 +1283,9 @@ def report_v8():
     print(f"kit bars: 4 width rails cut to {mm(out_W - 2 * C)} (4 of 16); from the IceBox: 4 height rails uncut, 4 depth rails cut to {mm(out_D - 2 * C)}; no cross-members")
     cw, ch = g.get("cw", in_W - 17), g.get("ch", in_H - 8)
     nx = int(-(-cw // LAT["tile_max"])); nz = int(-(-ch // LAT["tile_max"]))
-    print(f"cards           : 3 x {mm(cw)} wide x {mm(ch)} tall, printed {nx} x {nz} ribbed tiles of {cw / nx:.0f} x {ch / nz:.0f} each; inverter {inv.w}x{inv.h} upright "
+    kind = "solid" if P["card_style"] == "solid" else "ribbed"
+    print(f"cards           : 3 x {mm(cw)} wide x {mm(ch)} tall, printed {nx} x {nz} {kind} 6 mm tiles of {cw / nx:.0f} x {ch / nz:.0f} each "
+          f"(~{nx * nz * (cw / nx) * (ch / nz) * 6 * 1.27e-3 * (1.0 if kind == 'solid' else 0.55):.0f} g PETG, ~{nx * nz * (2.3 if kind == 'solid' else 1.4):.0f} h per card); inverter {inv.w}x{inv.h} upright "
           f"({'fits' if inv.w + 13 <= cw and inv.h + 12 <= ch else 'DOES NOT FIT'})")
     for name, layout in (("inverter", V8_INV_LAYOUT), ("charge", V8_CHARGE_LAYOUT), ("dist", V8_DIST_LAYOUT)):
         for pl in layout:
@@ -1499,10 +1501,11 @@ def report_v7():
           f"and {558.8 - out_H:.0f} mm ({(558.8 - out_H) / 25.4:.1f} in) shorter than the IceBox")
     print(f"kit bars: 4 width rails cut to {mm(out_W - 2 * C)} + 2 cross-members cut to {mm(in_W)} (6 of 16); "
           f"from the IceBox: 4 height rails {mm(out_H - 2 * C)} uncut, 4 depth rails cut from 711 to {mm(out_D - 2 * C)}")
-    if P["card_style"] == "lattice":
+    if P["card_style"] in ("lattice", "solid"):
         nx = int(-(-g["card_L"] // LAT["tile_max"])); nz = int(-(-(in_H - 8) // LAT["tile_max"]))
-        print(f"printed cards   : each card = {nx} x {nz} ribbed tiles of {g['card_L'] / nx:.0f} x {(in_H - 8) / nz:.0f} x {LAT['t']:.0f} mm "
-              f"+ {3 * (nx - 1 + nz - 1)} splines; ~{nx * nz * 110:.0f} g PETG and ~{nx * nz * 1.4:.0f} h per card")
+        kind = "solid" if P["card_style"] == "solid" else "ribbed"
+        print(f"printed cards   : each card = {nx} x {nz} {kind} tiles of {g['card_L'] / nx:.0f} x {(in_H - 8) / nz:.0f} x {LAT['t']:.0f} mm "
+              f"+ {3 * (nx - 1 + nz - 1)} splines; ~{nx * nz * (205 if kind == 'solid' else 110):.0f} g PETG and ~{nx * nz * (2.3 if kind == 'solid' else 1.4):.0f} h per card")
     st = g.get("stack_top", 2 * b.h + 4 + 2 * P["term_clear"] + P["shelf_t"])
     print(f"battery bay     : 2 stacks x {V7['tray_w']:.0f} = {V7['bay_W']:.0f} of {in_W:.0f} wide, {V7['bay_D']:.0f} deep, stack {st:.0f} of {out_H:.0f} tall to the lid ({out_H - st:.0f} spare)")
     print(f"cards           : {mm(g['card_L'])} long x {mm(in_H - 8)} tall; inverter {inv.w}x{inv.h} "
