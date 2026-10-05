@@ -73,6 +73,13 @@ VARIANTS = {
                card_plane="v8", column=["battery", "battery"], arrange="2x2", col_on_plate=True,
                narrow=True, tray_for="battery", align="right", height="icebox", depth="fit8",
                card_style="solid"),
+    # v9: v8 with a fixed BUS DECK on top of the battery rack (bus bars, breakers, shunt, connector
+    # receptacles) so each of the two remaining cards unplugs and lifts out on its own.
+    "v9": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
+               batt_layout="v9", dist_forward=False, inverter="multiplus_1200_up",
+               card_plane="v9", column=["battery", "battery"], arrange="2x2", col_on_plate=True,
+               narrow=True, tray_for="battery", align="right", height="icebox", depth="fit9",
+               card_style="solid"),
     # v6 check: the owner's four SuperPack 60Ah dropped into the same 200Ah trays
     "bookshelf60": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
                         batt_layout="column", dist_forward=False, inverter="multiplus_1200",
@@ -195,6 +202,8 @@ COMPONENTS = {
     "breaker_a": Comp("power_breaker_a", 48, 43, 74, "battery breaker, surface mount"),
     "breaker_b": Comp("power_breaker_b", 48, 43, 74, "battery breaker, surface mount"),
     "anderson":  Comp("socket_anderson", 48, 10, 36, "Anderson SB50 panel mount, solar in (verify hole 48 x 36)"),
+    "sb175":     Comp("socket_sb175", 79, 50, 38, "Anderson SB175 (1/0-4 AWG contacts), inverter DC"),
+    "sb50":      Comp("socket_sb50", 47, 35, 24, "Anderson SB50 (6-12 AWG contacts)"),
 }
 
 # Distribution card (rear layer, inboard of the battery column, slides down
@@ -228,7 +237,7 @@ if P["frame_source"] == "kit":
 else:
     out_W, out_H, out_D = P["frame_W"], P["frame_H"], P["frame_D"]   # a stock IceBox 1.3 frame
 V8 = dict(bay_gap=10.0, inv_gap=8.0, charge_gap=8.0, dist_gap=8.0, front=8.0, charge_depth=70.0, dist_depth=46.0)
-if P["narrow"] and P["card_plane"] in ("v7", "v8"):
+if P["narrow"] and P["card_plane"] in ("v7", "v8", "v9"):
     _b = COMPONENTS["battery"]
     V7 = dict(wall=4.0, leg=9.0, end_gap=15.0, bay_slack=2.0, bar_gap=5.0)   # 9 mm legs keep the shelf under the 256 mm bed
     V7["tray_w"] = _b.w + 2 * V7["wall"]                          # 146
@@ -242,6 +251,12 @@ if P["narrow"] and P["card_plane"] in ("v7", "v8"):
     if P["depth"] == "fit":
         _posts = 2 * (P["post_d"] - P["slot_depth"]) + 2 * P["card_clear"]
         in_D = round(V7["bay_D"] + V7["bar_gap"] + B + 2 + _posts + P["card_len"] + 1, 1)
+        out_D = in_D + 2 * B
+    if P["depth"] == "fit9":
+        _inv = COMPONENTS[P["inverter"]]
+        V8["x_inv"] = V7["bay_D"] + V8["bay_gap"]
+        V8["x_charge"] = V8["x_inv"] + P["card_t"] + 10.0 + _inv.d + V8["inv_gap"]
+        in_D = round(V8["x_charge"] + P["card_t"] + V8["charge_depth"] + V8["charge_gap"] + V8["front"], 1)
         out_D = in_D + 2 * B
     if P["depth"] == "fit8":
         _inv = COMPONENTS[P["inverter"]]
@@ -286,7 +301,7 @@ if P["card_plane"] == "xz":   # Andersons move to the front panel: (y centre, z 
 if P["card_plane"] == "v7":
     ANDERSONS = []
     SOCKETS = [(20, 29), (60, 29), (100, 29), (140, 22)]              # over the outboard cable space
-if P["card_plane"] == "v8":
+if P["card_plane"] in ("v8", "v9"):
     ANDERSONS = []
     SOCKETS = [(40, 29), (85, 29), (130, 29), (175, 22), (215, 22)]   # lower band of the front panel
     P["socket_z"] = 80.0
@@ -662,7 +677,7 @@ def build() -> cq.Assembly:
             n = f"d{next(di)}"; add_rail(a, n, "x", (C, y + B / 2, z + B / 2), runs[n], GRAY, ORANGE)
 
     # --- panels: floor on the bottom rails; everything else on the outside ----
-    if P["card_plane"] not in ("v7", "v8"):
+    if P["card_plane"] not in ("v7", "v8", "v9"):
         floor = box(out_D, out_W, T, (0, 0, B))
         if P["col_on_plate"]:   # open floor under the battery column; trays sit on the Goose Gear plate
             floor = floor.cut(box(in_D, 200, T + 2, (x_in0, y_in0, B - 1)))
@@ -699,10 +714,17 @@ def build() -> cq.Assembly:
     # --- floor joists: two spare bars under the battery zone ------------------
     joist_len = out_D - 2 * C
     joist_ys = (row_W * 0.3, row_W * 0.7) if P["card_plane"] == "yz" else (30.0, 130.0)
-    if not P["col_on_plate"] and P["card_plane"] not in ("v7", "v8"):
+    if not P["col_on_plate"] and P["card_plane"] not in ("v7", "v8", "v9"):
         for j, y in enumerate(joist_ys):
             add(a, bar(joist_len, "x").translate((C, y_in0 + y, B / 2)), f"bar_joist_{j}", GRAY)
 
+    if P["card_plane"] == "v9":
+        build_v9(a)
+        if P["show_icebox"]:
+            for nm, shp in icebox_parts():
+                col = BLACK if "cube" in nm else GRAY if "bar" in nm else (0.35, 0.35, 0.35)
+                add(a, shp, nm, col)
+        return a
     if P["card_plane"] == "v8":
         build_v8(a)
         if P["show_icebox"]:
@@ -1151,6 +1173,31 @@ def build_v7(a):
 
 
 FEET_H = 18.0        # printed feet under the MultiPlus: it stands on these, the bolts only hold it to the card
+# v9: bus deck on top of the battery rack (x along the depth from the bay's back, y across; parts stand up)
+V9_DECK_LAYOUT = [   # deck is ~255 (x, depth) x 294 (y); bus bars run across (155 along y)
+    dict(comp="busbar_n",  x=20,  y=20),
+    dict(comp="breaker_a", x=20,  y=190),
+    dict(comp="breaker_b", x=20,  y=245),
+    dict(comp="busbar_p",  x=65,  y=20),
+    dict(comp="shunt",     x=120, y=20),
+    dict(comp="sb175",     x=200, y=20),    # inverter DC, at the deck's front edge
+    dict(comp="sb50",      x=200, y=110),   # MPPT
+    dict(comp="sb50",      x=200, y=165),   # Orion
+    dict(comp="sb50",      x=200, y=220),   # Garmin + Cerbo feed
+]
+V9_INV_LAYOUT = [    # inverter card: the 12/1200 and its SB175 pigtail housing at the top rear corner
+    dict(comp="multiplus_1200_up", y=13, z=2 + FEET_H),
+    dict(comp="sb175", y=185, z=430),
+]
+V9_CHARGE_LAYOUT = [
+    dict(comp="mppt",  y=12,  z=20),
+    dict(comp="orion", y=12,  z=175),
+    dict(comp="cerbo", y=12,  z=340),
+    dict(comp="garmin", y=145, z=175),
+    dict(comp="sb50",  y=200, z=20),
+    dict(comp="sb50",  y=200, z=60),
+    dict(comp="sb50",  y=200, z=100),
+]
 V8_INV_LAYOUT = [    # inverter card, parts face +X (forward); y from the card's outboard end, z from its bottom
     dict(comp="multiplus_1200_up", y=13, z=2 + FEET_H),
     dict(comp="shunt", y=80, z=410),
@@ -1169,7 +1216,7 @@ V8_DIST_LAYOUT = [   # keep parts above z=130: the socket bodies sit in the fron
 ]
 
 
-def build_v8(a):
+def build_v8(a, nine=False):
     g = dict()
     b = COMPONENTS["battery"]; wall, L = V7["wall"], V7["leg"]
     # --- battery bay (same rack as v7) -------------------------------------
@@ -1190,13 +1237,26 @@ def build_v8(a):
                 sh = sh.cut(box(b.d, b.w, 13, (L + wall, wall, P["shelf_t"])))
                 sh = sh.cut(box(fd - 2 * wall - 30, fw - 2 * wall - 30, P["shelf_t"] + 1, (L + wall + 15, wall + 15, -0.5)))
                 add(a, sh.translate((tx - L, ty, z)), f"print_shelf_{sidx}", ORANGE)
+                leg_h = z if not nine else (4 + 2 * b.h + P["term_clear"] + P["shelf_t"] + P["term_clear"])   # v9: legs run up to the bus deck
                 for (lx, ly) in ((tx - L, ty), (tx - L, ty + fw - L), (tx + fd, ty), (tx + fd, ty + fw - L)):
-                    leg = box(L, L, z)
+                    leg = box(L, L, leg_h)
                     foot = box(L, L + 16, 6, (0, -8, 0)).cut(cq.Workplane("XY").center(L / 2, L / 2).circle(3.4).extrude(7))
                     add(a, leg.union(foot).translate((lx, ly, 0)), f"print_leg_{sidx}_{int(lx)}_{int(ly)}", ORANGE)
                 z += P["shelf_t"]
     g["stack_top"] = z + P["term_clear"]
     g["bay_x1"] = x_in0 + V7["bay_D"]
+    if nine:
+        # --- bus deck: printed plate on the rack legs, over both stacks ------------
+        dz = g["stack_top"]
+        deck = box(V7["bay_D"] - V7["end_gap"] + L, V7["bay_W"], P["card_t"], (x_in0 + V7["end_gap"] - L, y_in0 + 1, dz))
+        deck = deck.cut(box(120, 60, P["card_t"] + 2, (x_in0 + 40, y_in0 + 1 + V7["bay_W"] / 2 - 30, dz - 1)))   # hand/cable window over the lugs
+        add(a, deck, "print_bus_deck", ORANGE)
+        for pl in V9_DECK_LAYOUT:
+            c = COMPONENTS[pl["comp"]]
+            at = (x_in0 + V7["end_gap"] - L + pl["x"], y_in0 + 1 + pl["y"], dz + P["card_t"])
+            col = (0.3, 0.3, 0.3) if c.name.startswith("socket") else GOLD
+            add(a, victron_shape(pl["comp"], c.d, c.w, c.h, at, box(c.d, c.w, c.h, at).edges("|Z").fillet(3)), c.name + f"_{int(pl['x'])}_{int(pl['y'])}", col)
+        g["deck_z"] = dz
 
     # --- floor panel under the card zone ----------------------------------------
     add(a, box(x_in0 + in_D - g["bay_x1"], in_W, T, (g["bay_x1"], y_in0, B)), "panel_floor_front", PANEL)
@@ -1206,9 +1266,13 @@ def build_v8(a):
     cy0 = y_in0 + (in_W - cw) / 2
     ch = in_H - 8
     inv = COMPONENTS[P["inverter"]]
-    cards = (("inverter", x_in0 + V8["x_inv"], V8_INV_LAYOUT, 10.0),
-             ("charge", x_in0 + V8["x_charge"], V8_CHARGE_LAYOUT, 0.0),
-             ("dist", x_in0 + V8["x_dist"], V8_DIST_LAYOUT, 0.0))
+    if nine:
+        cards = (("inverter", x_in0 + V8["x_inv"], V9_INV_LAYOUT, 10.0),
+                 ("charge", x_in0 + V8["x_charge"], V9_CHARGE_LAYOUT, 0.0))
+    else:
+        cards = (("inverter", x_in0 + V8["x_inv"], V8_INV_LAYOUT, 10.0),
+                 ("charge", x_in0 + V8["x_charge"], V8_CHARGE_LAYOUT, 0.0),
+                 ("dist", x_in0 + V8["x_dist"], V8_DIST_LAYOUT, 0.0))
     g.update(cw=cw, cy0=cy0, ch=ch, cards={n: x for n, x, _, _ in cards})
     for name, cx, layout, standoff in cards:
         patches = [(pl["y"] + du, pl["z"] + dv) for pl in layout for (du, dv) in HOLES.get(pl["comp"], [])]
@@ -1237,12 +1301,16 @@ def build_v8(a):
                 for yy in (pl["y"] + 25, pl["y"] + c.w - 85):   # two 60 mm wide feet under the housing, 18 tall, standoff deep
                     add(a, box(standoff + 4, 60, FEET_H, (cx + P["card_t"], cy0 + yy, floor_top + 2 + pl["z"] - FEET_H)), f"print_feet_mp_{int(yy)}__card", ORANGE)
             at = (cx + P["card_t"] + standoff, cy0 + pl["y"], floor_top + 2 + pl["z"])
-            col = BLUE if c.name.startswith("victron") else (0.08, 0.08, 0.08) if c.name.startswith("garmin") else GOLD
+            col = BLUE if c.name.startswith("victron") else (0.08, 0.08, 0.08) if c.name.startswith("garmin") else (0.3, 0.3, 0.3) if c.name.startswith("socket") else GOLD
             # parts face +X: their depth d runs along X, width w along Y
             add(a, victron_shape(pl["comp"], c.d, c.w, c.h, at, box(c.d, c.w, c.h, at).edges("|X").fillet(3)),
-                c.name + "__card", col)
+                c.name + f"_{int(pl['y'])}_{int(pl['z'])}__card", col)
     BS["_g8"] = g
     return g
+
+
+def build_v9(a):
+    return build_v8(a, nine=True)
 
 
 def lattice_card_tiles_yz(W, H, x_plate, y0, z0, prefix, patches=(), solids=()):
@@ -1270,6 +1338,71 @@ def dims_v8():
     dim([x_in0 - 30, y_in0 + V7["tray_w"] / 2, 0], [x_in0 - 30, y_in0 + V7["tray_w"] / 2, g.get("stack_top", 468)], f"stack {g.get('stack_top', 468):.0f} of {out_H:.0f}", [-40, 0, 0])
     dim([xi, out_W + 30, floor_top + 2], [xi, out_W + 30, floor_top + 2 + g.get("ch", in_H - 8)], f"cards {g.get('ch', in_H - 8):.0f} tall x {g.get('cw', in_W - 17):.0f} wide", [0, 40, 0])
     return D
+
+
+def dims_v9():
+    g = BS.get("_g8") or {}
+    top = out_H + 40; D = []
+    def dim(p1, p2, label, off): D.append(dict(a=p1, b=p2, label=label, off=off))
+    dim([0, 0, top], [out_D, 0, top], f"depth {out_D:.0f} mm ({out_D / 25.4:.1f} in)", [0, -60, 0])
+    dim([0, 0, top], [0, out_W, top], f"width {out_W:.0f} mm ({out_W / 25.4:.1f} in)", [-60, 0, 0])
+    dim([out_D + 60, 0, 0], [out_D + 60, 0, out_H], f"height {out_H:.0f} mm ({out_H / 25.4:.1f} in)", [40, 0, 0])
+    y = -30; z = 40
+    xi, xc = x_in0 + V8["x_inv"], x_in0 + V8["x_charge"]
+    dim([x_in0, y, z], [x_in0 + V7["bay_D"], y, z], f"battery bay + bus deck {V7['bay_D']:.0f}", [0, -40, 0])
+    dim([xi, y, z], [xc, y, z], f"inverter card {xc - xi:.0f}", [0, -80, 0])
+    dim([xc, y, z], [x_in0 + in_D, y, z], f"charge card {x_in0 + in_D - xc:.0f}", [0, -40, 0])
+    dz = g.get("deck_z", 468)
+    dim([x_in0 - 30, y_in0 + 60, 0], [x_in0 - 30, y_in0 + 60, dz], f"rack + deck at {dz:.0f}", [-40, 0, 0])
+    dim([x_in0 - 30, y_in0 + 60, dz], [x_in0 - 30, y_in0 + 60, out_H], f"{out_H - dz:.0f} over the deck", [-90, 0, 0])
+    return D
+
+
+CABLE_SPEC = [   # (run, Victron recommendation, fuse, connector)
+    ("Battery stacks -> bus deck (per stack, 2 x 60Ah)", "6 AWG (SuperPack 60Ah: 30 A each; Victron M6 terminals)", "breaker per stack on the deck", "lugs on the deck bus bars"),
+    ("Bus deck -> MultiPlus 12/1200", "2 AWG / 35 mm2 (Victron: 12/1200 manual), <= 1.5 m", "150 A (Victron) at the deck", "Anderson SB175 (1/0-4 AWG contacts)"),
+    ("Bus deck -> Orion XS 12/12-50 output", "6 AWG / 16 mm2 (Victron: 50 A, < 5 m)", "60-70 A", "Anderson SB50, 6 AWG contacts"),
+    ("Alternator -> Orion XS input", "6 AWG, 60-70 A fuse at the start battery", "60-70 A", "Anderson SB50 at the front panel"),
+    ("Bus deck -> MPPT 100/30 battery side", "10 AWG / 6 mm2 (Victron: 30 A)", "40 A", "Anderson SB50, 10 AWG contacts"),
+    ("Solar array -> MPPT PV side", "10 AWG; PV fuse per Victron if > 1 string", "per string", "Anderson SB50 at the front panel"),
+    ("Bus deck -> Garmin PowerSwitch feed", "10 AWG (Garmin: 50 A max on the PowerSwitch)", "60 A", "Anderson SB50, 10 AWG contacts"),
+    ("Bus deck -> Cerbo GX", "16 AWG", "3 A", "Anderson Powerpole 15"),
+    ("Shore AC in / inverter AC out", "12 AWG, per the MultiPlus AC in/out ratings", "AC breaker in the MultiPlus", "L14-30 inlet / outlet at the front panel"),
+]
+
+
+def report_v9():
+    mm = lambda v: f"{v:.0f} mm ({v / 25.4:.2f} in)"
+    g = BS.get("_g8") or {}; inv = COMPONENTS[P["inverter"]]
+    print("== Variant 'v9': v8 + a fixed bus deck on the battery rack; two cards, each unplugs and lifts out alone ==")
+    print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}  -> {487.4 - out_W:.0f} mm ({(487.4 - out_W) / 25.4:.1f} in) narrower, "
+          f"{762 - out_D:.0f} mm ({(762 - out_D) / 25.4:.1f} in) shorter in depth than the IceBox, same height")
+    print(f"depth chain     : bay + deck {V7['bay_D']:.0f} | gap {V8['bay_gap']:.0f} | inverter card {P['card_t']:.0f}+10+{inv.d:.0f}+{V8['inv_gap']:.0f} "
+          f"| charge card {P['card_t']:.0f}+{V8['charge_depth']:.0f}+{V8['charge_gap']:.0f} | front {V8['front']:.0f}")
+    dz = g.get("deck_z", 468)
+    print(f"bus deck        : printed 6 mm plate on the rack legs at {dz:.0f} mm, {out_H - dz:.0f} mm under the lid; carries bus bars, 2 breakers, shunt, "
+          f"SB175 + 3 x SB50 receptacles at its front edge; hand window over the battery lugs")
+    cw, ch = g.get("cw", in_W - 17), g.get("ch", in_H - 8)
+    print(f"cards           : 2 x {mm(cw)} x {mm(ch)} solid printed tiles; each card's pigtails end in a connector at its top rear corner, mating on the deck")
+    for name, layout in (("inverter", V9_INV_LAYOUT), ("charge", V9_CHARGE_LAYOUT)):
+        for pl in layout:
+            c = COMPONENTS[pl["comp"]]; bad = []
+            if pl["y"] + c.w > cw: bad.append("Y overflow")
+            if pl["z"] + c.h > ch: bad.append("Z overflow")
+            print(f"  {name:8s} {c.name:20s} {c.w:>4.0f}x{c.h:>4.0f}x{c.d:>3.0f} @({pl['y']},{pl['z']}) {' '.join(bad) or 'ok'}")
+    for pl in V9_DECK_LAYOUT:
+        c = COMPONENTS[pl["comp"]]
+        bad = []
+        if pl["x"] + c.d > V7["bay_D"] - V7["end_gap"] + V7["leg"]: bad.append("X overflow")
+        if pl["y"] + c.w > V7["bay_W"]: bad.append("Y overflow")
+        if dz + 6 + c.h > out_H: bad.append("hits the lid")
+        print(f"  deck     {c.name:20s} {c.d:>4.0f}x{c.w:>4.0f}x{c.h:>3.0f} @({pl['x']},{pl['y']}) {' '.join(bad) or 'ok'}")
+    print("== Cables and connectors (Victron manuals) ==")
+    for run, size, fuse, conn in CABLE_SPEC:
+        print(f"  {run:48s} {size:52s} fuse {fuse:28s} {conn}")
+    print("== Service ==")
+    print("  lid off -> unplug the card's connectors on the deck -> lift the card. Batteries: unplug all, unbolt the deck, lift it, lift the batteries.")
+    print(f"  est. mass ~{4 * 7.5 + 8.2 + 1.3 + 0.33 + 0.5 + 0.3 + 0.3 + 1.5 + 3.0 + 13.0:.0f} kg")
 
 
 def report_v8():
@@ -1417,9 +1550,9 @@ def export(a: cq.Assembly):
     os.makedirs(OUT, exist_ok=True); os.makedirs(VIEWER, exist_ok=True); os.makedirs(STL, exist_ok=True)
     glb = os.path.join(OUT, "cage.glb"); a.export(glb, tolerance=1.5, angularTolerance=0.7)
     glb_to_json(glb, os.path.join(VIEWER, f"cage-{VARIANT}.json"))
-    if P["card_plane"] in ("xz", "v7", "v8"):
+    if P["card_plane"] in ("xz", "v7", "v8", "v9"):
         with open(os.path.join(VIEWER, f"dims-{VARIANT}.json"), "w") as f:
-            json.dump({"xz": dims_bookshelf, "v7": dims_v7, "v8": dims_v8}[P["card_plane"]](), f)
+            json.dump({"xz": dims_bookshelf, "v7": dims_v7, "v8": dims_v8, "v9": dims_v9}[P["card_plane"]](), f)
     print("== Printed parts (P1P/P1S bed 256 x 256 x 256) ==")
     seen = {}
     for child in a.children:
@@ -1524,6 +1657,8 @@ def report_v7():
 
 
 def report():
+    if P["card_plane"] == "v9":
+        return report_v9()
     if P["card_plane"] == "v8":
         return report_v8()
     if P["card_plane"] == "v7":
