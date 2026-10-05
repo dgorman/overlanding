@@ -620,15 +620,15 @@ def report():
     print(f"rear layer {P['rear_depth']:.0f} deep (batteries {batt.d}), main cards at x={card_x - x_in0:.0f}, "
           f"MultiPlus to x={card_x - x_in0 + 6 + COMPONENTS['multiplus'].d:.0f}, dist card at x={dist_x - x_in0:.0f}, "
           f"its parts to x={dist_x - x_in0 + 6 + 48:.0f}, front panel at x={in_D:.0f} (sockets reach back to {in_D - 40:.0f})")
-    print(f"cards           : lower {mm(card_W)} x {mm(lower_h)}, upper {mm(card_W)} x {mm(upper_h)}, dist {mm(dist_W)} x {mm(dist_h)}, all 6 mm")
-    print(f"lift clearance  : upper card needs {mm(out_H + upper_h)} plate-to-ceiling; lower {mm(out_H + lower_h)}; dist {mm(out_H + dist_h)} (or tilt it out forward)")
+    print(f"cards           : inverter/charger (lower) {mm(card_W)} x {mm(lower_h)}, upper {mm(card_W)} x {mm(upper_h)}, distribution {mm(dist_W)} x {mm(dist_h)}, all 6 mm")
+    print(f"lift clearance  : upper card needs {mm(out_H + upper_h)} plate-to-ceiling; inverter/charger card {mm(out_H + lower_h)}; distribution card {mm(out_H + dist_h)} (or tilt it out forward)")
     if P["batt_layout"] == "row3_top1":
         top = shelf_z - floor_top + P["shelf_t"] + batt_top.h
-        print(f"batteries       : row of {P['n_batt_row']} = {row_W:.0f} of {in_W:.0f} wide; 4th on its side on top -> "
+        print(f"battery bay     : row of {P['n_batt_row']} = {row_W:.0f} of {in_W:.0f} wide; 4th on its side on top -> "
               f"{top:.0f} of {in_H:.0f} tall ({in_H - top:.0f} spare)")
     else:
         top = shelf_z - floor_top + P["shelf_t"] + batt.h + P["term_clear"]
-        print(f"batteries       : 2 upright stacks of 2 against the side walls, {batt.w + 8:.0f} wide each, {batt.d + 8:.0f} deep; "
+        print(f"battery bay     : 2 upright stacks of 2 against the side walls, {batt.w + 8:.0f} wide each, {batt.d + 8:.0f} deep; "
               f"stack {top:.0f} of {in_H:.0f} tall incl. lug clearance ({in_H - top:.0f} spare); "
               f"centre channel {in_W - 2 * (batt.w + 8):.0f} mm wide (a third stack would fit)")
     if P["frame_source"] == "icebox":
@@ -652,7 +652,7 @@ def report():
     print("== Fit checks ==")
     mp = INV
     fits = mp.w <= card_W and mp.h + 10 <= lower_h and lower_h + 6 <= in_H
-    print(f"  lower card: {mp.note.split(' on')[0]} {mp.w}x{mp.h}x{mp.d} on {card_W:.0f}x{lower_h:.0f} -> "
+    print(f"  inverter/charger card: {mp.note.split(' on')[0]} {mp.w}x{mp.h}x{mp.d} on {card_W:.0f}x{lower_h:.0f} -> "
           f"{'ok' if fits else 'DOES NOT FIT: ' + ('too long for the card width by %.0f mm' % (mp.w - card_W) if mp.w > card_W else 'too tall')}"
           f"; upright would need {mp.w + 10:.0f} of {in_H:.0f} mm height")
     for pl in UPPER_CARD_LAYOUT:
@@ -668,7 +668,7 @@ def report():
         if pl["y"] + c.w > dist_W: bad.append("Y overflow")
         if pl["z"] + c.h > dist_h: bad.append("Z overflow")
         if dist_x + P["card_t"] + c.d > x_in0 + in_D - 40 and pl["z"] + c.h > P["socket_z"] - 35: bad.append("behind the sockets")
-        print(f"  dist card  {c.name:20s} {c.w:>4.0f}x{c.h:>4.0f}x{c.d:>3.0f} @({pl['y']},{pl['z']}) {' '.join(bad) or 'ok'}")
+        print(f"  distribution {c.name:20s} {c.w:>4.0f}x{c.h:>4.0f}x{c.d:>3.0f} @({pl['y']},{pl['z']}) {' '.join(bad) or 'ok'}")
     kg = N_BATT * 9.5 + {"multiplus": 6.4, "multiplus_ii": 19.0, "multiplus_4k": 22.0}[P["inverter"]] + 1.3 + 0.33 + 0.5 + 0.3 + 0.3 + 1.5 + 3.0 + (5.0 if P["frame_source"] == "kit" else 19.0)
     print(f"  est. mass ~{kg:.0f} kg; box depth {out_D:.0f} -> tie it to the IceBox panel / plate")
 

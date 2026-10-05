@@ -82,6 +82,8 @@ The number that matters is 30 A per battery continuous (Victron datasheet). Four
 
 ## 2. Layout (v4 cube; v5 differs only where the Versions table says)
 
+Names, front to back: the **distribution card** (nearest the front panel), the **inverter/charger card** with the small **upper card** riding on it, and the **battery bay** at the IceBox end.
+
 Inside the cube the clear space is 437 × 437 wide and deep and 431 tall above the floor panel. Panels are screwed to the **outside** of the bars with T-nuts, the way Goose Gear does it, so the frame size is what matches the IceBox.
 
 ```
@@ -179,6 +181,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-04 | Named the parts: distribution card, inverter/charger card, battery bay. Battery supports noted as needing to be frame-mounted, not card-adjacent; left for the battery decision. |
 | 2026-10-04 | MPPT and Cerbo on the dist card with the Garmin; upper card keeps only the Orion. v5 battery stacks justified to the side walls with a 145 mm channel. Checked the MultiPlus-II 12/3000 and 12/4k: neither fits (578 / 631 mm long) and four SuperPack 60Ah can only supply 120 A continuous, so the 12/800 stays. SuperPack weight corrected to 7.5 kg. |
 | 2026-10-04 | **v5:** second variant in the same script: a stock IceBox 1.3 frame (635 × 487 × 559) with two upright battery stacks and the dist card at the front panel. Viewer gets a version switch. v4 tagged `cage-v4-cube`. |
 | 2026-10-04 | **v4:** four batteries (three upright + one on its long side on a printed shelf), dist card moved to the front layer facing the sockets with the Garmin on it, lower card notched for battery cables, two spare bars as floor joists. |
