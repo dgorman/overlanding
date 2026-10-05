@@ -42,3 +42,20 @@ Axis convention: Victron states **h × w × d**. Mounting-hole figures are read 
 |---|---|---|
 | MultiPlus-II 12/3000/120-50 120V | 578 × 277 × 148 (h × w × d), 3000 VA / 2400 W, 5500 W peak, 120 A charger | 19 kg |
 | MultiPlus-II 12/4k/160-50 120V | 631 × 277 × 164, 160 A charger | 22 kg |
+
+## Victron 3D files (used in the model, `cad/step/`)
+
+All from `https://www.victronenergy.com/upload/documents/`. The model keeps only each file's housing-sized solids (the Cerbo file alone has 686 internal parts) and caches them as BREP in `cad/step/cache/`. The 147 MB of raw STEP is gitignored; re-download with the URLs below.
+
+| Product | File on victronenergy.com |
+|---|---|
+| MultiPlus-II 12/3000/120-50 120V (UL) | `MultiPlus-II-12V-3000VA-120V-(UL).STEP` |
+| Lithium Smart 12.8V 160Ah / 200Ah (shared case) | `LiFePO4-battery-12,8V160Ah-a-&-12,8V200Ah-a-Smart-(stp).STEP` |
+| Lithium Smart 12.8V 100Ah | `LiFePO4_12.8V100Ah_Smart.STEP` |
+| SmartSolar MPPT 100/30 | `BS-SS-MPPT-100-30-(stp).STEP` |
+| Orion XS 12/12-50A | `DimensionDrawing-ORI121217040-Orion-XS-12-12-50A-DC-DC-battery-charger-3D.STEP` |
+| Cerbo GX | `DimensionDrawing_CerboGX-3D.STEP` |
+| SmartShunt 500A/50mV | `DimensionDrawing-SmartShunt-500A50mV-3D.STEP` |
+| MultiPlus 12/800 (12/24/48V, 120/230V shared housing) | `MultiPlus-12-24-48V-800VA-120V-230V-(step).STEP` |
+| Lithium SuperPack 12.8V/60Ah (M6) | `DimensionDrawing-BAT512060705-Lithium-SuperPack-12,8V60Ah-(M6)-3D.STEP` |
+| VE.Bus BMS V2 (122 × 106 × 23 mm) | `DimensionDrawing-VE.bus-BMS-V2.STP` |

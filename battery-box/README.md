@@ -28,37 +28,38 @@
 | Kit bars | 12 + 2 joists, 2 spare | not needed; return them, or keep 2 as joists |
 | Cost | 8 kits ≈ $1,112 + panels + prints | one IceBox 1.3 $1,345, matching panels included |
 
-**v6 draft: side-mount cards for the MultiPlus-II**
+**v6: side-mount cards (current direction)**
 
-The box can't get taller, so the only axis that takes a 578 mm MultiPlus-II is the depth. Your IceBox is the **30" (762 mm) model**, 711 mm inside, which makes this comfortable. Both cards run **front to back along the inboard wall**, sliding down between posts on the back and front width rails:
+Started as the way to fit a MultiPlus-II; kept because it leaves the whole battery column free and puts every Victron unit on one of two full-length cards. The inverter is now **your MultiPlus 12/1200/50** (406 × 250 × 100, 8.2 kg, ~105 A at full output). Your IceBox is the **30" (762 mm) model**, 711 mm inside. Both cards run **front to back along the inboard wall**, sliding down between posts on the back and front width rails:
 
 | From the inboard wall | mm |
 |---|---|
 | post + inverter/charger card plate | 17 |
-| MultiPlus-II 12/3000 on its side, on 10 mm standoffs, terminals toward the front | 148 + 10 |
+| MultiPlus 12/1200 on its side, on 10 mm standoffs, terminals toward the front | 100 + 10 |
 | gap | 4 |
 | distribution card plate + parts facing the batteries (≤ 46 deep) | 52 |
 | gap | 4 |
-| **battery column** against the outboard wall, including Victron's 20 mm vent gap on each side | **192** |
+| **battery column** against the outboard wall | **240** (the batteries need 192 with Victron's 20 mm vent gaps; 48 mm spare) |
 
-- The inverter/charger card is 694 × 494 mm; the MultiPlus-II has 116 mm of card to spare and sits on 10 mm standoffs so its case clears the post bodies. Above it there are 213 mm for the **MPPT, Orion and Cerbo** on the same card.
+- The inverter/charger card is 694 × 494 mm; the MultiPlus 12/1200 uses 406 of it and sits on 10 mm standoffs so its case clears the post bodies. Above it there are 240 mm for the **MPPT, Orion and Cerbo** on the same card. (A MultiPlus-II 12/3000 still fits this card on its side if that ever comes back; `--inverter=multiplus_ii`.)
 - The distribution card carries bus bars, shunt, breakers, the **VE.Bus BMS V2** and the Garmin at the front end near the sockets. Nothing on it is deeper than 46 mm, which is what buys the battery column its vent gaps.
-- The battery column is 192 mm wide and 711 mm deep. That takes **two Lithium Smart 12.8V/200Ah end to end** (152 wide, 321 long, 237 tall each) with Victron's 20 mm ventilation gap on every side: 702 of 711 mm, one printed tray each, no shelf, no legs, nothing stacked. **400 Ah, 5.1 kWh, 400 A recommended / 800 A maximum, 40 kg**, with the VE.Bus BMS V2 on the distribution card. That runs the MultiPlus-II at full output for about two hours, recharges from empty in 3.3 h on the 120 A charger, and keeps the mass low. Victron allows mixed capacities and ages in parallel (up to 20), so a 200 + 100 is also fine if you already own one. The 330Ah is 206 mm wide and does not fit the column.
+- The battery column is 240 mm wide and 711 mm deep, standing on the Goose Gear plate. The build is **four Lithium Smart 12.8V/200Ah, two end to end and two high** (152 wide, 321 long, 237 tall each) in a printed rack: 698 of 711 mm deep with 15 mm end gaps, 516 of 559 mm tall with 43 mm over the top lugs. **800 Ah, 10.2 kWh, 800 A recommended, 80 kg**, with the VE.Bus BMS V2 on the distribution card. The 12/1200 draws ~105 A at full output, so this bank runs it for most of a day; its 50 A charger needs ~16 h from empty, which is why solar and the Orion matter. The two-battery alternative (`bookshelf2`) is 400 Ah with no rack. With 240 mm of column, the Lithium Smart 330Ah (206 wide) would also fit if a single bigger pair is ever preferred.
 
-### Four 200Ah as a 2 × 2? (`python cage.py bookshelf4`)
+### Four 200Ah as a 2 × 2 vs two end to end (`bookshelf` vs `bookshelf2`)
 
-It fits, barely, and I don't recommend it:
+With the batteries on the plate the 2 × 2 fits with real margin on height; depth and mass are the trade:
 
 | | 2 × 200Ah end to end | 4 × 200Ah, 2 × 2 |
 |---|---|---|
 | Bank | 400 Ah, 5.1 kWh | 800 Ah, 10.2 kWh |
-| Height | 255 of 527 mm to the lid | **516 of 527**: 11 mm above the top lugs, which is not enough for 4/0 flag lugs and cable |
-| Depth | 702 of 711 with 20 mm gaps | 697 of 711 only by dropping the end gaps to 15 mm and the tray walls to 3 mm |
+| Height (trays on the plate, no floor under them) | 255 of 559 mm to the lid | 516 of 559: **43 mm above the top lugs**, workable for flag lugs |
+| Depth | 702 of 711 with 20 mm gaps | 698 of 711 only by dropping the end gaps to 15 mm and the tray walls to 3 mm |
 | Support | two printed trays | a printed rack: two trays, two mid-shelves, six 14 mm legs in three rows bolted through the floor into the joist bars |
-| Mass | ~86 kg total | **~126 kg total**, 80 of it batteries, half of that at 250–500 mm up |
-| Recharge from empty at 120 A | 3.3 h | 6.7 h; the Orion alone would take 16 h |
+| Mass | ~75 kg total | **~115 kg total**, 80 of it batteries, half of that at 250–500 mm up |
+| Recharge from empty on the 12/1200's 50 A charger | 8 h | 16 h; add solar and the Orion's 50 A and it halves |
 
-The 2 × 2 is modelled with the rack so it's there if the runtime is worth it, but the 400 Ah pair is the sensible build: it already supplies twice what the MultiPlus-II can draw, keeps 40 kg low in the box, and leaves the cards easy to get at.
+You chose the 2 × 2. Its rack: two printed trays, two mid-shelves with lips that locate the upper batteries, and six 14 mm legs in three rows (back, shared middle, front) that stand on the plate inside the vent gaps and bolt down into it. The upper batteries also get a strap over the top to the frame.
+- **No floor under the batteries.** The floor panel is cut away under the column and the trays bolt straight to the Goose Gear plate, so the batteries sit 31 mm lower (bottom rail + floor panel) and 80 kg of battery loads the plate directly instead of a 6 mm ply floor. The column's ceiling is then the lid itself, 559 mm up.
 - Both cards are full height (494 mm), so they only come out with the box out of the vehicle. In the vehicle, everything is reached from the top with the lid off; the MultiPlus-II's terminals face the front panel.
 - Sockets and the Anderson inlets go in the front panel over the battery column.
 - About 86 kg with the two 200Ah batteries.
@@ -220,6 +221,8 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-04 | Inverter back to the owner's MultiPlus 12/1200/50 (Victron STEP added); v6 column widens to 240 mm; 2 × 2 of 200Ah is now the main v6, two end to end is `bookshelf2`. MPPT STEP flipped terminals-down. |
+| 2026-10-04 | Battery column now stands on the Goose Gear plate (floor cut away under it): +31 mm of height, 43 mm over the top lugs in the 2 × 2. Viewer fetches are cache-busted per publish. Victron STEP geometry replaces the grey boxes where Victron publishes a file. |
 | 2026-10-04 | Asked about 4 × 200Ah: added the `bookshelf4` 2 × 2 variant with a six-leg printed rack; it fits with 15 mm end gaps and 11 mm over the top lugs, recommendation stays at 2 × 200Ah. Column widened to 192 mm for Victron's 20 mm vents by moving the Cerbo to the inverter card. |
 | 2026-10-04 | Owner's IceBox 1.3 is the 30" (762 mm) model, not 25": v5 and v6 re-sized. v6 battery column becomes two Lithium Smart 200Ah end to end (400 Ah), no stack. `--column` / `--arrange` options added to compare batteries. |
 | 2026-10-04 | **v6 draft:** cards turned 90° to run front to back along the inboard wall so a MultiPlus-II 12/3000 fits on its side; one column of two Lithium Smart 100Ah outboard with frame-mounted supports. `python cage.py bookshelf`. |

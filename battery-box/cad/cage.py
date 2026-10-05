@@ -48,13 +48,14 @@ VARIANTS = {
                    batt_layout="stack2x2", dist_forward=True, inverter="multiplus"),
     # v6 draft: cards run FRONT TO BACK along the inboard wall so the
     # MultiPlus-II (578 long) fits on its side; one battery column outboard.
+    # v6: side-mount cards, the owner's MultiPlus 12/1200/50, four 200Ah Smarts 2 x 2 in a printed rack
     "bookshelf": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
-                      batt_layout="column", dist_forward=False, inverter="multiplus_ii",
-                      card_plane="xz", column=["smart200", "smart200"], arrange="inline"),
-    # same box, four 200Ah Smarts: two end to end, two high, in a printed rack
-    "bookshelf4": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
-                       batt_layout="column", dist_forward=False, inverter="multiplus_ii",
-                       card_plane="xz", column=["smart200", "smart200"], arrange="2x2"),
+                      batt_layout="column", dist_forward=False, inverter="multiplus_1200",
+                      card_plane="xz", column=["smart200", "smart200"], arrange="2x2", col_on_plate=True),
+    # v6 alt: same, two 200Ah end to end (no rack)
+    "bookshelf2": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
+                       batt_layout="column", dist_forward=False, inverter="multiplus_1200",
+                       card_plane="xz", column=["smart200", "smart200"], arrange="inline", col_on_plate=True),
 }
 # --inverter=multiplus|multiplus_ii|multiplus_4k overrides the variant's inverter
 for _a in sys.argv[1:]:
@@ -125,6 +126,7 @@ P = dict(
     vent_rows=3,         # vent slots in the front panel over the MultiPlus band
 )
 P.setdefault("card_plane", "yz")
+P.setdefault("col_on_plate", False)   # True: no floor panel under the battery column; trays sit on the Goose Gear plate (z=0)
 P.update(VARIANTS[VARIANT])
 
 
@@ -145,9 +147,10 @@ COMPONENTS = {
     "smart160":  Comp("battery", 152, 321, 237, "Victron Lithium Smart 12.8V/160Ah, 18 kg, 160 A rec / 320 A max"),
     "smart200":  Comp("battery", 152, 321, 237, "Victron Lithium Smart 12.8V/200Ah, 20 kg, 200 A rec / 400 A max"),
     "superpack100": Comp("battery", 169, 306, 215, "Victron SuperPack 12.8V/100Ah, 10.5 kg, 100 A cont / 150 A peak, internal BMS"),
-    "bms":       Comp("power_bms", 110, 35, 60, "VE.Bus BMS V2 (size verify)"),
+    "bms":       Comp("power_bms", 122, 23, 106, "VE.Bus BMS V2 (from Victron STEP: 122 x 106 x 23)"),
     # inverter candidates, as mounted on their side on the lower card (w along Y, h up, d off the card)
     "multiplus":    Comp("victron_multiplus", 360, 100, 240, "MultiPlus 12/800/35-16 120V on its side (6.4 kg)"),
+    "multiplus_1200": Comp("victron_multiplus", 406, 100, 250, "MultiPlus 12/1200/50-16 120V on its side (8.2 kg)"),
     "multiplus_ii": Comp("victron_multiplus", 578, 148, 277, "MultiPlus-II 12/3000/120-50 120V on its side (19 kg) - 578 long"),
     "multiplus_4k": Comp("victron_multiplus", 631, 164, 277, "MultiPlus-II 12/4k/160-50 120V on its side (22 kg) - 631 long"),
     "mppt":      Comp("victron_mppt", 186, 70, 130, "SmartSolar MPPT 100/30, upright, terminals down (1.3 kg)"),
@@ -224,6 +227,99 @@ post_h = in_H                                          # floor panel top to the 
 
 def box(w, d, h, at=(0, 0, 0)):
     return cq.Workplane("XY").box(w, d, h, centered=False).translate(at)
+
+
+STEP_DIR = os.path.join(HERE, "step")
+STEP_FILES = {   # component key -> Victron STEP file (downloaded into cad/step/, see components.md)
+    "multiplus_ii": "MultiPlus-II-12-3000-120V.step",
+    "multiplus":    "MultiPlus-12-800-120V.step",
+    "multiplus_1200": "MultiPlus-12-1200-120V.step",
+    "smart200":     "Lithium-Smart-12.8V-160Ah-200Ah.step",
+    "smart100":     "Lithium-Smart-12.8V-100Ah.step",
+    "battery":      "Lithium-SuperPack-12.8V-60Ah.step",
+    "mppt":         "SmartSolar-MPPT-100-30.step",
+    "orion":        "Orion-XS-12-12-50A.step",
+    "cerbo":        "Cerbo-GX.step",
+    "shunt":        "SmartShunt-500A.step",
+    "bms":          "VE.Bus-BMS-V2.step",
+}
+_STEP_CACHE = {}
+# extra rotation (axis, degrees) applied after the extents match, for units
+# the matcher lands upside down or backwards; checked in the renders
+STEP_FLIP = {"mppt": ("x", 180)}   # 180 about the card axis: fins to the card, terminals down
+
+
+def load_victron(key):
+    """Import a Victron STEP once, keep only the housing-sized solids (the
+    files carry every screw and PCB inside), and cache the result as BREP in
+    cad/step/cache/ so later builds load in a second instead of minutes."""
+    fn = STEP_FILES.get(key)
+    if not fn:
+        return None
+    path = os.path.join(STEP_DIR, fn)
+    if not os.path.exists(path):
+        return None
+    if key in _STEP_CACHE:
+        return _STEP_CACHE[key]
+    cache_dir = os.path.join(STEP_DIR, "cache"); os.makedirs(cache_dir, exist_ok=True)
+    brep = os.path.join(cache_dir, key + ".brep")
+    if os.path.exists(brep):
+        shp = cq.Shape.importBrep(brep)
+    else:
+        print(f"  importing {fn} (first time, slow) ...", flush=True)
+        raw = cq.importers.importStep(path).val()
+        solids = raw.Solids()
+        if len(solids) > 1:
+            bb = raw.BoundingBox(); total = bb.xlen * bb.ylen * bb.zlen
+            def bbvol(sld):
+                b = sld.BoundingBox(); return b.xlen * b.ylen * b.zlen
+            keep = [sld for sld in solids if bbvol(sld) >= 0.03 * total]
+            if not keep:
+                keep = sorted(solids, key=bbvol, reverse=True)[:3]
+            shp = cq.Compound.makeCompound(keep)
+            print(f"  kept {len(keep)} of {len(solids)} solids")
+        else:
+            shp = raw
+        shp.exportBrep(brep)
+    _STEP_CACHE[key] = shp
+    return shp
+
+
+def victron_shape(key, dx, dy, dz, at, fallback):
+    """Return the real Victron STEP body oriented so its extents match
+    (dx, dy, dz) with its bounding-box corner at `at`; else the fallback box.
+    Orientation: try the axis permutations until the sorted extents line up;
+    the terminal face is then checked by the caller's own layout."""
+    try:
+        body = load_victron(key)
+    except Exception as e:   # noqa: BLE001
+        print(f"  (step import failed for {key}: {e}; using box)")
+        return fallback
+    if body is None:
+        return fallback
+    fn = STEP_FILES[key]
+    want = (dx, dy, dz)
+    rots = [((0, 0, 0),), ((0, 0, 90),), ((90, 0, 0),), ((0, 90, 0),), ((90, 0, 0), (0, 0, 90)), ((0, 90, 0), (0, 0, 90))]
+    best, best_err = None, 1e9
+    for seq in rots:
+        shp = body
+        for (rx, ry, rz) in seq:
+            if rx: shp = shp.rotate((0, 0, 0), (1, 0, 0), rx)
+            if ry: shp = shp.rotate((0, 0, 0), (0, 1, 0), ry)
+            if rz: shp = shp.rotate((0, 0, 0), (0, 0, 1), rz)
+        bb = shp.BoundingBox()
+        err = abs(bb.xlen - dx) + abs(bb.ylen - dy) + abs(bb.zlen - dz)
+        if err < best_err:
+            best, best_err, best_bb = shp, err, bb
+    if best_err > 0.15 * (dx + dy + dz):
+        print(f"  (step {fn} extents don't match {want}; using box)")
+        return fallback
+    if key in STEP_FLIP:
+        ax, deg = STEP_FLIP[key]
+        axis = {"x": (1, 0, 0), "y": (0, 1, 0), "z": (0, 0, 1)}[ax]
+        best = best.rotate((0, 0, 0), axis, deg); best_bb = best.BoundingBox()
+    shp = best.translate((at[0] - best_bb.xmin, at[1] - best_bb.ymin, at[2] - best_bb.zmin))
+    return cq.Workplane("XY").add(shp)
 
 
 # ----------------------------------------------------------------------------
@@ -492,7 +588,10 @@ def build() -> cq.Assembly:
             n = f"d{next(di)}"; add_rail(a, n, "x", (C, y + B / 2, z + B / 2), runs[n], GRAY, ORANGE)
 
     # --- panels: floor on the bottom rails; everything else on the outside ----
-    add(a, box(out_D, out_W, T, (0, 0, B)), "panel_floor", PANEL)
+    floor = box(out_D, out_W, T, (0, 0, B))
+    if P["col_on_plate"]:   # open floor under the battery column; trays sit on the Goose Gear plate
+        floor = floor.cut(box(in_D, 200, T + 2, (x_in0, y_in0, B - 1)))
+    add(a, floor, "panel_floor", PANEL)
     add(a, box(out_D, out_W, T, (0, 0, out_H)), "lid_panel", PANEL)
     for y in (out_W * 0.3, out_W * 0.7):
         add(a, lid_handle().translate((out_D / 2 - 6, y - 30, out_H + T)), f"lid_handle_{int(y)}", BLACK)
@@ -525,8 +624,9 @@ def build() -> cq.Assembly:
     # --- floor joists: two spare bars under the battery zone ------------------
     joist_len = out_D - 2 * C
     joist_ys = (row_W * 0.3, row_W * 0.7) if P["card_plane"] == "yz" else (30.0, 130.0)
-    for j, y in enumerate(joist_ys):
-        add(a, bar(joist_len, "x").translate((C, y_in0 + y, B / 2)), f"bar_joist_{j}", GRAY)
+    if not P["col_on_plate"]:
+        for j, y in enumerate(joist_ys):
+            add(a, bar(joist_len, "x").translate((C, y_in0 + y, B / 2)), f"bar_joist_{j}", GRAY)
 
     if P["card_plane"] == "xz":
         build_bookshelf(a)
@@ -624,8 +724,10 @@ for _a in sys.argv[1:]:
     if _a.startswith("--arrange="):
         BS["arrange"] = _a.split("=", 1)[1]
 # ceiling over the battery column: the lid panel, not the top rails (the
-# column sits inboard of the perimeter rails)
-in_H_lid = out_H - floor_top
+# column sits inboard of the perimeter rails).  With col_on_plate the column
+# starts at the plate (z=0) instead of on the floor panel.
+col_z0 = 0.0 if P["col_on_plate"] else floor_top
+in_H_lid = out_H - col_z0
 BS_DIST_LAYOUT = [   # x, z relative to the dist card's lower-back corner; parts face the batteries (-Y)
     dict(comp="breaker_a", x=20,  z=20),
     dict(comp="breaker_b", x=85,  z=20),
@@ -697,20 +799,21 @@ def build_bookshelf(a):
     iz = floor_top + 2 + 10
     for x in (ix + 40, ix + inv.w - 100):
         add(a, box(60, BS["standoff"], 10, (x, g["inv_lo"], floor_top + 2)), f"print_feet_mp_{int(x)}__card", ORANGE)
-    add(a, box(inv.w, inv.d, inv.h, (ix, g["inv_lo"], iz)).edges("|Y").fillet(4), inv.name + "__card", BLUE)
+    add(a, victron_shape(P["inverter"], inv.w, inv.d, inv.h, (ix, g["inv_lo"], iz),
+                         box(inv.w, inv.d, inv.h, (ix, g["inv_lo"], iz)).edges("|Y").fillet(4)), inv.name + "__card", BLUE)
     z_above = iz + inv.h
     for pl in BS_INV_UPPER:
         c = COMPONENTS[pl["comp"]]
-        add(a, box(c.w, c.d, c.h, (x_in0 + pl["x"], g["inv_plate"] - c.d, z_above + pl["dz"])).edges("|Y").fillet(3),
-            c.name + "__card", BLUE)
+        at = (x_in0 + pl["x"], g["inv_plate"] - c.d, z_above + pl["dz"])
+        add(a, victron_shape(pl["comp"], c.w, c.d, c.h, at, box(c.w, c.d, c.h, at).edges("|Y").fillet(3)), c.name + "__card", BLUE)
 
     # --- distribution card: plate + parts facing the battery column (-Y)
     add(a, box(g["card_L"], P["card_t"], plate_h, (g["card_x0"], g["dist_plate"], floor_top + 2)), "card_dist_plate", DARK)
     for pl in BS_DIST_LAYOUT:
         c = COMPONENTS[pl["comp"]]
         col = BLUE if c.name.startswith("victron") else (0.08, 0.08, 0.08) if c.name.startswith("garmin") else GOLD
-        add(a, box(c.w, c.d, c.h, (g["card_x0"] + pl["x"], g["dist_plate"] - c.d, floor_top + 2 + pl["z"])).edges("|Y").fillet(3),
-            c.name + "__card", col)
+        at = (g["card_x0"] + pl["x"], g["dist_plate"] - c.d, floor_top + 2 + pl["z"])
+        add(a, victron_shape(pl["comp"], c.w, c.d, c.h, at, box(c.w, c.d, c.h, at).edges("|Y").fillet(3)), c.name + "__card", col)
 
     # --- battery column, outboard, from the IceBox end.
     #   inline: one printed tray per battery, end to end, 20 mm vent gaps.
@@ -727,23 +830,25 @@ def build_bookshelf(a):
     positions = 2 if two else 1
     L = BS["leg2"] if two else BS["leg"]
     x = x_in0 + vent_end - wall
-    zmax = floor_top + 4
+    zmax = col_z0 + 4
     for pos in range(positions if BS["arrange"] != "inline" else len(col)):
         if BS["arrange"] == "inline":
             c = col[pos]
             tray = box(c.d + 2 * wall, fw, 24).cut(box(c.d, c.w, 25, (wall, wall, 4)))
-            add(a, tray.translate((x, ty, floor_top)), f"print_tray_battery_{pos}", ORANGE)
-            add(a, box(c.d, c.w, c.h, (x + wall, ty + wall, floor_top + 4)).edges("|Z").fillet(6), f"battery_{pos}", BATT)
-            zmax = max(zmax, floor_top + 4 + c.h)
+            add(a, tray.translate((x, ty, col_z0)), f"print_tray_battery_{pos}", ORANGE)
+            at = (x + wall, ty + wall, col_z0 + 4)
+            add(a, victron_shape(BS["column"][pos], c.d, c.w, c.h, at, box(c.d, c.w, c.h, at).edges("|Z").fillet(6)), f"battery_{pos}", BATT)
+            zmax = max(zmax, col_z0 + 4 + c.h)
             x += c.d + 2 * wall + vent - 2 * wall
             continue
         fd = max(c.d for c in col) + 2 * wall
         tx = x if (two and pos == 0) else x + L      # 2x2: back legs sit inside the end vent gap
         tray = box(fd, fw, 24).cut(box(fd - 2 * wall, fw - 2 * wall, 25, (wall, wall, 4)))
-        add(a, tray.translate((tx, ty, floor_top)), f"print_tray_battery_{pos}", ORANGE)
-        z = floor_top + 4
+        add(a, tray.translate((tx, ty, col_z0)), f"print_tray_battery_{pos}", ORANGE)
+        z = col_z0 + 4
         for i, c in enumerate(col):
-            add(a, box(c.d, c.w, c.h, (tx + (fd - c.d) / 2, ty + (fw - c.w) / 2, z)).edges("|Z").fillet(6), f"battery_{pos}_{i}", BATT)
+            at = (tx + (fd - c.d) / 2, ty + (fw - c.w) / 2, z)
+            add(a, victron_shape(BS["column"][i], c.d, c.w, c.h, at, box(c.d, c.w, c.h, at).edges("|Z").fillet(6)), f"battery_{pos}_{i}", BATT)
             z += c.h
             if i < len(col) - 1:
                 z += P["term_clear"]
@@ -758,15 +863,15 @@ def build_bookshelf(a):
                 if two and pos == 0:
                     legs = [(tx - L, ty), (tx - L, ty + fw - L)]
                 for (lx, ly) in legs:
-                    leg = box(L, L, z - floor_top)
+                    leg = box(L, L, z - col_z0)
                     foot = box(L, L + 16, 6, (0, -8, 0)).cut(cq.Workplane("XY").center(L / 2, L / 2).circle(3.4).extrude(7))
-                    add(a, leg.union(foot).translate((lx, ly, floor_top)), f"print_leg_{pos}_{i}_{int(lx)}_{int(ly)}", ORANGE)
+                    add(a, leg.union(foot).translate((lx, ly, col_z0)), f"print_leg_{pos}_{i}_{int(lx)}_{int(ly)}", ORANGE)
                 z += P["shelf_t"]
         zmax = max(zmax, z)
         x = tx + fd
     g["col_depth_used"] = x + L - x_in0 + vent_end
     z = zmax
-    g["stack_top"] = z - floor_top + P["term_clear"]
+    g["stack_top"] = z - col_z0 + P["term_clear"]
     g["col_W_used"] = fw
     return g
 
@@ -775,6 +880,12 @@ def build_bookshelf(a):
 # Export + report
 # ----------------------------------------------------------------------------
 def glb_to_json(glb_path: str, json_path: str):
+    """Rewrite a GLB as JSON glTF with the binary chunk embedded as base64,
+    after repacking every mesh into ONE primitive (positions + uint16/32
+    indices, no normals).  CadQuery writes one primitive per face, and the
+    accessor metadata for tens of thousands of faces dwarfs the geometry.
+    The viewer recomputes normals on load."""
+    import numpy as np
     d = open(glb_path, "rb").read()
     assert d[:4] == b"glTF"
     off, js, binary = 12, None, None
@@ -782,14 +893,47 @@ def glb_to_json(glb_path: str, json_path: str):
         ln, typ = struct.unpack("<II", d[off:off + 8]); chunk = d[off + 8:off + 8 + ln]; off += 8 + ln
         if typ == 0x4E4F534A: js = json.loads(chunk)
         elif typ == 0x004E4942: binary = chunk
-    js["buffers"][0]["uri"] = "data:application/octet-stream;base64," + base64.b64encode(binary).decode()
+
+    def read(acc_i):
+        acc = js["accessors"][acc_i]; bv = js["bufferViews"][acc["bufferView"]]
+        start = bv.get("byteOffset", 0) + acc.get("byteOffset", 0)
+        ctype = {5120: np.int8, 5121: np.uint8, 5122: np.int16, 5123: np.uint16, 5125: np.uint32, 5126: np.float32}[acc["componentType"]]
+        n = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4}[acc["type"]]
+        arr = np.frombuffer(binary, dtype=ctype, count=acc["count"] * n, offset=start)
+        return arr.reshape(acc["count"], n) if n > 1 else arr
+
+    out = bytearray(); views, accs, meshes = [], [], []
+    for m in js["meshes"]:
+        pos_parts, idx_parts, base, mat = [], [], 0, None
+        for prim in m["primitives"]:
+            P_ = read(prim["attributes"]["POSITION"]).astype(np.float32)
+            I_ = read(prim["indices"]).astype(np.uint32) if "indices" in prim else np.arange(len(P_), dtype=np.uint32)
+            pos_parts.append(P_); idx_parts.append(I_ + base); base += len(P_); mat = prim.get("material", mat)
+        pos = np.concatenate(pos_parts); idx = np.concatenate(idx_parts)
+        idx = idx.astype(np.uint16) if len(pos) < 65535 else idx.astype(np.uint32)
+        def put(arr, target):
+            while len(out) % 4: out.append(0)
+            start = len(out); out.extend(arr.tobytes())
+            views.append(dict(buffer=0, byteOffset=start, byteLength=len(arr.tobytes()), target=target))
+            return len(views) - 1
+        pv = put(pos, 34962); iv = put(idx, 34963)
+        accs.append(dict(bufferView=pv, componentType=5126, count=len(pos), type="VEC3",
+                         min=pos.min(0).tolist(), max=pos.max(0).tolist()))
+        accs.append(dict(bufferView=iv, componentType=5123 if idx.dtype == np.uint16 else 5125, count=len(idx), type="SCALAR"))
+        prim = dict(attributes=dict(POSITION=len(accs) - 2), indices=len(accs) - 1, mode=4)
+        if mat is not None:
+            prim["material"] = mat
+        meshes.append(dict(name=m.get("name", ""), primitives=[prim]))
+    js["bufferViews"], js["accessors"], js["meshes"] = views, accs, meshes
+    js["buffers"] = [dict(byteLength=len(out), uri="data:application/octet-stream;base64," + base64.b64encode(bytes(out)).decode())]
     with open(json_path, "w") as f:
-        json.dump(js, f)
+        json.dump(js, f, separators=(",", ":"))
 
 
 def export(a: cq.Assembly):
     os.makedirs(OUT, exist_ok=True); os.makedirs(VIEWER, exist_ok=True); os.makedirs(STL, exist_ok=True)
-    glb = os.path.join(OUT, "cage.glb"); a.export(glb); glb_to_json(glb, os.path.join(VIEWER, f"cage-{VARIANT}.json"))
+    glb = os.path.join(OUT, "cage.glb"); a.export(glb, tolerance=1.5, angularTolerance=0.7)
+    glb_to_json(glb, os.path.join(VIEWER, f"cage-{VARIANT}.json"))
     print("== Printed parts (P1P/P1S bed 256 x 256 x 256) ==")
     seen = {}
     for child in a.children:
@@ -809,11 +953,11 @@ def report_bookshelf():
     g = bs_geometry(); inv = COMPONENTS[P["inverter"]]; bat = COMPONENTS["smart100"]
     print(f"== Variant 'bookshelf' (v6 draft): IceBox 1.3 frame, cards front-to-back along the inboard wall ==")
     print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}; inner {mm(in_D)} x {mm(in_W)} x {mm(in_H)}")
-    print(f"Y stack from the inboard wall: post/plate {out_W - B - g['inv_plate']:.0f} | MultiPlus-II {inv.d:.0f} (+{BS['standoff']:.0f} standoff) "
+    print(f"Y stack from the inboard wall: post/plate {out_W - B - g['inv_plate']:.0f} | inverter {inv.d:.0f} (+{BS['standoff']:.0f} standoff) "
           f"| gap {BS['gap']:.0f} | dist card + parts {P['card_t'] + BS['part_depth']:.0f} | gap {BS['gap']:.0f} | battery column {g['bay_W']:.0f}")
-    print(f"cards           : {mm(g['card_L'])} long x {mm(in_H - 8)} tall; MultiPlus-II {inv.w} long on a {g['card_L']:.0f} card "
+    print(f"cards           : {mm(g['card_L'])} long x {mm(in_H - 8)} tall; inverter {inv.w} long on a {g['card_L']:.0f} card "
           f"({'overhangs' if inv.w > g['card_L'] else 'fits'} the card by {abs(inv.w - g['card_L']):.0f} mm, {in_D - inv.w:.0f} mm clear of the end rails)")
-    print(f"inverter card   : MultiPlus-II {inv.w}x{inv.d}x{inv.h} on its side, {in_H - 12 - inv.h:.0f} mm above it for MPPT + Orion")
+    print(f"inverter card   : {inv.note.split(' on')[0]} {inv.w}x{inv.d}x{inv.h} on its side, {in_H - 12 - inv.h:.0f} mm above it for MPPT + Orion + Cerbo")
     col = [COMPONENTS[k] for k in BS["column"]]
     vent = BS["vent"]
     wide = max(c.w for c in col) + 2 * vent
@@ -821,7 +965,8 @@ def report_bookshelf():
     if BS["arrange"] == "inline":
         deep = sum(c.d for c in col) + (len(col) + 1) * vent
         tall = 4 + max(c.h for c in col) + P["term_clear"]
-        print(f"battery column  : {mm(g['bay_W'])} wide x {mm(in_D)} deep; " + " + ".join(BS["column"]) + " end to end -> "
+        print(f"battery column  : {mm(g['bay_W'])} wide x {mm(in_D)} deep, standing on the {'Goose Gear plate (no floor under it)' if P['col_on_plate'] else 'floor panel'}; "
+              + " + ".join(BS["column"]) + " end to end -> "
               f"{deep:.0f} of {in_D:.0f} deep ({'ok' if deep <= in_D else 'TOO DEEP by %.0f' % (deep - in_D)}), "
               f"{wide:.0f} of {g['bay_W']:.0f} wide incl. 20 mm vents ({'ok' if wide <= g['bay_W'] else 'TOO WIDE by %.0f' % (wide - g['bay_W'])}), "
               f"{tall:.0f} of {in_H_lid:.0f} tall to the lid; no shelf, no legs")
@@ -832,21 +977,24 @@ def report_bookshelf():
         wall = 3.0 if pos == 2 else 4.0
         vent_end = 15.0 if pos == 2 else vent
         deep = pos * (max(c.d for c in col) + 2 * wall) + (pos - 1) * L + 2 * vent_end + (0 if pos == 2 else 2 * L)
-        print(f"battery column  : {mm(g['bay_W'])} wide x {mm(in_D)} deep; {pos} stack(s) of " + " + ".join(BS["column"]) +
+        print(f"battery column  : {mm(g['bay_W'])} wide x {mm(in_D)} deep, standing on the {'Goose Gear plate (no floor under it)' if P['col_on_plate'] else 'floor panel'}; {pos} stack(s) of " + " + ".join(BS["column"]) +
               f" -> {stack:.0f} of {in_H_lid:.0f} tall to the lid ({in_H_lid - stack:.0f} spare above the top lugs), "
               f"{wide:.0f} of {g['bay_W']:.0f} wide incl. vents ({'ok' if wide <= g['bay_W'] else 'TOO WIDE by %.0f' % (wide - g['bay_W'])}), "
               f"rack {deep:.0f} of {in_D:.0f} deep with {vent_end:.0f} mm end gaps and {L:.0f} mm legs ({'ok' if deep <= in_D else 'TOO DEEP by %.0f' % (deep - in_D)})")
+    ich = {"multiplus": 35, "multiplus_1200": 50, "multiplus_ii": 120, "multiplus_4k": 160}[P["inverter"]]
     ah = {"smart100": 100, "smart160": 160, "smart200": 200, "superpack100": 100}
     amps = {"smart100": 100, "smart160": 160, "smart200": 200, "superpack100": 100}
     mult = 2 if BS["arrange"] == "2x2" else 1
+    ich = {"multiplus": 35, "multiplus_1200": 50, "multiplus_ii": 120, "multiplus_4k": 160}[P["inverter"]]
     ah = {"smart100": 100, "smart160": 160, "smart200": 200, "superpack100": 100}
     amps = {"smart100": 100, "smart160": 160, "smart200": 200, "superpack100": 100}
     print(f"  bank {n} batteries = {mult * sum(ah[k] for k in BS['column'])} Ah ({mult * sum(ah[k] for k in BS['column']) * 12.8 / 1000:.1f} kWh), "
-          f"{mult * sum(amps[k] for k in BS['column'])} A recommended continuous; MultiPlus-II needs ~220 A at full output, charges at 120 A "
-          f"(empty to full ~{mult * sum(ah[k] for k in BS['column']) / 120:.1f} h)")
+          f"{mult * sum(amps[k] for k in BS['column'])} A recommended continuous; inverter draws ~{ {'multiplus': 70, 'multiplus_1200': 105, 'multiplus_ii': 220, 'multiplus_4k': 310}[P['inverter']] } A at full output, "
+          f"charger {ich} A (empty to full ~{mult * sum(ah[k] for k in BS['column']) / ich:.1f} h)")
     print(f"lift clearance  : both cards {mm(in_H - 8)} tall -> {mm(out_H + in_H - 8)} plate-to-ceiling; in the vehicle service is from the top with the lid off")
     bkg = {"smart100": 14, "smart160": 18, "smart200": 20, "superpack100": 10.5}
-    kg = mult * sum(bkg[k] for k in BS["column"]) + 19 + 1.3 + 0.33 + 0.5 + 0.3 + 0.3 + 1.5 + 4.0 + 19.0
+    ikg = {"multiplus": 6.4, "multiplus_1200": 8.2, "multiplus_ii": 19.0, "multiplus_4k": 22.0}[P["inverter"]]
+    kg = mult * sum(bkg[k] for k in BS["column"]) + ikg + 1.3 + 0.33 + 0.5 + 0.3 + 0.3 + 1.5 + 4.0 + 19.0
     print(f"  est. mass ~{kg:.0f} kg")
 
 
