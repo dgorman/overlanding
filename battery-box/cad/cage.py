@@ -49,8 +49,12 @@ VARIANTS = {
     # v6 draft: cards run FRONT TO BACK along the inboard wall so the
     # MultiPlus-II (578 long) fits on its side; one battery column outboard.
     "bookshelf": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
-                      batt_layout="smart100_stack", dist_forward=False, inverter="multiplus_ii",
-                      card_plane="xz"),
+                      batt_layout="column", dist_forward=False, inverter="multiplus_ii",
+                      card_plane="xz", column=["smart200", "smart200"], arrange="inline"),
+    # same box, four 200Ah Smarts: two end to end, two high, in a printed rack
+    "bookshelf4": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
+                       batt_layout="column", dist_forward=False, inverter="multiplus_ii",
+                       card_plane="xz", column=["smart200", "smart200"], arrange="2x2"),
 }
 # --inverter=multiplus|multiplus_ii|multiplus_4k overrides the variant's inverter
 for _a in sys.argv[1:]:
@@ -608,15 +612,20 @@ def build() -> cq.Assembly:
 #   inboard panel | post | inverter card | 12 mm standoff | MultiPlus-II (148)
 #   | 8 | dist card posts/plate | parts (<=48) | 8 | battery column | outboard
 # ----------------------------------------------------------------------------
-BS = dict(standoff=12.0, gap=8.0, part_depth=48.0,
-          column=["smart200", "smart200"],   # batteries in the column, --column=a,b overrides
-          arrange="inline",                  # "inline" = end to end in depth (30" box), "stack" = one on top of the other
-          leg=24.0)
+BS = dict(standoff=10.0, gap=4.0, part_depth=46.0,   # deepest dist-card part is now the shunt (Cerbo moved up)
+          column=P.get("column", ["smart200", "smart200"]),   # --column=a,b overrides
+          arrange=P.get("arrange", "inline"),  # inline = end to end | stack = one on top | 2x2 = both
+          vent=20.0,                           # Victron: 20 mm free on all four sides of a Lithium Smart
+          vent_end=20.0,                       # end gaps; the 2x2 has to drop these to 15 to fit
+          leg=24.0, leg2=14.0)
 for _a in sys.argv[1:]:
     if _a.startswith("--column="):
         BS["column"] = _a.split("=", 1)[1].split(",")
     if _a.startswith("--arrange="):
         BS["arrange"] = _a.split("=", 1)[1]
+# ceiling over the battery column: the lid panel, not the top rails (the
+# column sits inboard of the perimeter rails)
+in_H_lid = out_H - floor_top
 BS_DIST_LAYOUT = [   # x, z relative to the dist card's lower-back corner; parts face the batteries (-Y)
     dict(comp="breaker_a", x=20,  z=20),
     dict(comp="breaker_b", x=85,  z=20),
@@ -624,12 +633,12 @@ BS_DIST_LAYOUT = [   # x, z relative to the dist card's lower-back corner; parts
     dict(comp="bms",       x=300, z=20),
     dict(comp="busbar_n",  x=20,  z=120),
     dict(comp="busbar_p",  x=20,  z=170),
-    dict(comp="cerbo",     x=200, z=120),
     dict(comp="garmin",    x=380, z=120),
 ]
 BS_INV_UPPER = [     # on the inverter card, above the MultiPlus-II (parts face -Y)
     dict(comp="mppt",  x=60,  dz=15),
-    dict(comp="orion", x=320, dz=15),
+    dict(comp="orion", x=300, dz=15),
+    dict(comp="cerbo", x=480, dz=15),
 ]
 
 
@@ -703,31 +712,38 @@ def build_bookshelf(a):
         add(a, box(c.w, c.d, c.h, (g["card_x0"] + pl["x"], g["dist_plate"] - c.d, floor_top + 2 + pl["z"])).edges("|Y").fillet(3),
             c.name + "__card", col)
 
-    # --- battery column, outboard, from the IceBox end.  "inline": one printed
-    # tray per battery, end to end in depth (needs the 30" box).  "stack": a
-    # printed rack per level: tray, mid-shelf, four legs at the stack's front
-    # and back faces (inside the column width) bolted through the floor into
-    # the joists, so the stack carries itself, not a card.
-    wall, L = 4.0, BS["leg"]
+    # --- battery column, outboard, from the IceBox end.
+    #   inline: one printed tray per battery, end to end, 20 mm vent gaps.
+    #   stack : one stack; printed rack = tray + mid-shelf + 4 legs (24 mm) at
+    #           the stack's front/back faces, bolted through the floor into the joists.
+    #   2x2   : two stacks end to end; legs are 16 mm so three rows of them fit.
+    two = BS["arrange"] == "2x2"
+    if two:
+        BS["vent_end"] = 15.0
+    wall, vent, vent_end = (3.0 if two else 4.0), BS["vent"], BS["vent_end"]
     col = [COMPONENTS[k] for k in BS["column"]]
     fw = max(c.w for c in col) + 2 * wall
-    if BS["arrange"] == "inline":
-        x = x_in0 + 2
-        for i, c in enumerate(col):
+    ty = y_in0 + vent - wall                       # 20 mm vent to the outboard panel
+    positions = 2 if two else 1
+    L = BS["leg2"] if two else BS["leg"]
+    x = x_in0 + vent_end - wall
+    zmax = floor_top + 4
+    for pos in range(positions if BS["arrange"] != "inline" else len(col)):
+        if BS["arrange"] == "inline":
+            c = col[pos]
             tray = box(c.d + 2 * wall, fw, 24).cut(box(c.d, c.w, 25, (wall, wall, 4)))
-            add(a, tray.translate((x, y_in0 + 2, floor_top)), f"print_tray_battery_{i}", ORANGE)
-            add(a, box(c.d, c.w, c.h, (x + wall, y_in0 + 2 + wall, floor_top + 4)).edges("|Z").fillet(6), f"battery_{i}", BATT)
-            x += c.d + 2 * wall + 4
-        z = floor_top + 4 + max(c.h for c in col)
-        g["col_depth_used"] = x - x_in0
-    else:
+            add(a, tray.translate((x, ty, floor_top)), f"print_tray_battery_{pos}", ORANGE)
+            add(a, box(c.d, c.w, c.h, (x + wall, ty + wall, floor_top + 4)).edges("|Z").fillet(6), f"battery_{pos}", BATT)
+            zmax = max(zmax, floor_top + 4 + c.h)
+            x += c.d + 2 * wall + vent - 2 * wall
+            continue
         fd = max(c.d for c in col) + 2 * wall
-        tx, ty = x_in0 + 2 + L, y_in0 + 2
+        tx = x if (two and pos == 0) else x + L      # 2x2: back legs sit inside the end vent gap
         tray = box(fd, fw, 24).cut(box(fd - 2 * wall, fw - 2 * wall, 25, (wall, wall, 4)))
-        add(a, tray.translate((tx, ty, floor_top)), "print_tray_battery", ORANGE)
+        add(a, tray.translate((tx, ty, floor_top)), f"print_tray_battery_{pos}", ORANGE)
         z = floor_top + 4
         for i, c in enumerate(col):
-            add(a, box(c.d, c.w, c.h, (tx + (fd - c.d) / 2, ty + (fw - c.w) / 2, z)).edges("|Z").fillet(6), f"battery_{i}", BATT)
+            add(a, box(c.d, c.w, c.h, (tx + (fd - c.d) / 2, ty + (fw - c.w) / 2, z)).edges("|Z").fillet(6), f"battery_{pos}_{i}", BATT)
             z += c.h
             if i < len(col) - 1:
                 z += P["term_clear"]
@@ -735,13 +751,21 @@ def build_bookshelf(a):
                 sh = box(fd + 2 * L, fw, P["shelf_t"] + 12)
                 sh = sh.cut(box(nxt.d, nxt.w, 13, (L + (fd - nxt.d) / 2, (fw - nxt.w) / 2, P["shelf_t"])))
                 sh = sh.cut(box(fd - 2 * wall - 30, fw - 2 * wall - 30, P["shelf_t"] + 1, (L + wall + 15, wall + 15, -0.5)))
-                add(a, sh.translate((tx - L, ty, z)), f"print_shelf_{i}", ORANGE)
-                for (lx, ly) in ((tx - L, ty), (tx + fd, ty), (tx - L, ty + fw - L), (tx + fd, ty + fw - L)):
+                add(a, sh.translate((tx - L, ty, z)), f"print_shelf_{pos}_{i}", ORANGE)
+                legs = [(tx - L, ty), (tx - L, ty + fw - L)]
+                if pos == positions - 1:          # front legs only on the last position (shared row between stacks)
+                    legs += [(tx + fd, ty), (tx + fd, ty + fw - L)]
+                if two and pos == 0:
+                    legs = [(tx - L, ty), (tx - L, ty + fw - L)]
+                for (lx, ly) in legs:
                     leg = box(L, L, z - floor_top)
                     foot = box(L, L + 16, 6, (0, -8, 0)).cut(cq.Workplane("XY").center(L / 2, L / 2).circle(3.4).extrude(7))
-                    add(a, leg.union(foot).translate((lx, ly, floor_top)), f"print_leg_{i}_{int(lx)}_{int(ly)}", ORANGE)
+                    add(a, leg.union(foot).translate((lx, ly, floor_top)), f"print_leg_{pos}_{i}_{int(lx)}_{int(ly)}", ORANGE)
                 z += P["shelf_t"]
-        g["col_depth_used"] = fd + 2 * L + 2
+        zmax = max(zmax, z)
+        x = tx + fd
+    g["col_depth_used"] = x + L - x_in0 + vent_end
+    z = zmax
     g["stack_top"] = z - floor_top + P["term_clear"]
     g["col_W_used"] = fw
     return g
@@ -791,24 +815,38 @@ def report_bookshelf():
           f"({'overhangs' if inv.w > g['card_L'] else 'fits'} the card by {abs(inv.w - g['card_L']):.0f} mm, {in_D - inv.w:.0f} mm clear of the end rails)")
     print(f"inverter card   : MultiPlus-II {inv.w}x{inv.d}x{inv.h} on its side, {in_H - 12 - inv.h:.0f} mm above it for MPPT + Orion")
     col = [COMPONENTS[k] for k in BS["column"]]
-    wide = max(c.w for c in col) + 8
+    vent = BS["vent"]
+    wide = max(c.w for c in col) + 2 * vent
+    n = len(col) * (2 if BS["arrange"] == "2x2" else 1)
     if BS["arrange"] == "inline":
-        deep = sum(c.d + 8 for c in col) + 4 * (len(col) - 1)
+        deep = sum(c.d for c in col) + (len(col) + 1) * vent
         tall = 4 + max(c.h for c in col) + P["term_clear"]
         print(f"battery column  : {mm(g['bay_W'])} wide x {mm(in_D)} deep; " + " + ".join(BS["column"]) + " end to end -> "
               f"{deep:.0f} of {in_D:.0f} deep ({'ok' if deep <= in_D else 'TOO DEEP by %.0f' % (deep - in_D)}), "
-              f"{wide:.0f} of {g['bay_W']:.0f} wide ({'ok' if wide <= g['bay_W'] else 'TOO WIDE'}), {tall:.0f} of {in_H:.0f} tall; no shelf, no legs")
+              f"{wide:.0f} of {g['bay_W']:.0f} wide incl. 20 mm vents ({'ok' if wide <= g['bay_W'] else 'TOO WIDE by %.0f' % (wide - g['bay_W'])}), "
+              f"{tall:.0f} of {in_H_lid:.0f} tall to the lid; no shelf, no legs")
     else:
+        L = BS["leg2"] if BS["arrange"] == "2x2" else BS["leg"]
         stack = 4 + sum(c.h for c in col) + (len(col) - 1) * (P["term_clear"] + P["shelf_t"]) + P["term_clear"]
-        print(f"battery column  : {mm(g['bay_W'])} wide x {mm(in_D)} deep; stack " + " + ".join(BS["column"]) +
-              f" -> {stack:.0f} of {in_H:.0f} tall ({in_H - stack:.0f} spare), {wide:.0f} of {g['bay_W']:.0f} wide "
-              f"({'ok' if wide <= g['bay_W'] else 'TOO WIDE'}); rack depth {max(c.d for c in col) + 8 + 2 * BS['leg']:.0f} incl. legs")
+        pos = 2 if BS["arrange"] == "2x2" else 1
+        wall = 3.0 if pos == 2 else 4.0
+        vent_end = 15.0 if pos == 2 else vent
+        deep = pos * (max(c.d for c in col) + 2 * wall) + (pos - 1) * L + 2 * vent_end + (0 if pos == 2 else 2 * L)
+        print(f"battery column  : {mm(g['bay_W'])} wide x {mm(in_D)} deep; {pos} stack(s) of " + " + ".join(BS["column"]) +
+              f" -> {stack:.0f} of {in_H_lid:.0f} tall to the lid ({in_H_lid - stack:.0f} spare above the top lugs), "
+              f"{wide:.0f} of {g['bay_W']:.0f} wide incl. vents ({'ok' if wide <= g['bay_W'] else 'TOO WIDE by %.0f' % (wide - g['bay_W'])}), "
+              f"rack {deep:.0f} of {in_D:.0f} deep with {vent_end:.0f} mm end gaps and {L:.0f} mm legs ({'ok' if deep <= in_D else 'TOO DEEP by %.0f' % (deep - in_D)})")
     ah = {"smart100": 100, "smart160": 160, "smart200": 200, "superpack100": 100}
     amps = {"smart100": 100, "smart160": 160, "smart200": 200, "superpack100": 100}
-    print(f"  bank {sum(ah[k] for k in BS['column'])} Ah, {sum(amps[k] for k in BS['column'])} A recommended continuous; MultiPlus-II needs ~220 A at full output")
+    mult = 2 if BS["arrange"] == "2x2" else 1
+    ah = {"smart100": 100, "smart160": 160, "smart200": 200, "superpack100": 100}
+    amps = {"smart100": 100, "smart160": 160, "smart200": 200, "superpack100": 100}
+    print(f"  bank {n} batteries = {mult * sum(ah[k] for k in BS['column'])} Ah ({mult * sum(ah[k] for k in BS['column']) * 12.8 / 1000:.1f} kWh), "
+          f"{mult * sum(amps[k] for k in BS['column'])} A recommended continuous; MultiPlus-II needs ~220 A at full output, charges at 120 A "
+          f"(empty to full ~{mult * sum(ah[k] for k in BS['column']) / 120:.1f} h)")
     print(f"lift clearance  : both cards {mm(in_H - 8)} tall -> {mm(out_H + in_H - 8)} plate-to-ceiling; in the vehicle service is from the top with the lid off")
     bkg = {"smart100": 14, "smart160": 18, "smart200": 20, "superpack100": 10.5}
-    kg = sum(bkg[k] for k in BS["column"]) + 19 + 1.3 + 0.33 + 0.5 + 0.3 + 0.3 + 1.5 + 4.0 + 19.0
+    kg = mult * sum(bkg[k] for k in BS["column"]) + 19 + 1.3 + 0.33 + 0.5 + 0.3 + 0.3 + 1.5 + 4.0 + 19.0
     print(f"  est. mass ~{kg:.0f} kg")
 
 

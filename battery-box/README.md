@@ -35,15 +35,30 @@ The box can't get taller, so the only axis that takes a 578 mm MultiPlus-II is t
 | From the inboard wall | mm |
 |---|---|
 | post + inverter/charger card plate | 17 |
-| MultiPlus-II 12/3000 on its side, on 12 mm standoffs, terminals toward the front | 148 + 12 |
-| gap | 8 |
-| distribution card plate + parts facing the batteries (≤ 48 deep) | 54 |
-| gap | 8 |
-| **battery column** against the outboard wall | **180** |
+| MultiPlus-II 12/3000 on its side, on 10 mm standoffs, terminals toward the front | 148 + 10 |
+| gap | 4 |
+| distribution card plate + parts facing the batteries (≤ 46 deep) | 52 |
+| gap | 4 |
+| **battery column** against the outboard wall, including Victron's 20 mm vent gap on each side | **192** |
 
-- The inverter/charger card is 694 × 494 mm; the MultiPlus-II has 116 mm of card to spare and sits on 12 mm standoffs so its case clears the post bodies. Above it there are 213 mm for the **MPPT and Orion** on the same card.
-- The distribution card carries bus bars, shunt, breakers, the **VE.Bus BMS V2**, Cerbo and Garmin, with the Garmin at the front end near the sockets.
-- The battery column is 180 mm wide and 711 mm deep. That takes **two Lithium Smart 12.8V/200Ah end to end** (152 wide, 321 long, 237 tall each): 662 of 711 mm, one printed tray each, no shelf, no legs, nothing stacked. **400 Ah, 400 A recommended / 800 A maximum, 40 kg**, with the VE.Bus BMS V2 on the distribution card. That runs the MultiPlus-II at full output for about two hours and keeps the mass low. Victron allows mixed capacities and ages in parallel, so a 200 + 100 is also fine if you already own one. The 330Ah is 206 mm wide and does not fit the column. If you ever need a stack, `--arrange=stack` builds a printed rack with four legs through the floor into the joists.
+- The inverter/charger card is 694 × 494 mm; the MultiPlus-II has 116 mm of card to spare and sits on 10 mm standoffs so its case clears the post bodies. Above it there are 213 mm for the **MPPT, Orion and Cerbo** on the same card.
+- The distribution card carries bus bars, shunt, breakers, the **VE.Bus BMS V2** and the Garmin at the front end near the sockets. Nothing on it is deeper than 46 mm, which is what buys the battery column its vent gaps.
+- The battery column is 192 mm wide and 711 mm deep. That takes **two Lithium Smart 12.8V/200Ah end to end** (152 wide, 321 long, 237 tall each) with Victron's 20 mm ventilation gap on every side: 702 of 711 mm, one printed tray each, no shelf, no legs, nothing stacked. **400 Ah, 5.1 kWh, 400 A recommended / 800 A maximum, 40 kg**, with the VE.Bus BMS V2 on the distribution card. That runs the MultiPlus-II at full output for about two hours, recharges from empty in 3.3 h on the 120 A charger, and keeps the mass low. Victron allows mixed capacities and ages in parallel (up to 20), so a 200 + 100 is also fine if you already own one. The 330Ah is 206 mm wide and does not fit the column.
+
+### Four 200Ah as a 2 × 2? (`python cage.py bookshelf4`)
+
+It fits, barely, and I don't recommend it:
+
+| | 2 × 200Ah end to end | 4 × 200Ah, 2 × 2 |
+|---|---|---|
+| Bank | 400 Ah, 5.1 kWh | 800 Ah, 10.2 kWh |
+| Height | 255 of 527 mm to the lid | **516 of 527**: 11 mm above the top lugs, which is not enough for 4/0 flag lugs and cable |
+| Depth | 702 of 711 with 20 mm gaps | 697 of 711 only by dropping the end gaps to 15 mm and the tray walls to 3 mm |
+| Support | two printed trays | a printed rack: two trays, two mid-shelves, six 14 mm legs in three rows bolted through the floor into the joist bars |
+| Mass | ~86 kg total | **~126 kg total**, 80 of it batteries, half of that at 250–500 mm up |
+| Recharge from empty at 120 A | 3.3 h | 6.7 h; the Orion alone would take 16 h |
+
+The 2 × 2 is modelled with the rack so it's there if the runtime is worth it, but the 400 Ah pair is the sensible build: it already supplies twice what the MultiPlus-II can draw, keeps 40 kg low in the box, and leaves the cards easy to get at.
 - Both cards are full height (494 mm), so they only come out with the box out of the vehicle. In the vehicle, everything is reached from the top with the lid off; the MultiPlus-II's terminals face the front panel.
 - Sockets and the Anderson inlets go in the front panel over the battery column.
 - About 86 kg with the two 200Ah batteries.
@@ -205,6 +220,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-04 | Asked about 4 × 200Ah: added the `bookshelf4` 2 × 2 variant with a six-leg printed rack; it fits with 15 mm end gaps and 11 mm over the top lugs, recommendation stays at 2 × 200Ah. Column widened to 192 mm for Victron's 20 mm vents by moving the Cerbo to the inverter card. |
 | 2026-10-04 | Owner's IceBox 1.3 is the 30" (762 mm) model, not 25": v5 and v6 re-sized. v6 battery column becomes two Lithium Smart 200Ah end to end (400 Ah), no stack. `--column` / `--arrange` options added to compare batteries. |
 | 2026-10-04 | **v6 draft:** cards turned 90° to run front to back along the inboard wall so a MultiPlus-II 12/3000 fits on its side; one column of two Lithium Smart 100Ah outboard with frame-mounted supports. `python cage.py bookshelf`. |
 | 2026-10-04 | Named the parts: distribution card, inverter/charger card, battery bay. Battery supports noted as needing to be frame-mounted, not card-adjacent; left for the battery decision. |
