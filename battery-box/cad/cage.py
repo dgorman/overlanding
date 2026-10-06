@@ -308,7 +308,7 @@ if P["narrow"] and P["card_plane"] in ("v7", "v8", "v9"):
         # v11: v10 swapped.  The MultiPlus stands lengthwise in the column beside the stack (card 6 + feet 10 + 101 + 30
         # behind for its SB175 = 147 of the 163 mm column); the charge card is the front card, so the front zone is only
         # the MPPT's 70 + its rear SB50 row.
-        V10 = dict(post_dx=16.0, post_standoff=21.0)   # column posts 21 off the inboard rail: 30 mm behind the card for the SB175
+        V10 = dict(post_dx=16.0, post_standoff=2.0)    # column posts 2 off the inboard rail: the card sits as far from the batteries as it can (no rear SB175 for now)
         V8["bay_gap"] = 22.0     # the charge card's rear-face SB50s (16) + 6
         V8["inv_gap"] = 0.0
         V8["front"] = 10.0
@@ -388,12 +388,14 @@ if P.get("deck") == "column":
                   ("out", "socket", 350, 250, 29), ("out", "socket", 395, 250, 29), ("out", "socket", 350, 290, 29),
                   ("out", "socket", 395, 290, 22), ("out", "socket", 372, 330, 22),
                   ("out", "sb175_pack", 360, 420)]
-if P.get("swap"):   # v11: the front card is the shallower charge card, so the wall zone is 71 mm long: ports stack in one column
-    SIDE_PORTS = [("out", "l14_30_in", 367, 65), ("out", "l14_30_out", 367, 135),
-                  ("out", "sb50_solar", 349, 170), ("out", "sb50_alt", 349, 226),
-                  ("out", "socket", 349, 300, 29), ("out", "socket", 386, 300, 29), ("out", "socket", 349, 340, 29),
-                  ("out", "socket", 386, 340, 22), ("out", "socket", 367, 380, 22),
-                  ("out", "sb175_pack", 354, 420)]
+if P.get("swap"):   # v11: ONE column of ports on the pedal-side wall, as close to the IceBox end of the zone as the L14-30 flange
+    # allows (zone x 332..403 beside the front card; a 63 mm flange centred at 364 just clears the card's post).  Round ports in
+    # the column, rectangular faces centred on the same line: fewer, spread-out holes keep the panel stiff.
+    SIDE_PORTS = [("out", "l14_30_in", 364, 65), ("out", "l14_30_out", 364, 135),
+                  ("out", "sb50_solar", 345.5, 172), ("out", "sb50_alt", 345.5, 226),
+                  ("out", "socket", 364, 296, 29), ("out", "socket", 364, 336, 29), ("out", "socket", 364, 376, 29),
+                  ("out", "socket", 364, 410, 22), ("out", "socket", 364, 440, 22),
+                  ("out", "sb175_pack", 351, 460)]
 PORT_FACE = {"sb175": (26.0, 56.0, 79.0), "sb50": (37.0, 48.0, 48.0), "iec": (24.0, 32.0, 50.0)}   # (w, h, depth), face centred
 INLET_BODY = {"l14": (60.0, 55.0), "sb50": (48.0, 37.0, 48.0), "sb175": (79.0, 56.0, 26.0)}   # (dia, depth) or (depth, w, h)
 N_BATT = 4
@@ -1399,7 +1401,7 @@ V10_COL_CONN = [dict(comp="sb50_v", x=x) for x in (12, 51, 90, 129, 168)] + [dic
 # v11 (swapped): the MultiPlus on the column card (249 along the card, on 10 mm feet), its SB175 on the rear face;
 # the charge gear on the front card with the Garmin and the shunt in the (now port-free) bottom band
 V11_COL_LAYOUT = [dict(comp="multiplus_1200_up", x=0.5, z=2 + FEET_H)]
-V11_COL_CONN = [dict(comp="sb175_v", x=100)]
+V11_COL_CONN = []   # the inverter's SB175 is removed for now; where it goes is an open question
 V11_DECK_LAYOUT = [dict(comp="busbar_px", x=50, y=5), dict(comp="busbar_nx", x=50, y=110), dict(comp="breaker_a", x=125, y=46)]
 V11_CHARGE_LAYOUT = [dict(comp="mppt", y=12, z=306), dict(comp="orion", y=12, z=148), dict(comp="cerbo_up", y=140, z=148),
                      dict(comp="garmin", y=12, z=30), dict(comp="shunt_up", y=145, z=20)]
@@ -2066,7 +2068,7 @@ def report_v10():
         print(f"  column   {c.name:20s} {c.w:>4.0f}x{c.h:>4.0f}x{c.d:>3.0f} @({pl['x']},{pl['z']}) {' '.join(bad) or 'ok'}")
     if P["swap"]:
         col_w = out_W - B - (y_in0 + 1 + V7["tray_w"])
-        print(f"column          : {col_w:.0f} mm wide; MultiPlus needs card 6 + feet 10 + 101 + 30 behind for the SB175 = 147 -> {col_w - 147:.0f} mm spare; "
+        print(f"column          : {col_w:.0f} mm wide; card 6 + feet 10 + MultiPlus 101 = 117, {out_W - B - cy - P['card_t']:.0f} mm behind the card (SB175 removed for now; it needs 30), "
               f"MultiPlus face {cy - 10 - 101 - (y_in0 + 1 + V7['tray_w']):.0f} mm from the tray wall")
         for pl in V11_CHARGE_LAYOUT:
             c = COMPONENTS[pl["comp"]]; bad = []
