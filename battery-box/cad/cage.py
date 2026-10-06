@@ -224,6 +224,7 @@ COMPONENTS = {
     "sb175_x":   Comp("socket_sb175", 56, 79, 26, "Anderson SB175 on the deck, mating axis along the depth (+X)"),
     "sb50_x":    Comp("socket_sb50", 37, 48, 16, "Anderson SB50 on the deck, mating axis along the depth (+X)"),
     "sb175_v":   Comp("socket_sb175", 56, 26, 79, "Anderson SB175 standing on a card's rear face, mating face up"),
+    "sb175_h":   Comp("socket_sb175", 79, 26, 56, "Anderson SB175 lying on a lengthwise card's face above the MultiPlus, mating forward (+X)"),
     "sb50_v":    Comp("socket_sb50", 37, 16, 48, "Anderson SB50 standing on a card face, mating face up"),
     "shunt_x":   Comp("power_shunt", 54, 120, 46, "SmartShunt turned 90 deg on the deck"),
     "shunt_up":  Comp("power_shunt", 54, 46, 120, "SmartShunt standing on end on a card"),
@@ -426,6 +427,7 @@ STEP_FILES = {   # component key -> Victron STEP file (downloaded into cad/step/
     "sb175_x":      "anderson_sb175_housing.stp",
     "sb50_x":       "anderson_sb50_housing.stp",
     "sb175_v":      "anderson_sb175_housing.stp",
+    "sb175_h":      "anderson_sb175_housing.stp",
     "sb50_v":       "anderson_sb50_housing.stp",
     "shunt_x":      "SmartShunt-500A.step",
     "shunt_up":     "SmartShunt-500A.step",
@@ -433,7 +435,7 @@ STEP_FILES = {   # component key -> Victron STEP file (downloaded into cad/step/
     "breaker_a":    "BlueSea-7148.step",   # download from bluesea.com product 7148 (Technical Documents > CAD), save under cad/step/
     "breaker_b":    "BlueSea-7148.step",
 }
-MATED = {"sb175": 133.4, "sb50": 81.3, "sb175_x": 133.4, "sb50_x": 81.3, "sb175_v": 133.4, "sb50_v": 81.3, "pp45_v": 41.0, "pp45_x": 41.0}   # Anderson mated-pair lengths
+MATED = {"sb175": 133.4, "sb50": 81.3, "sb175_x": 133.4, "sb50_x": 81.3, "sb175_v": 133.4, "sb50_v": 81.3, "pp45_v": 41.0, "pp45_x": 41.0, "sb175_h": 133.4}   # Anderson mated-pair lengths
 HOUSING = {"sb175": 79.4, "sb50": 48.0, "pp45": 24.6}   # housing length along the mating axis
 _STEP_CACHE = {}
 # extra rotation (axis, degrees) applied after the extents match, for units
@@ -1400,8 +1402,9 @@ V10_COL_LAYOUT = [
 V10_COL_CONN = [dict(comp="sb50_v", x=x) for x in (12, 51, 90, 129, 168)] + [dict(comp="pp45_v", x=207)]
 # v11 (swapped): the MultiPlus on the column card (249 along the card, on 10 mm feet), its SB175 on the rear face;
 # the charge gear on the front card with the Garmin and the shunt in the (now port-free) bottom band
-V11_COL_LAYOUT = [dict(comp="multiplus_1200_up", x=0.5, z=2 + FEET_H)]
-V11_COL_CONN = []   # the inverter's SB175 is removed for now; where it goes is an open question
+V11_COL_LAYOUT = [dict(comp="multiplus_1200_up", x=0.5, z=2 + FEET_H),
+                  dict(comp="sb175_h", x=85, z=405)]   # SB175 lying on the unit face ABOVE the MultiPlus (top 395), mating forward;
+V11_COL_CONN = []                                      # the card is full height (494) for it: mated pair 133 along the card, 56 tall
 V11_DECK_LAYOUT = [dict(comp="busbar_px", x=50, y=5), dict(comp="busbar_nx", x=50, y=110), dict(comp="breaker_a", x=125, y=46)]
 V11_CHARGE_LAYOUT = [dict(comp="mppt", y=12, z=306), dict(comp="orion", y=12, z=148), dict(comp="cerbo_up", y=140, z=148),
                      dict(comp="garmin", y=12, z=30), dict(comp="shunt_up", y=145, z=20)]
@@ -1613,7 +1616,7 @@ def build_v8(a, nine=False):
     if nine and COL and P["swap"]:
         cards = (("charge", x_in0 + V8["x_inv"], V11_CHARGE_LAYOUT, 0.0),)
         card_conn = {"charge": (V11_CHARGE_REAR, V11_CHARGE_FRONT)}
-        build_column_card(a, g, tx, y_in0 + 1, fd, fw, ch, layout=V11_COL_LAYOUT, conn=V11_COL_CONN, unit_standoff=10.0, feet=True, name="inverter")
+        build_column_card(a, g, tx, y_in0 + 1, fd, fw, ch, layout=V11_COL_LAYOUT, conn=V11_COL_CONN, unit_standoff=10.0, feet=True, name="inverter", full_height=True)
         build_pack(a, out_D + PACK["gap_to_box"])
     elif nine and COL:
         cards = (("inverter", x_in0 + V8["x_inv"], V9_INV_LAYOUT, 10.0),)
@@ -1709,11 +1712,16 @@ def column_post(end, h):
     return out
 
 
-def build_column_card(a, g, tx, ty0, fd, fw, ch, layout=None, conn=None, unit_standoff=3.0, feet=False, name="charge"):
+def build_column_card(a, g, tx, ty0, fd, fw, ch, layout=None, conn=None, unit_standoff=3.0, feet=False, name="charge", full_height=False):
     """v10: the charge card lengthwise along the inboard wall beside the single battery stack; units face -Y.
     v11: the same card carries the MultiPlus on feet, its SB175 on the rear face."""
     layout = V10_COL_LAYOUT if layout is None else layout
     conn = V10_COL_CONN if conn is None else conn
+    if full_height:
+        # no upward-mating connectors on this card, so it runs back up toward the top of the posts; 480 (not 494) keeps
+        # each of its two tiles at 240 + the 12 mm lap = 252 on the bed
+        ch = min(in_H - 8, 480.0)
+    g["col_ch"] = ch
     dx, dy, S = V10["post_dx"], P["post_w"], V10["post_standoff"]
     py = out_W - B - S - dy                              # post body, 12 off the inboard rail
     px_inv = x_in0 + V8["x_inv"] - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]   # the inverter card's post
@@ -1736,6 +1744,10 @@ def build_column_card(a, g, tx, ty0, fd, fw, ch, layout=None, conn=None, unit_st
         at = (cx0 + pl["x"], card_y - c.d - so, floor_top + 2 + pl["z"])   # 3 mm off the card: STEP bodies carry brackets past the bbox
         col = BLUE if c.name.startswith("victron") else (0.08, 0.08, 0.08) if c.name.startswith("garmin") else GOLD
         add(a, victron_shape(pl["comp"], c.w, c.d, c.h, at, box(c.w, c.d, c.h, at).edges("|Y").fillet(3)), c.name + f"_col_{int(pl['x'])}_{int(pl['z'])}__card", col)
+        if pl["comp"] in MATED:   # a lying connector: the pigtail's flying half mates in front of it along the card (+X)
+            overlap = 2 * c.w - MATED[pl["comp"]]
+            at2 = (at[0] + c.w - overlap, at[1], at[2])
+            add(a, victron_shape(pl["comp"], c.w, c.d, c.h, at2, box(c.w, c.d, c.h, at2).edges("|Y").fillet(3)), c.name + f"_plug_col_{int(pl['x'])}", (0.1, 0.6, 0.4))
         if feet and pl["comp"].startswith("multiplus"):   # two printed feet under the housing, standoff deep
             for xx in (pl["x"] + 25, pl["x"] + c.w - 85):
                 add(a, box(60, so + 4, FEET_H, (cx0 + xx, card_y - so - 4, floor_top + 2 + pl["z"] - FEET_H)), f"print_feet_mp_col_{int(xx)}__card", ORANGE)
@@ -2064,12 +2076,15 @@ def report_v10():
     for pl in (V11_COL_LAYOUT if P["swap"] else V10_COL_LAYOUT):
         c = COMPONENTS[pl["comp"]]; bad = []
         if pl["x"] + c.w > cL: bad.append("X overflow")
-        if pl["z"] + c.h > g.get("ch", 444): bad.append("Z overflow")
+        if pl["z"] + c.h > g.get("col_ch", 444): bad.append("Z overflow")
         print(f"  column   {c.name:20s} {c.w:>4.0f}x{c.h:>4.0f}x{c.d:>3.0f} @({pl['x']},{pl['z']}) {' '.join(bad) or 'ok'}")
     if P["swap"]:
         col_w = out_W - B - (y_in0 + 1 + V7["tray_w"])
-        print(f"column          : {col_w:.0f} mm wide; card 6 + feet 10 + MultiPlus 101 = 117, {out_W - B - cy - P['card_t']:.0f} mm behind the card (SB175 removed for now; it needs 30), "
+        print(f"column          : {col_w:.0f} mm wide; card 6 + feet 10 + MultiPlus 101 = 117, {out_W - B - cy - P['card_t']:.0f} mm behind the card, "
               f"MultiPlus face {cy - 10 - 101 - (y_in0 + 1 + V7['tray_w']):.0f} mm from the tray wall")
+        print(f"inverter SB175  : LATERAL, lying on the card face above the MultiPlus (MultiPlus top at card z 395, card raised to {g.get('col_ch', 480):.0f}): housing 79 x 26 x 56 at z 405-461, "
+              f"mated pair 133 along the card, top {g.get('col_ch', 480) - 461:.0f} mm under the card top; the flying half pulls FORWARD 25 mm to unplug, then the card lifts.  "
+              f"Standing it mating-face-up would need 133 + the 60 mm lid room = 193 above the MultiPlus; there is 99.")
         for pl in V11_CHARGE_LAYOUT:
             c = COMPONENTS[pl["comp"]]; bad = []
             if pl["y"] + c.w > g.get("cw", 249): bad.append("Y overflow")
