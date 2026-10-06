@@ -1345,7 +1345,7 @@ def _conn_z(kind):
     """card-relative z of a card-mounted fixed half so the mated pair tops out CONN_LID_ROOM under the lid"""
     mated = MATED[kind]
     return (out_H - CONN_LID_ROOM) - (floor_top + 2) - mated
-V9_INV_REAR = [dict(comp="sb175_v", y=130, z=None)]   # MultiPlus DC: the only connector on this card (y 130 clears v10 column-card front post)
+V9_INV_REAR = [dict(comp="sb175_v", y=(132 if P.get("deck") == "column" else 150), z=None)]   # MultiPlus DC; v10: 132 clears the column card's front post, v9: 150 clears the rack's inboard legs
 V9_CHARGE_REAR = [dict(comp="sb50_v", y=y, z=None) for y in (15, 62, 109, 156, 203)]   # MPPT, Orion, Cerbo, solar in, alternator in
 V9_CHARGE_FRONT = []
 V9_INV_LAYOUT = [    # inverter card (249 wide = the MultiPlus): the SB175 pigtail leaves the top rear corner and mates on the deck
