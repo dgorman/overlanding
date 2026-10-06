@@ -537,9 +537,12 @@ def guide_post_segments(foot_dir="y", foot_hole=None):
         g = box(P["post_w"], P["post_d"], h)
         g = g.cut(box(gw, P["slot_depth"] + 1, h + 1, ((P["post_w"] - gw) / 2, P["post_d"] - P["slot_depth"], -0.5)))
         def foot_at(z0):
-            if foot_dir == "y":   # plate toward -Y over the depth rail, hole on the rail centreline
-                f = box(P["post_w"], P["foot_len"], P["foot_t"], (0, -P["foot_len"] + P["post_d"] - P["slot_depth"], z0))
-                hx, hy = P["post_w"] / 2, (foot_hole if foot_hole is not None else -(B / 2 + T) + 2)
+            if foot_dir == "y":   # plate toward -Y over the depth rail, from the rail's outer face to the slot wall
+                f = box(P["post_w"], B + P["post_d"] - P["slot_depth"], P["foot_t"], (0, -B, z0))
+                if z0 == 0 and P["card_plane"] in ("v7", "v8", "v9"):
+                    # the floor panel stops at the rail: step the foot down T so it sits on the rail top
+                    f = f.union(box(P["post_w"], B - 0.5, T, (0, -B, -T)))
+                hx, hy = P["post_w"] / 2, (foot_hole if foot_hole is not None else -B / 2)
             else:                 # plate toward -X over the back width rail
                 f = box(P["foot_len"], P["post_d"], P["foot_t"], (-P["foot_len"] + P["post_w"] - 4, 0, z0))
                 hx, hy = (foot_hole if foot_hole is not None else -(B / 2 + T) + 2), P["post_d"] / 2
@@ -1260,6 +1263,30 @@ def build_v8(a, nine=False):
             tray = tray.cut(box(28, fw + 2, 5, (wall + sx - 14, -1, 2)))
         for (hx, hy) in ((wall + 20, wall + 20), (wall + b.d - 20, wall + 20), (wall + 20, wall + b.w - 20), (wall + b.d - 20, wall + b.w - 20)):
             tray = tray.cut(cq.Workplane("XY").center(hx, hy).circle(3.4).extrude(5))   # M6 to the Goose Gear plate
+        if nine:
+            # L tabs tie each tray to the bottom rails so the frame carries the stacks when the box is lifted
+            # as one unit.  The tray floor stays flat on the plate: the rail top (z = B) is below the wall top,
+            # so a flange grown out of the top of the outer side wall lies on the rail and bolts down into its
+            # T-slot with a 1/4-20 T-nut.  Tray-local coordinates: x 0..fd, y 0..fw, z 0 on the plate.
+            rail_lo = -(1 + B) if sidx == 0 else fw + 1              # rail spans rail_lo .. rail_lo + B (1 mm gap)
+            for sx in (40, fd - 80):
+                fl = box(40, B + 1 + 8, (lip + 4) - B, (sx, rail_lo if sidx == 0 else fw - 8, B))   # rail top -> wall top, 8 mm onto the wall
+                fl = fl.cut(cq.Workplane("XY").center(sx + 20, rail_lo + B / 2).circle(3.4).extrude(lip + 5))
+                tray = tray.union(fl)
+            # back rail: the tray + flange would be 282 mm (over the bed), so the back tabs are separate L
+            # brackets.  The tray's back wall gets two 8 mm pads with M5 heat-set inserts (14 mm of wall);
+            # the bracket bolts to a pad with 2 x M5 and its flange lies on the back width rail with a T-nut.
+            for sy in (30, fw - 70):
+                pad = box(8, 40, lip + 4, (-8, sy, 0))
+                for hz in (10, 24):
+                    pad = pad.cut(cq.Workplane("YZ").center(sy + 20, hz).circle(3.2).extrude(10).translate((-9, 0, 0)))
+                tray = tray.union(pad)
+                rail_x = -(V7["end_gap"] + B)                         # back width rail, tray-local x
+                br = box(8, 40, lip + 4, (-16, sy, 0)).union(box(-8 - rail_x, 40, (lip + 4) - B, (rail_x, sy, B)))
+                br = br.cut(cq.Workplane("XY").center(rail_x + B / 2, sy + 20).circle(3.4).extrude(lip + 5))
+                for hz in (10, 24):
+                    br = br.cut(cq.Workplane("YZ").center(sy + 20, hz).circle(2.7).extrude(10).translate((-17, 0, 0)))
+                add(a, br.translate((tx, ty, 0)), f"print_tray_tab_{sidx}_{int(sy)}", ORANGE)
         add(a, tray.translate((tx, ty, 0)), f"print_tray_battery_{sidx}", ORANGE)
         z = 4.0
         for lvl in range(2):
@@ -1506,6 +1533,9 @@ def report_v9():
           f"({'ok' if 160 + 2 * HOUSING['sb50'] - o50 + o50 <= dL else 'TOO SHORT'}); deck front edge to the inverter card {x_in0 + V8['x_inv'] - (g.get('deck_x0', 0) + dL):.0f} mm")
     print("== Battery rack (v9) ==")
     print(f"  trays: {V7['wall']:.0f} mm walls, {V7['lip']:.0f} mm lips, 4 x M6 into the Goose Gear plate, 2 strap slots each; stacks strapped with two 25 mm cam straps over the top battery into the tray slots")
+    print(f"  lift as a unit: each tray has 2 integral L tabs whose flanges lie on the outer bottom depth rail and bolt into its T-slot (1/4-20 T-nuts), "
+          f"plus 2 printed L brackets (2 x M5 into pads on the back wall, T-nut into the back width rail); 4 T-nut bolts per tray carry the stack when the box is lifted by the frame")
+    print(f"  guide posts: bottom foot steps down {T:.0f} mm past the floor panel and sits on the depth rail (T-nut on the slot centreline); top foot bolts up into the top rail")
     print(f"  legs: 8 x 12 mm PETG/ASA in two segments on a 6 mm tenon; they locate the shelves and carry the deck (~3 kg), not the batteries: the upper battery sits on the shelf, the shelf on the lower battery's rim")
     print(f"  shelves: 10 mm plate, 15 mm lip, 4 x M4 through the end walls into inserts in the legs so the upper battery's braking load goes to the legs and the strap, not just the lip")
     print(f"  per stack under 1 g braking: {2 * 7.5:.0f} kg sideways -> tray lip + 4 x M6 + strap; upper battery {7.5:.0f} kg -> shelf lip + 4 x M4 + strap")
