@@ -146,6 +146,8 @@ Depth chain: bay 268 | gap 10 | inverter card 6 + 10 + 101 | front 8 = 403 inner
 
 **v11: v10 swapped, 431 mm deep (17.0 in)** (`python cage.py v11`, viewer "v11")
 
+**Hard limit: 17.25 in (438 mm) deep**, set by the access port in the Goose Gear plate. v11 is 431, 7 mm inside it.
+
 The crazy question was whether the widened column could take the inverter instead of the charge gear. It can: the MultiPlus stands **lengthwise on the column card** beside the battery stack, 249 mm along the card on its 10 mm feet, 101 mm deep, with 30 mm behind the card for its SB175 on the rear face: 147 mm of the 163 mm column, 16 mm to spare, and 16 mm between its face and the tray wall. The MPPT, Orion, the Cerbo (turned), the Garmin and the SmartShunt become the **front card**, the same 249 × 444 two-tile card as v9's charge card, with its five SB50s on the rear face and the Garmin's PP45 on the front face beside the MPPT. Because the front zone is now the MPPT's 70 mm instead of the inverter's 101, the box is **431 × 365 × 559**, 23 mm shorter than v10 and 13 in shorter than the IceBox, same 4.8 in of pedal room.
 
 Ports stay on the pedal-side wall beside the front card, backs toward it, in **one column** placed as close to the IceBox end of the 71 mm wall zone as the L14-30's 63 mm flange allows (centred 32 mm from the card's post), so the holes are spread vertically and the panel keeps its stiffness: L14-30 in and out, the two SB50 inlets, three 12 V, two USB, the SB175 pack inlet at the top. Nothing is in front of or above either card; both lift clear.
