@@ -1508,8 +1508,8 @@ def build_v8(a, nine=False):
                 for hz in (10, 24):
                     br = br.cut(cq.Workplane("YZ").center(sy + 20, hz).circle(2.7).extrude(10).translate((-15, 0, 0)))
                 add(a, br.translate((tx, ty, 0)), f"print_tray_tab_{sidx}_{int(sy)}", ORANGE)
-        if COL:   # the column floor brackets bolt to this wall: 2 x M4 each through it (heads inside, before the battery goes in)
-            for hx in (12, 44, fd - 40, fd - 10):
+        if COL:   # the column floor halves bolt to this wall: 3 x M4 each through it (heads inside, before the battery goes in)
+            for hx in (12, 44, 100, fd - 100, fd - 40, fd - 10):
                 tray = tray.cut(cq.Workplane("XZ").center(hx, 17).circle(2.3).extrude(-(wall + 2)).translate((0, fw - wall - 1, 0)))
         add(a, tray.translate((tx, ty, 0)), f"print_tray_battery_{sidx}", ORANGE)
         z = 4.0
@@ -1795,23 +1795,26 @@ def build_column_card(a, g, tx, ty0, fd, fw, ch, layout=None, conn=None, unit_st
     for end, x in (("back", back_x), ("front", front_x)):
         for k, seg in column_post(end, h, slot=sd):
             add(a, seg.translate((x, py, 0)), f"print_colpost_{end}_{k}", ORANGE)
-    # --- column floor brackets: one printed channel at each end of the column ties the tray's inboard corner to the
-    # inverter card's post.  6 mm plate on the floor, 34 mm lip bolted through the tray's inboard wall (2 x M4, heads
-    # inside), 28 mm lip bolted into the post's solid sill (2 x M4 inserts), 12 mm rib along the inner edge.  No joint.
+    # --- column floor: a continuous 6 mm floor from the tray's inboard wall to the inverter card's posts, the full
+    # width of the column, in two halves that butt at the middle (no lap, no glue: each half is bolted at both its
+    # ends).  Along the tray a 34 mm lip bolts through the tray's inboard wall (2 x M4 per half, heads inside, fitted
+    # before the battery); at each post a 28 mm lip bolts into the post's solid sill (2 x M4 inserts).  The tray's
+    # inboard corners are tied to the frame through the posts, and the MultiPlus leads lie on the floor.
     y0f, y1f = ty0 + fw, py - 0.5
     px_front_card = x_in0 + V8["x_inv"] - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]
     x_end = min(front_x + dx, px_front_card - 1)
-    for i, (xa, xb, post_x) in enumerate(((back_x, back_x + 70, back_x), (x_end - 70, x_end, front_x))):
-        brk = box(xb - xa, y1f - y0f, 6, (xa, y0f, 0))
+    xm = (back_x + x_end) / 2
+    for i, (xa, xb, post_x) in enumerate(((back_x, xm, back_x), (xm, x_end, front_x))):
+        fl = box(xb - xa, y1f - y0f, 6, (xa, y0f, 0))
         la, lb = max(xa, tx), min(xb, tx + fd)
-        brk = brk.union(box(lb - la, 6, 34, (la, y0f, 0)))                            # lip against the tray wall
-        for hx in ((12, 44) if i == 0 else (fd - 40, fd - 10)):
-            brk = brk.cut(cq.Workplane("XZ").center(tx + hx, 17).circle(2.3).extrude(-8).translate((0, y0f - 1, 0)))
-        brk = brk.union(box(dx, 6, 28, (post_x, y1f - 6, 0)))                           # lip against the post's -Y face
+        fl = fl.union(box(lb - la, 6, 34, (la, y0f, 0)))                               # lip against the tray wall
+        for hx in ((12, 44, 100) if i == 0 else (fd - 100, fd - 40, fd - 10)):
+            if la + 6 < tx + hx < lb - 6:
+                fl = fl.cut(cq.Workplane("XZ").center(tx + hx, 17).circle(2.3).extrude(-8).translate((0, y0f - 1, 0)))
+        fl = fl.union(box(dx, 6, 28, (post_x, y1f - 6, 0)))                              # lip against the post's -Y face
         for hz in (10.0, 22.0):
-            brk = brk.cut(cq.Workplane("XZ").center(post_x + dx / 2, hz).circle(2.3).extrude(-8).translate((0, y1f - 7, 0)))
-        brk = brk.union(box(6, y1f - y0f, 12, ((xb - 6) if i == 0 else xa, y0f, 0)))   # rib along the inner edge
-        add(a, brk, f"print_column_bracket_{'back' if i == 0 else 'front'}", ORANGE)
+            fl = fl.cut(cq.Workplane("XZ").center(post_x + dx / 2, hz).circle(2.3).extrude(-8).translate((0, y1f - 7, 0)))
+        add(a, fl, f"print_column_floor_{'back' if i == 0 else 'front'}", ORANGE)
     card_y = py + (dy - P["card_t"]) / 2
     avail0, avail1 = back_x + dx - sd + P["card_clear"], front_x + sd - P["card_clear"]
     cL = min(card_len, avail1 - avail0)
@@ -2165,8 +2168,8 @@ def report_v10():
         print(f"  column   {c.name:20s} {c.w:>4.0f}x{c.h:>4.0f}x{c.d:>3.0f} @({pl['x']},{pl['z']}) {' '.join(bad) or 'ok'}")
     if P["swap"]:
         ey = g.get("deck_ext_y", (0, 0))
-        print(f"column brackets : two printed channels (70 x 137 x 6 plate, 34 mm tray lip, 28 mm post lip, 12 mm rib) at the column's ends tie the tray's inboard corners "
-              f"to the inverter card's posts: 2 x M4 through the tray wall + 2 x M4 into each post's sill; no joint, floor stays open for the MultiPlus leads")
+        print(f"column floor    : continuous 6 mm floor from the tray's inboard wall to the inverter card's posts, full column width, two halves butted at the middle "
+              f"(each bolted at both ends: 3 x M4 through the tray wall, 2 x M4 into the post's sill); the tray's inboard corners are tied to the frame through the posts")
         print(f"lug room        : {P['term_clear']:.0f} mm between each battery top and the deck / shelf above it (4 AWG lug + M6 bolt head ~19, cable 9); no deck windows: "
               f"the leads run under the deck to its back edge and come up in the {V7['end_gap']:.0f} mm end gap behind it; terminals go at the back end of each battery")
         print(f"deck extension  : {ey[1] - ey[0]:.0f} mm wide, post to post in two splined plates over the inverter column at the deck height, splined to the stack half and screwed to ledges on the "
