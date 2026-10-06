@@ -54,7 +54,8 @@ def part_tris(shape, tol=1.5):
 def collect(asm, hide=(), lift=0.0):
     polys, cols = [], []
     for child in asm.children:
-        key = next((k for k in COLORS if child.name.startswith(k)), "print")
+        nm = child.name.replace("print_pack_panel", "panel_pack").replace("print_pack_lid", "lid_pack")   # the printed pack skin hides with the panels
+        key = next((k for k in COLORS if nm.startswith(k)), "print")
         if key in hide:
             continue
         tri = part_tris(child.obj.val() if hasattr(child.obj, "val") else child.obj)
