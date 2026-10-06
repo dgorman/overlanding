@@ -84,7 +84,7 @@ VARIANTS = {
                batt_layout="v9", dist_forward=False, inverter="multiplus_1200_up", leg=12.0,
                card_plane="v9", column=["battery", "battery"], arrange="2x2", col_on_plate=True,
                narrow=True, tray_for="battery", align="right", height="icebox", depth="fit10",
-               card_style="solid", post_standoff=18.0, deck="column"),
+               card_style="solid", post_standoff=18.0, post_standoff_out=36.0, post_standoff_in=0.0, deck="column"),
     # v6 check: the owner's four SuperPack 60Ah dropped into the same 200Ah trays
     "bookshelf60": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
                         batt_layout="column", dist_forward=False, inverter="multiplus_1200",
@@ -143,6 +143,7 @@ P = dict(
     post_w=24.0,
     post_d=18.0,
     post_standoff=0.0,   # posts moved inboard off the rail by this much (v9: 18 -> 249 mm wide cards, 2 tiles each)
+    post_standoff_out=None, post_standoff_in=None,   # per-side overrides (v10: 36 / 0 shifts the inverter card inboard, freeing a 44 mm port strip outboard)
     slot_depth=10.0,
     post_seg_max=216.0,  # 2 segments + 20 mm tenon stay under the 256 mm bed
     foot_t=6.0,
@@ -288,7 +289,7 @@ if P["narrow"] and P["card_plane"] in ("v7", "v8", "v9"):
         # v10: two batteries in ONE stack; the charge card stands lengthwise in the freed column beside it, so
         # nothing but the inverter card is in front of the bay.  Ports go above the MultiPlus.
         _inv = COMPONENTS[P["inverter"]]
-        V10 = dict(post_dx=16.0, post_standoff=55.0)   # column card posts: 16 (X) x post_w (Y), 55 off the inboard rail: the port bodies live behind the card
+        V10 = dict(post_dx=16.0, post_standoff=12.0)   # column card posts: 16 (X) x post_w (Y), 12 off the inboard rail (SB50 room behind the card)
         V8["bay_gap"] = 10.0     # the inverter card's own posts' feet clear the rack's front leg tabs; the SB175 sits beside the deck
         V8["inv_gap"] = 0.0
         V8["front"] = 8.0
@@ -349,16 +350,18 @@ if P["card_plane"] in ("v8", "v9"):
 # (60 mm dia, 55 deep) and the two SB50 panel inlets for solar and alternator (37 x 48 face, 48 deep).  (y, z) from the
 # inner corner; the 12 V / USB socket row sits above them at socket_z.
 FRONT_INLETS = [("l14_30_in", 50, 34), ("l14_30_out", 120, 34), ("sb50_solar", 190, 9), ("sb50_alt", 240, 9)]
-SIDE_PORTS = []   # v10: every external port on the INBOARD side panel, beside the inverter's vertical face, behind the column card
+SIDE_PORTS = []
+FRONT_PORTS = []   # v10: every external port in ONE VERTICAL LINE on the front panel, in the strip beside the inverter
 if P.get("deck") == "column":
-    # The MultiPlus is the full width of the box, so nothing can sit in front of or beside it; ports above it would block the
-    # inverter card's lift.  They go on the inboard panel in the column zone instead, right behind the inverter card, where
-    # the column card is pushed 60 mm toward the stack to leave 69 mm behind it.  (kind, x from x_in0, z absolute)
+    # The inverter card is pushed inboard (posts 36 / 0 off the rails) so a 44 mm strip opens between the outboard corner bar
+    # and the MultiPlus's side.  Ports stack there top to bottom; their bodies sit beside the inverter, never in its lift path.
+    # 44 mm is too narrow for L14-30 twist-locks (63 mm flange): the MultiPlus 12/1200 is a 16 A unit, so the AC in/out are
+    # IEC C20 inlet / C19 outlet (24 x 32 faces).  (kind, y centre from the outboard panel face, z centre absolute)
     FRONT_INLETS = []
     SOCKETS = []
-    SIDE_PORTS = [("socket", 45, 131, 29), ("socket", 90, 131, 29), ("socket", 135, 131, 29), ("socket", 180, 131, 22), ("socket", 220, 131, 22),
-                  ("l14_30_in", 60, 221), ("l14_30_out", 130, 221), ("sb50_solar", 175, 201), ("sb50_alt", 225, 201),
-                  ("sb175_pack", 150, 500)]   # the pack inlet sits above the column card's pigtail tops (499)
+    FRONT_PORTS = [("sb175_pack", 47, 68), ("socket", 47, 130, 29), ("socket", 47, 170, 29), ("socket", 47, 210, 29), ("socket", 47, 250, 22),
+                   ("socket", 47, 290, 22), ("sb50_solar", 47, 354), ("sb50_alt", 47, 414), ("iec_in", 47, 468), ("iec_out", 47, 512)]
+PORT_FACE = {"sb175": (26.0, 56.0, 79.0), "sb50": (37.0, 48.0, 48.0), "iec": (24.0, 32.0, 50.0)}   # (w, h, depth), face centred
 INLET_BODY = {"l14": (60.0, 55.0), "sb50": (48.0, 37.0, 48.0), "sb175": (79.0, 56.0, 26.0)}   # (dia, depth) or (depth, w, h)
 N_BATT = 4
 post_h = in_H                                          # floor panel top to the underside of the top rails
@@ -584,7 +587,7 @@ def add_rail(a, name, axis, origin, segs, color_bar, color_print):
 # ----------------------------------------------------------------------------
 # Printed interior parts
 # ----------------------------------------------------------------------------
-def guide_post_segments(foot_dir="y", foot_hole=None):
+def guide_post_segments(foot_dir="y", foot_hole=None, standoff=None):
     """Printed guide post: a post_w x post_d bar with a card slot on its +Y
     face, in segments that fit the bed.  The bottom segment has a foot that
     sits on the floor panel and bolts through it into the bottom rail's
@@ -601,7 +604,7 @@ def guide_post_segments(foot_dir="y", foot_hole=None):
         g = g.cut(box(gw, P["slot_depth"] + 1, h + 1, ((P["post_w"] - gw) / 2, P["post_d"] - P["slot_depth"], -0.5)))
         def foot_at(z0):
             if foot_dir == "y":   # plate toward -Y over the depth rail, from the rail's outer face to the slot wall
-                S = P["post_standoff"]
+                S = P["post_standoff"] if standoff is None else standoff
                 f = box(P["post_w"], B + S + P["post_d"] - P["slot_depth"], P["foot_t"], (0, -B - S, z0))
                 if z0 == 0 and P["card_plane"] in ("v7", "v8", "v9"):
                     # the floor panel stops at the rail: step the foot down T so it sits on the rail top
@@ -813,6 +816,16 @@ def build() -> cq.Assembly:
                 d_, w_, h_ = INLET_BODY["sb175" if nm.startswith("sb175") else "sb50"]
                 front = front.cut(box(T + 2, w_, h_, (out_D - 1, y_in0 + y, floor_top + z)))
                 add(a, box(d_, w_, h_, (out_D - d_, y_in0 + y, floor_top + z)), f"socket_{nm}", (0.3, 0.3, 0.3))
+    for port in FRONT_PORTS:   # v10 vertical port line; bodies point -X from the front panel's inner face
+        kind, y, z = port[0], port[1], port[2]
+        if kind == "socket":
+            r = port[3] / 2
+            front = front.cut(cq.Workplane("YZ").center(y, z).circle(r).extrude(T + 2).translate((out_D - 1, 0, 0)))
+            add(a, cq.Workplane("YZ").center(y, z).circle(r + 3).extrude(-40).translate((out_D, 0, 0)), f"socket_{int(z)}", (0.3, 0.3, 0.3))
+        else:
+            w_, h_, d_ = PORT_FACE["sb175" if kind.startswith("sb175") else "sb50" if kind.startswith("sb50") else "iec"]
+            front = front.cut(box(T + 2, w_, h_, (out_D - 1, y - w_ / 2, z - h_ / 2)))
+            add(a, box(d_, w_, h_, (out_D - d_, y - w_ / 2, z - h_ / 2)), f"socket_{kind}", (0.3, 0.3, 0.3))
     add(a, front, "panel_front_removable", PANEL)
     if si is not None:
         add(a, si, "print_socket_insert", ORANGE)
@@ -1345,7 +1358,7 @@ def _conn_z(kind):
     """card-relative z of a card-mounted fixed half so the mated pair tops out CONN_LID_ROOM under the lid"""
     mated = MATED[kind]
     return (out_H - CONN_LID_ROOM) - (floor_top + 2) - mated
-V9_INV_REAR = [dict(comp="sb175_v", y=(132 if P.get("deck") == "column" else 150), z=None)]   # MultiPlus DC; v10: 132 clears the column card's front post, v9: 150 clears the rack's inboard legs
+V9_INV_REAR = [dict(comp="sb175_v", y=150, z=None)]   # MultiPlus DC: the only connector on this card
 V9_CHARGE_REAR = [dict(comp="sb50_v", y=y, z=None) for y in (15, 62, 109, 156, 203)]   # MPPT, Orion, Cerbo, solar in, alternator in
 V9_CHARGE_FRONT = []
 V9_INV_LAYOUT = [    # inverter card (249 wide = the MultiPlus): the SB175 pigtail leaves the top rear corner and mates on the deck
@@ -1531,8 +1544,10 @@ def build_v8(a, nine=False):
     add(a, box(x_in0 + in_D - g["bay_x1"], in_W, T, (g["bay_x1"], y_in0, B)), "panel_floor_front", PANEL)
 
     # --- three cards across the box, posts on the side depth rails ---------------
-    cw = in_W - 2 * (P["post_standoff"] + P["post_d"] - P["slot_depth"]) - 2 * P["card_clear"]
-    cy0 = y_in0 + (in_W - cw) / 2
+    S_out = P["post_standoff"] if P["post_standoff_out"] is None else P["post_standoff_out"]
+    S_in = P["post_standoff"] if P["post_standoff_in"] is None else P["post_standoff_in"]
+    cw = in_W - (S_out + S_in) - 2 * (P["post_d"] - P["slot_depth"]) - 2 * P["card_clear"]
+    cy0 = y_in0 + S_out + (P["post_d"] - P["slot_depth"]) + P["card_clear"]
     ch = in_H - 8 - (CARD_TRIM if nine else 0)
     inv = COMPONENTS[P["inverter"]]
     if nine and COL:
@@ -1560,8 +1575,8 @@ def build_v8(a, nine=False):
         else:
             add(a, box(P["card_t"], cw, ch, (cx, cy0, floor_top + 2)), f"card_{name}_plate", DARK)
         px = cx - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]
-        for j, y in enumerate((y_in0 + P["post_standoff"], out_W - B - P["post_d"] - P["post_standoff"])):
-            for k, (z, gp) in enumerate(guide_post_segments()):
+        for j, y in enumerate((y_in0 + S_out, out_W - B - P["post_d"] - S_in)):
+            for k, (z, gp) in enumerate(guide_post_segments(standoff=(S_out, S_in)[j])):
                 if j == 1:
                     gp = gp.mirror("XZ").translate((0, P["post_d"], 0))
                 add(a, gp.translate((px, y, floor_top + z)), f"print_post_{name}_{j}_{k}", ORANGE)
@@ -1976,9 +1991,11 @@ def report_v10():
         if pl["x"] + c.d > 245: bad.append("X overflow")
         if pl["y"] + c.w > V7["tray_w"]: bad.append("Y overflow")
         print(f"  deck     {c.name:20s} {c.d:>4.0f}x{c.w:>4.0f}x{c.h:>3.0f} @({pl['x']},{pl['y']}) {' '.join(bad) or 'ok'}")
-    print(f"ports           : all on the INBOARD side panel in the column zone, beside the inverter's vertical face: sockets at z 131, L14-30 pair at 221, "
-          f"SB50 inlets at 201-249, pack SB175 at 500-526 (above the column card's pigtail tops); {V10['post_standoff'] + 9:.0f} mm behind the column card for the bodies. "
-          f"Nothing in front of or above the MultiPlus: the inverter card lifts clear.")
+    strip = g.get("cy0", 70) - y_in0
+    print(f"ports           : one vertical line on the front panel in the {strip:.0f} mm strip between the outboard corner bar and the MultiPlus "
+          f"(inverter card pushed inboard: posts {P['post_standoff_out']:.0f} / {P['post_standoff_in']:.0f} off the rails).  Bottom to top: pack SB175 (on end), "
+          f"3 x 12 V, 2 x USB, SB50 solar, SB50 alternator, IEC C20 AC in, IEC C19 AC out.  L14-30s need a 63 mm flange and do not fit the strip; "
+          f"the 12/1200 is a 16 A unit, so IEC 20 A is right-sized.  Bodies sit beside the inverter, never in its lift path.")
     pD, pW, pH, off = PACK["D"], PACK["W"], PACK["H"], PACK["offcut"]
     print(f"== Add-on pack (rendered {PACK['gap_to_box']:.0f} mm in front of the box) ==")
     print(f"  {pD:.0f} x {pW:.0f} x {pH:.0f} mm ({pD / 25.4:.1f} x {pW / 25.4:.1f} x {pH / 25.4:.1f} in); 2 x SuperPack side by side in the v9 trays, "
