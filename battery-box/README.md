@@ -30,15 +30,29 @@ The problem with v8: the battery leads run under card 3, through card 2, up to t
 
 **Garmin outputs.** The PowerSwitch's four socket circuits leave the charge card through an **Anderson Powerpole PP45 block** (8 poles, 10 AWG contacts, 30 A per Garmin channel) at the top of the card's front face, mating face up like the rest. The harness from the front-panel sockets ends in the mating block; unclip it before the card comes out.
 
-**Battery rack strength.** The batteries never hang on plastic: each upper battery sits on a shelf that rests on the lower battery's rim, and the whole stack is held down by two 25 mm cam straps over the top battery into slots in the tray. What the printed parts resist is the sideways load under braking, about 15 kg per stack at 1 g, and the stack's weight when the box is lifted off the plate as one unit:
+**Battery rack: how every part connects.** The rack is a closed load path from the frame back to the frame, so the box lifts as one unit and nothing relies on the Goose Gear plate:
 
-| Part | Spec | What it takes |
+```
+frame bottom rails ──T-nuts──▶ tray L tabs ──▶ trays ──M4 insert──▶ leg foot tabs ──▶ lower legs
+                                 │                                         │ half-lap + shelf M4
+                                 ▼                                         ▼
+                      lower batteries (strap)                  shelves ──▶ upper batteries (strap)
+                                                                           │
+                                                   upper legs ──M4──▶ bus deck ──M4──▶ deck ties ──T-nut──▶ frame corner bars
+```
+
+| Joint | How | What it carries |
 |---|---|---|
-| Trays | 6 mm walls, 30 mm lips, 4 × M6 into the Goose Gear plate, 2 strap slots | the whole stack's sideways load into the plate |
-| Tray L tabs | 2 integral tabs per tray grown out of the outer side wall, 40 × 34 × 8.6 mm flanges lying on the bottom depth rail, 1/4-20 T-nut each; plus 2 printed L brackets per tray (2 × M5 into inserts in 14 mm pads on the back wall, flange on the back width rail, T-nut) | tie the tray to the frame: 4 T-nut bolts per tray carry the 15 kg stack when the box is lifted by the frame. The flanges sit on top of the 1 in rails, so the tray floor still lies flat on the plate |
-| Shelves | 10 mm plate, 15 mm lip around the upper battery, 4 × M4 through the end walls into inserts in the legs | the upper battery's sideways load into the legs |
-| Legs | 8 × 12 mm square, two segments on a 6 mm tenon, foot bolted to the plate, M4 inserts at shelf height and in the top boss | locate the shelves, carry the deck (~3 kg) |
-| Deck | two 6 mm halves + extensions, 8 × M4 into the leg bosses | bus bars, breakers, shunt, connectors |
+| Tray → frame | 2 integral L tabs per tray: a flange grown from the top of the outer side wall lies on the bottom depth rail, 1/4-20 T-nut. 2 printed L brackets per tray: 2 × M5 into inserts in 6 mm pads on the back wall, flange on the back width rail, T-nut. The tray floor stays flat on the plate; the 4 × M6 into the plate are optional | the whole stack when the box is lifted by the frame (15 kg per tray on 4 bolts); sideways loads under braking |
+| Lower battery → tray | sits in the 229 × 138 pocket inside 6 mm walls and a 30 mm lip; one 25 mm cam strap runs lengthwise through a 2 mm channel under the battery, out through slots in both end walls, over the top; buckle in the wiring gap in front | vertical hold-down; the lip takes sideways |
+| Leg → tray | the lower leg segment stands on the plate in the 15 mm end gap and has a 6 mm foot tab lying on the tray's wall top, M4 down into a heat-set insert in a corner pad (6 mm pad + 6 mm wall = 12 mm of plastic) | lifts the leg with the tray; locates it |
+| Lower leg → upper leg | 37 mm half-lap (z 215–252) | bending at the joint; both segments print under 256 |
+| Shelf → legs | one M4 through each shelf end wall at z 240, through **both** lap halves: the same screw clamps the shelf to the leg and pins the lap | the upper battery (7.5 kg) hangs on these 4 screws; the shelf is a 21 mm wide ring 10 mm thick with a 15 mm lip |
+| Upper battery → shelf | lip pocket + one lengthwise cam strap in the shelf's channel, buckle in front, over the top under the deck | hold-down and sideways |
+| Deck → legs | each upper leg ends in a 14 mm boss with a 16 mm tab reaching under the deck; the deck's M4 goes into an insert in the tab, 9 mm inside the deck edge (the deck spans 245 mm between the leg centrelines) | the deck's 3 kg plus the connector pulls |
+| Deck → frame | two printed ties at the deck's back corners: a plate on the corner bar's inward face (T-nut), a bridge over the leg boss, a pad on the deck with 2 × M4 | stops the deck, and with it the legs, lifting out of the foot tabs under a bump; takes the pigtail pull when a card is unplugged |
+
+Under 1 g braking each stack puts about 15 kg sideways into the tray lip and tabs, and the upper battery 7.5 kg into the shelf lip and its four screws. The legs are 12 mm square and only ever see the deck's weight in compression, the shelf's screws in shear and the strap and battery friction.
 
 Print the rack in ASA rather than PETG: a closed box in a parked truck exceeds PETG's softening range in summer.
 
@@ -48,18 +62,19 @@ Print the rack in ASA rather than PETG: a closed box in a parked truck exceeds P
 |---|---|---|---|---|
 | Card tiles | 8 (4 per card) | 138 × 222 × 6 solid | flat, 4 walls, 30 % gyroid, PETG/ASA | each other with 12 splines (60 × 18 × 3) glued across the back; units via heat-set inserts in the pilot holes |
 | Guide posts | 4 posts × 2 segments | 193 / 167 tall, 24 × 18 | standing or flat | 20 mm tenon between segments; the bottom foot steps down 6 mm past the floor panel's edge and sits on the depth rail, 1/4-20 T-nut on the slot centreline; the top foot bolts up into the top rail |
-| Battery trays | 2 | 249 × 176 × 34 (incl. side tabs and back pads) | flat | 4 × M6 into the Goose Gear plate; 2 side tabs with T-nuts into the depth rail |
+| Battery trays | 2 | 253 × 176 × 34 (incl. side tabs, back pads, corner pads) | flat | side tabs T-nut into the depth rail; corner pads take the leg foot tabs (M4 inserts); 4 × M6 into the plate optional |
 | Tray back brackets | 4 | 40 × 34 × 32 | flat | 2 × M5 into the tray's back pads; T-nut into the back width rail |
-| Mid-shelves | 2 | 241 × 150 × 25 | flat | sit on the lower battery; M4 through the end walls into the legs |
-| Rack legs | 8 × 2 segments | 234 and 246 tall, 12 mm square | standing | 6 mm tenon; foot bolts to the plate; M4 inserts at shelf height and in the 16 mm top boss |
-| Bus deck | 2 halves + 2 extension plates + 5 splines | 255 × 147 × 6 and 40 × 147 × 6 | flat | 8 × M4 into the leg bosses; halves splined at the centre and to the extensions; bus bars, breakers, shunt and the four deck-side Anderson halves screw to it with inserts |
+| Mid-shelves | 2 | 241 × 150 × 25 | flat | ring shelf 14 mm above the lower battery (lug room); M4 through each end wall into the leg lap |
+| Rack legs | 8 × 2 segments | lower 252 (with foot tab), upper 253 (with deck tab), 12 mm square | flat (strongest across the lap) | half-lap; foot tab M4 into the tray pad; shelf M4 through the lap; M4 insert in the deck tab |
+| Deck ties | 2 | 58 × 32 × 21 | any | T-nut into the corner bar; 2 × M4 through the deck |
+| Bus deck | 2 halves + 2 extension plates + 5 splines | 245 × 147 × 6 and 40 × 147 × 6 | flat | 8 × M4 into the leg boss tabs; halves splined at the centre and to the extensions; bus bars, breakers, shunt and the four deck-side Anderson halves screw to it with inserts |
 | MultiPlus feet, backing plates, cubes, socket insert | 2, 4, 8, 1 | ≤ 60 mm | any | see "How the units attach" |
 
 **Assembly, in order**
 
 1. **Frame.** IceBox height and depth rails (depth rails cut to 606), kit-bar width rails cut to 294, printed corner cubes with 1/4-20 end-tap screws. Floor panel over the card zone only. Side, back and front panels screwed to the outside of the bars with T-nuts; the front panel gets the socket insert, the two SB50 inlets and the L14-30 inlet and outlet before it goes on.
-2. **Battery rack.** Trays to the plate (4 × M6 each), side tabs bolted down into the depth rails and the back brackets to the tray pads and the back rail (T-nuts slid in before the corner cubes go on). Lower leg segments to the plate. Lower batteries in. Shelves on the lower batteries, M4 into the lower legs. Upper leg segments on their tenons. Upper batteries in. Two cam straps per stack. Battery leads (6 AWG, M6 lugs) left loose on top.
-3. **Bus deck.** Both halves and the extensions splined together on the bench; bus bars, breakers, shunt and the four fixed Anderson halves screwed on with inserts; the four pigtails (SB175 + 3 × SB50, each with a flying half at both ends) plugged into the deck. Deck onto the leg bosses, 8 × M4. Battery leads up through the hand windows to the breakers and bus bars.
+2. **Battery rack.** Press the inserts: 4 × M4 in each tray's corner pads, 4 × M5 in its back pads, 1 × M4 in each upper leg's deck tab. Trays in, side tabs bolted down into the depth rails, back brackets to the tray pads and the back rail (T-nuts slid in before the corner cubes go on); the 4 × M6 into the plate only if you want them. Lower legs: stand each in its corner, foot tab onto the wall top, M4 into the pad. Lay each lower strap in its tray channel, battery in, strap over the top, buckle at the front. Shelves on: upper legs onto the laps, then one M4 through each shelf end wall into the lap. Strap in the shelf channel, upper battery in, strap over, buckle at the front. Battery leads (6 AWG, M6 lugs) left loose on top.
+3. **Bus deck.** Both halves and the extensions splined together on the bench; bus bars, breakers, shunt and the four fixed Anderson halves screwed on with inserts; the four pigtails (SB175 + 3 × SB50, each with a flying half at both ends) plugged into the deck. Deck onto the leg boss tabs, 8 × M4. Deck ties: T-nut into each back corner bar, 2 × M4 down through the deck. Battery leads up through the hand windows to the breakers and bus bars.
 4. **Guide posts.** Four posts, two segments each; the bottom foot sits on the depth rail beside the floor panel and bolts into its T-slot, the top foot bolts up into the top rail.
 5. **Each card on the bench.** Glue the four tiles with the splines. Press in the inserts: inverter card M6 for the SB175; charge card M4/M5/M6 per unit plus the SB50 row and the PP45. Mount the units: MultiPlus on its feet with the four M6 through-bolts and backing plates; MPPT, Orion, Cerbo, Garmin on their inserts. Wire every unit to the card's own connectors at the top with the sizes in the table above, and label each lead. Test the card's internal wiring before it goes in.
 6. **Install.** Drop the inverter card into its posts, then the charge card. Plug each pigtail's upper half down onto the card's connectors. Connect the front-panel harnesses: inlet pigtails to the charge card's two inlet SB50s, the socket harness to the PP45, AC cords to the MultiPlus. Lid on.
@@ -335,6 +350,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-05 | Rack connections reworked after "how do the supports connect?": leg feet (which collided with the rails and each other, and bolted to the plate) replaced by foot tabs screwed to tray corner pads; tenon joints replaced by a half-lap that the shelf screw pins (the old shelf screw landed in the tenon pocket); deck holes moved into leg boss tabs (they were 1 mm from the deck edge); deck tied to the corner bars; crosswise strap slots (blocked by the touching trays) turned lengthwise with the buckle in front. `cage.py v9 --clash` reports solid overlaps between parts. |
 | 2026-10-05 | Trays get L tabs onto the bottom rails (side tabs integral, back brackets printed) so the box lifts as one unit with the batteries in; guide-post feet fixed to sit on the rails instead of 6 mm above them (the floor panel stops at the rail). Dimensions corrected to 661 × 353 after the 6 mm tray walls. |
 | 2026-10-05 | Garmin outputs get a PP45 block on the charge card's front face; rack beefed up (6 mm tray walls, 30 mm lips, M6 to the plate, shelves screwed to the legs, cam straps); full assembly procedure written. |
 | 2026-10-05 | v9 cards cut down 50 mm (444 tall) so the upward-facing connector stacks leave 60 mm of cable room under the lid. |

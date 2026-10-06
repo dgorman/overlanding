@@ -1214,6 +1214,8 @@ V9_DECK_LAYOUT = [   # deck is ~295 (x, depth) x 294 (y); x from the deck's back
 # v9 cards are cut down CARD_TRIM so the connector stack at the top of each card leaves CONN_LID_ROOM under the
 # lid for the pigtail cables, which exit the mated halves upward.  Connector z is computed from the lid.
 CARD_TRIM = 50.0
+LEG_LAP = (215.0, 252.0)   # v9 rack legs: half-lap joint between the two printed segments (both stay under 256 tall)
+SHELF_SCREW_Z = 240.0      # shelf end-wall M4 (shelf underside 231 + 9): passes through both lap halves
 CONN_LID_ROOM = 60.0
 def _conn_z(kind):
     """card-relative z of a card-mounted fixed half so the mated pair tops out CONN_LID_ROOM under the lid"""
@@ -1259,8 +1261,21 @@ def build_v8(a, nine=False):
         fd, fw = b.d + 2 * wall, V7["tray_w"]
         lip = V7["lip"]
         tray = box(fd, fw, lip + 4).cut(box(b.d, b.w, lip + 5, (wall, wall, 4)))
-        for sx in (b.d * 0.3, b.d * 0.7):   # strap slots through the floor for 25 mm cam straps
-            tray = tray.cut(box(28, fw + 2, 5, (wall + sx - 14, -1, 2)))
+        if nine:
+            # one 25 mm cam strap per battery runs LENGTHWISE: through the back end wall, along a 2 mm channel
+            # under the battery, out through the front end wall, up and over the top, buckle in the 70 mm wiring
+            # gap in front.  (Crosswise slots can't work: the trays touch each other and sit 1 mm from the rail.)
+            tray = tray.cut(box(fd + 2, 28, 5, (-1, wall + b.w / 2 - 14, 2)))
+            # corner pads outside the end walls: a vertical M4 heat-set insert in 13 mm of plastic (pad + wall)
+            # takes the leg's foot tab.  6 mm pads keep the tray at 253 mm on the bed.
+            for (px, py) in ((-6, 12), (-6, fw - 32), (fd, 12), (fd, fw - 32)):
+                tray = tray.union(box(6, 20, lip + 4, (px, py, 0)))
+            for (px, py) in ((-6, 12), (-6, fw - 32), (fd, 12), (fd, fw - 32)):
+                hx = px + 6.0 if px < 0 else px
+                tray = tray.cut(cq.Workplane("XY").center(hx, py + 10).circle(2.8).extrude(13).translate((0, 0, lip + 4 - 12)))
+        else:
+            for sx in (b.d * 0.3, b.d * 0.7):   # strap slots through the floor for 25 mm cam straps
+                tray = tray.cut(box(28, fw + 2, 5, (wall + sx - 14, -1, 2)))
         for (hx, hy) in ((wall + 20, wall + 20), (wall + b.d - 20, wall + 20), (wall + 20, wall + b.w - 20), (wall + b.d - 20, wall + b.w - 20)):
             tray = tray.cut(cq.Workplane("XY").center(hx, hy).circle(3.4).extrude(5))   # M6 to the Goose Gear plate
         if nine:
@@ -1274,18 +1289,18 @@ def build_v8(a, nine=False):
                 fl = fl.cut(cq.Workplane("XY").center(sx + 20, rail_lo + B / 2).circle(3.4).extrude(lip + 5))
                 tray = tray.union(fl)
             # back rail: the tray + flange would be 282 mm (over the bed), so the back tabs are separate L
-            # brackets.  The tray's back wall gets two 8 mm pads with M5 heat-set inserts (14 mm of wall);
+            # brackets.  The tray's back wall gets two 6 mm pads with M5 heat-set inserts (12 mm of wall);
             # the bracket bolts to a pad with 2 x M5 and its flange lies on the back width rail with a T-nut.
             for sy in (30, fw - 70):
-                pad = box(8, 40, lip + 4, (-8, sy, 0))
+                pad = box(6, 40, lip + 4, (-6, sy, 0))
                 for hz in (10, 24):
-                    pad = pad.cut(cq.Workplane("YZ").center(sy + 20, hz).circle(3.2).extrude(10).translate((-9, 0, 0)))
+                    pad = pad.cut(cq.Workplane("YZ").center(sy + 20, hz).circle(3.2).extrude(10).translate((-7, 0, 0)))
                 tray = tray.union(pad)
                 rail_x = -(V7["end_gap"] + B)                         # back width rail, tray-local x
-                br = box(8, 40, lip + 4, (-16, sy, 0)).union(box(-8 - rail_x, 40, (lip + 4) - B, (rail_x, sy, B)))
+                br = box(8, 40, lip + 4, (-14, sy, 0)).union(box(-6 - rail_x, 40, (lip + 4) - B, (rail_x, sy, B)))
                 br = br.cut(cq.Workplane("XY").center(rail_x + B / 2, sy + 20).circle(3.4).extrude(lip + 5))
                 for hz in (10, 24):
-                    br = br.cut(cq.Workplane("YZ").center(sy + 20, hz).circle(2.7).extrude(10).translate((-17, 0, 0)))
+                    br = br.cut(cq.Workplane("YZ").center(sy + 20, hz).circle(2.7).extrude(10).translate((-15, 0, 0)))
                 add(a, br.translate((tx, ty, 0)), f"print_tray_tab_{sidx}_{int(sy)}", ORANGE)
         add(a, tray.translate((tx, ty, 0)), f"print_tray_battery_{sidx}", ORANGE)
         z = 4.0
@@ -1302,6 +1317,7 @@ def build_v8(a, nine=False):
                     # the legs stand at the shelf's end walls: an M4 through each end wall into an insert in the leg
                     for (hy) in (L / 2, fw - L / 2):
                         sh = sh.cut(cq.Workplane("YZ").center(hy, P["shelf_t"] / 2 + 4).circle(2.3).extrude(fd + 2).translate((-1, 0, 0)))
+                    sh = sh.cut(box(fd + 2, 28, 5, (-1, wall + b.w / 2 - 14, P["shelf_t"] - 2)))   # lengthwise strap channel
                     add(a, sh.translate((tx, ty, z)), f"print_shelf_{sidx}", ORANGE)
                 else:
                     sh = box(fd + 2 * L, fw, P["shelf_t"] + 12)
@@ -1311,15 +1327,30 @@ def build_v8(a, nine=False):
                 leg_h = z if not nine else (4 + 2 * b.h + P["term_clear"] + P["shelf_t"] + P["term_clear"])   # v9: legs run up to the bus deck
                 for (lx, ly) in ((tx - L, ty), (tx - L, ty + fw - L), (tx + fd, ty), (tx + fd, ty + fw - L)):
                     if nine:
-                        # two printable segments on a 6 mm tenon; the top one ends in a 16 mm boss with an M4 insert for the deck
-                        h1 = leg_h / 2
-                        lower = box(L, L, h1).union(box(6, 6, 12, ((L - 6) / 2, (L - 6) / 2, h1)))
-                        foot = box(L, L + 16, 6, (0, -8, 0)).cut(cq.Workplane("XY").center(L / 2, L / 2).circle(3.4).extrude(7))
-                        add(a, lower.union(foot).translate((lx, ly, 0)), f"print_leg_{sidx}_{int(lx)}_{int(ly)}_lower", ORANGE)
-                        upper = box(L, L, leg_h - h1).cut(box(6.4, 6.4, 12.5, ((L - 6.4) / 2, (L - 6.4) / 2, -0.5)))
-                        boss = box(16, 16, 14, ((L - 16) / 2, (L - 16) / 2, leg_h - h1 - 14)).cut(
-                            cq.Workplane("XY").center(L / 2, L / 2).circle(2.3).extrude(leg_h - h1 + 1).translate((0, 0, leg_h - h1 - 10)))
-                        add(a, upper.union(boss).translate((lx, ly, h1)), f"print_leg_{sidx}_{int(lx)}_{int(ly)}_upper", ORANGE)
+                        # Leg = two segments joined by a 37 mm HALF-LAP (z 215..252, both print under 256).  The shelf's
+                        # M4 passes through the shelf end wall and BOTH lap halves at z 240, so one screw pins the
+                        # shelf and the joint.  The lower segment stands on the plate and has a foot tab lying on the
+                        # tray's wall top, M4 down into the corner pad's insert: lift the tray and the leg comes with
+                        # it.  The upper segment ends in a 14 mm boss with a 16 mm tab reaching under the deck; the
+                        # deck's M4 lands in that tab, 10 mm inside the deck edge.
+                        back, outer = lx < tx, (ly == ty)
+                        lap0, lap1 = LEG_LAP
+                        wall_half = (L / 2, L) if back else (0, L / 2)          # half of the lap nearest the tray wall
+                        free_half = (0, L / 2) if back else (L / 2, L)
+                        lower = box(L, L, lap0).union(box(L / 2, L, lap1 - lap0, (free_half[0], 0, lap0)))
+                        tx0, tx1 = (0, 18) if back else (-6, L)                 # foot tab over the pad + wall top
+                        ty0, ty1 = (0, 32) if outer else (-20, L)
+                        hx, hy = (12.0 if back else 0.0), (22 if outer else -10)
+                        tab = box(tx1 - tx0, ty1 - ty0, 6, (tx0, ty0, lip + 4))
+                        lower = lower.union(tab).cut(cq.Workplane("XY").center(hx, hy).circle(2.3).extrude(8).translate((0, 0, lip + 3)))
+                        upper = box(L / 2, L, lap1 - lap0, (wall_half[0], 0, lap0)).union(box(L, L, leg_h - lap1, (0, 0, lap1)))
+                        bx0 = 0 if back else -16
+                        boss = box(L + 16, L, 14, (bx0, 0, leg_h - 14))
+                        bhx = L / 2 + (12 if back else -12)
+                        upper = upper.union(boss).cut(cq.Workplane("XY").center(bhx, L / 2).circle(2.3).extrude(11).translate((0, 0, leg_h - 10)))
+                        shelf_screw = cq.Workplane("YZ").center(L / 2, SHELF_SCREW_Z).circle(1.65).extrude(L + 2).translate((-1, 0, 0))
+                        add(a, lower.cut(shelf_screw).translate((lx, ly, 0)), f"print_leg_{sidx}_{int(lx)}_{int(ly)}_lower", ORANGE)
+                        add(a, upper.cut(shelf_screw).translate((lx, ly, 0)), f"print_leg_{sidx}_{int(lx)}_{int(ly)}_upper", ORANGE)
                     else:
                         leg = box(L, L, leg_h)
                         foot = box(L, L + 16, 6, (0, -8, 0)).cut(cq.Workplane("XY").center(L / 2, L / 2).circle(3.4).extrude(7))
@@ -1330,8 +1361,8 @@ def build_v8(a, nine=False):
     if nine:
         # --- bus deck: printed plate on the rack legs, over both stacks ------------
         dz = g["stack_top"]
-        dL = min(V7["bay_D"] - V7["end_gap"] + L, 255.0)          # fits the bed; trims 3 mm off each end over the leg bosses
-        dx0 = x_in0 + V7["end_gap"] - L + (V7["bay_D"] - V7["end_gap"] + L - dL) / 2
+        dx0 = tx - L / 2 + 4                                      # 4 mm inside the back leg centreline
+        dL = (tx + fd + L / 2 - 4) - dx0                          # .. to 4 mm inside the front one: 245, fits the bed
         g["deck_x0"], g["deck_L"] = dx0, dL + DECK_EXT
         for half in range(2):   # extension plates over the wiring gap, splined to the main halves
             hw = V7["bay_W"] / 2
@@ -1341,10 +1372,23 @@ def build_v8(a, nine=False):
             hw = V7["bay_W"] / 2
             deck = box(dL, hw, P["card_t"], (dx0, y_in0 + 1 + half * hw, dz))
             deck = deck.cut(box(120, 60, P["card_t"] + 2, (x_in0 + 40, y_in0 + 1 + half * hw + hw / 2 - 30, dz - 1)))   # hand window over the lugs
-            for (lx, ly) in ((tx - L, y_in0 + 1 + half * V7["tray_w"]), (tx + fd, y_in0 + 1 + half * V7["tray_w"]),
-                             (tx - L, y_in0 + 1 + half * V7["tray_w"] + fw - L), (tx + fd, y_in0 + 1 + half * V7["tray_w"] + fw - L)):
-                deck = deck.cut(cq.Workplane("XY").center(lx + L / 2, ly + L / 2).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1)))
+            for (hx, ly) in ((tx + 6, y_in0 + 1 + half * V7["tray_w"]), (tx + fd - 6, y_in0 + 1 + half * V7["tray_w"]),
+                             (tx + 6, y_in0 + 1 + half * V7["tray_w"] + fw - L), (tx + fd - 6, y_in0 + 1 + half * V7["tray_w"] + fw - L)):
+                deck = deck.cut(cq.Workplane("XY").center(hx, ly + L / 2).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1)))
             add(a, deck, f"print_bus_deck_{half}", ORANGE)
+        # deck ties: the deck's two back corners bolt to the vertical corner bars (T-nut in the bar's inboard-facing
+        # slot) through a printed bracket: a plate on the bar, a bridge over the leg boss, a pad with 2 x M4 on the deck.
+        # The rack is then a closed cell: frame -> tray tabs -> trays -> leg tabs -> legs -> deck -> ties -> frame.
+        for side in range(2):
+            tie = (box(B, 6, 32, (0, B, dz - 20))                      # on the corner bar's +Y face
+                   .union(box(58, 6, 6, (0, B, dz + P["card_t"])))      # bridge, over the leg boss, onto the deck top
+                   .union(box(58 - dx0, 46 - B, 6, (dx0, B, dz + P["card_t"]))))   # pad on the deck, clear of the bus bar
+            tie = tie.cut(cq.Workplane("XZ").center(B / 2, dz - 8).circle(3.4).extrude(-(B + 8)).translate((0, B - 1, 0)))
+            for hx in (45, 54):
+                tie = tie.cut(cq.Workplane("XY").center(hx, 36).circle(2.3).extrude(8).translate((0, 0, dz + P["card_t"] - 1)))
+            if side == 1:
+                tie = tie.mirror("XZ").translate((0, out_W, 0))
+            add(a, tie, f"print_deck_tie_{side}", ORANGE)
         for xs in (dL * 0.25, dL * 0.5, dL * 0.75):
             add(a, box(18, 60, 3, (dx0 + xs - 9, y_in0 + 1 + V7["bay_W"] / 2 - 30, dz - 3)), f"print_bus_deck_spline_{int(xs)}", ORANGE)
         for pl in V9_DECK_LAYOUT:
@@ -1532,12 +1576,14 @@ def report_v9():
           f"({'ok' if 115 + 2 * HOUSING['sb175'] - o175 + o175 <= dL else 'TOO SHORT'}); SB50s need x<={160 + 2 * HOUSING['sb50'] - o50 + o50:.0f} "
           f"({'ok' if 160 + 2 * HOUSING['sb50'] - o50 + o50 <= dL else 'TOO SHORT'}); deck front edge to the inverter card {x_in0 + V8['x_inv'] - (g.get('deck_x0', 0) + dL):.0f} mm")
     print("== Battery rack (v9) ==")
-    print(f"  trays: {V7['wall']:.0f} mm walls, {V7['lip']:.0f} mm lips, 4 x M6 into the Goose Gear plate, 2 strap slots each; stacks strapped with two 25 mm cam straps over the top battery into the tray slots")
+    print(f"  trays: {V7['wall']:.0f} mm walls, {V7['lip']:.0f} mm lips, corner pads with M4 inserts for the leg foot tabs, one lengthwise 25 mm cam strap per battery (channel under the battery, slots through the end walls, buckle in the front wiring gap); 4 x M6 into the plate optional")
+    print(f"  legs: 12 mm square, two segments on a half-lap at z {LEG_LAP[0]:.0f}-{LEG_LAP[1]:.0f}; lower stands on the plate with a foot tab M4'd into the tray pad; the shelf M4 at z {SHELF_SCREW_Z:.0f} passes through both lap halves; upper ends in a boss tab with an M4 insert 9 mm inside the deck edge")
+    print(f"  deck ties: 2 printed brackets at the deck's back corners, T-nut into the corner bars + 2 x M4 through the deck -> the rack is a closed cell frame-trays-legs-deck-frame")
     print(f"  lift as a unit: each tray has 2 integral L tabs whose flanges lie on the outer bottom depth rail and bolt into its T-slot (1/4-20 T-nuts), "
           f"plus 2 printed L brackets (2 x M5 into pads on the back wall, T-nut into the back width rail); 4 T-nut bolts per tray carry the stack when the box is lifted by the frame")
     print(f"  guide posts: bottom foot steps down {T:.0f} mm past the floor panel and sits on the depth rail (T-nut on the slot centreline); top foot bolts up into the top rail")
-    print(f"  legs: 8 x 12 mm PETG/ASA in two segments on a 6 mm tenon; they locate the shelves and carry the deck (~3 kg), not the batteries: the upper battery sits on the shelf, the shelf on the lower battery's rim")
-    print(f"  shelves: 10 mm plate, 15 mm lip, 4 x M4 through the end walls into inserts in the legs so the upper battery's braking load goes to the legs and the strap, not just the lip")
+    print(f"  legs: 8 x 12 mm ASA; they locate the shelves and carry the deck (~3 kg) in compression, and hang from the tray pads when the box is lifted")
+    print(f"  shelves: 10 mm ring, 15 mm lip, {P['term_clear']:.0f} mm above the lower battery for the lugs; 4 x M4 through the end walls into the leg laps carry the upper battery")
     print(f"  per stack under 1 g braking: {2 * 7.5:.0f} kg sideways -> tray lip + 4 x M6 + strap; upper battery {7.5:.0f} kg -> shelf lip + 4 x M4 + strap")
     print("== Cables and connectors (Victron manuals) ==")
     for run, size, fuse, conn in CABLE_SPEC:
@@ -1690,6 +1736,9 @@ def dims_bookshelf():
 
 def export(a: cq.Assembly):
     os.makedirs(OUT, exist_ok=True); os.makedirs(VIEWER, exist_ok=True); os.makedirs(STL, exist_ok=True)
+    for old in os.listdir(STL):          # part names carry positions; drop stale files from earlier layouts
+        if old.endswith(".stl"):
+            os.remove(os.path.join(STL, old))
     glb = os.path.join(OUT, "cage.glb"); a.export(glb, tolerance=1.5, angularTolerance=0.7)
     glb_to_json(glb, os.path.join(VIEWER, f"cage-{VARIANT}.json"))
     if P["card_plane"] in ("xz", "v7", "v8", "v9"):
@@ -1868,8 +1917,34 @@ def report():
     print(f"  est. mass ~{kg:.0f} kg; box depth {out_D:.0f} -> tie it to the IceBox panel / plate")
 
 
+def clash_report(a: cq.Assembly, prefixes=("print_", "bar_", "battery_", "power_", "socket_", "victron_", "panel_", "lid_")):
+    """Pairwise solid intersections between parts (bbox prefilter).  Anything over 1 mm3 is printed;
+    judge the list by eye: a battery sitting in its tray should NOT appear, a leg inside a tray should."""
+    parts = [(c.name, c.obj.val()) for c in a.children if any(c.name.startswith(p) for p in prefixes)]
+    boxes = [(n, s.BoundingBox()) for n, s in parts]
+    hits = []
+    for i in range(len(parts)):
+        ni, si = parts[i]; bi = boxes[i][1]
+        for j in range(i + 1, len(parts)):
+            nj, sj = parts[j]; bj = boxes[j][1]
+            if bi.xmin > bj.xmax - 0.05 or bj.xmin > bi.xmax - 0.05 or bi.ymin > bj.ymax - 0.05 or bj.ymin > bi.ymax - 0.05 \
+               or bi.zmin > bj.zmax - 0.05 or bj.zmin > bi.zmax - 0.05:
+                continue
+            try:
+                v = si.intersect(sj).Volume()
+            except Exception:
+                v = -1
+            if v > 1.0 or v < 0:
+                hits.append((v, ni, nj))
+    print(f"== Clash check: {len(parts)} parts, {len(hits)} overlapping pairs ==")
+    for v, ni, nj in sorted(hits, reverse=True):
+        print(f"  {v:10.0f} mm3  {ni}  x  {nj}")
+
+
 if __name__ == "__main__":
     asm = build()
     report()
+    if "--clash" in sys.argv:
+        clash_report(asm)
     export(asm)
     print("wrote", os.path.abspath(os.path.join(VIEWER, f"cage-{VARIANT}.json")))
