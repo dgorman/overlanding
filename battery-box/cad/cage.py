@@ -1405,7 +1405,7 @@ V10_COL_CONN = [dict(comp="sb50_v", x=x) for x in (12, 51, 90, 129, 168)] + [dic
 # MultiPlus FLUSH on the card (bolted through, no feet) at card x 9 so its body clears the posts' 8 mm slot lips; the card is 267 long
 # (2 x 2 tiles) to carry it plus its 31 mm top mounting bracket (datasheet 406 = 375 body + bracket); the SB175 lies above the bracket.
 V11_COL_LAYOUT = [dict(comp="multiplus_1200_up", x=7.5, z=2),
-                  dict(comp="sb175_h", x=94, z=414)]
+                  dict(comp="sb175_h", x=94, z=408)]   # directly above the bracket; the card (464) and it stay under the deck (500)
 V11_COL_CONN = []
 MP_BRACKET = 31.0   # the MultiPlus 12/1200's wall bracket above the body
 V11_DECK_LAYOUT = [dict(comp="busbar_px", x=50, y=5), dict(comp="busbar_nx", x=50, y=110),   # over the stack
@@ -1631,13 +1631,15 @@ def build_v8(a, nine=False):
             S_col = V10["post_standoff"]; py_post = out_W - B - S_col - P["post_w"]
             card_y = py_post + (P["post_w"] - P["card_t"]) / 2
             y0_ext = y_in0 + 1 + V7["bay_W"] / 2                   # the stack half's inboard edge
-            y1_ext = card_y - DECK_NOTCH
+            y1_ext = out_W - B - 0.6                               # .. to the inboard rail: the deck is one unbroken surface
             px_inv = x_in0 + V8["x_inv"] - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]
             back_post, front_post = x_in0 + 1, px_inv - 2 - V10["post_dx"]     # the column card's posts (x)
             xe0, xe1 = x_in0 + 2, front_post + 5                                 # plate runs post to post, clear of the front card's SB50 row
             xm = (xe0 + xe1) / 2                                       # 271 mm post to post: two plates, splined at the middle
             exts = [box(xm - xe0, y1_ext - y0_ext, P["card_t"], (xe0, y0_ext, dz)), box(xe1 - xm, y1_ext - y0_ext, P["card_t"], (xm, y0_ext, dz))]
-            hy = y1_ext - 9                                            # screw line 9 mm inside the plate's notch edge
+            for i, lx in enumerate((back_post, front_post)):   # cutouts where the column posts pass through the deck plane
+                exts[i] = exts[i].cut(box(V10["post_dx"] + 2, 26, P["card_t"] + 2, (lx - 1, py_post - 1, dz - 1)))
+            hy = py_post - 22                                           # screw line on the ledges, 9 mm inboard of the post face
             for i, lx in enumerate((back_post, xe1 - 15)):   # ledges on the column posts' -Y faces; each hole lands 7 mm inside the plate's end
                 ledge = box(V10["post_dx"], py_post - (hy - 8), 14, (lx, hy - 8, dz - 14))
                 hx = lx + 8
@@ -1784,7 +1786,7 @@ def build_column_card(a, g, tx, ty0, fd, fw, ch, layout=None, conn=None, unit_st
     if full_height:
         # no upward-mating connectors on this card, so it runs back up toward the top of the posts; 480 (not 494) keeps
         # each of its two tiles at 240 + the 12 mm lap = 252 on the bed
-        ch = min(in_H - 8, 480.0)
+        ch = min(in_H - 8, 464.0)   # tops out 2.6 mm under the deck, which now runs unbroken over the column
     g["col_ch"] = ch
     dx, dy, S = V10["post_dx"], P["post_w"], V10["post_standoff"]
     py = out_W - B - S - dy                              # post body, 12 off the inboard rail
@@ -2169,15 +2171,15 @@ def report_v10():
               f"to the inverter card's posts: 2 x M4 through the tray wall + 2 x M4 into each post's sill; no joint, floor stays open for the MultiPlus leads")
         print(f"lug room        : {P['term_clear']:.0f} mm between each battery top and the deck / shelf above it (4 AWG lug + M6 bolt head ~19, cable 9); no deck windows: "
               f"the leads run under the deck to its back edge and come up in the {V7['end_gap']:.0f} mm end gap behind it; terminals go at the back end of each battery")
-        print(f"deck extension  : {ey[1] - ey[0]:.0f} mm wide, post to post in two splined plates over the inverter column at the deck height, splined to the stack half and screwed to ledges on the "
-              f"column posts; a {DECK_NOTCH:.0f} mm notch runs its whole length along the inverter card for the SB175 and the MultiPlus leads.  "
-              f"The breaker lives on it.  The inverter card lifts only after this plate comes off (4 x M4).")
+        print(f"deck extension  : {ey[1] - ey[0]:.0f} mm wide, post to post in two splined plates, running unbroken to the inboard rail (cutouts only around the two posts): "
+              f"the deck is one flat surface across the whole box.  The inverter card ({g.get('col_ch', 464):.0f}) and its lateral SB175 sit {g.get('deck_z', 500) - (floor_top + 2 + g.get('col_ch', 464)):.1f} mm under it; "
+              f"the MultiPlus leads run under the deck along the floor.  Unplug the SB175 and lift the inverter card only after the two plates are off (4 x M4).")
         col_w = out_W - B - (y_in0 + 1 + V7["tray_w"])
         print(f"column          : {col_w:.0f} mm wide; card 6 + MultiPlus 101 flush = 107, {out_W - B - cy - P['card_t']:.0f} mm behind the card, "
               f"MultiPlus face {cy - 101 - (y_in0 + 1 + V7['tray_w']):.0f} mm from the tray wall; card {cL:.0f} long (2 x 2 tiles) = body 249 + 7 mm slot lips + 0.5 each end, "
               f"bolted through at its keyholes (fender washers behind), top bracket {MP_BRACKET:.0f} mm above the body on the card")
-        print(f"inverter SB175  : LATERAL, lying on the card face above the bracket (body top at card z 377, bracket to 408, card {g.get('col_ch', 480):.0f}): housing 79 x 26 x 56 at z 414-470, "
-              f"mated pair 133 along the card, top {g.get('col_ch', 480) - 470:.0f} mm under the card top; the flying half pulls FORWARD 25 mm to unplug, then the card lifts.  "
+        print(f"inverter SB175  : LATERAL, lying on the card face on top of the bracket (body top at card z 377, bracket to 408, card {g.get('col_ch', 464):.0f}): housing 79 x 26 x 56 at z 408-464, "
+              f"mated pair 133 along the card, flush with the card top and under the deck; the flying half pulls FORWARD 25 mm to unplug (deck plates off first), then the card lifts.  "
               f"Standing it mating-face-up would need 133 + the 60 mm lid room = 193 above the MultiPlus; there is 99.")
         for pl in V11_CHARGE_LAYOUT:
             c = COMPONENTS[pl["comp"]]; bad = []
