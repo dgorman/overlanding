@@ -1604,14 +1604,19 @@ def build_v8(a, nine=False):
             y0_ext = y_in0 + 1 + V7["bay_W"] / 2                   # the stack half's inboard edge
             y1_ext = card_y - DECK_NOTCH
             px_inv = x_in0 + V8["x_inv"] - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]
-            ext = box(dL, y1_ext - y0_ext, P["card_t"], (dx0, y0_ext, dz))
+            back_post, front_post = x_in0 + 1, px_inv - 2 - V10["post_dx"]     # the column card's posts (x)
+            xe0, xe1 = x_in0 + 2, front_post + 5                                 # plate runs post to post, clear of the front card's SB50 row
+            xm = (xe0 + xe1) / 2                                       # 271 mm post to post: two plates, splined at the middle
+            exts = [box(xm - xe0, y1_ext - y0_ext, P["card_t"], (xe0, y0_ext, dz)), box(xe1 - xm, y1_ext - y0_ext, P["card_t"], (xm, y0_ext, dz))]
             hy = y1_ext - 9                                            # screw line 9 mm inside the plate's notch edge
-            for lx in (x_in0 + 1, px_inv - 2 - V10["post_dx"]):   # ledges on the column posts' -Y faces, reaching under the plate edge
+            for i, lx in enumerate((back_post, xe1 - 15)):   # ledges on the column posts' -Y faces; each hole lands 7 mm inside the plate's end
                 ledge = box(V10["post_dx"], py_post - (hy - 8), 14, (lx, hy - 8, dz - 14))
-                hx = lx + V10["post_dx"] / 2
+                hx = lx + 8
                 add(a, ledge.cut(cq.Workplane("XY").center(hx, hy).circle(2.3).extrude(11).translate((0, 0, dz - 10))), f"print_colpost_ledge_{int(lx - x_in0)}", ORANGE)
-                ext = ext.cut(cq.Workplane("XY").center(hx, hy).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1)))
-            add(a, ext, "print_bus_deck_ext_column", ORANGE)
+                exts[i] = exts[i].cut(cq.Workplane("XY").center(hx, hy).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1)))
+            for i, ext in enumerate(exts):
+                add(a, ext, f"print_bus_deck_ext_column_{i}", ORANGE)
+            add(a, box(18, 60, 3, (xm - 9, (y0_ext + y1_ext) / 2 - 18, dz - 3)), "print_bus_deck_ext_column_spline", ORANGE)   # clear of the stack-half joint spline
             g["deck_ext_y"] = (y0_ext, y1_ext)
         for xs in (() if (COL and not P["swap"]) else (dL * 0.25, dL * 0.5, dL * 0.75)):
             add(a, box(18, 60, 3, (dx0 + xs - 9, y_in0 + 1 + V7["bay_W"] / 2 - 30, dz - 3)), f"print_bus_deck_spline_{int(xs)}", ORANGE)
@@ -2110,7 +2115,7 @@ def report_v10():
         print(f"  column   {c.name:20s} {c.w:>4.0f}x{c.h:>4.0f}x{c.d:>3.0f} @({pl['x']},{pl['z']}) {' '.join(bad) or 'ok'}")
     if P["swap"]:
         ey = g.get("deck_ext_y", (0, 0))
-        print(f"deck extension  : {ey[1] - ey[0]:.0f} mm wide plate over the inverter column at the deck height, splined to the stack half and screwed to ledges on the "
+        print(f"deck extension  : {ey[1] - ey[0]:.0f} mm wide, post to post in two splined plates over the inverter column at the deck height, splined to the stack half and screwed to ledges on the "
               f"column posts; a {DECK_NOTCH:.0f} mm notch runs its whole length along the inverter card for the SB175 and the MultiPlus leads.  "
               f"The breaker lives on it.  The inverter card lifts only after this plate comes off (4 x M4).")
         col_w = out_W - B - (y_in0 + 1 + V7["tray_w"])
