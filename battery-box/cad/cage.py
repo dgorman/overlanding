@@ -207,8 +207,8 @@ COMPONENTS = {
     "shunt":     Comp("power_shunt", 120, 46, 54, "SmartShunt 500A"),
     "busbar_p":  Comp("power_busbar_pos", 155, 35, 32, "5-stud covered bus bar (+)"),
     "busbar_n":  Comp("power_busbar_neg", 155, 35, 32, "5-stud covered bus bar (-)"),
-    "breaker_a": Comp("power_breaker_a", 48, 43, 74, "battery breaker, surface mount"),
-    "breaker_b": Comp("power_breaker_b", 48, 43, 74, "battery breaker, surface mount"),
+    "breaker_a": Comp("power_breaker_a", 43, 67, 66, "Blue Sea 187-series 150 A surface-mount breaker (verify 67 x 43 x 66), long axis along the depth"),
+    "breaker_b": Comp("power_breaker_b", 43, 67, 66, "Blue Sea 187-series 150 A surface-mount breaker (verify 67 x 43 x 66), long axis along the depth"),
     "anderson":  Comp("socket_anderson", 48, 10, 36, "Anderson SB50 panel mount, solar in (verify hole 48 x 36)"),
     "sb175":     Comp("socket_sb175", 79, 56, 26, "Anderson SB175 housing (Anderson STEP 55.6 x 79.4 x 25.5), 4 AWG contacts, inverter DC; mates along its 79 mm axis, laid across the deck"),
     "sb50":      Comp("socket_sb50", 48, 37, 16, "Anderson SB50 housing (Anderson STEP 36.5 x 48 x 16), 6-12 AWG contacts; mates along its 48 mm axis, laid across the deck"),
@@ -1268,10 +1268,10 @@ FEET_H = 18.0        # printed feet under the MultiPlus: it stands on these, the
 DECK_EXT = 0.0       # (was 40: the deck used to run forward to carry a connector row; the pigtails are lugged at the bus bars now)
 V9_DECK_LAYOUT = [   # deck is ~295 (x, depth) x 294 (y); x from the deck's back edge
     dict(comp="busbar_n",  x=20,  y=20),
-    dict(comp="breaker_a", x=20,  y=190),
-    dict(comp="breaker_b", x=20,  y=245),
+    dict(comp="breaker_a", x=20,  y=190),   # one Blue Sea 187 150 A per stack
+    dict(comp="breaker_b", x=20,  y=250),
     dict(comp="busbar_p",  x=65,  y=20),
-    dict(comp="shunt_x",   x=70,  y=236),
+    dict(comp="shunt_x",   x=95,  y=236),
     # No fixed Anderson halves on the deck: every pigtail is lugged to a bus bar or breaker here and plugs into the
     # card's own receptacle at the far end.  The Garmin PowerSwitch lies where the SB50 row was, fed straight off the
     # positive bus bar beside it; its four outputs leave through a PP45 block at the deck's front edge (mates +X).
@@ -1282,8 +1282,7 @@ V9_DECK_LAYOUT = [   # deck is ~295 (x, depth) x 294 (y); x from the deck's back
 V10_DECK_LAYOUT = [
     dict(comp="busbar_px", x=50,  y=5),
     dict(comp="busbar_nx", x=50,  y=110),
-    dict(comp="breaker_a", x=150, y=45),
-    dict(comp="breaker_b", x=197, y=45),
+    dict(comp="breaker_a", x=150, y=45),    # the two batteries are paralleled: one Blue Sea 187 150 A in the + lead
 ]
 # v10 column card: XZ plane along the INBOARD wall, units face -Y (toward the stack), its SB50 row on the +Y (rear) face
 # in the 21 mm behind the card.  x from the card's back end, z from its bottom.
@@ -1623,7 +1622,55 @@ def build_column_card(a, g, tx, ty0, fd, fw, ch):
         add(a, victron_shape(pl["comp"], c.w, c.d, c.h, at2, box(c.w, c.d, c.h, at2).edges("|Z").fillet(3)), c.name + f"_pigtail_charge_col_{int(pl['x'])}", (0.1, 0.6, 0.4))
 
 
-PACK = dict(end_gap=15.0, front=10.0, gap_to_box=80.0)   # add-on pack: 2 x SuperPack side by side, own frame
+PACK = dict(end_gap=15.0, front=10.0, gap_to_box=80.0, post=30.0, skin=6.0, lid_z=312.0)   # add-on pack: 2 x SuperPack side by side
+P.setdefault("pack", "printed")   # "printed": corner posts + panels all ASA (no bars); "bars": kit bars + IceBox offcuts
+for _a in sys.argv[1:]:
+    if _a.startswith("--pack="):
+        P["pack"] = _a.split("=", 1)[1]
+
+
+def build_pack_printed_frame(a, ox, pD, pW, pH):
+    """Printed pack cage: 4 corner posts (30 x 30, two half-lapped segments, foot tab M4'd into the tray's corner pad,
+    M4 insert in the top for the lid), 6 mm panel tiles screwed to the posts' outer faces (2 x 2 per panel, half-lap /
+    spline joints like the cards), 6 mm lid in four tiles with a handle.  Loads: the batteries stand on the floor
+    through the trays; the posts only carry the deck, lid and the lift, so ASA is plenty."""
+    po, sk = PACK["post"], PACK["skin"]
+    b = COMPONENTS["battery"]; wall, lip = V7["wall"], V7["lip"]
+    fd, fw = b.d + 2 * wall, V7["tray_w"]
+    tx, ty0 = ox + sk + po + 6, sk
+    h = pH - sk                                            # posts up to the lid underside
+    lap0, lap1 = h / 2 - 20, h / 2 + 20
+    for (px, py, back, outer) in ((tx - 6 - po, ty0, True, True), (tx - 6 - po, ty0 + 2 * fw - po, True, False),
+                                  (tx + fd + 6, ty0, False, True), (tx + fd + 6, ty0 + 2 * fw - po, False, False)):
+        lower = box(po, po, lap0).union(box(po, po / 2, lap1 - lap0, (0, 0 if outer else po / 2, lap0)))
+        upper = box(po, po / 2, lap1 - lap0, (0, po / 2 if outer else 0, lap0)).union(box(po, po, h - lap1, (0, 0, lap1)))
+        # foot tab over the tray pad + wall top (z 34), M4 down into the pad's insert
+        tx0, tx1 = (po, po + 12) if back else (-12, 0)
+        ty0_, ty1_ = (0, 32) if outer else (po - 32, po)
+        hx = po + 6 if back else -6
+        hy = 22 if outer else po - 22
+        tab = box(tx1 - tx0, ty1_ - ty0_, 6, (tx0, ty0_, lip + 4))
+        lower = lower.union(tab).cut(cq.Workplane("XY").center(hx, hy).circle(2.3).extrude(8).translate((0, 0, lip + 3)))
+        upper = upper.cut(cq.Workplane("XY").center(po / 2, po / 2).circle(2.3).extrude(12).translate((0, 0, h - 11)))   # lid insert
+        for hz in (lap0 + 10, lap1 - 10):   # 2 x M4 through the lap
+            pin = cq.Workplane("XZ").center(po / 2, hz).circle(2.3).extrude(-(po + 2)).translate((0, -1, 0))
+            lower = lower.cut(pin); upper = upper.cut(pin)
+        for shp, nm in ((lower, "lower"), (upper, "upper")):
+            add(a, shp.translate((px, py, 0)), f"print_pack_post_{int(px - ox)}_{int(py)}_{nm}", ORANGE)
+    # panels: 2 x 2 tiles each, outside the posts; back panel gets the SB175 inlet
+    H = pH - sk
+    for nm, shp in lattice_card_tiles(pD - 2 * sk, H, ox + sk, 0.0, 0.0, "pack_panel_outboard"):
+        add(a, shp, nm, PANEL)
+    for nm, shp in lattice_card_tiles(pD - 2 * sk, H, ox + sk, pW - sk, 0.0, "pack_panel_inboard"):
+        add(a, shp, nm, PANEL)
+    for nm, shp in lattice_card_tiles_yz(pW, H, ox, 0.0, 0.0, "pack_panel_back"):
+        add(a, shp, nm, PANEL)
+    for nm, shp in lattice_card_tiles_yz(pW, H, ox + pD - sk, 0.0, 0.0, "pack_panel_front"):
+        add(a, shp, nm, PANEL)
+    for i, x in enumerate((ox, ox + pD / 2)):   # lid: 4 tiles, M4 into the posts' tops at the corners
+        for j, y in enumerate((0, pW / 2)):
+            add(a, box(pD / 2, pW / 2, sk, (x, y, pH - sk)), f"print_pack_lid_{i}{j}", PANEL)
+    add(a, lid_handle().translate((ox + pD / 2 - 6, pW / 2 - 30, pH)), "lid_pack_handle", BLACK)
 
 
 def build_pack(a, ox):
@@ -1633,38 +1680,57 @@ def build_pack(a, ox):
     panel inlet on the back panel facing the main box.  Sits on the vehicle floor like the main box (no floor panel)."""
     b = COMPONENTS["battery"]; wall, L, lip = V7["wall"], V7["leg"], V7["lip"]
     fd, fw = b.d + 2 * wall, V7["tray_w"]
-    pD = PACK["end_gap"] + fd + L + PACK["front"] + 2 * B
-    pW = out_W
-    offcut = P["frame_D"] - out_D                         # IceBox depth rail (frame_D - 2C) minus the main box's (out_D - 2C)
-    pH = offcut + 2 * C
-    PACK.update(D=pD, W=pW, H=pH, offcut=offcut)
-    cube = corner_cube()
-    for i, x in enumerate((0, pD - C)):
-        for j, y in enumerate((0, pW - C)):
-            for k, z in enumerate((0, pH - C)):
-                add(a, cube.translate((ox + x, y, z)), f"print_pack_cube_{i}{j}{k}", BLACK)
-    n = 0
-    for x in (0, pD - B):
-        for y in (0, pW - B):
-            add(a, bar(pH - 2 * C, "z").translate((ox + x + B / 2, y + B / 2, C)), f"bar_pack_h{n}", GRAY); n += 1
-        for z in (0, pH - B):
-            add(a, bar(pW - 2 * C, "y").translate((ox + x + B / 2, C, z + B / 2)), f"bar_pack_w{n}", GRAY); n += 1
-    for y in (0, pW - B):
-        for z in (0, pH - B):
-            add(a, bar(pD - 2 * C, "x").translate((ox + C, y + B / 2, z + B / 2)), f"bar_pack_d{n}", GRAY); n += 1
-    # panels (outside the bars), lid; back panel gets the SB175 inlet facing the main box
-    add(a, box(pD, T, pH, (ox, -T, 0)), "panel_pack_outboard", PANEL)
-    add(a, box(pD, T, pH, (ox, pW, 0)), "panel_pack_inboard", PANEL)
-    add(a, box(T, pW, pH, (ox + pD, 0, 0)), "panel_pack_front", PANEL)
-    add(a, box(pD, pW, T, (ox, 0, pH)), "lid_pack", PANEL)
-    d_, w_, h_ = INLET_BODY["sb175"]; iy, iz = pW / 2 - w_ / 2, 300.0
-    back = box(T, pW, pH, (ox - T, 0, 0)).cut(box(T + 2, w_, h_, (ox - T - 1, iy, iz)))
-    add(a, back, "panel_pack_back", PANEL)
-    add(a, box(d_, w_, h_, (ox, iy, iz)), "socket_pack_sb175", (0.3, 0.3, 0.3))
+    PR = P["pack"] == "printed"
+    if PR:
+        # all-printed cage: four 30 mm ASA corner posts standing beside the tray end walls (foot tabs onto the tray pads
+        # like the legs), 6 mm panel tiles screwed outside them, a 6 mm lid on their tops.  Narrower than the bar
+        # version because there are no rails: the posts sit inside the trays' width.
+        po, sk = PACK["post"], PACK["skin"]
+        pD = sk + po + 6 + fd + 6 + po + sk
+        pW = sk + 2 * fw + 2 + sk
+        pH = PACK["lid_z"]
+        PACK.update(D=pD, W=pW, H=pH, offcut=P["frame_D"] - out_D)
+        build_pack_printed_frame(a, ox, pD, pW, pH)
+        tx = ox + sk + po + 6
+        py0 = sk
+    else:
+        pD = PACK["end_gap"] + fd + L + PACK["front"] + 2 * B
+        pW = out_W
+        offcut = P["frame_D"] - out_D                         # IceBox depth rail (frame_D - 2C) minus the main box's (out_D - 2C)
+        pH = offcut + 2 * C
+        PACK.update(D=pD, W=pW, H=pH, offcut=offcut)
+        tx = ox + B + PACK["end_gap"]
+        py0 = B + 1
+    if not PR:
+      cube = corner_cube()
+      for i, x in enumerate((0, pD - C)):
+          for j, y in enumerate((0, pW - C)):
+              for k, z in enumerate((0, pH - C)):
+                  add(a, cube.translate((ox + x, y, z)), f"print_pack_cube_{i}{j}{k}", BLACK)
+      n = 0
+      for x in (0, pD - B):
+          for y in (0, pW - B):
+              add(a, bar(pH - 2 * C, "z").translate((ox + x + B / 2, y + B / 2, C)), f"bar_pack_h{n}", GRAY); n += 1
+          for z in (0, pH - B):
+              add(a, bar(pW - 2 * C, "y").translate((ox + x + B / 2, C, z + B / 2)), f"bar_pack_w{n}", GRAY); n += 1
+      for y in (0, pW - B):
+          for z in (0, pH - B):
+              add(a, bar(pD - 2 * C, "x").translate((ox + C, y + B / 2, z + B / 2)), f"bar_pack_d{n}", GRAY); n += 1
+    # SB175 inlet on the back panel, facing the main box, just above the deck beside the breaker
+    d_, w_, h_ = INLET_BODY["sb175"]; iy, iz = pW / 2 - w_ / 2, 240.0
+    if not PR:
+        add(a, box(pD, T, pH, (ox, -T, 0)), "panel_pack_outboard", PANEL)
+        add(a, box(pD, T, pH, (ox, pW, 0)), "panel_pack_inboard", PANEL)
+        add(a, box(T, pW, pH, (ox + pD, 0, 0)), "panel_pack_front", PANEL)
+        add(a, box(pD, pW, T, (ox, 0, pH)), "lid_pack", PANEL)
+        back = box(T, pW, pH, (ox - T, 0, 0)).cut(box(T + 2, w_, h_, (ox - T - 1, iy, iz)))
+        add(a, back, "panel_pack_back", PANEL)
+        add(a, box(d_, w_, h_, (ox, iy, iz)), "socket_pack_sb175", (0.3, 0.3, 0.3))
+    else:
+        add(a, box(d_, w_, h_, (ox + PACK["skin"], iy, iz)), "socket_pack_sb175", (0.3, 0.3, 0.3))
     # trays, batteries, legs: the v9 rack one battery high
-    tx = ox + B + PACK["end_gap"]
     for sidx in range(2):
-        ty = B + 1 + sidx * fw
+        ty = py0 + sidx * fw
         tray = box(fd, fw, lip + 4).cut(box(b.d, b.w, lip + 5, (wall, wall, 4)))
         tray = tray.cut(box(fd + 2, 28, 5, (-1, wall + b.w / 2 - 14, 2)))
         for (px, py) in ((-6, 12), (-6, fw - 32), (fd, 12), (fd, fw - 32)):
@@ -1674,7 +1740,7 @@ def build_pack(a, ox):
         for (hx, hy) in ((wall + 20, wall + 20), (wall + b.d - 20, wall + 20), (wall + 20, wall + b.w - 20), (wall + b.d - 20, wall + b.w - 20)):
             tray = tray.cut(cq.Workplane("XY").center(hx, hy).circle(3.4).extrude(5))
         rail_lo = -(1 + B) if sidx == 0 else fw + 1
-        for sx in (40, fd - 80):
+        for sx in (() if PR else (40, fd - 80)):
             fl = box(40, B + 1 + 8, (lip + 4) - B, (sx, rail_lo if sidx == 0 else fw - 8, B))
             tray = tray.union(fl.cut(cq.Workplane("XY").center(sx + 20, rail_lo + B / 2).circle(3.4).extrude(lip + 5)))
         add(a, tray.translate((tx, ty, 0)), f"print_pack_tray_{sidx}", ORANGE)
@@ -1683,6 +1749,8 @@ def build_pack(a, ox):
         leg_h = 4 + b.h + P["term_clear"]
         for (lx, ly) in ((tx - L, ty), (tx - L, ty + fw - L), (tx + fd, ty), (tx + fd, ty + fw - L)):
             back, outer = lx < tx, (ly == ty)
+            if PR and ((sidx == 0 and outer) or (sidx == 1 and not outer)):
+                continue   # printed cage: the corner posts stand here and carry the deck corners on ledges
             leg = box(L, L, leg_h)
             tx0, tx1 = (0, 18) if back else (-6, L)
             ty0, ty1 = (0, 32) if outer else (-20, L)
@@ -1696,16 +1764,22 @@ def build_pack(a, ox):
     dx0, dL = tx - L / 2 + 4, fd + 4
     for half in range(2):
         hw = V7["bay_W"] / 2
-        deck = box(dL, hw, P["card_t"], (dx0, B + 1 + half * hw, dz))
-        deck = deck.cut(box(120, 60, P["card_t"] + 2, (ox + B + 40, B + 1 + half * hw + hw / 2 - 30, dz - 1)))
-        for (hx, ly) in ((tx + 6, B + 1 + half * fw), (tx + fd - 6, B + 1 + half * fw), (tx + 6, B + 1 + half * fw + fw - L), (tx + fd - 6, B + 1 + half * fw + fw - L)):
+        deck = box(dL, hw, P["card_t"], (dx0, py0 + half * hw, dz))
+        deck = deck.cut(box(120, 60, P["card_t"] + 2, (tx + 20, py0 + half * hw + hw / 2 - 30, dz - 1)))
+        for (hx, ly) in ((tx + 6, py0 + half * fw), (tx + fd - 6, py0 + half * fw), (tx + 6, py0 + half * fw + fw - L), (tx + fd - 6, py0 + half * fw + fw - L)):
             deck = deck.cut(cq.Workplane("XY").center(hx, ly + L / 2).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1)))
         add(a, deck, f"print_pack_deck_{half}", ORANGE)
     for xs in (dL * 0.25, dL * 0.5, dL * 0.75):
-        add(a, box(18, 60, 3, (dx0 + xs - 9, B + 1 + V7["bay_W"] / 2 - 30, dz - 3)), f"print_pack_deck_spline_{int(xs)}", ORANGE)
-    for pl in (dict(comp="busbar_px", x=50, y=108), dict(comp="busbar_nx", x=50, y=158), dict(comp="breaker_a", x=150, y=0), dict(comp="breaker_b", x=150, y=250)):
+        add(a, box(18, 60, 3, (dx0 + xs - 9, py0 + V7["bay_W"] / 2 - 30, dz - 3)), f"print_pack_deck_spline_{int(xs)}", ORANGE)
+    if PR:   # deck corners rest on ledges printed on the posts (M4 insert 12 mm in, same holes as the leg boss tabs)
+        for (lx, ly, back) in ((tx - 6, py0, True), (tx - 6, py0 + 2 * fw - L, True), (tx + fd + 6, py0, False), (tx + fd + 6, py0 + 2 * fw - L, False)):
+            ledge = box(28, L, 14, (lx if back else lx - 28, ly, dz - 14))
+            hx = tx + 6 if back else tx + fd - 6
+            add(a, ledge.cut(cq.Workplane("XY").center(hx, ly + L / 2).circle(2.3).extrude(11).translate((0, 0, dz - 10))), f"print_pack_ledge_{int(lx - ox)}_{int(ly)}", ORANGE)
+    # the two batteries are paralleled battery-to-battery; ONE Blue Sea 187 150 A in the + lead to the SB175, - straight to it
+    for pl in (dict(comp="breaker_a", x=150, y=128),):
         c = COMPONENTS[pl["comp"]]
-        at = (dx0 + pl["x"], B + 1 + pl["y"], dz + P["card_t"])
+        at = (dx0 + pl["x"], py0 + pl["y"], dz + P["card_t"])
         add(a, box(c.d, c.w, c.h, at).edges("|Z").fillet(3), "power_pack_" + c.name[6:] + f"_{int(pl['x'])}_{int(pl['y'])}", GOLD)
 
 
@@ -1867,11 +1941,16 @@ def report_v10():
           f"{in_D - V8['x_inv'] - P['card_t']:.0f} mm of depth behind the panel there")
     pD, pW, pH, off = PACK["D"], PACK["W"], PACK["H"], PACK["offcut"]
     print(f"== Add-on pack (rendered {PACK['gap_to_box']:.0f} mm in front of the box) ==")
-    print(f"  {pD:.0f} x {pW:.0f} x {pH:.0f} mm ({pD / 25.4:.1f} x {pW / 25.4:.1f} x {pH / 25.4:.1f} in) + 6 mm lid; 2 x SuperPack side by side in the v9 trays "
-          f"(tabs to its own rails), legs {4 + COMPONENTS['battery'].h + P['term_clear']:.0f} tall in one piece, deck halves with bus bars + 2 breakers, "
-          f"SB175 inlet on the back panel at z 300; 4 AWG jumpers to the SB175 beside the socket row on the main box's front panel")
-    print(f"  bars: 4 height rails = the IceBox depth-rail offcuts, {off:.0f} mm each, UNCUT ({P['frame_D']:.0f} - {out_D:.0f}); "
-          f"4 width rails {pW - 2 * C:.0f} and 4 depth rails {pD - 2 * C:.0f} cut from 8 kit bars (437) = 4 modification kits; the main box uses none")
+    print(f"  {pD:.0f} x {pW:.0f} x {pH:.0f} mm ({pD / 25.4:.1f} x {pW / 25.4:.1f} x {pH / 25.4:.1f} in); 2 x SuperPack side by side in the v9 trays, "
+          f"paralleled battery-to-battery; ONE Blue Sea 187 150 A on the deck in the + lead to the SB175, - straight to the SB175; "
+          f"SB175 inlet on the back panel at z 240; 4 AWG jumpers to the SB175 beside the socket row on the main box's front panel")
+    if P["pack"] == "printed":
+        print(f"  ALL PRINTED (no bars): 4 corner posts 30 x 30 x {pH - PACK['skin']:.0f} in two half-lapped segments (foot tab M4 into the tray pad, M4 insert for the lid), "
+              f"deck corners on post ledges + 4 inner legs, 4 panels of 2 x 2 six-mm tiles screwed outside the posts, lid in 4 tiles + handle.  "
+              f"ASA: posts ~1.0 kg, panels ~2.3 kg, lid ~0.5 kg, trays/legs/deck ~1.3 kg -> ~5 kg, ~60 h; skip the side panels for an open cage: ~2.5 kg")
+    else:
+        print(f"  bars: 4 height rails = the IceBox depth-rail offcuts, {off:.0f} mm each, UNCUT ({P['frame_D']:.0f} - {out_D:.0f}); "
+              f"4 width rails {pW - 2 * C:.0f} and 4 depth rails {pD - 2 * C:.0f} cut from 8 kit bars (437) = 4 modification kits; the main box uses none")
     print("== Battery / inverter tradeoff ==")
     print("  2 x SuperPack 60Ah = 120 Ah, 60 A continuous / 80 A for 10 s.  The MultiPlus 12/1200 draws ~105 A at full output:")
     print("  expect ~700 W continuous and ~1000 W for 10 s bursts; charge sources (MPPT 30 A, Orion 50 A) are within the 60 A charge limit.")
