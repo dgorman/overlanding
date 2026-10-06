@@ -310,9 +310,9 @@ if P["narrow"] and P["card_plane"] in ("v7", "v8", "v9"):
         # behind for its SB175 = 147 of the 163 mm column); the charge card is the front card, so the front zone is only
         # the MPPT's 70 + its rear SB50 row.
         V10 = dict(post_dx=16.0, post_standoff=2.0)    # column posts 2 off the inboard rail: the card sits as far from the batteries as it can (no rear SB175 for now)
-        V8["bay_gap"] = 22.0     # the charge card's rear-face SB50s (16) + 6
+        V8["bay_gap"] = 26.0     # the charge card's rear-face SB50s (16) + 10: the 17.25 in (438 mm) limit is spent here (+4) ...
         V8["inv_gap"] = 0.0
-        V8["front"] = 10.0
+        V8["front"] = 13.0       # ... and in front of the MPPT (+3): 437.8 outer
         V8["x_inv"] = V7["bay_D"] + V8["bay_gap"]      # (x_inv is reused as the front card's rear face)
         V8["x_charge"] = None
         in_D = round(V8["x_inv"] + P["card_t"] + V8["charge_depth"] + 4.0 + V8["front"], 1)
