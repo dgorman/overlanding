@@ -89,7 +89,7 @@ VARIANTS = {
                batt_layout="v9", dist_forward=False, inverter="multiplus_1200_up", leg=12.0,
                card_plane="v9", column=["battery", "battery"], arrange="2x2", col_on_plate=True,
                narrow=True, tray_for="battery", align="right", height="icebox", depth="fit11",
-               card_style="solid", post_standoff=18.0, post_standoff_out=48.0, post_standoff_in=0.0, extra_width=12.0, deck="column", swap=True),
+               card_style="solid", post_standoff=18.0, post_standoff_out=48.0, post_standoff_in=0.0, extra_width=12.0, deck="column", swap=True, term_clear=30.0),
     # v6 check: the owner's four SuperPack 60Ah dropped into the same 200Ah trays
     "bookshelf60": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
                         batt_layout="column", dist_forward=False, inverter="multiplus_1200",
@@ -1421,7 +1421,7 @@ V11_CHARGE_FRONT = [dict(comp="pp45_v", y=205, z=None)]   # Garmin outputs, besi
 # lid for the pigtail cables, which exit the mated halves upward.  Connector z is computed from the lid.
 CARD_TRIM = 50.0
 LEG_LAP = (215.0, 252.0)   # v9 rack legs: half-lap joint between the two printed segments (both stay under 256 tall)
-SHELF_SCREW_Z = 240.0      # shelf end-wall M4 (shelf underside 231 + 9): passes through both lap halves
+SHELF_SCREW_Z = 4 + 213 + P["term_clear"] + 9.0   # shelf end-wall M4 (shelf underside + 9): v9/v10 240, v11 256
 CONN_LID_ROOM = 60.0
 def _conn_z(kind):
     """card-relative z of a card-mounted fixed half so the mated pair tops out CONN_LID_ROOM under the lid"""
@@ -1543,19 +1543,33 @@ def build_v8(a, nine=False):
                         lap0, lap1 = LEG_LAP
                         wall_half = (L / 2, L) if back else (0, L / 2)          # half of the lap nearest the tray wall
                         free_half = (0, L / 2) if back else (L / 2, L)
+                        three = leg_h > 490          # v11 (30 mm lug room, legs 500): two segments would exceed the bed
+                        if three:
+                            lap0, lap1 = 180.0, 200.0   # laps at 180-200 and 380-400; the shelf screw (256) sits in the middle segment
+                            lap2, lap3 = 380.0, 400.0
                         lower = box(L, L, lap0).union(box(L / 2, L, lap1 - lap0, (free_half[0], 0, lap0)))
                         tx0, tx1 = (0, 18) if back else (-6, L)                 # foot tab over the pad + wall top
                         ty0, ty1 = (0, 32) if outer else (-20, L)
                         hx, hy = (12.0 if back else 0.0), (22 if outer else -10)
                         tab = box(tx1 - tx0, ty1 - ty0, 6, (tx0, ty0, lip + 4))
                         lower = lower.union(tab).cut(cq.Workplane("XY").center(hx, hy).circle(2.3).extrude(8).translate((0, 0, lip + 3)))
-                        upper = box(L / 2, L, lap1 - lap0, (wall_half[0], 0, lap0)).union(box(L, L, leg_h - lap1, (0, 0, lap1)))
+                        if three:
+                            middle = (box(L / 2, L, lap1 - lap0, (wall_half[0], 0, lap0)).union(box(L, L, lap2 - lap1, (0, 0, lap1)))
+                                      .union(box(L / 2, L, lap3 - lap2, (free_half[0], 0, lap2))))
+                            upper = box(L / 2, L, lap3 - lap2, (wall_half[0], 0, lap2)).union(box(L, L, leg_h - lap3, (0, 0, lap3)))
+                            for hz in ((lap0 + lap1) / 2, (lap2 + lap3) / 2):   # an M4 pin through each lap
+                                pin = cq.Workplane("YZ").center(L / 2, hz).circle(2.3).extrude(L + 2).translate((-1, 0, 0))
+                                lower = lower.cut(pin); middle = middle.cut(pin); upper = upper.cut(pin)
+                        else:
+                            upper = box(L / 2, L, lap1 - lap0, (wall_half[0], 0, lap0)).union(box(L, L, leg_h - lap1, (0, 0, lap1)))
                         bx0 = 0 if back else -16
                         boss = box(L + 16, L, 14, (bx0, 0, leg_h - 14))
                         bhx = L / 2 + (12 if back else -12)
                         upper = upper.union(boss).cut(cq.Workplane("XY").center(bhx, L / 2).circle(2.3).extrude(11).translate((0, 0, leg_h - 10)))
                         shelf_screw = cq.Workplane("YZ").center(L / 2, SHELF_SCREW_Z).circle(1.65).extrude(L + 2).translate((-1, 0, 0))
                         add(a, lower.cut(shelf_screw).translate((lx, ly, 0)), f"print_leg_{sidx}_{int(lx)}_{int(ly)}_lower", ORANGE)
+                        if three:
+                            add(a, middle.cut(shelf_screw).translate((lx, ly, 0)), f"print_leg_{sidx}_{int(lx)}_{int(ly)}_middle", ORANGE)
                         add(a, upper.cut(shelf_screw).translate((lx, ly, 0)), f"print_leg_{sidx}_{int(lx)}_{int(ly)}_upper", ORANGE)
                     else:
                         leg = box(L, L, leg_h)
@@ -1577,7 +1591,8 @@ def build_v8(a, nine=False):
         for half in range(1 if COL else 2):   # two printable halves, one over each stack, splined at the centre line, M4 into the leg bosses
             hw = V7["bay_W"] / 2
             deck = box(dL, hw, P["card_t"], (dx0, y_in0 + 1 + half * hw, dz))
-            deck = deck.cut(box(100, 55, P["card_t"] + 2, (dx0 + 20, y_in0 + 1 + half * hw + hw / 2 - 27.5, dz - 1)))   # hand window over the lugs
+            if not (COL and P["swap"]):   # v11 has no window: leads leave under the deck's back edge, with 30 mm of lug room
+                deck = deck.cut(box(100, 55, P["card_t"] + 2, (dx0 + 20, y_in0 + 1 + half * hw + hw / 2 - 27.5, dz - 1)))   # hand window over the lugs
             for (hx, ly) in ((tx + 6, y_in0 + 1 + half * V7["tray_w"]), (tx + fd - 6, y_in0 + 1 + half * V7["tray_w"]),
                              (tx + 6, y_in0 + 1 + half * V7["tray_w"] + fw - L), (tx + fd - 6, y_in0 + 1 + half * V7["tray_w"] + fw - L)):
                 deck = deck.cut(cq.Workplane("XY").center(hx, ly + L / 2).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1)))
@@ -1891,7 +1906,7 @@ def build_pack(a, ox):
           for z in (0, pH - B):
               add(a, bar(pD - 2 * C, "x").translate((ox + C, y + B / 2, z + B / 2)), f"bar_pack_d{n}", GRAY); n += 1
     # SB175 inlet on the back panel, facing the main box, just above the deck beside the breaker
-    d_, w_, h_ = INLET_BODY["sb175"]; iy, iz = pW / 2 - w_ / 2, 240.0
+    d_, w_, h_ = INLET_BODY["sb175"]; iy, iz = pW / 2 - w_ / 2, 4 + COMPONENTS["battery"].h + P["term_clear"] + 9.0
     if not PR:
         add(a, box(pD, T, pH, (ox, -T, 0)), "panel_pack_outboard", PANEL)
         add(a, box(pD, T, pH, (ox, pW, 0)), "panel_pack_inboard", PANEL)
@@ -1939,7 +1954,8 @@ def build_pack(a, ox):
     for half in range(2):
         hw = V7["bay_W"] / 2
         deck = box(dL, hw, P["card_t"], (dx0, py0 + half * hw, dz))
-        deck = deck.cut(box(100, 55, P["card_t"] + 2, (dx0 + 20, py0 + half * hw + hw / 2 - 27.5, dz - 1)))
+        if not P["swap"]:
+            deck = deck.cut(box(100, 55, P["card_t"] + 2, (dx0 + 20, py0 + half * hw + hw / 2 - 27.5, dz - 1)))
         for (hx, ly) in ((tx + 6, py0 + half * fw), (tx + fd - 6, py0 + half * fw), (tx + 6, py0 + half * fw + fw - L), (tx + fd - 6, py0 + half * fw + fw - L)):
             deck = deck.cut(cq.Workplane("XY").center(hx, ly + L / 2).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1)))
         add(a, deck, f"print_pack_deck_{half}", ORANGE)
@@ -2115,6 +2131,8 @@ def report_v10():
         print(f"  column   {c.name:20s} {c.w:>4.0f}x{c.h:>4.0f}x{c.d:>3.0f} @({pl['x']},{pl['z']}) {' '.join(bad) or 'ok'}")
     if P["swap"]:
         ey = g.get("deck_ext_y", (0, 0))
+        print(f"lug room        : {P['term_clear']:.0f} mm between each battery top and the deck / shelf above it (4 AWG lug + M6 bolt head ~19, cable 9); no deck windows: "
+              f"the leads run under the deck to its back edge and come up in the {V7['end_gap']:.0f} mm end gap behind it; terminals go at the back end of each battery")
         print(f"deck extension  : {ey[1] - ey[0]:.0f} mm wide, post to post in two splined plates over the inverter column at the deck height, splined to the stack half and screwed to ledges on the "
               f"column posts; a {DECK_NOTCH:.0f} mm notch runs its whole length along the inverter card for the SB175 and the MultiPlus leads.  "
               f"The breaker lives on it.  The inverter card lifts only after this plate comes off (4 x M4).")
