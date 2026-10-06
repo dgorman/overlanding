@@ -79,7 +79,7 @@ VARIANTS = {
                batt_layout="v9", dist_forward=False, inverter="multiplus_1200_up", leg=12.0,
                card_plane="v9", column=["battery", "battery"], arrange="2x2", col_on_plate=True,
                narrow=True, tray_for="battery", align="right", height="icebox", depth="fit9",
-               card_style="solid"),
+               card_style="solid", post_standoff=18.0),
     # v6 check: the owner's four SuperPack 60Ah dropped into the same 200Ah trays
     "bookshelf60": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
                         batt_layout="column", dist_forward=False, inverter="multiplus_1200",
@@ -137,6 +137,7 @@ P = dict(
     # (Y); the card edge sits in a slot slot_depth deep on the card side.
     post_w=24.0,
     post_d=18.0,
+    post_standoff=0.0,   # posts moved inboard off the rail by this much (v9: 18 -> 249 mm wide cards, 2 tiles each)
     slot_depth=10.0,
     post_seg_max=216.0,  # 2 segments + 20 mm tenon stay under the 256 mm bed
     foot_t=6.0,
@@ -196,6 +197,7 @@ COMPONENTS = {
     "orion":     Comp("victron_orion", 123, 40, 137, "Orion XS 12/12-50A, upright, terminals down (0.33 kg)"),
     "cerbo":     Comp("victron_cerbo", 154, 48, 78, "Cerbo GX"),
     "garmin":    Comp("garmin_powerswitch", 125, 32, 75, "Garmin PowerSwitch"),
+    "garmin_up": Comp("garmin_powerswitch", 75, 32, 125, "Garmin PowerSwitch turned 90 deg"),
     "shunt":     Comp("power_shunt", 120, 46, 54, "SmartShunt 500A"),
     "busbar_p":  Comp("power_busbar_pos", 155, 35, 32, "5-stud covered bus bar (+)"),
     "busbar_n":  Comp("power_busbar_neg", 155, 35, 32, "5-stud covered bus bar (-)"),
@@ -538,11 +540,12 @@ def guide_post_segments(foot_dir="y", foot_hole=None):
         g = g.cut(box(gw, P["slot_depth"] + 1, h + 1, ((P["post_w"] - gw) / 2, P["post_d"] - P["slot_depth"], -0.5)))
         def foot_at(z0):
             if foot_dir == "y":   # plate toward -Y over the depth rail, from the rail's outer face to the slot wall
-                f = box(P["post_w"], B + P["post_d"] - P["slot_depth"], P["foot_t"], (0, -B, z0))
+                S = P["post_standoff"]
+                f = box(P["post_w"], B + S + P["post_d"] - P["slot_depth"], P["foot_t"], (0, -B - S, z0))
                 if z0 == 0 and P["card_plane"] in ("v7", "v8", "v9"):
                     # the floor panel stops at the rail: step the foot down T so it sits on the rail top
-                    f = f.union(box(P["post_w"], B - 0.5, T, (0, -B, -T)))
-                hx, hy = P["post_w"] / 2, (foot_hole if foot_hole is not None else -B / 2)
+                    f = f.union(box(P["post_w"], B - 0.5, T, (0, -B - S, -T)))
+                hx, hy = P["post_w"] / 2, (foot_hole if foot_hole is not None else -S - B / 2)
             else:                 # plate toward -X over the back width rail
                 f = box(P["foot_len"], P["post_d"], P["foot_t"], (-P["foot_len"] + P["post_w"] - 4, 0, z0))
                 hx, hy = (foot_hole if foot_hole is not None else -(B / 2 + T) + 2), P["post_d"] / 2
@@ -1033,7 +1036,7 @@ V7_DIST_LAYOUT = [  # distribution card (280 x 494), parts face -Y (toward the o
 ]
 
 
-LAT = dict(rib=8.0, pitch=45.0, border=12.0, t=6.0, tile_max=250.0, spline=(60.0, 18.0, 3.0),
+LAT = dict(rib=8.0, pitch=45.0, border=12.0, t=6.0, tile_max=250.0, spline=(60.0, 18.0, 3.0), lap=24.0,
            boss_r=11.0, insert_hole=4.6)     # M5 heat-set insert: 4.6 mm pilot in a 22 mm solid boss
 
 # Mounting holes per unit, (along, up) from the unit's lower-left as mounted; from the Victron
@@ -1055,6 +1058,8 @@ HOLES = {
 }
 INSERT = {"mppt": "M5", "orion": "M4", "cerbo": "M4", "cerbo_up": "M4", "shunt": "M6", "busbar_n": "M5", "busbar_p": "M5",
           "breaker_a": "M6", "breaker_b": "M6", "garmin": "M4", "bms": "M4"}
+HOLES["garmin_up"] = [(37, 20), (37, 105)]
+INSERT["garmin_up"] = INSERT["garmin"]
 FASTENER = {   # how each unit attaches to a printed card
     "multiplus_1200_up": "4 x M6 x 25 through-bolt + printed 40 x 40 backing plate behind each keyhole; weight on the two printed feet",
     "multiplus_1200":    "4 x M6 x 25 through-bolt + printed backing plates; weight on the two printed feet",
@@ -1064,7 +1069,7 @@ FASTENER = {   # how each unit attaches to a printed card
     "shunt":  "2 x M6 x 12 into M6 heat-set inserts",
     "busbar_n": "2 x M5 x 10 into inserts", "busbar_p": "2 x M5 x 10 into inserts",
     "breaker_a": "2 x M6 x 12 into inserts", "breaker_b": "2 x M6 x 12 into inserts",
-    "garmin": "2 x M4 x 10 into inserts through its bracket", "bms": "4 x M4 x 8 into inserts",
+    "garmin": "2 x M4 x 10 into inserts through its bracket", "garmin_up": "2 x M4 x 10 into inserts through its bracket", "bms": "4 x M4 x 8 into inserts",
 }
 
 
@@ -1077,9 +1082,21 @@ def lattice_card_tiles(L, H, x0, y_plate, z0, prefix, patches=(), solids=()):
     tw, th = L / nx, H / nz
     t, rib, b = LAT["t"], LAT["rib"], LAT["border"]
     tiles = []
-    for i in range(nx):
-        for j in range(nz):
-            tile = box(tw, t, th)
+    lap = LAT["lap"]            # horizontal joints are HALF-LAPS: the lower tile keeps the back half of a
+    for i in range(nx):         # lap-wide strip past the joint line, the upper tile the front half.  Each tile
+        for j in range(nz):     # prints flat with its rabbet facing up (lower tiles back face down, upper tiles
+            z_lo = 0.0 if j == 0 else -lap / 2                       # front face down): no supports.
+            z_hi = th if j == nz - 1 else th + lap / 2
+            tile = box(tw, t, z_hi - z_lo, (0, 0, z_lo))
+            if j < nz - 1:   # top edge: remove the FRONT half of the strip
+                tile = tile.cut(box(tw + 2, t / 2 + 1, lap + 1, (-1, -1, th - lap / 2)))
+            if j > 0:        # bottom edge: remove the BACK half of the strip
+                tile = tile.cut(box(tw + 2, t / 2 + 1, lap + 1, (-1, t / 2, -lap / 2 - 1)))
+            for jl in (j, j + 1):   # 3 x M4 through-bolts across each lap this tile is part of
+                if 0 < jl < nz:
+                    for xc in (L * 0.25 - i * tw, L * 0.5 - i * tw, L * 0.75 - i * tw):
+                        if 0 < xc < tw:
+                            tile = tile.cut(cq.Workplane("XZ").center(xc, (jl - j) * th).circle(2.3).extrude(-t - 2).translate((0, 1, 0)))
             # openings between ribs, inside the border (card_style "solid" keeps the plate full)
             ox, oz = b, b
             while P["card_style"] != "solid" and ox + rib < tw - b:
@@ -1092,7 +1109,7 @@ def lattice_card_tiles(L, H, x0, y_plate, z0, prefix, patches=(), solids=()):
                     oz += LAT["pitch"]
                 ox += LAT["pitch"]
             # solid regions (e.g. under the inverter) so a unit can be shifted and re-drilled
-            for (su, sv, sw, sh) in solids:
+            for (su, sv, sw, sh) in (solids if P["card_style"] != "solid" else ()):   # solid cards: nothing to fill (would refill the lap)
                 u0, v0 = su - i * tw, sv - j * th
                 if u0 < tw and v0 < th and u0 + sw > 0 and v0 + sh > 0:
                     tile = tile.union(box(sw, t, sh, (u0, 0, v0)).intersect(box(tw, t, th)))
@@ -1109,9 +1126,6 @@ def lattice_card_tiles(L, H, x0, y_plate, z0, prefix, patches=(), solids=()):
     for i in range(1, nx):            # vertical joints
         for zc in (z0 + H * 0.25, z0 + H * 0.5, z0 + H * 0.75):
             splines.append((f"print_{prefix}_spline_v{i}_{int(zc)}", box(sl, st, sw, (x0 + i * tw - sl / 2, y_plate + t - st, zc - sw / 2))))
-    for j in range(1, nz):            # horizontal joints
-        for xc in (x0 + L * 0.25, x0 + L * 0.5, x0 + L * 0.75):
-            splines.append((f"print_{prefix}_spline_h{j}_{int(xc)}", box(sw, st, sl, (xc - sw / 2, y_plate + t - st, z0 + j * th - sl / 2))))
     for nm, tile in tiles:
         for _, sp in splines:
             bb = sp.val().BoundingBox()
@@ -1232,16 +1246,16 @@ def _conn_z(kind):
     mated = MATED[kind]
     return (out_H - CONN_LID_ROOM) - (floor_top + 2) - mated
 V9_INV_REAR = [dict(comp="sb175_v", y=150, z=None)]
-V9_CHARGE_REAR = [dict(comp="sb50_v", y=y, z=None) for y in (20, 70, 120, 180, 230)]   # MPPT, Orion, Garmin+Cerbo, solar in, alternator in
+V9_CHARGE_REAR = [dict(comp="sb50_v", y=y, z=None) for y in (15, 62, 109, 156, 203)]   # MPPT, Orion, Garmin+Cerbo, solar in, alternator in
 V9_CHARGE_FRONT = [dict(comp="pp45_v", y=20, z=None)]   # Garmin -> front-panel sockets: PP45 block at the top of the front face
-V9_INV_LAYOUT = [    # inverter card: the 12/1200; its SB175 pigtail leaves the top rear corner and mates on the deck
-    dict(comp="multiplus_1200_up", y=13, z=2 + FEET_H),
+V9_INV_LAYOUT = [    # inverter card (249 wide = the MultiPlus): the SB175 pigtail leaves the top rear corner and mates on the deck
+    dict(comp="multiplus_1200_up", y=0, z=2 + FEET_H),
 ]
 V9_CHARGE_LAYOUT = [
     dict(comp="mppt",  y=12,  z=20),
-    dict(comp="orion", y=12,  z=175),
+    dict(comp="orion", y=12,  z=175),      # keep units >= 10 mm from the card edge: the post lip reaches 8 mm past the card face
     dict(comp="cerbo", y=12,  z=340),
-    dict(comp="garmin", y=145, z=175),
+    dict(comp="garmin_up", y=140, z=175),   # PowerSwitch turned 90 deg beside the Orion
 ]
 V8_INV_LAYOUT = [    # inverter card, parts face +X (forward); y from the card's outboard end, z from its bottom
     dict(comp="multiplus_1200_up", y=13, z=2 + FEET_H),
@@ -1417,7 +1431,7 @@ def build_v8(a, nine=False):
     add(a, box(x_in0 + in_D - g["bay_x1"], in_W, T, (g["bay_x1"], y_in0, B)), "panel_floor_front", PANEL)
 
     # --- three cards across the box, posts on the side depth rails ---------------
-    cw = in_W - 2 * (P["post_d"] - P["slot_depth"]) - 2 * P["card_clear"]
+    cw = in_W - 2 * (P["post_standoff"] + P["post_d"] - P["slot_depth"]) - 2 * P["card_clear"]
     cy0 = y_in0 + (in_W - cw) / 2
     ch = in_H - 8 - (CARD_TRIM if nine else 0)
     inv = COMPONENTS[P["inverter"]]
@@ -1441,7 +1455,7 @@ def build_v8(a, nine=False):
         else:
             add(a, box(P["card_t"], cw, ch, (cx, cy0, floor_top + 2)), f"card_{name}_plate", DARK)
         px = cx - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]
-        for j, y in enumerate((y_in0, out_W - B - P["post_d"])):
+        for j, y in enumerate((y_in0 + P["post_standoff"], out_W - B - P["post_d"] - P["post_standoff"])):
             for k, (z, gp) in enumerate(guide_post_segments()):
                 if j == 1:
                     gp = gp.mirror("XZ").translate((0, P["post_d"], 0))
