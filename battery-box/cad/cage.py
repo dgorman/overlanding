@@ -1408,10 +1408,13 @@ V11_COL_LAYOUT = [dict(comp="multiplus_1200_up", x=7.5, z=2),
                   dict(comp="sb175_h", x=94, z=414)]
 V11_COL_CONN = []
 MP_BRACKET = 31.0   # the MultiPlus 12/1200's wall bracket above the body
-V11_DECK_LAYOUT = [dict(comp="busbar_px", x=50, y=5), dict(comp="busbar_nx", x=50, y=110), dict(comp="breaker_a", x=125, y=46)]
+V11_DECK_LAYOUT = [dict(comp="busbar_px", x=50, y=5), dict(comp="busbar_nx", x=50, y=110),   # over the stack
+                   dict(comp="breaker_a", x=125, y=175)]                                      # on the extension over the inverter column
+DECK_NOTCH = 32.0   # v11: the extension stops this far short of the inverter card: an open strip along its length for the
+                    # SB175 lying above the inverter and the MultiPlus's DC and AC leads coming up the card
 V11_CHARGE_LAYOUT = [dict(comp="mppt", y=12, z=306), dict(comp="orion", y=12, z=148), dict(comp="cerbo_up", y=140, z=148),
                      dict(comp="garmin", y=12, z=30), dict(comp="shunt_up", y=145, z=20)]
-V11_CHARGE_REAR = [dict(comp="sb50_v", y=y, z=None) for y in (10, 50, 90, 130, 170)]   # clear of the column's front post
+V11_CHARGE_REAR = [dict(comp="sb50_v", y=y, z=None) for y in (10, 48, 86, 124, 162)]   # 38 pitch: clear of the column's front post and its deck ledge
 V11_CHARGE_FRONT = [dict(comp="pp45_v", y=205, z=None)]   # Garmin outputs, beside the MPPT   # clear of the back post body   # MPPT, Orion, Cerbo, solar in, alt in; Garmin outputs
 # fixed halves on the cards themselves, standing with the mating face UP, so the pigtail lifts off before the card
 # v9 cards are cut down CARD_TRIM so the connector stack at the top of each card leaves CONN_LID_ROOM under the
@@ -1592,7 +1595,21 @@ def build_v8(a, nine=False):
             if side == 1:
                 tie = tie.mirror("XZ").translate((0, out_W, 0))
             add(a, tie, f"print_deck_tie_{side}", ORANGE)
-        for xs in (() if COL else (dL * 0.25, dL * 0.5, dL * 0.75)):
+        if COL and P["swap"]:
+            # --- deck extension over the inverter column: one plate from the stack half's edge to a notch along the card.
+            # It rests on the stack half's spline joint and on two ledges screwed to the column card's posts; the inverter
+            # card can only lift once this plate is unbolted (2 x M4 at the ledges, 2 x M4 cleats to the stack half).
+            S_col = V10["post_standoff"]; py_post = out_W - B - S_col - P["post_w"]
+            card_y = py_post + (P["post_w"] - P["card_t"]) / 2
+            y0_ext = y_in0 + 1 + V7["bay_W"] / 2                   # the stack half's inboard edge
+            y1_ext = card_y - DECK_NOTCH
+            add(a, box(dL, y1_ext - y0_ext, P["card_t"], (dx0, y0_ext, dz)), "print_bus_deck_ext_column", ORANGE)
+            px_inv = x_in0 + V8["x_inv"] - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]
+            for lx in (x_in0 + 1, px_inv - 2 - V10["post_dx"]):   # ledges on the column posts' -Y faces, under the plate edge
+                ledge = box(V10["post_dx"], 30, 14, (lx, py_post - 30, dz - 14))
+                add(a, ledge.cut(cq.Workplane("XY").center(lx + V10["post_dx"] / 2, py_post - 22).circle(2.3).extrude(11).translate((0, 0, dz - 10))), f"print_colpost_ledge_{int(lx - x_in0)}", ORANGE)
+            g["deck_ext_y"] = (y0_ext, y1_ext)
+        for xs in (() if (COL and not P["swap"]) else (dL * 0.25, dL * 0.5, dL * 0.75)):
             add(a, box(18, 60, 3, (dx0 + xs - 9, y_in0 + 1 + V7["bay_W"] / 2 - 30, dz - 3)), f"print_bus_deck_spline_{int(xs)}", ORANGE)
         for pl in (V11_DECK_LAYOUT if (COL and P["swap"]) else V10_DECK_LAYOUT if COL else V9_DECK_LAYOUT):
             c = COMPONENTS[pl["comp"]]
@@ -2088,6 +2105,10 @@ def report_v10():
         if pl["z"] + c.h > g.get("col_ch", 444): bad.append("Z overflow")
         print(f"  column   {c.name:20s} {c.w:>4.0f}x{c.h:>4.0f}x{c.d:>3.0f} @({pl['x']},{pl['z']}) {' '.join(bad) or 'ok'}")
     if P["swap"]:
+        ey = g.get("deck_ext_y", (0, 0))
+        print(f"deck extension  : {ey[1] - ey[0]:.0f} mm wide plate over the inverter column at the deck height, splined to the stack half and screwed to ledges on the "
+              f"column posts; a {DECK_NOTCH:.0f} mm notch runs its whole length along the inverter card for the SB175 and the MultiPlus leads.  "
+              f"The breaker lives on it.  The inverter card lifts only after this plate comes off (4 x M4).")
         col_w = out_W - B - (y_in0 + 1 + V7["tray_w"])
         print(f"column          : {col_w:.0f} mm wide; card 6 + MultiPlus 101 flush = 107, {out_W - B - cy - P['card_t']:.0f} mm behind the card, "
               f"MultiPlus face {cy - 101 - (y_in0 + 1 + V7['tray_w']):.0f} mm from the tray wall; card {cL:.0f} long (2 x 2 tiles) = body 249 + 7 mm slot lips + 0.5 each end, "
@@ -2100,10 +2121,11 @@ def report_v10():
             if pl["y"] + c.w > g.get("cw", 249): bad.append("Y overflow")
             if pl["z"] + c.h > g.get("ch", 444): bad.append("Z overflow")
             print(f"  front    {c.name:20s} {c.w:>4.0f}x{c.h:>4.0f}x{c.d:>3.0f} @({pl['y']},{pl['z']}) {' '.join(bad) or 'ok'}")
+    deck_w = (g.get("deck_ext_y", (0, 0))[1] - (y_in0 + 1)) if P["swap"] else V7["tray_w"]
     for pl in (V11_DECK_LAYOUT if P["swap"] else V10_DECK_LAYOUT):
         c = COMPONENTS[pl["comp"]]; bad = []
         if pl["x"] + c.d > 245: bad.append("X overflow")
-        if pl["y"] + c.w > V7["tray_w"]: bad.append("Y overflow")
+        if pl["y"] + c.w > deck_w: bad.append("Y overflow")
         print(f"  deck     {c.name:20s} {c.d:>4.0f}x{c.w:>4.0f}x{c.h:>3.0f} @({pl['x']},{pl['y']}) {' '.join(bad) or 'ok'}")
     gap = g.get("cy0", 82)
     who = "the front (charge) card" if P["swap"] else "the inverter"
