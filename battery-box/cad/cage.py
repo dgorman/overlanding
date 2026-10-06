@@ -264,8 +264,9 @@ if P["narrow"] and P["card_plane"] in ("v7", "v8", "v9"):
     if P["depth"] == "fit9":
         _inv = COMPONENTS[P["inverter"]]
         V8["bay_gap"] = 70.0     # wiring room between the deck/battery lugs and the inverter card (pigtails up to the deck)
-        V8["front"] = 45.0       # grace between the charge card's parts and the front-panel inlets/sockets
-        V8["inv_gap"] = 26.0     # the charge card's rear-face SB50s (16 deep) + clearance
+        V8["front"] = 10.0       # MPPT (the deepest unit) is at the TOP of the charge card; the panel-mounted sockets and
+        V8["charge_gap"] = 4.0   # inlets all sit in the bottom band, where the card is empty, so the front grace is only
+        V8["inv_gap"] = 22.0     # the MPPT's own clearance.  inv_gap: the charge card's rear-face SB50s (16 deep) + 6
         V8["x_inv"] = V7["bay_D"] + V8["bay_gap"]
         V8["x_charge"] = V8["x_inv"] + P["card_t"] + 10.0 + _inv.d + V8["inv_gap"]
         in_D = round(V8["x_charge"] + P["card_t"] + V8["charge_depth"] + V8["charge_gap"] + V8["front"], 1)
@@ -316,7 +317,11 @@ if P["card_plane"] == "v7":
 if P["card_plane"] in ("v8", "v9"):
     ANDERSONS = []
     SOCKETS = [(40, 29), (85, 29), (130, 29), (175, 22), (215, 22)]   # lower band of the front panel
-    P["socket_z"] = 80.0
+    P["socket_z"] = 90.0 if P["card_plane"] == "v9" else 80.0
+# v9 front panel, bottom band (nothing deeper than the empty card band behind it): L14-30 shore inlet + inverter outlet
+# (60 mm dia, 55 deep) and the two SB50 panel inlets for solar and alternator (37 x 48 face, 48 deep).  (y, z) from the
+# inner corner; the 12 V / USB socket row sits above them at socket_z.
+FRONT_INLETS = [("l14_30_in", 50, 34), ("l14_30_out", 120, 34), ("sb50_solar", 190, 9), ("sb50_alt", 240, 9)]
 N_BATT = 4
 post_h = in_H                                          # floor panel top to the underside of the top rails
 
@@ -729,6 +734,14 @@ def build() -> cq.Assembly:
     si = socket_insert()
     bb = si.val().BoundingBox()
     front = front.cut(box(T + 2, bb.ylen, bb.zlen, (out_D - 1, bb.ymin, bb.zmin)))
+    if P["card_plane"] == "v9":
+        for nm, y, z in FRONT_INLETS:
+            if nm.startswith("l14"):
+                front = front.cut(cq.Workplane("YZ").center(y_in0 + y, floor_top + z).circle(30).extrude(out_D + T + 1))
+                add(a, cq.Workplane("YZ").center(y_in0 + y, floor_top + z).circle(30).extrude(-55).translate((out_D, 0, 0)), f"socket_{nm}", (0.3, 0.3, 0.3))
+            else:
+                front = front.cut(box(T + 2, 37, 48, (out_D - 1, y_in0 + y, floor_top + z)))
+                add(a, box(48, 37, 48, (out_D - 48, y_in0 + y, floor_top + z)), f"socket_{nm}", (0.3, 0.3, 0.3))
     add(a, front, "panel_front_removable", PANEL)
     add(a, si, "print_socket_insert", ORANGE)
     for y, dia in SOCKETS:
@@ -1232,7 +1245,7 @@ V9_DECK_LAYOUT = [   # deck is ~295 (x, depth) x 294 (y); x from the deck's back
     dict(comp="sb175_x",   x=115, y=20),    # inverter DC
     dict(comp="sb50_x",    x=160, y=90),    # MPPT
     dict(comp="sb50_x",    x=160, y=135),   # Orion
-    dict(comp="sb50_x",    x=160, y=180),   # Garmin + Cerbo feed
+    dict(comp="sb50_x",    x=160, y=180),   # Garmin feed (inverter card)
 ]
 # fixed halves on the cards themselves, standing with the mating face UP, so the pigtail lifts off before the card
 # v9 cards are cut down CARD_TRIM so the connector stack at the top of each card leaves CONN_LID_ROOM under the
@@ -1245,17 +1258,19 @@ def _conn_z(kind):
     """card-relative z of a card-mounted fixed half so the mated pair tops out CONN_LID_ROOM under the lid"""
     mated = MATED[kind]
     return (out_H - CONN_LID_ROOM) - (floor_top + 2) - mated
-V9_INV_REAR = [dict(comp="sb175_v", y=150, z=None)]
-V9_CHARGE_REAR = [dict(comp="sb50_v", y=y, z=None) for y in (15, 62, 109, 156, 203)]   # MPPT, Orion, Garmin+Cerbo, solar in, alternator in
-V9_CHARGE_FRONT = [dict(comp="pp45_v", y=20, z=None)]   # Garmin -> front-panel sockets: PP45 block at the top of the front face
+V9_INV_REAR = [dict(comp="sb175_v", y=150, z=None),   # MultiPlus DC
+               dict(comp="sb50_v", y=90, z=None),     # Garmin feed
+               dict(comp="pp45_v", y=20, z=None)]     # Garmin outputs -> front-panel sockets
+V9_CHARGE_REAR = [dict(comp="sb50_v", y=y, z=None) for y in (15, 62, 109, 156, 203)]   # MPPT, Orion, Cerbo, solar in, alternator in
+V9_CHARGE_FRONT = []
 V9_INV_LAYOUT = [    # inverter card (249 wide = the MultiPlus): the SB175 pigtail leaves the top rear corner and mates on the deck
     dict(comp="multiplus_1200_up", y=0, z=2 + FEET_H),
+    dict(comp="garmin", y=20, z=100, face="rear"),   # PowerSwitch on the card's REAR face, in the 70 mm wiring gap, fed from the deck
 ]
-V9_CHARGE_LAYOUT = [
-    dict(comp="mppt",  y=12,  z=20),
-    dict(comp="orion", y=12,  z=175),      # keep units >= 10 mm from the card edge: the post lip reaches 8 mm past the card face
-    dict(comp="cerbo", y=12,  z=340),
-    dict(comp="garmin_up", y=140, z=175),   # PowerSwitch turned 90 deg beside the Orion
+V9_CHARGE_LAYOUT = [   # MPPT (70 deep) at the TOP; the bottom band (z < 148) stays empty behind the panel sockets and inlets
+    dict(comp="mppt",     y=12,  z=306),   # keep units >= 10 mm from the card edge: the post lip reaches 8 mm past the card face
+    dict(comp="orion",    y=12,  z=148),
+    dict(comp="cerbo_up", y=140, z=148),   # Cerbo turned 90 deg beside the Orion
 ]
 V8_INV_LAYOUT = [    # inverter card, parts face +X (forward); y from the card's outboard end, z from its bottom
     dict(comp="multiplus_1200_up", y=13, z=2 + FEET_H),
@@ -1466,6 +1481,8 @@ def build_v8(a, nine=False):
                 for yy in (pl["y"] + 25, pl["y"] + c.w - 85):   # two 60 mm wide feet under the housing, 18 tall, standoff deep
                     add(a, box(standoff + 4, 60, FEET_H, (cx + P["card_t"], cy0 + yy, floor_top + 2 + pl["z"] - FEET_H)), f"print_feet_mp_{int(yy)}__card", ORANGE)
             at = (cx + P["card_t"] + standoff, cy0 + pl["y"], floor_top + 2 + pl["z"])
+            if pl.get("face") == "rear":   # unit on the card's rear face (-X), facing the wiring gap
+                at = (cx - c.d, cy0 + pl["y"], floor_top + 2 + pl["z"])
             col = BLUE if c.name.startswith("victron") else (0.08, 0.08, 0.08) if c.name.startswith("garmin") else (0.3, 0.3, 0.3) if c.name.startswith("socket") else GOLD
             # parts face +X: their depth d runs along X, width w along Y
             add(a, victron_shape(pl["comp"], c.d, c.w, c.h, at, box(c.d, c.w, c.h, at).edges("|X").fillet(3)),
@@ -1550,7 +1567,7 @@ CABLE_SPEC = [   # (run, Victron recommendation, fuse, connector)
     ("Solar array -> MPPT PV side", "10 AWG; PV fuse per Victron if > 1 string", "per string", "Anderson SB50 at the front panel"),
     ("Bus deck -> Garmin PowerSwitch feed", "10 AWG (Garmin: 50 A max on the PowerSwitch)", "60 A", "Anderson SB50, 10 AWG contacts"),
     ("Bus deck -> Cerbo GX", "16 AWG", "3 A", "Anderson Powerpole 15"),
-    ("Garmin PowerSwitch outputs -> front-panel sockets", "10 AWG, one circuit per socket (Garmin: 30 A per channel max)", "Garmin's own per-channel protection", "Anderson Powerpole PP45 block (8 poles / 4 circuits) at the top of the charge card's front face; mates upward"),
+    ("Garmin PowerSwitch outputs -> front-panel sockets", "10 AWG, one circuit per socket (Garmin: 30 A per channel max)", "Garmin's own per-channel protection", "Anderson Powerpole PP45 block (8 poles / 4 circuits) at the top of the inverter card's rear face, beside the SB175; mates upward"),
     ("Shore AC in / inverter AC out", "12 AWG, per the MultiPlus AC in/out ratings", "AC breaker in the MultiPlus", "L14-30 inlet / outlet at the front panel"),
 ]
 
@@ -1588,7 +1605,7 @@ def report_v9():
     print(f"connectors      : cards cut down {CARD_TRIM:.0f} mm to {ch_:.0f} tall; every card has its own fixed Anderson halves at the top of its rear face, mating face UP. "
           f"The mated pigtail halves top out {CONN_LID_ROOM:.0f} mm under the lid (their cables exit upward into that room). "
           f"Inverter card: SB175 housing at card z {z175:.0f}-{z175 + HOUSING['sb175']:.0f} ({ch_ - z175 - HOUSING['sb175']:.0f} below the card top). "
-          f"Charge card: 5 x SB50 at z {z50:.0f}-{z50 + HOUSING['sb50']:.0f} ({ch_ - z50 - HOUSING['sb50']:.0f} below the card top): MPPT, Orion, Garmin+Cerbo, solar in, alternator in. "
+          f"Charge card: 5 x SB50 at z {z50:.0f}-{z50 + HOUSING['sb50']:.0f} ({ch_ - z50 - HOUSING['sb50']:.0f} below the card top): MPPT, Orion, Cerbo, solar in, alternator in. Inverter card also carries the Garmin feed SB50 and the PP45 output block. "
           f"Pull-up travel {o175:.0f} / {o50:.0f} mm.")
     print(f"                  deck end: fixed halves point at the cards on the deck's {DECK_EXT:.0f} mm extension; pigtail halves pull forward "
           f"{o175:.0f}/{o50:.0f} mm: SB175 needs x<={115 + 2 * HOUSING['sb175'] - o175 + o175:.0f} of the deck's {dL:.0f} "
