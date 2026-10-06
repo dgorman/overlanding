@@ -1408,8 +1408,8 @@ V11_COL_LAYOUT = [dict(comp="multiplus_1200_up", x=7.5, z=2),
                   dict(comp="sb175_h", x=94, z=414)]
 V11_COL_CONN = []
 MP_BRACKET = 31.0   # the MultiPlus 12/1200's wall bracket above the body
-V11_DECK_LAYOUT = [dict(comp="busbar_px", x=50, y=5), dict(comp="busbar_nx", x=50, y=110),   # over the stack
-                   dict(comp="breaker_a", x=125, y=175)]                                      # on the extension over the inverter column
+V11_DECK_LAYOUT = [dict(comp="busbar_px", x=68, y=5), dict(comp="busbar_nx", x=68, y=110),   # over the stack (x from the deck's back line at x_in0+2)
+                   dict(comp="breaker_a", x=143, y=175)]                                      # on the extension's front plate over the inverter column
 DECK_NOTCH = 32.0   # v11: the extension stops this far short of the inverter card: an open strip along its length for the
                     # SB175 lying above the inverter and the MultiPlus's DC and AC leads coming up the card
 V11_CHARGE_LAYOUT = [dict(comp="mppt", y=12, z=306), dict(comp="orion", y=12, z=148), dict(comp="cerbo_up", y=140, z=148),
@@ -1565,7 +1565,7 @@ def build_v8(a, nine=False):
                                 lower = lower.cut(pin); middle = middle.cut(pin); upper = upper.cut(pin)
                         else:
                             upper = box(L / 2, L, lap1 - lap0, (wall_half[0], 0, lap0)).union(box(L, L, leg_h - lap1, (0, 0, lap1)))
-                        reach = 24 if (COL and P["swap"] and back) else 16   # v11: back tabs reach 24 so the stack plate starts 8 later and runs to the front line
+                        reach = 16
                         bx0 = 0 if back else -16
                         boss = box(L + reach, L, 14, (bx0, 0, leg_h - 14))
                         bhx = L / 2 + ((reach - 4) if back else -12)
@@ -1586,12 +1586,12 @@ def build_v8(a, nine=False):
         # --- bus deck: printed plate on the rack legs, over both stacks ------------
         dz = g["stack_top"]
         if COL and P["swap"]:
-            # v11: the stack plate runs to the same front line as the column extension (5 mm short of the front card's SB50
-            # row, over the front legs); to keep it under 256 it starts 8 mm later, on the back legs' longer tabs
+            # v11: the stack half runs post to post on the same back and front lines as the column extension (over the whole
+            # of the back legs' boss tabs, 5 mm short of the front card's SB50 row), as two plates splined at the middle
             px_inv_ = x_in0 + V8["x_inv"] - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]
-            dx0 = tx + 5
+            dx0 = x_in0 + 2
             dL = (px_inv_ - 2 - V10["post_dx"] + 5) - dx0
-            hole_back = tx + 14
+            hole_back = tx + 6
         else:
             dx0 = tx - L / 2 + 4                                      # 4 mm inside the back leg centreline
             dL = (tx + fd + L / 2 - 4) - dx0                          # .. to 4 mm inside the front one: 245, fits the bed
@@ -1603,23 +1603,31 @@ def build_v8(a, nine=False):
             add(a, box(60, 18, 3, (dx0 + dL - 30, y_in0 + 1 + half * hw + hw / 2 - 9, dz - 3)), f"print_bus_deck_ext_spline_{half}", ORANGE)
         for half in range(1 if COL else 2):   # two printable halves, one over each stack, splined at the centre line, M4 into the leg bosses
             hw = V7["bay_W"] / 2
-            deck = box(dL, hw, P["card_t"], (dx0, y_in0 + 1 + half * hw, dz))
-            if not (COL and P["swap"]):   # v11 has no window: leads leave under the deck's back edge, with 30 mm of lug room
-                deck = deck.cut(box(100, 55, P["card_t"] + 2, (dx0 + 20, y_in0 + 1 + half * hw + hw / 2 - 27.5, dz - 1)))   # hand window over the lugs
+            if COL and P["swap"]:   # two plates, split at the middle like the extension, with two splines across the joint
+                xm_ = dx0 + dL / 2
+                plates = [box(xm_ - dx0, hw, P["card_t"], (dx0, y_in0 + 1 + half * hw, dz)), box(dx0 + dL - xm_, hw, P["card_t"], (xm_, y_in0 + 1 + half * hw, dz))]
+            else:
+                plates = [box(dL, hw, P["card_t"], (dx0, y_in0 + 1 + half * hw, dz))]
+                plates[0] = plates[0].cut(box(100, 55, P["card_t"] + 2, (dx0 + 20, y_in0 + 1 + half * hw + hw / 2 - 27.5, dz - 1)))   # hand window over the lugs
             for (hx, ly) in ((hole_back, y_in0 + 1 + half * V7["tray_w"]), (tx + fd - 6, y_in0 + 1 + half * V7["tray_w"]),
                              (hole_back, y_in0 + 1 + half * V7["tray_w"] + fw - L), (tx + fd - 6, y_in0 + 1 + half * V7["tray_w"] + fw - L)):
-                deck = deck.cut(cq.Workplane("XY").center(hx, ly + L / 2).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1)))
-            add(a, deck, f"print_bus_deck_{half}", ORANGE)
+                hole = cq.Workplane("XY").center(hx, ly + L / 2).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1))
+                plates = [pl.cut(hole) for pl in plates]
+            for k, pl in enumerate(plates):
+                add(a, pl, f"print_bus_deck_{half}" + ("" if k == 0 else "_front"), ORANGE)
+            if COL and P["swap"]:
+                for ys in (hw * 0.2, hw * 0.6):   # clear of the centre-line splines at the stack/extension joint
+                    add(a, box(18, 60, 3, (xm_ - 9, y_in0 + 1 + half * hw + ys - 30, dz - 3)), f"print_bus_deck_{half}_spline_{int(ys)}", ORANGE)
         # deck ties: the deck's two back corners bolt to the vertical corner bars (T-nut in the bar's inboard-facing
         # slot) through a printed bracket: a plate on the bar, a bridge over the leg boss, a pad with 2 x M4 on the deck.
         # The rack is then a closed cell: frame -> tray tabs -> trays -> leg tabs -> legs -> deck -> ties -> frame.
         for side in range(1 if COL else 2):
-            pad_end = 66 if (COL and P["swap"]) else 58                 # the v11 stack plate starts at 46: a longer pad
+            pad_end = 58
             tie = (box(B, 6, 32, (0, B, dz - 20))                      # on the corner bar's +Y face
                    .union(box(pad_end, 6, 6, (0, B, dz + P["card_t"])))      # bridge, over the leg boss, onto the deck top
                    .union(box(pad_end - dx0, 46 - B, 6, (dx0, B, dz + P["card_t"]))))   # pad on the deck, clear of the bus bar
             tie = tie.cut(cq.Workplane("XZ").center(B / 2, dz - 8).circle(3.4).extrude(-(B + 8)).translate((0, B - 1, 0)))
-            for hx in ((52, 60) if (COL and P["swap"]) else (45, 54)):
+            for hx in (45, 54):
                 tie = tie.cut(cq.Workplane("XY").center(hx, 36).circle(2.3).extrude(8).translate((0, 0, dz + P["card_t"] - 1)))
             if side == 1:
                 tie = tie.mirror("XZ").translate((0, out_W, 0))
