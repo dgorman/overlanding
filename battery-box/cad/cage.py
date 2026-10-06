@@ -1603,11 +1603,15 @@ def build_v8(a, nine=False):
             card_y = py_post + (P["post_w"] - P["card_t"]) / 2
             y0_ext = y_in0 + 1 + V7["bay_W"] / 2                   # the stack half's inboard edge
             y1_ext = card_y - DECK_NOTCH
-            add(a, box(dL, y1_ext - y0_ext, P["card_t"], (dx0, y0_ext, dz)), "print_bus_deck_ext_column", ORANGE)
             px_inv = x_in0 + V8["x_inv"] - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]
-            for lx in (x_in0 + 1, px_inv - 2 - V10["post_dx"]):   # ledges on the column posts' -Y faces, under the plate edge
-                ledge = box(V10["post_dx"], 30, 14, (lx, py_post - 30, dz - 14))
-                add(a, ledge.cut(cq.Workplane("XY").center(lx + V10["post_dx"] / 2, py_post - 22).circle(2.3).extrude(11).translate((0, 0, dz - 10))), f"print_colpost_ledge_{int(lx - x_in0)}", ORANGE)
+            ext = box(dL, y1_ext - y0_ext, P["card_t"], (dx0, y0_ext, dz))
+            hy = y1_ext - 9                                            # screw line 9 mm inside the plate's notch edge
+            for lx in (x_in0 + 1, px_inv - 2 - V10["post_dx"]):   # ledges on the column posts' -Y faces, reaching under the plate edge
+                ledge = box(V10["post_dx"], py_post - (hy - 8), 14, (lx, hy - 8, dz - 14))
+                hx = lx + V10["post_dx"] / 2
+                add(a, ledge.cut(cq.Workplane("XY").center(hx, hy).circle(2.3).extrude(11).translate((0, 0, dz - 10))), f"print_colpost_ledge_{int(lx - x_in0)}", ORANGE)
+                ext = ext.cut(cq.Workplane("XY").center(hx, hy).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1)))
+            add(a, ext, "print_bus_deck_ext_column", ORANGE)
             g["deck_ext_y"] = (y0_ext, y1_ext)
         for xs in (() if (COL and not P["swap"]) else (dL * 0.25, dL * 0.5, dL * 0.75)):
             add(a, box(18, 60, 3, (dx0 + xs - 9, y_in0 + 1 + V7["bay_W"] / 2 - 30, dz - 3)), f"print_bus_deck_spline_{int(xs)}", ORANGE)
