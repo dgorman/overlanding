@@ -113,6 +113,29 @@ Same frame width and battery bay as v7, but the cards face across the box like v
 - Service: lid off, lift any card straight up (277 wide, 494 tall; needs ~1050 mm plate-to-ceiling, or tilt forward into the gap); batteries lift out of the bay.
 - ~60 kg.
 
+**v10: two batteries, 454 mm deep (17.9 in)** (`python cage.py v10`, viewer "v10")
+
+The 18 in question answered: drop to two SuperPacks in **one stack** and the depth falls to **454 × 353 × 559 mm**, 12.1 in shorter than the IceBox and 4.5 in shorter than v9, at the same width and height.
+
+| | v9 (4 batteries) | v10 (2 batteries) |
+|---|---|---|
+| Outer | 568 × 353 × 559 | **454 × 353 × 559** |
+| Bank | 240 Ah, 120 A continuous | 120 Ah, **60 A continuous / 80 A for 10 s** |
+| MultiPlus 12/1200 | full 1200 W | **~700 W continuous**, ~1000 W bursts (105 A at full output) |
+| Charging | MPPT 30 A + Orion 50 A | same, within the 60 A charge limit |
+| Weight | ~58 kg | ~43 kg |
+
+How it is laid out:
+
+- **Battery rack:** the v9 rack with one stack (tray, shelf, four legs, the deck over it, 245 × 151). The deck carries the two bus bars along the depth, the two breakers and the hand window. Tray tabs to the outboard and back rails as before.
+- **Charge card in the freed column.** The 150 mm column beside the stack takes the charge card turned **lengthwise along the inboard wall** (250 × 444, two tiles on the half-lap), units facing the stack: MPPT at the top, Orion and Garmin in the middle, Cerbo and the SmartShunt (on end) at the bottom. Its five SB50s and the Garmin's PP45 stand on the **rear face** in the 21 mm behind the card, mating upward, so it unplugs and lifts exactly like a v9 card. Its two guide posts stand on the plate 12 mm off the inboard rail, with feet onto the bottom and top inboard depth rails and three half-lapped segments pinned by M4s.
+- **Inverter card** 10 mm in front of the bay, unchanged: MultiPlus upright, SB175 at the top of its rear face. The SB175 sits beside the deck, not in front of it, so the deck needs no clearance.
+- **Ports above the MultiPlus.** The front panel's port band moves up to z 435..530, above the inverter's 428 mm top, where there is 119 mm of depth behind the panel: socket row at the top, the two L14-30s and the two SB50 inlets below it. The card's lower band behind the panel is the MultiPlus itself.
+
+Depth chain: bay 268 | gap 10 | inverter card 6 + 10 + 101 | front 8 = 403 inner, 454 outer.
+
+**Add-on pack (not modelled).** The two batteries that come out could live in a separate pack built from the spare kit bars, plugged into the main box through an SB175 on its inboard panel with 4 AWG jumpers, giving the full 240 Ah and 120 A back when it is connected. The bar budget works only if the main box's height rails come from the second IceBox frame: that leaves 12 of the 16 kit bars (437 mm) for the pack, enough for a 2-wide, 1-high pack of about 330 × 353 × 300 mm (two batteries side by side on their trays, a 25 mm lid gap, 12 bars cut to 280 / 294 / 250). Stacking the pair two-high would need 508 mm bars, which only another IceBox provides.
+
 **v7: 345 mm wide, 642 deep, your four SuperPack 60Ah, lengthwise cards** (`python cage.py v7`)
 
 The 200Ah Smarts and the MultiPlus-II are shelved. v7 is built around what you own and the pedal clearance:
@@ -350,6 +373,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-05 | **v10:** two batteries in one stack, charge card lengthwise in the freed column along the inboard wall (rear-face SB50s, rail-footed half-lapped posts), ports above the MultiPlus: **454 deep (17.9 in)**. Tradeoff documented: 120 Ah and the inverter limited to ~700 W continuous by the two SuperPacks' 60 A. Add-on pack from the spare kit bars sketched in prose. |
 | 2026-10-05 | Deck connector row removed: pigtails lugged at the bus bars, SB175 on the inverter card is the only inverter-side plug; Garmin moved onto the deck with a PP45 at its front edge; inverter card closed up to 20 mm from the deck; charge-card pigtails routed in the 18 mm outboard chase. **568 deep (22.4 in).** |
 | 2026-10-05 | MPPT moved to the top of the charge card and the panel connectors (sockets, L14-30 in/out, SB50 inlets, now modelled) gathered in the bottom band behind the card's empty zone, so the front grace drops from 45 to 10 mm: **618 deep (24.3 in)**. Garmin to the inverter card's rear face with its own SB50 feed + PP45. v10 full-length-deck study built, reviewed and removed. |
 | 2026-10-05 | Cards reworked for printing: guide posts stood 18 mm in from the rails, so each card is 249 wide and prints as **two** 249 × 234 tiles with a 24 mm half-lap (glued + 3 × M4) instead of four spline-joined tiles. Every tile prints flat with its rabbet up, no supports. Inverter card is exactly the MultiPlus width; Garmin PowerSwitch turned 90° beside the Orion; SB50 row re-pitched to 47 mm. |
