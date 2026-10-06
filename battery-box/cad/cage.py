@@ -211,6 +211,8 @@ COMPONENTS = {
     "sb175_v":   Comp("socket_sb175", 56, 26, 79, "Anderson SB175 standing on a card's rear face, mating face up"),
     "sb50_v":    Comp("socket_sb50", 37, 16, 48, "Anderson SB50 standing on a card face, mating face up"),
     "shunt_x":   Comp("power_shunt", 54, 120, 46, "SmartShunt turned 90 deg on the deck"),
+    "garmin_flat": Comp("garmin_powerswitch", 125, 75, 32, "Garmin PowerSwitch lying on the bus deck"),
+    "pp45_x":    Comp("socket_pp45", 32, 25, 16, "Anderson Powerpole PP45 block on the deck's front edge, mating +X; Garmin outputs to the socket harness"),
     "pp45_v":    Comp("socket_pp45", 32, 16, 25, "Anderson Powerpole PP45 block, 8 poles = 4 circuits, 10 AWG contacts; Garmin outputs to the front-panel sockets; mating face up"),
 }
 
@@ -263,7 +265,7 @@ if P["narrow"] and P["card_plane"] in ("v7", "v8", "v9"):
         out_D = in_D + 2 * B
     if P["depth"] == "fit9":
         _inv = COMPONENTS[P["inverter"]]
-        V8["bay_gap"] = 70.0     # wiring room between the deck/battery lugs and the inverter card (pigtails up to the deck)
+        V8["bay_gap"] = 20.0     # deck front edge is 10 mm inside the bay; the card's rear SB175 flying half (26 deep) clears it by 4
         V8["front"] = 10.0       # MPPT (the deepest unit) is at the TOP of the charge card; the panel-mounted sockets and
         V8["charge_gap"] = 4.0   # inlets all sit in the bottom band, where the card is empty, so the front grace is only
         V8["inv_gap"] = 22.0     # the MPPT's own clearance.  inv_gap: the charge card's rear-face SB50s (16 deep) + 6
@@ -353,7 +355,7 @@ STEP_FILES = {   # component key -> Victron STEP file (downloaded into cad/step/
     "sb50_v":       "anderson_sb50_housing.stp",
     "shunt_x":      "SmartShunt-500A.step",
 }
-MATED = {"sb175": 133.4, "sb50": 81.3, "sb175_x": 133.4, "sb50_x": 81.3, "sb175_v": 133.4, "sb50_v": 81.3, "pp45_v": 41.0}   # Anderson mated-pair lengths
+MATED = {"sb175": 133.4, "sb50": 81.3, "sb175_x": 133.4, "sb50_x": 81.3, "sb175_v": 133.4, "sb50_v": 81.3, "pp45_v": 41.0, "pp45_x": 41.0}   # Anderson mated-pair lengths
 HOUSING = {"sb175": 79.4, "sb50": 48.0, "pp45": 24.6}   # housing length along the mating axis
 _STEP_CACHE = {}
 # extra rotation (axis, degrees) applied after the extents match, for units
@@ -1233,19 +1235,18 @@ def build_v7(a):
 
 FEET_H = 18.0        # printed feet under the MultiPlus: it stands on these, the bolts only hold it to the card
 # v9: bus deck on top of the battery rack (x along the depth from the bay's back, y across; parts stand up)
-DECK_EXT = 40.0      # the deck runs forward over the wiring gap by this much, to carry the connector row
+DECK_EXT = 0.0       # (was 40: the deck used to run forward to carry a connector row; the pigtails are lugged at the bus bars now)
 V9_DECK_LAYOUT = [   # deck is ~295 (x, depth) x 294 (y); x from the deck's back edge
     dict(comp="busbar_n",  x=20,  y=20),
     dict(comp="breaker_a", x=20,  y=190),
     dict(comp="breaker_b", x=20,  y=245),
     dict(comp="busbar_p",  x=65,  y=20),
     dict(comp="shunt_x",   x=70,  y=236),
-    # fixed connector halves bolted to the deck, mating axis along the depth, facing the cards (+X).
-    # The pigtail's flying half mates in front and pulls off forward (25 / 15 mm) on the deck's extension.
-    dict(comp="sb175_x",   x=115, y=20),    # inverter DC
-    dict(comp="sb50_x",    x=160, y=90),    # MPPT
-    dict(comp="sb50_x",    x=160, y=135),   # Orion
-    dict(comp="sb50_x",    x=160, y=180),   # Garmin feed (inverter card)
+    # No fixed Anderson halves on the deck: every pigtail is lugged to a bus bar or breaker here and plugs into the
+    # card's own receptacle at the far end.  The Garmin PowerSwitch lies where the SB50 row was, fed straight off the
+    # positive bus bar beside it; its four outputs leave through a PP45 block at the deck's front edge (mates +X).
+    dict(comp="garmin_flat", x=160, y=90),
+    dict(comp="pp45_x",    x=215, y=230),
 ]
 # fixed halves on the cards themselves, standing with the mating face UP, so the pigtail lifts off before the card
 # v9 cards are cut down CARD_TRIM so the connector stack at the top of each card leaves CONN_LID_ROOM under the
@@ -1258,14 +1259,11 @@ def _conn_z(kind):
     """card-relative z of a card-mounted fixed half so the mated pair tops out CONN_LID_ROOM under the lid"""
     mated = MATED[kind]
     return (out_H - CONN_LID_ROOM) - (floor_top + 2) - mated
-V9_INV_REAR = [dict(comp="sb175_v", y=150, z=None),   # MultiPlus DC
-               dict(comp="sb50_v", y=90, z=None),     # Garmin feed
-               dict(comp="pp45_v", y=20, z=None)]     # Garmin outputs -> front-panel sockets
+V9_INV_REAR = [dict(comp="sb175_v", y=150, z=None)]   # MultiPlus DC: the only connector on this card
 V9_CHARGE_REAR = [dict(comp="sb50_v", y=y, z=None) for y in (15, 62, 109, 156, 203)]   # MPPT, Orion, Cerbo, solar in, alternator in
 V9_CHARGE_FRONT = []
 V9_INV_LAYOUT = [    # inverter card (249 wide = the MultiPlus): the SB175 pigtail leaves the top rear corner and mates on the deck
     dict(comp="multiplus_1200_up", y=0, z=2 + FEET_H),
-    dict(comp="garmin", y=20, z=100, face="rear"),   # PowerSwitch on the card's REAR face, in the 70 mm wiring gap, fed from the deck
 ]
 V9_CHARGE_LAYOUT = [   # MPPT (70 deep) at the TOP; the bottom band (z < 148) stays empty behind the panel sockets and inlets
     dict(comp="mppt",     y=12,  z=306),   # keep units >= 10 mm from the card edge: the post lip reaches 8 mm past the card face
@@ -1403,7 +1401,7 @@ def build_v8(a, nine=False):
         dx0 = tx - L / 2 + 4                                      # 4 mm inside the back leg centreline
         dL = (tx + fd + L / 2 - 4) - dx0                          # .. to 4 mm inside the front one: 245, fits the bed
         g["deck_x0"], g["deck_L"] = dx0, dL + DECK_EXT
-        for half in range(2):   # extension plates over the wiring gap, splined to the main halves
+        for half in (range(2) if DECK_EXT > 0 else ()):   # extension plates over the wiring gap, splined to the main halves
             hw = V7["bay_W"] / 2
             add(a, box(DECK_EXT, hw, P["card_t"], (dx0 + dL, y_in0 + 1 + half * hw, dz)), f"print_bus_deck_ext_{half}", ORANGE)
             add(a, box(60, 18, 3, (dx0 + dL - 30, y_in0 + 1 + half * hw + hw / 2 - 9, dz - 3)), f"print_bus_deck_ext_spline_{half}", ORANGE)
@@ -1560,14 +1558,14 @@ def dims_v9():
 
 CABLE_SPEC = [   # (run, Victron recommendation, fuse, connector)
     ("Battery stacks -> bus deck (per stack, 2 x 60Ah)", "6 AWG (SuperPack 60Ah: 30 A each; Victron M6 terminals)", "breaker per stack on the deck", "lugs on the deck bus bars"),
-    ("Bus deck -> MultiPlus 12/1200", "4 AWG / 21 mm2 as built (Victron lists 35 mm2; 2 AWG did not fit the terminals), keep the run under 1 m", "150 A (Victron) at the deck", "Anderson SB175 with 4 AWG contacts"),
-    ("Bus deck -> Orion XS 12/12-50 output", "6 AWG / 16 mm2 (Victron: 50 A, < 5 m)", "60-70 A", "Anderson SB50, 6 AWG contacts"),
+    ("Bus deck -> MultiPlus 12/1200", "4 AWG / 21 mm2 as built (Victron lists 35 mm2; 2 AWG did not fit the terminals), keep the run under 1 m", "150 A (Victron) at the deck", "lugged at the deck bus bars; Anderson SB175 (4 AWG contacts; takes 2 AWG if you ever upsize) on the inverter card's rear face"),
+    ("Bus deck -> Orion XS 12/12-50 output", "6 AWG / 16 mm2 (Victron: 50 A, < 5 m)", "60-70 A", "lugged at the deck; Anderson SB50 (6 AWG contacts) on the charge card; runs in the outboard chase"),
     ("Alternator -> Orion XS input", "6 AWG, 60-70 A fuse at the start battery", "60-70 A", "Anderson SB50 at the front panel"),
-    ("Bus deck -> MPPT 100/30 battery side", "10 AWG / 6 mm2 (Victron: 30 A)", "40 A", "Anderson SB50, 10 AWG contacts"),
+    ("Bus deck -> MPPT 100/30 battery side", "10 AWG / 6 mm2 (Victron: 30 A)", "40 A", "lugged at the deck; Anderson SB50 (10 AWG contacts) on the charge card; runs in the outboard chase"),
     ("Solar array -> MPPT PV side", "10 AWG; PV fuse per Victron if > 1 string", "per string", "Anderson SB50 at the front panel"),
-    ("Bus deck -> Garmin PowerSwitch feed", "10 AWG (Garmin: 50 A max on the PowerSwitch)", "60 A", "Anderson SB50, 10 AWG contacts"),
-    ("Bus deck -> Cerbo GX", "16 AWG", "3 A", "Anderson Powerpole 15"),
-    ("Garmin PowerSwitch outputs -> front-panel sockets", "10 AWG, one circuit per socket (Garmin: 30 A per channel max)", "Garmin's own per-channel protection", "Anderson Powerpole PP45 block (8 poles / 4 circuits) at the top of the inverter card's rear face, beside the SB175; mates upward"),
+    ("Bus deck -> Garmin PowerSwitch feed", "10 AWG (Garmin: 50 A max on the PowerSwitch)", "60 A", "the Garmin sits on the deck beside the + bus bar: a 150 mm lead"),
+    ("Bus deck -> Cerbo GX", "16 AWG", "3 A", "lugged at the deck; Anderson SB50 on the charge card; runs in the outboard chase"),
+    ("Garmin PowerSwitch outputs -> front-panel sockets", "10 AWG, one circuit per socket (Garmin: 30 A per channel max)", "Garmin's own per-channel protection", "Anderson Powerpole PP45 block (8 poles / 4 circuits) at the deck's front edge, mating forward; the socket harness runs in the outboard chase to the front panel"),
     ("Shore AC in / inverter AC out", "12 AWG, per the MultiPlus AC in/out ratings", "AC breaker in the MultiPlus", "L14-30 inlet / outlet at the front panel"),
 ]
 
@@ -1607,10 +1605,11 @@ def report_v9():
           f"Inverter card: SB175 housing at card z {z175:.0f}-{z175 + HOUSING['sb175']:.0f} ({ch_ - z175 - HOUSING['sb175']:.0f} below the card top). "
           f"Charge card: 5 x SB50 at z {z50:.0f}-{z50 + HOUSING['sb50']:.0f} ({ch_ - z50 - HOUSING['sb50']:.0f} below the card top): MPPT, Orion, Cerbo, solar in, alternator in. Inverter card also carries the Garmin feed SB50 and the PP45 output block. "
           f"Pull-up travel {o175:.0f} / {o50:.0f} mm.")
-    print(f"                  deck end: fixed halves point at the cards on the deck's {DECK_EXT:.0f} mm extension; pigtail halves pull forward "
-          f"{o175:.0f}/{o50:.0f} mm: SB175 needs x<={115 + 2 * HOUSING['sb175'] - o175 + o175:.0f} of the deck's {dL:.0f} "
-          f"({'ok' if 115 + 2 * HOUSING['sb175'] - o175 + o175 <= dL else 'TOO SHORT'}); SB50s need x<={160 + 2 * HOUSING['sb50'] - o50 + o50:.0f} "
-          f"({'ok' if 160 + 2 * HOUSING['sb50'] - o50 + o50 <= dL else 'TOO SHORT'}); deck front edge to the inverter card {x_in0 + V8['x_inv'] - (g.get('deck_x0', 0) + dL):.0f} mm")
+    chase = P["post_standoff"]
+    print(f"                  deck end: no fixed halves; every pigtail is lugged at the bus bars/breakers.  Deck front edge to the inverter card's rear face "
+          f"{x_in0 + V8['x_inv'] - (g.get('deck_x0', 0) + dL):.0f} mm = the SB175 housing (26) + 4.  The 4 AWG inverter pigtail exits its flying half upward "
+          f"at {out_H - CONN_LID_ROOM:.0f} and bends back over the deck inside the {CONN_LID_ROOM:.0f} mm lid room (4 AWG bend radius ~45 mm; 2 AWG ~55 would be tight).  "
+          f"Charge-card pigtails (5) run forward in the {chase:.0f} mm chase between the outboard rail and the guide posts, so the inverter card lifts without touching them.")
     print("== Battery rack (v9) ==")
     print(f"  trays: {V7['wall']:.0f} mm walls, {V7['lip']:.0f} mm lips, corner pads with M4 inserts for the leg foot tabs, one lengthwise 25 mm cam strap per battery (channel under the battery, slots through the end walls, buckle in the front wiring gap); 4 x M6 into the plate optional")
     print(f"  legs: 12 mm square, two segments on a half-lap at z {LEG_LAP[0]:.0f}-{LEG_LAP[1]:.0f}; lower stands on the plate with a foot tab M4'd into the tray pad; the shelf M4 at z {SHELF_SCREW_Z:.0f} passes through both lap halves; upper ends in a boss tab with an M4 insert 9 mm inside the deck edge")
@@ -1625,7 +1624,7 @@ def report_v9():
     for run, size, fuse, conn in CABLE_SPEC:
         print(f"  {run:48s} {size:52s} fuse {fuse:28s} {conn}")
     print("== Service ==")
-    print("  lid off -> unplug the card's connectors on the deck -> lift the card. Batteries: unplug all, unbolt the deck, lift it, lift the batteries.")
+    print("  lid off -> lift that card's flying halves off its receptacles -> lift the card. Batteries: unplug all, unbolt the deck, lift it, lift the batteries.")
     print(f"  est. mass ~{4 * 7.5 + 8.2 + 1.3 + 0.33 + 0.5 + 0.3 + 0.3 + 1.5 + 3.0 + 13.0:.0f} kg")
 
 
