@@ -60,7 +60,8 @@
     <div class="row" style="align-items:center">
       <label for="variant" style="margin:0">Version</label>
       <select id="variant">
-        <option value="v9">v9 · 345 wide × 657 deep: bus deck, each card with its own Andersons</option>
+        <option value="v9">v9 · 353 wide × 661 deep: bus deck, each card with its own Andersons</option>
+        <option value="v10">v10 · 353 wide × 634 deep: full-length deck, one card</option>
         <option value="v8">v8 · 345 wide × 598 deep: 4 × SuperPack 60Ah, three cards across (like v4)</option>
         <option value="v7">v7 · 345 wide × 642 deep: 4 × SuperPack 60Ah, lengthwise printed cards</option>
         <option value="bookshelf">v6 · side-mount cards, MultiPlus 12/1200, 4 × 200Ah (2 × 2)</option>
@@ -137,12 +138,14 @@ for (const [k, [label, col]] of Object.entries(GROUPS)) {
   legend.appendChild(l);
 }
 
-const BUILD = '20261005203840';   // bumped on every publish so browsers never reuse a cached model
+const BUILD = '20261005205326';   // bumped on every publish so browsers never reuse a cached model
 const VARIANTS = {
   cube: { title: 'Cube frame, 12 uncut kit bars', blurb: 'v4: a 487 mm cube from 12 uncut kit bars, 71 mm lower than the IceBox. Drag to orbit, scroll to zoom. Lid hidden; uncheck panels to see inside.',
     rows: [['Outer', '487 × 487 × 487 mm'], ['vs IceBox', 'same width, 71 mm lower'], ['Distribution card', '419 × 423: MPPT · Cerbo · Garmin · bus'], ['Inverter/charger card', '419 × 254, MultiPlus 12/800'], ['Upper card', '419 × 171, Orion'], ['Battery bay', '4 × SuperPack: 3 up, 1 on side'], ['Lift', '910 / 741 / 658 mm']] },
+  v10: { title: 'v10: full-length deck, one card', blurb: 'v10: the bus deck runs the length of the box. The inverter card and its posts pass through a slot in it; the MPPT, Cerbo and Garmin lie flat on the front plate, the Orion on the middle plate behind the card, with the bus bars, breakers and shunt over the rack. Only the inverter keeps an Anderson. 27 mm shorter than v9. Drag to orbit, scroll to zoom.',
+    rows: [['Outer', '634 × 353 × 559 mm (25.0 in deep)'], ['vs v9', '27 mm shorter; charge card and its five SB50s gone'], ['Deck', '6 plates: rear 2 × 245, middle 2 × 68, front 2 × 220 (× 151), 85 mm to the lid'], ['Deck load', 'bus bars · breakers · shunt · Orion · MPPT (flat) · Garmin · Cerbo, 61 % covered'], ['Caveat', 'Victron wants the MPPT vertical; flat it runs hotter'], ['Cards', 'inverter only: MultiPlus 12/1200 upright, SB175 at the top rear']] },
   v9: { title: 'v9: bus deck, cards unplug', blurb: 'v9: the bus bars, breakers and shunt move to a fixed printed deck on top of the battery rack, with Anderson receptacles at its front edge. Two cards remain (inverter; MPPT + Orion + Cerbo + Garmin), each with its pigtails ending in a connector at its top rear corner, so any card unplugs at the deck and lifts out alone. Drag to orbit, scroll to zoom.',
-    rows: [['Outer', '657 × 345 × 559 mm (25.9 in deep)'], ['vs IceBox', '5.6 in narrower, 4.1 in shorter in depth, same height'], ['Wiring room', '70 mm deck-to-inverter card · 45 mm card-to-ports'], ['Bus deck', 'at 468 mm on the rack legs, 91 mm under the lid'], ['Cards', '2 × 277 wide × 444 tall, solid printed tiles (50 mm cut down for wire room)'], ['Connectors', 'SB175 / SB50 halves at the top of each card\'s rear face (face up), PP45 for the Garmin on the front face, deck halves face forward'], ['Bank', '240 Ah · 3.1 kWh · 120 A'], ['Mass', '~58 kg']] },
+    rows: [['Outer', '661 × 353 × 559 mm (26.0 in deep)'], ['vs IceBox', '5.3 in narrower, 4.0 in shorter in depth, same height'], ['Wiring room', '70 mm deck-to-inverter card · 45 mm card-to-ports'], ['Bus deck', 'at 468 mm on the rack legs, 91 mm under the lid'], ['Cards', '2 × 277 wide × 444 tall, solid printed tiles (50 mm cut down for wire room)'], ['Connectors', 'SB175 / SB50 halves at the top of each card\'s rear face (face up), PP45 for the Garmin on the front face, deck halves face forward'], ['Bank', '240 Ah · 3.1 kWh · 120 A'], ['Mass', '~58 kg']] },
   v8: { title: 'v8: three cards across', blurb: 'v8: v7\'s battery bay (four SuperPack 60Ah, two touching stacks on the plate) with three printed cards facing across the box like v4: the inverter card (MultiPlus 12/1200 upright + shunt), the charge card (MPPT, Orion, Cerbo, Garmin) and the distribution card (bus bars, breakers). Sockets in the front panel\'s lower band. Drag to orbit, scroll to zoom.',
     rows: [['Outer', '598 × 345 × 559 mm'], ['vs IceBox', '5.6 in narrower, 6.5 in shorter in depth, same height'], ['Battery bay', '2 stacks × 146 = 294 wide, 261 deep, 468 tall'], ['Cards', '3 × 277 wide × 494 tall, printed 2 × 2 solid tiles'], ['Depth chain', 'bay 261 · 10 · inverter 124 · charge 84 · dist 60 · 8'], ['Bank', '240 Ah · 3.1 kWh · 120 A'], ['Mass', '~60 kg']] },
   v7: { title: 'v7: narrow and short, your 60Ah batteries', blurb: 'v7: your four SuperPack 60Ah in two touching stacks at the IceBox end on the plate; kit-bar cross-members at the bay front; the inverter/charger card (MultiPlus 12/1200 upright) and the distribution card (bus, shunt, breakers, MPPT, Orion, Cerbo, Garmin) lengthwise in front, with the port wall brought in to the gear. Cards are printed ribbed tiles. Drag to orbit, scroll to zoom.',

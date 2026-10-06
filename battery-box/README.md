@@ -113,6 +113,24 @@ Same frame width and battery bay as v7, but the cards face across the box like v
 - Service: lid off, lift any card straight up (277 wide, 494 tall; needs ~1050 mm plate-to-ceiling, or tilt forward into the gap); batteries lift out of the bay.
 - ~60 kg.
 
+**v10 study: full-length deck, one card** (`python cage.py v10`, viewer "v10")
+
+The question was whether the charge card could go away: run the bus deck the whole length of the box, with a slot for the inverter card, and lay the MPPT, Orion, Cerbo and Garmin on it. It fits, but only just, and it buys less depth than it looks like it should:
+
+| | v9 | v10 |
+|---|---|---|
+| Outer | 661 × 353 × 559 | **634 × 353 × 559** (27 mm shorter) |
+| Deck | 2 × 245 + 2 × 40 mm plates over the rack | 6 plates: rear 2 × 245, middle 2 × 68 (to the card slot), front 2 × 220 (× 151 each) |
+| Deck load | bus bars, breakers, shunt, SB175 + 3 SB50 | bus bars, breakers, shunt, **Orion** (middle), **MPPT flat, Garmin, Cerbo** (front); 61 % of the deck covered, 85 mm under the lid |
+| Cards | inverter + charge, 5 SB50 + PP45 | inverter only, one SB175 |
+| Service | lift either card | MPPT, Orion, Cerbo, Garmin are screwed to the deck: unscrew in place |
+
+Why only 27 mm: the MPPT lying flat is 130 × 186 and the Orion 137 × 123, and 186 + 123 = 309 is 7 mm more than the 302 mm deck width, so they cannot sit side by side. The Orion goes behind the card on the middle plate instead, and the front plate still has to be 220 long to hold the MPPT and the Cerbo end to end. The front plate rests on ledges screwed to the inverter card's guide posts and on ties to the front corner bars, mirroring the rear deck ties; the middle plate has a notch where the inverter's SB175 pigtail rises through the deck plane.
+
+Two cautions. Victron's manual says to mount the MPPT 100/30 vertically (terminals down) for convection, and prefers the same for the Orion XS; flat on a deck inside a closed box in a parked truck they will run hotter, and the MPPT may derate on a hot day. And four units lose their lift-out service path.
+
+What would make v10 worth it: put the Cerbo (48 deep) and the Garmin (32 deep) on the inside of the front panel, under the deck and in front of the MultiPlus, where there is room, and leave only the MPPT on the front plate. The front plate drops to 150 and the box to about 564 deep (22.2 in), 97 mm shorter than v9, with the Garmin sitting directly above the sockets it feeds. That is not modelled.
+
 **v7: 345 mm wide, 642 deep, your four SuperPack 60Ah, lengthwise cards** (`python cage.py v7`)
 
 The 200Ah Smarts and the MultiPlus-II are shelved. v7 is built around what you own and the pedal clearance:
@@ -350,6 +368,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-05 | v10 study (`cage.py v10`): full-length deck with a slot for the inverter card, charge-card units flat on the deck, charge card and its SB50s removed. Fits at 61 % deck coverage but only 27 mm shorter than v9 (MPPT + Orion are 7 mm too wide to share the front plate); MPPT flat is against Victron's mounting guidance. Cerbo + Garmin on the front panel's inside would get it to ~564 deep. |
 | 2026-10-05 | Cards reworked for printing: guide posts stood 18 mm in from the rails, so each card is 249 wide and prints as **two** 249 × 234 tiles with a 24 mm half-lap (glued + 3 × M4) instead of four spline-joined tiles. Every tile prints flat with its rabbet up, no supports. Inverter card is exactly the MultiPlus width; Garmin PowerSwitch turned 90° beside the Orion; SB50 row re-pitched to 47 mm. |
 | 2026-10-05 | Card backs made flush: splines recessed into 3 mm pockets, MultiPlus backing plates replaced by fender washers (the "bumps" on the card backs). Back bracket pads moved off the strap slot. |
 | 2026-10-05 | Rack connections reworked after "how do the supports connect?": leg feet (which collided with the rails and each other, and bolted to the plate) replaced by foot tabs screwed to tray corner pads; tenon joints replaced by a half-lap that the shelf screw pins (the old shelf screw landed in the tenon pocket); deck holes moved into leg boss tabs (they were 1 mm from the deck edge); deck tied to the corner bars; crosswise strap slots (blocked by the touching trays) turned lengthwise with the buckle in front. `cage.py v9 --clash` reports solid overlaps between parts. |
