@@ -1871,7 +1871,7 @@ def report_v10():
           f"(tabs to its own rails), legs {4 + COMPONENTS['battery'].h + P['term_clear']:.0f} tall in one piece, deck halves with bus bars + 2 breakers, "
           f"SB175 inlet on the back panel at z 300; 4 AWG jumpers to the SB175 beside the socket row on the main box's front panel")
     print(f"  bars: 4 height rails = the IceBox depth-rail offcuts, {off:.0f} mm each, UNCUT ({P['frame_D']:.0f} - {out_D:.0f}); "
-          f"4 width rails {pW - 2 * C:.0f} and 4 depth rails {pD - 2 * C:.0f} cut from 8 kit bars (437) -> 8 kit bars spare")
+          f"4 width rails {pW - 2 * C:.0f} and 4 depth rails {pD - 2 * C:.0f} cut from 8 kit bars (437) = 4 modification kits; the main box uses none")
     print("== Battery / inverter tradeoff ==")
     print("  2 x SuperPack 60Ah = 120 Ah, 60 A continuous / 80 A for 10 s.  The MultiPlus 12/1200 draws ~105 A at full output:")
     print("  expect ~700 W continuous and ~1000 W for 10 s bursts; charge sources (MPPT 30 A, Orion 50 A) are within the 60 A charge limit.")
