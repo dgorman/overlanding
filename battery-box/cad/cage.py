@@ -1076,6 +1076,7 @@ def lattice_card_tiles(L, H, x0, y_plate, z0, prefix, patches=(), solids=()):
     nx = int(-(-L // LAT["tile_max"])); nz = int(-(-H // LAT["tile_max"]))
     tw, th = L / nx, H / nz
     t, rib, b = LAT["t"], LAT["rib"], LAT["border"]
+    tiles = []
     for i in range(nx):
         for j in range(nz):
             tile = box(tw, t, th)
@@ -1101,14 +1102,23 @@ def lattice_card_tiles(L, H, x0, y_plate, z0, prefix, patches=(), solids=()):
                 if -LAT["boss_r"] < u < tw + LAT["boss_r"] and -LAT["boss_r"] < v < th + LAT["boss_r"]:
                     boss = cq.Workplane("XZ").center(u, v).circle(LAT["boss_r"]).extrude(-t).intersect(box(tw, t, th))
                     tile = tile.union(boss).cut(cq.Workplane("XZ").center(u, v).circle(LAT["insert_hole"] / 2).extrude(-t - 2).translate((0, 1, 0)))
-            yield f"print_{prefix}_tile_{i}{j}", tile.translate((x0 + i * tw, y_plate, z0 + j * th))
+            tiles.append((f"print_{prefix}_tile_{i}{j}", tile.translate((x0 + i * tw, y_plate, z0 + j * th))))
+    # splines sit in 3 mm pockets recessed into the back (+Y) face so the back of the card is flush
     sl, sw, st = LAT["spline"]
+    splines = []
     for i in range(1, nx):            # vertical joints
         for zc in (z0 + H * 0.25, z0 + H * 0.5, z0 + H * 0.75):
-            yield f"print_{prefix}_spline_v{i}_{int(zc)}", box(sl, st, sw, (x0 + i * tw - sl / 2, y_plate + t, zc - sw / 2))
+            splines.append((f"print_{prefix}_spline_v{i}_{int(zc)}", box(sl, st, sw, (x0 + i * tw - sl / 2, y_plate + t - st, zc - sw / 2))))
     for j in range(1, nz):            # horizontal joints
         for xc in (x0 + L * 0.25, x0 + L * 0.5, x0 + L * 0.75):
-            yield f"print_{prefix}_spline_h{j}_{int(xc)}", box(sw, st, sl, (xc - sw / 2, y_plate + t, z0 + j * th - sl / 2))
+            splines.append((f"print_{prefix}_spline_h{j}_{int(xc)}", box(sw, st, sl, (xc - sw / 2, y_plate + t - st, z0 + j * th - sl / 2))))
+    for nm, tile in tiles:
+        for _, sp in splines:
+            bb = sp.val().BoundingBox()
+            tile = tile.cut(box(bb.xlen + 0.4, st + 1, bb.zlen + 0.4, (bb.xmin - 0.2, bb.ymin, bb.zmin - 0.2)))
+        yield nm, tile
+    for nm, sp in splines:
+        yield nm, sp
 
 
 def v7_geometry():
@@ -1291,7 +1301,7 @@ def build_v8(a, nine=False):
             # back rail: the tray + flange would be 282 mm (over the bed), so the back tabs are separate L
             # brackets.  The tray's back wall gets two 6 mm pads with M5 heat-set inserts (12 mm of wall);
             # the bracket bolts to a pad with 2 x M5 and its flange lies on the back width rail with a T-nut.
-            for sy in (30, fw - 70):
+            for sy in (18, fw - 58):          # clear of the strap slot (y 61..89) and merged with the corner pads
                 pad = box(6, 40, lip + 4, (-6, sy, 0))
                 for hz in (10, 24):
                     pad = pad.cut(cq.Workplane("YZ").center(sy + 20, hz).circle(3.2).extrude(10).translate((-7, 0, 0)))
@@ -1427,12 +1437,7 @@ def build_v8(a, nine=False):
         if P["card_style"] in ("lattice", "solid"):
             for nm, shp in lattice_card_tiles_yz(cw, ch, cx, cy0, floor_top + 2, f"card_{name}", patches, solids):
                 add(a, shp, nm + "__card", ORANGE if "spline" in nm else DARK)
-            for pl in layout:   # backing plates behind the heavy unit's bolts (back face of the card)
-                if pl["comp"].startswith("multiplus"):
-                    for (du, dv) in HOLES[pl["comp"]]:
-                        bp = box(6, 40, 40, (cx - 6, cy0 + pl["y"] + du - 20, floor_top + 2 + pl["z"] + dv - 20))
-                        bp = bp.cut(cq.Workplane("YZ").center(cy0 + pl["y"] + du, floor_top + 2 + pl["z"] + dv).circle(3.3).extrude(cx + 1))
-                        add(a, bp, f"print_backing_{name}_{int(du)}_{int(dv)}__card", ORANGE)
+            # the MultiPlus bolts get M6 fender washers (30 mm) on the back face, not printed plates: the back stays flush
         else:
             add(a, box(P["card_t"], cw, ch, (cx, cy0, floor_top + 2)), f"card_{name}_plate", DARK)
         px = cx - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]
