@@ -207,8 +207,9 @@ COMPONENTS = {
     "shunt":     Comp("power_shunt", 120, 46, 54, "SmartShunt 500A"),
     "busbar_p":  Comp("power_busbar_pos", 155, 35, 32, "5-stud covered bus bar (+)"),
     "busbar_n":  Comp("power_busbar_neg", 155, 35, 32, "5-stud covered bus bar (-)"),
-    "breaker_a": Comp("power_breaker_a", 43, 67, 66, "Blue Sea 187-series 150 A surface-mount breaker (verify 67 x 43 x 66), long axis along the depth"),
-    "breaker_b": Comp("power_breaker_b", 43, 67, 66, "Blue Sea 187-series 150 A surface-mount breaker (verify 67 x 43 x 66), long axis along the depth"),
+    "breaker_a": Comp("power_breaker_a", 59, 87.4, 45.6, "Blue Sea 7148, 187-series 150 A surface mount: 3.439 x 2.323 x 1.797 in, long axis along the depth"),
+    "breaker_b": Comp("power_breaker_b", 59, 87.4, 45.6, "Blue Sea 7148, 187-series 150 A surface mount: 3.439 x 2.323 x 1.797 in, long axis along the depth"),
+    "garmin_edge": Comp("garmin_powerswitch", 32, 125, 75, "Garmin PowerSwitch on edge on a printed angle, long axis along the depth"),
     "anderson":  Comp("socket_anderson", 48, 10, 36, "Anderson SB50 panel mount, solar in (verify hole 48 x 36)"),
     "sb175":     Comp("socket_sb175", 79, 56, 26, "Anderson SB175 housing (Anderson STEP 55.6 x 79.4 x 25.5), 4 AWG contacts, inverter DC; mates along its 79 mm axis, laid across the deck"),
     "sb50":      Comp("socket_sb50", 48, 37, 16, "Anderson SB50 housing (Anderson STEP 36.5 x 48 x 16), 6-12 AWG contacts; mates along its 48 mm axis, laid across the deck"),
@@ -218,6 +219,7 @@ COMPONENTS = {
     "sb50_v":    Comp("socket_sb50", 37, 16, 48, "Anderson SB50 standing on a card face, mating face up"),
     "shunt_x":   Comp("power_shunt", 54, 120, 46, "SmartShunt turned 90 deg on the deck"),
     "shunt_up":  Comp("power_shunt", 54, 46, 120, "SmartShunt standing on end on a card"),
+    "shunt_y":   Comp("power_shunt", 120, 54, 46, "SmartShunt on the deck, long axis across the box"),
     "busbar_px": Comp("power_busbar_pos", 35, 155, 32, "5-stud covered bus bar (+), along the depth"),
     "busbar_nx": Comp("power_busbar_neg", 35, 155, 32, "5-stud covered bus bar (-), along the depth"),
     "garmin_flat": Comp("garmin_powerswitch", 125, 75, 32, "Garmin PowerSwitch lying on the bus deck"),
@@ -383,6 +385,9 @@ STEP_FILES = {   # component key -> Victron STEP file (downloaded into cad/step/
     "sb50_v":       "anderson_sb50_housing.stp",
     "shunt_x":      "SmartShunt-500A.step",
     "shunt_up":     "SmartShunt-500A.step",
+    "shunt_y":      "SmartShunt-500A.step",
+    "breaker_a":    "BlueSea-7148.step",   # download from bluesea.com product 7148 (Technical Documents > CAD), save under cad/step/
+    "breaker_b":    "BlueSea-7148.step",
 }
 MATED = {"sb175": 133.4, "sb50": 81.3, "sb175_x": 133.4, "sb50_x": 81.3, "sb175_v": 133.4, "sb50_v": 81.3, "pp45_v": 41.0, "pp45_x": 41.0}   # Anderson mated-pair lengths
 HOUSING = {"sb175": 79.4, "sb50": 48.0, "pp45": 24.6}   # housing length along the mating axis
@@ -426,6 +431,20 @@ def load_victron(key):
         shp.exportBrep(brep)
     _STEP_CACHE[key] = shp
     return shp
+
+
+def breaker_shape(dx, dy, dz, at):
+    """Stand-in for the Blue Sea 187: rounded body, two 5/16 studs at the ends, the trip button on top."""
+    body = box(dx, dy, dz - 12, at).edges("|Z").fillet(8)
+    for ex in (12, dx - 12):
+        stud = cq.Workplane("XY").center(at[0] + ex, at[1] + dy / 2).circle(4).extrude(12).translate((0, 0, at[2] + dz - 12))
+        body = body.union(stud)
+    button = box(22, 14, 8, (at[0] + dx / 2 - 11, at[1] + dy / 2 - 7, at[2] + dz - 12)).edges("|Z").fillet(3)
+    return body.union(button)
+
+
+def unit_fallback(key, dx, dy, dz, at, axis="|Z"):
+    return breaker_shape(dx, dy, dz, at) if key.startswith("breaker") else box(dx, dy, dz, at).edges(axis).fillet(3)
 
 
 def victron_shape(key, dx, dy, dz, at, fallback):
@@ -1266,23 +1285,23 @@ def build_v7(a):
 FEET_H = 18.0        # printed feet under the MultiPlus: it stands on these, the bolts only hold it to the card
 # v9: bus deck on top of the battery rack (x along the depth from the bay's back, y across; parts stand up)
 DECK_EXT = 0.0       # (was 40: the deck used to run forward to carry a connector row; the pigtails are lugged at the bus bars now)
-V9_DECK_LAYOUT = [   # deck is ~295 (x, depth) x 294 (y); x from the deck's back edge
-    dict(comp="busbar_n",  x=20,  y=20),
-    dict(comp="breaker_a", x=20,  y=190),   # one Blue Sea 187 150 A per stack
-    dict(comp="breaker_b", x=20,  y=250),
-    dict(comp="busbar_p",  x=65,  y=20),
-    dict(comp="shunt_x",   x=95,  y=236),
+V9_DECK_LAYOUT = [   # deck 245 (x, from its back edge) x 302 (y); hand windows x 20..120 at y 48..103 and 199..254
+    dict(comp="busbar_nx", x=0,   y=108),   # bus bars along the depth, between the windows
+    dict(comp="busbar_px", x=0,   y=150),
+    dict(comp="breaker_a", x=125, y=0),     # one Blue Sea 7148 per stack, along the depth at the deck's edges
+    dict(comp="breaker_b", x=125, y=243),
+    dict(comp="shunt_y",   x=160, y=65),
     # No fixed Anderson halves on the deck: every pigtail is lugged to a bus bar or breaker here and plugs into the
     # card's own receptacle at the far end.  The Garmin PowerSwitch lies where the SB50 row was, fed straight off the
     # positive bus bar beside it; its four outputs leave through a PP45 block at the deck's front edge (mates +X).
-    dict(comp="garmin_flat", x=160, y=90),
-    dict(comp="pp45_x",    x=215, y=230),
+    dict(comp="garmin_edge", x=118, y=190),   # PowerSwitch on edge on a printed angle
+    dict(comp="pp45_x",    x=218, y=65),
 ]
 # v10: deck over the single stack (245 x 151); hand window at x 26..146, y 45..105
 V10_DECK_LAYOUT = [
     dict(comp="busbar_px", x=50,  y=5),
     dict(comp="busbar_nx", x=50,  y=110),
-    dict(comp="breaker_a", x=150, y=45),    # the two batteries are paralleled: one Blue Sea 187 150 A in the + lead
+    dict(comp="breaker_a", x=125, y=46),    # the two batteries are paralleled: one Blue Sea 7148 in the + lead, between the bus bars
 ]
 # v10 column card: XZ plane along the INBOARD wall, units face -Y (toward the stack), its SB50 row on the +Y (rear) face
 # in the 21 mm behind the card.  x from the card's back end, z from its bottom.
@@ -1455,7 +1474,7 @@ def build_v8(a, nine=False):
         for half in range(1 if COL else 2):   # two printable halves, one over each stack, splined at the centre line, M4 into the leg bosses
             hw = V7["bay_W"] / 2
             deck = box(dL, hw, P["card_t"], (dx0, y_in0 + 1 + half * hw, dz))
-            deck = deck.cut(box(120, 60, P["card_t"] + 2, (x_in0 + 40, y_in0 + 1 + half * hw + hw / 2 - 30, dz - 1)))   # hand window over the lugs
+            deck = deck.cut(box(100, 55, P["card_t"] + 2, (dx0 + 20, y_in0 + 1 + half * hw + hw / 2 - 27.5, dz - 1)))   # hand window over the lugs
             for (hx, ly) in ((tx + 6, y_in0 + 1 + half * V7["tray_w"]), (tx + fd - 6, y_in0 + 1 + half * V7["tray_w"]),
                              (tx + 6, y_in0 + 1 + half * V7["tray_w"] + fw - L), (tx + fd - 6, y_in0 + 1 + half * V7["tray_w"] + fw - L)):
                 deck = deck.cut(cq.Workplane("XY").center(hx, ly + L / 2).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1)))
@@ -1478,8 +1497,8 @@ def build_v8(a, nine=False):
         for pl in (V10_DECK_LAYOUT if COL else V9_DECK_LAYOUT):
             c = COMPONENTS[pl["comp"]]
             at = (dx0 + pl["x"], y_in0 + 1 + pl["y"], dz + P["card_t"])
-            col = (0.3, 0.3, 0.3) if c.name.startswith("socket") else GOLD
-            add(a, victron_shape(pl["comp"], c.d, c.w, c.h, at, box(c.d, c.w, c.h, at).edges("|Z").fillet(3)), c.name + f"_{int(pl['x'])}_{int(pl['y'])}", col)
+            col = (0.3, 0.3, 0.3) if c.name.startswith("socket") else (0.08, 0.08, 0.08) if c.name.startswith("garmin") else GOLD
+            add(a, victron_shape(pl["comp"], c.d, c.w, c.h, at, unit_fallback(pl["comp"], c.d, c.w, c.h, at)), c.name + f"_{int(pl['x'])}_{int(pl['y'])}", col)
             if pl["comp"] in MATED:   # the pigtail's flying half, mated in front (+X); it stays with the pigtail, not the card
                 overlap = 2 * c.d - MATED[pl["comp"]]
                 at2 = (at[0] + c.d - overlap, at[1], at[2])
@@ -1765,7 +1784,7 @@ def build_pack(a, ox):
     for half in range(2):
         hw = V7["bay_W"] / 2
         deck = box(dL, hw, P["card_t"], (dx0, py0 + half * hw, dz))
-        deck = deck.cut(box(120, 60, P["card_t"] + 2, (tx + 20, py0 + half * hw + hw / 2 - 30, dz - 1)))
+        deck = deck.cut(box(100, 55, P["card_t"] + 2, (dx0 + 20, py0 + half * hw + hw / 2 - 27.5, dz - 1)))
         for (hx, ly) in ((tx + 6, py0 + half * fw), (tx + fd - 6, py0 + half * fw), (tx + 6, py0 + half * fw + fw - L), (tx + fd - 6, py0 + half * fw + fw - L)):
             deck = deck.cut(cq.Workplane("XY").center(hx, ly + L / 2).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1)))
         add(a, deck, f"print_pack_deck_{half}", ORANGE)
@@ -1777,10 +1796,10 @@ def build_pack(a, ox):
             hx = tx + 6 if back else tx + fd - 6
             add(a, ledge.cut(cq.Workplane("XY").center(hx, ly + L / 2).circle(2.3).extrude(11).translate((0, 0, dz - 10))), f"print_pack_ledge_{int(lx - ox)}_{int(ly)}", ORANGE)
     # the two batteries are paralleled battery-to-battery; ONE Blue Sea 187 150 A in the + lead to the SB175, - straight to it
-    for pl in (dict(comp="breaker_a", x=150, y=128),):
+    for pl in (dict(comp="breaker_a", x=125, y=122),):
         c = COMPONENTS[pl["comp"]]
         at = (dx0 + pl["x"], py0 + pl["y"], dz + P["card_t"])
-        add(a, box(c.d, c.w, c.h, at).edges("|Z").fillet(3), "power_pack_" + c.name[6:] + f"_{int(pl['x'])}_{int(pl['y'])}", GOLD)
+        add(a, victron_shape(pl["comp"], c.d, c.w, c.h, at, unit_fallback(pl["comp"], c.d, c.w, c.h, at)), "power_pack_" + c.name[6:] + f"_{int(pl['x'])}_{int(pl['y'])}", GOLD)
 
 
 def build_v9(a):
@@ -1866,7 +1885,7 @@ def report_v9():
           f"{762 - out_D:.0f} mm ({(762 - out_D) / 25.4:.1f} in) shorter in depth than the IceBox, same height")
     print(f"depth chain     : bay + deck {V7['bay_D']:.0f} | gap {V8['bay_gap']:.0f} | inverter card {P['card_t']:.0f}+10+{inv.d:.0f}+{V8['inv_gap']:.0f} "
           f"| charge card {P['card_t']:.0f}+{V8['charge_depth']:.0f}+{V8['charge_gap']:.0f} | front {V8['front']:.0f}")
-    dz = g.get("deck_z", 468)
+    dz = g.get("deck_z", 468); dL = g.get("deck_L", 245)
     print(f"bus deck        : printed 6 mm plate on the rack legs at {dz:.0f} mm, {out_H - dz:.0f} mm under the lid; carries bus bars, 2 breakers, shunt, "
           f"SB175 + 3 x SB50 receptacles at its front edge; hand window over the battery lugs")
     cw, ch = g.get("cw", in_W - 17), g.get("ch", in_H - 8)
@@ -1880,12 +1899,11 @@ def report_v9():
     for pl in V9_DECK_LAYOUT:
         c = COMPONENTS[pl["comp"]]
         bad = []
-        if pl["x"] + c.d > V7["bay_D"] - V7["end_gap"] + V7["leg"]: bad.append("X overflow")
+        if pl["x"] + c.d > dL: bad.append("X overflow")
         if pl["y"] + c.w > V7["bay_W"]: bad.append("Y overflow")
         if dz + 6 + c.h > out_H: bad.append("hits the lid")
         print(f"  deck     {c.name:20s} {c.d:>4.0f}x{c.w:>4.0f}x{c.h:>3.0f} @({pl['x']},{pl['y']}) {' '.join(bad) or 'ok'}")
     o175, o50 = 2 * HOUSING["sb175"] - MATED["sb175"], 2 * HOUSING["sb50"] - MATED["sb50"]
-    dL = g.get("deck_L", 295)
     ch_ = in_H - 8 - CARD_TRIM
     z175, z50 = _conn_z("sb175_v"), _conn_z("sb50_v")
     print(f"connectors      : cards cut down {CARD_TRIM:.0f} mm to {ch_:.0f} tall; every card has its own fixed Anderson halves at the top of its rear face, mating face UP. "
