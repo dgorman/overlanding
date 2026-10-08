@@ -2207,8 +2207,9 @@ def report_v10():
         print(f"lug room        : {P['term_clear']:.0f} mm between each battery top and the deck / shelf above it (4 AWG lug + M6 bolt head ~19, cable 9); no deck windows: "
               f"the leads run under the deck to its back edge and come up in the {V7['end_gap']:.0f} mm end gap behind it; terminals go at the back end of each battery")
         holes = g.get("deck_holes", [])
+        print("fastener rule   : no loose nuts inside the box - every in-box fastener goes into a heat-set insert, a rail T-nut or self-taps; nuts only on bench sub-assemblies (MultiPlus bolts, card laps, panel ports)")
         print(f"deck fasteners  : {len([h for h in holes if h[0] == 'leg'])} x M4 into the leg boss tabs, {len([h for h in holes if h[0] == 'ledge'])} x M4 into the column posts' ledges, "
-              f"4 x M4 into the two joint cleats, 2 x M4 + 1 T-nut at the back deck tie; every hole checked to lie >= 4 mm inside its plate")
+              f"4 x M4 into the two joint cleats, 2 x M4 into inserts in the deck + 1 T-nut at the back deck tie; every hole checked to lie >= 4 mm inside its plate")
         print(f"deck extension  : {ey[1] - ey[0]:.0f} mm wide, post to post in two splined plates over the inverter column, running to the inverter card's face "
               f"(cutouts where the two posts pass through).  HOW IT CONNECTS: each plate screws down (M4) into a ledge that is PART of the column post's top "
               f"segment (14 mm block on the post's -Y face, 26 mm gusset under it, insert from above), and into a cleat under the stack-half joint "
