@@ -89,7 +89,7 @@ VARIANTS = {
                batt_layout="v9", dist_forward=False, inverter="multiplus_1200_up", leg=12.0,
                card_plane="v9", column=["battery", "battery"], arrange="2x2", col_on_plate=True,
                narrow=True, tray_for="battery", align="right", height="icebox", depth="fit11",
-               card_style="solid", post_standoff=18.0, post_standoff_out=48.0, post_standoff_in=0.0, extra_width=12.0, deck="column", swap=True, term_clear=30.0),
+               card_style="solid", post_standoff=18.0, post_standoff_out=48.0, post_standoff_in=21.0, extra_width=33.0, deck="column", swap=True, term_clear=30.0),
     # v6 check: the owner's four SuperPack 60Ah dropped into the same 200Ah trays
     "bookshelf60": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
                         batt_layout="column", dist_forward=False, inverter="multiplus_1200",
@@ -309,7 +309,7 @@ if P["narrow"] and P["card_plane"] in ("v7", "v8", "v9"):
         # v11: v10 swapped.  The MultiPlus stands lengthwise in the column beside the stack (card 6 + feet 10 + 101 + 30
         # behind for its SB175 = 147 of the 163 mm column); the charge card is the front card, so the front zone is only
         # the MPPT's 70 + its rear SB50 row.
-        V10 = dict(post_dx=16.0, post_standoff=2.0)    # column posts 2 off the inboard rail: the card sits as far from the batteries as it can (no rear SB175 for now)
+        V10 = dict(post_dx=16.0, post_standoff=21.0)   # column posts 21 off the inboard rail: 30 mm behind the card for its SB175, mating up
         V8["bay_gap"] = 28.0     # the charge card's rear-face SB50s (16) + 12: the 17.25 in (438 mm) limit is spent here (+6, which also
         V8["inv_gap"] = 0.0      #   lets the column card reach 264 so the flush MultiPlus clears the posts' 7 mm slot lips) ...
         V8["front"] = 11.0       # ... and in front of the MPPT (+1): 437.8 outer
@@ -1404,9 +1404,8 @@ V10_COL_CONN = [dict(comp="sb50_v", x=x) for x in (12, 51, 90, 129, 168)] + [dic
 # the charge gear on the front card with the Garmin and the shunt in the (now port-free) bottom band
 # MultiPlus FLUSH on the card (bolted through, no feet) at card x 9 so its body clears the posts' 8 mm slot lips; the card is 267 long
 # (2 x 2 tiles) to carry it plus its 31 mm top mounting bracket (datasheet 406 = 375 body + bracket); the SB175 lies above the bracket.
-V11_COL_LAYOUT = [dict(comp="multiplus_1200_up", x=7.5, z=2),
-                  dict(comp="sb175_h", x=94, z=414)]
-V11_COL_CONN = []
+V11_COL_LAYOUT = [dict(comp="multiplus_1200_up", x=7.5, z=2)]
+V11_COL_CONN = [dict(comp="sb175_v", x=100)]         # SB175 on the card's REAR face, mating up, in the 30 mm behind the card (box widened for it)
 MP_BRACKET = 31.0   # the MultiPlus 12/1200's wall bracket above the body
 V11_DECK_LAYOUT = [dict(comp="busbar_px", x=68, y=5), dict(comp="busbar_nx", x=68, y=110),   # over the stack (x from the deck's back line at x_in0+2)
                    dict(comp="breaker_a", x=143, y=175)]                                      # on the extension's front plate over the inverter column
@@ -1613,6 +1612,10 @@ def build_v8(a, nine=False):
                              (hole_back, y_in0 + 1 + half * V7["tray_w"] + fw - L), (tx + fd - 6, y_in0 + 1 + half * V7["tray_w"] + fw - L)):
                 hole = cq.Workplane("XY").center(hx, ly + L / 2).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1))
                 plates = [pl.cut(hole) for pl in plates]
+            if COL and P["swap"]:   # the joint cleats' holes on this side of the line
+                for cx_ in (dx0 + 100, dx0 + dL - 100):
+                    hole = cq.Workplane("XY").center(cx_, y_in0 + 1 + hw - 8).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1))
+                    plates = [pl.cut(hole) for pl in plates]
             for k, pl in enumerate(plates):
                 add(a, pl, f"print_bus_deck_{half}" + ("" if k == 0 else "_front"), ORANGE)
             if COL and P["swap"]:
@@ -1639,18 +1642,25 @@ def build_v8(a, nine=False):
             S_col = V10["post_standoff"]; py_post = out_W - B - S_col - P["post_w"]
             card_y = py_post + (P["post_w"] - P["card_t"]) / 2
             y0_ext = y_in0 + 1 + V7["bay_W"] / 2                   # the stack half's inboard edge
-            y1_ext = card_y - DECK_NOTCH
+            y1_ext = card_y - 1                                    # .. to the inverter card's face (its SB175 is behind the card now)
             px_inv = x_in0 + V8["x_inv"] - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]
             back_post, front_post = x_in0 + 1, px_inv - 2 - V10["post_dx"]     # the column card's posts (x)
             xe0, xe1 = x_in0 + 2, front_post + 5                                 # plate runs post to post, clear of the front card's SB50 row
             xm = (xe0 + xe1) / 2                                       # 271 mm post to post: two plates, splined at the middle
             exts = [box(xm - xe0, y1_ext - y0_ext, P["card_t"], (xe0, y0_ext, dz)), box(xe1 - xm, y1_ext - y0_ext, P["card_t"], (xm, y0_ext, dz))]
-            hy = y1_ext - 9                                            # screw line 9 mm inside the plate's notch edge
-            for i, lx in enumerate((back_post, xe1 - 15)):   # ledges on the column posts' -Y faces; each hole lands 7 mm inside the plate's end
-                ledge = box(V10["post_dx"], py_post - (hy - 8), 14, (lx, hy - 8, dz - 14))
-                hx = lx + 8
-                add(a, ledge.cut(cq.Workplane("XY").center(hx, hy).circle(2.3).extrude(11).translate((0, 0, dz - 10))), f"print_colpost_ledge_{int(lx - x_in0)}", ORANGE)
-                exts[i] = exts[i].cut(cq.Workplane("XY").center(hx, hy).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1)))
+            hy = py_post - 16                                          # the posts' integral ledges: insert 16 mm off the post face
+            for i, lx in enumerate((back_post, front_post)):
+                exts[i] = exts[i].cut(box(V10["post_dx"] + 2, 12, P["card_t"] + 2, (lx - 1, py_post - 1, dz - 1)))   # the post passes through
+                exts[i] = exts[i].cut(cq.Workplane("XY").center(lx + V10["post_dx"] / 2, hy).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1)))
+            # two cleats under the stack-half / extension joint: 40 x 30 x 14 blocks with an M4 insert each side of the line;
+            # both plates screw down into them, so the extension is held at four points and the splines only locate
+            for k, cx_ in enumerate((xe0 + 100, xe1 - 100)):   # between the joint splines at 25 / 50 / 75 %
+                cleat = box(40, 30, 14, (cx_ - 20, y0_ext - 15, dz - 14))
+                for yy in (y0_ext - 8, y0_ext + 8):
+                    cleat = cleat.cut(cq.Workplane("XY").center(cx_, yy).circle(2.3).extrude(11).translate((0, 0, dz - 10)))
+                    hole = cq.Workplane("XY").center(cx_, yy).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1))
+                    exts = [e.cut(hole) for e in exts]
+                add(a, cleat, f"print_deck_cleat_{k}", ORANGE)
             for i, ext in enumerate(exts):
                 add(a, ext, f"print_bus_deck_ext_column_{i}", ORANGE)
             add(a, box(18, 60, 3, (xm - 9, (y0_ext + y1_ext) / 2 - 18, dz - 3)), "print_bus_deck_ext_column_spline", ORANGE)   # clear of the stack-half joint spline
@@ -1683,7 +1693,7 @@ def build_v8(a, nine=False):
         cards = (("charge", x_in0 + V8["x_inv"], V11_CHARGE_LAYOUT, 0.0),)
         card_conn = {"charge": (V11_CHARGE_REAR, V11_CHARGE_FRONT)}
         build_column_card(a, g, tx, y_in0 + 1, fd, fw, ch, layout=V11_COL_LAYOUT, conn=V11_COL_CONN, unit_standoff=0.5, feet=False, name="inverter",
-                          full_height=True, card_len=267.0, slot=7.0)
+                          full_height=False, card_len=267.0, slot=7.0)
         build_pack(a, out_D + PACK["gap_to_box"])
     elif nine and COL:
         cards = (("inverter", x_in0 + V8["x_inv"], V9_INV_LAYOUT, 10.0),)
@@ -1747,7 +1757,7 @@ def build_v8(a, nine=False):
     return g
 
 
-def column_post(end, h, slot=None):
+def column_post(end, h, slot=None, ledge_z=None, ledge_len=28.0):
     """v10 column-card guide post: 16 (X) x post_w (Y), standing on the plate 12 mm off the inboard depth rail.  Card
     slot on the +X face (back post) or -X face (front post) from the card's bottom edge up; the solid sill below
     carries the card.  Feet reach +Y over the inboard rails: the bottom one lies on the bottom rail, the top one under
@@ -1769,6 +1779,12 @@ def column_post(end, h, slot=None):
                 g = g.cut(cq.Workplane("XZ").center(dx / 2, hz).circle(2.3).extrude(-11).translate((0, -1, 0)))
         if i == 0:      # foot on the bottom rail
             g = g.union(box(dx, S + B, 6, (0, dy, B)).cut(cq.Workplane("XY").center(dx / 2, dy + S + B / 2).circle(3.4).extrude(8).translate((0, 0, B - 1))))
+        if ledge_z is not None and z_lo < ledge_z - 14 < z_hi:
+            # deck ledge, part of this segment: a 14 mm block on the -Y face under the deck plate's edge with an M4 insert
+            # from above, and a 26 mm gusset below it, so the extension plate screws straight down into the post
+            g = g.union(box(dx, ledge_len, 14, (0, -ledge_len, ledge_z - 14)))
+            g = g.union(box(dx, 12, 26, (0, -12, ledge_z - 40)))
+            g = g.cut(cq.Workplane("XY").center(dx / 2, -(ledge_len - 12)).circle(2.3).extrude(11).translate((0, 0, ledge_z - 10)))
         if i == n - 1:  # foot under the top rail
             g = g.union(box(dx, S + B, 6, (0, dy, h - 6)).cut(cq.Workplane("XY").center(dx / 2, dy + S + B / 2).circle(3.4).extrude(8).translate((0, 0, h - 7))))
         slot_x = dx - sd if end == "back" else -1.0
@@ -1800,8 +1816,9 @@ def build_column_card(a, g, tx, ty0, fd, fw, ch, layout=None, conn=None, unit_st
     back_x, front_x = x_in0 + 1, px_inv - 2 - dx          # front post clears the inverter card's inboard post by 2
     h = out_H - B
     sd = P["slot_depth"] if slot is None else slot
+    dz_deck = 4 + 2 * COMPONENTS["battery"].h + 2 * P["term_clear"] + P["shelf_t"]   # the deck's underside
     for end, x in (("back", back_x), ("front", front_x)):
-        for k, seg in column_post(end, h, slot=sd):
+        for k, seg in column_post(end, h, slot=sd, ledge_z=(dz_deck if P["swap"] else None)):
             add(a, seg.translate((x, py, 0)), f"print_colpost_{end}_{k}", ORANGE)
     # --- column floor: a continuous 6 mm floor from the tray's inboard wall to the inverter card's posts, the full
     # width of the column, in two halves that butt at the middle (no lap, no glue: each half is bolted at both its
@@ -2180,16 +2197,17 @@ def report_v10():
               f"(each bolted at both ends: 3 x M4 through the tray wall, 2 x M4 into the post's sill); the tray's inboard corners are tied to the frame through the posts")
         print(f"lug room        : {P['term_clear']:.0f} mm between each battery top and the deck / shelf above it (4 AWG lug + M6 bolt head ~19, cable 9); no deck windows: "
               f"the leads run under the deck to its back edge and come up in the {V7['end_gap']:.0f} mm end gap behind it; terminals go at the back end of each battery")
-        print(f"deck extension  : {ey[1] - ey[0]:.0f} mm wide, post to post in two splined plates over the inverter column at the deck height, splined to the stack half and screwed to ledges on the "
-              f"column posts; a {DECK_NOTCH:.0f} mm notch runs its whole length along the inverter card for the SB175 and the MultiPlus leads.  "
-              f"The breaker lives on it.  The inverter card lifts only after this plate comes off (4 x M4).")
+        print(f"deck extension  : {ey[1] - ey[0]:.0f} mm wide, post to post in two splined plates over the inverter column, running to the inverter card's face "
+              f"(cutouts where the two posts pass through).  HOW IT CONNECTS: each plate screws down (M4) into a ledge that is PART of the column post's top "
+              f"segment (14 mm block on the post's -Y face, 26 mm gusset under it, insert from above), and into a cleat under the stack-half joint "
+              f"(40 x 30 x 14, an insert each side of the line, the stack half screws into it too).  Four screws per plate, splines only locate; "
+              f"the breaker lives on the front plate.  The inverter card lifts only after both plates are off.")
         col_w = out_W - B - (y_in0 + 1 + V7["tray_w"])
-        print(f"column          : {col_w:.0f} mm wide; card 6 + MultiPlus 101 flush = 107, {out_W - B - cy - P['card_t']:.0f} mm behind the card, "
+        print(f"column          : {col_w:.0f} mm wide; card 6 + MultiPlus 101 flush = 107, {out_W - B - cy - P['card_t']:.0f} mm behind the card for the SB175 (mating up), "
               f"MultiPlus face {cy - 101 - (y_in0 + 1 + V7['tray_w']):.0f} mm from the tray wall; card {cL:.0f} long (2 x 2 tiles) = body 249 + 7 mm slot lips + 0.5 each end, "
               f"bolted through at its keyholes (fender washers behind), top bracket {MP_BRACKET:.0f} mm above the body on the card")
-        print(f"inverter SB175  : LATERAL, lying on the card face above the bracket (body top at card z 377, bracket to 408, card {g.get('col_ch', 480):.0f}): housing 79 x 26 x 56 at z 414-470, "
-              f"mated pair 133 along the card, top {g.get('col_ch', 480) - 470:.0f} mm under the card top; the flying half pulls FORWARD 25 mm to unplug, then the card lifts.  "
-              f"Standing it mating-face-up would need 133 + the 60 mm lid room = 193 above the MultiPlus; there is 99.")
+        print(f"inverter SB175  : on the column card's REAR face at the top, mating UP into the 60 mm lid room, exactly like the front card's SB50s; "
+              f"the card is back to {g.get('col_ch', 444):.0f} tall.  Unplug it from above after the deck's extension plates are off, then lift the card.")
         for pl in V11_CHARGE_LAYOUT:
             c = COMPONENTS[pl["comp"]]; bad = []
             if pl["y"] + c.w > g.get("cw", 249): bad.append("Y overflow")
