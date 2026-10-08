@@ -89,7 +89,7 @@ VARIANTS = {
                batt_layout="v9", dist_forward=False, inverter="multiplus_1200_up", leg=12.0,
                card_plane="v9", column=["battery", "battery"], arrange="2x2", col_on_plate=True,
                narrow=True, tray_for="battery", align="right", height="icebox", depth="fit11",
-               card_style="solid", post_standoff=18.0, post_standoff_out=48.0, post_standoff_in=21.0, extra_width=33.0, deck="column", swap=True, term_clear=30.0),
+               card_style="solid", post_standoff=18.0, post_standoff_out=69.0, post_standoff_in=0.0, extra_width=33.0, deck="column", swap=True, term_clear=30.0),
     # v6 check: the owner's four SuperPack 60Ah dropped into the same 200Ah trays
     "bookshelf60": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
                         batt_layout="column", dist_forward=False, inverter="multiplus_1200",
@@ -389,14 +389,14 @@ if P.get("deck") == "column":
                   ("out", "socket", 350, 250, 29), ("out", "socket", 395, 250, 29), ("out", "socket", 350, 290, 29),
                   ("out", "socket", 395, 290, 22), ("out", "socket", 372, 330, 22),
                   ("out", "sb175_pack", 360, 420)]
-if P.get("swap"):   # v11: ONE column of ports on the pedal-side wall, as close to the IceBox end of the zone as the L14-30 flange
-    # allows (zone x 332..403 beside the front card; a 63 mm flange centred at 364 just clears the card's post).  Round ports in
-    # the column, rectangular faces centred on the same line: fewer, spread-out holes keep the panel stiff.
-    SIDE_PORTS = [("out", "l14_30_in", 364, 65), ("out", "l14_30_out", 364, 135),
-                  ("out", "sb50_solar", 345.5, 172), ("out", "sb50_alt", 345.5, 226),
-                  ("out", "socket", 364, 296, 29), ("out", "socket", 364, 336, 29), ("out", "socket", 364, 376, 29),
-                  ("out", "socket", 364, 410, 22), ("out", "socket", 364, 440, 22),
-                  ("out", "sb175_pack", 351, 460)]
+if P.get("swap"):   # v11: every port on the FRONT face, in the 78 mm strip between the pedal-side corner bar and the front card
+    # (the card is pushed to the inboard rail: posts 69 / 0).  Front-facing ports work whichever side of the truck the IceBox is on.
+    # Bodies sit beside the card, 80 mm clear of its guide post; nothing is in front of the MPPT.  (kind, y centre, z centre)
+    SIDE_PORTS = []
+    FRONT_PORTS = [("sb175_pack", 64, 68),
+                   ("socket", 47, 130, 29), ("socket", 82, 130, 29), ("socket", 47, 170, 29), ("socket", 82, 170, 22), ("socket", 64, 210, 22),
+                   ("sb50_solar", 64, 274), ("sb50_alt", 64, 330),
+                   ("l14_30_in", 64, 400), ("l14_30_out", 64, 470)]
 PORT_FACE = {"sb175": (26.0, 56.0, 79.0), "sb50": (37.0, 48.0, 48.0), "iec": (24.0, 32.0, 50.0)}   # (w, h, depth), face centred
 INLET_BODY = {"l14": (60.0, 55.0), "sb50": (48.0, 37.0, 48.0), "sb175": (79.0, 56.0, 26.0)}   # (dia, depth) or (depth, w, h)
 N_BATT = 4
@@ -874,7 +874,10 @@ def build() -> cq.Assembly:
         if kind == "socket":
             r = port[3] / 2
             front = front.cut(cq.Workplane("YZ").center(y, z).circle(r).extrude(T + 2).translate((out_D - 1, 0, 0)))
-            add(a, cq.Workplane("YZ").center(y, z).circle(r + 3).extrude(-40).translate((out_D, 0, 0)), f"socket_{int(z)}", (0.3, 0.3, 0.3))
+            add(a, cq.Workplane("YZ").center(y, z).circle(r + 3).extrude(-40).translate((out_D, 0, 0)), f"socket_{int(y)}_{int(z)}", (0.3, 0.3, 0.3))
+        elif kind.startswith("l14"):
+            front = front.cut(cq.Workplane("YZ").center(y, z).circle(30).extrude(T + 2).translate((out_D - 1, 0, 0)))
+            add(a, cq.Workplane("YZ").center(y, z).circle(30).extrude(-55).translate((out_D, 0, 0)), f"socket_{kind}", (0.3, 0.3, 0.3))
         else:
             w_, h_, d_ = PORT_FACE["sb175" if kind.startswith("sb175") else "sb50" if kind.startswith("sb50") else "iec"]
             front = front.cut(box(T + 2, w_, h_, (out_D - 1, y - w_ / 2, z - h_ / 2)))
@@ -1648,10 +1651,9 @@ def build_v8(a, nine=False):
             xe0, xe1 = x_in0 + 2, front_post + 5                                 # plate runs post to post, clear of the front card's SB50 row
             xm = (xe0 + xe1) / 2                                       # 271 mm post to post: two plates, splined at the middle
             exts = [box(xm - xe0, y1_ext - y0_ext, P["card_t"], (xe0, y0_ext, dz)), box(xe1 - xm, y1_ext - y0_ext, P["card_t"], (xm, y0_ext, dz))]
-            hy = py_post - 16                                          # the posts' integral ledges: insert 16 mm off the post face
-            for i, lx in enumerate((back_post, front_post)):
+            for i, (lx, ll) in enumerate(((back_post, 28.0), (front_post, 12.0))):   # the posts' integral ledges: insert at half the ledge length
                 exts[i] = exts[i].cut(box(V10["post_dx"] + 2, 12, P["card_t"] + 2, (lx - 1, py_post - 1, dz - 1)))   # the post passes through
-                exts[i] = exts[i].cut(cq.Workplane("XY").center(lx + V10["post_dx"] / 2, hy).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1)))
+                exts[i] = exts[i].cut(cq.Workplane("XY").center(lx + V10["post_dx"] / 2, py_post - ll / 2).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1)))
             # two cleats under the stack-half / extension joint: 40 x 30 x 14 blocks with an M4 insert each side of the line;
             # both plates screw down into them, so the extension is held at four points and the splines only locate
             for k, cx_ in enumerate((xe0 + 100, xe1 - 100)):   # between the joint splines at 25 / 50 / 75 %
@@ -1784,7 +1786,7 @@ def column_post(end, h, slot=None, ledge_z=None, ledge_len=28.0):
             # from above, and a 26 mm gusset below it, so the extension plate screws straight down into the post
             g = g.union(box(dx, ledge_len, 14, (0, -ledge_len, ledge_z - 14)))
             g = g.union(box(dx, 12, 26, (0, -12, ledge_z - 40)))
-            g = g.cut(cq.Workplane("XY").center(dx / 2, -(ledge_len - 12)).circle(2.3).extrude(11).translate((0, 0, ledge_z - 10)))
+            g = g.cut(cq.Workplane("XY").center(dx / 2, -ledge_len / 2).circle(2.3).extrude(11).translate((0, 0, ledge_z - 10)))
         if i == n - 1:  # foot under the top rail
             g = g.union(box(dx, S + B, 6, (0, dy, h - 6)).cut(cq.Workplane("XY").center(dx / 2, dy + S + B / 2).circle(3.4).extrude(8).translate((0, 0, h - 7))))
         slot_x = dx - sd if end == "back" else -1.0
@@ -1817,8 +1819,8 @@ def build_column_card(a, g, tx, ty0, fd, fw, ch, layout=None, conn=None, unit_st
     h = out_H - B
     sd = P["slot_depth"] if slot is None else slot
     dz_deck = 4 + 2 * COMPONENTS["battery"].h + 2 * P["term_clear"] + P["shelf_t"]   # the deck's underside
-    for end, x in (("back", back_x), ("front", front_x)):
-        for k, seg in column_post(end, h, slot=sd, ledge_z=(dz_deck if P["swap"] else None)):
+    for end, x in (("back", back_x), ("front", front_x)):   # front ledge short: the front card's SB50 pigtails are 13 mm away
+        for k, seg in column_post(end, h, slot=sd, ledge_z=(dz_deck if P["swap"] else None), ledge_len=(28.0 if end == "back" else 12.0)):
             add(a, seg.translate((x, py, 0)), f"print_colpost_{end}_{k}", ORANGE)
     # --- column floor: a continuous 6 mm floor from the tray's inboard wall to the inverter card's posts, the full
     # width of the column, in two halves that butt at the middle (no lap, no glue: each half is bolted at both its
@@ -2220,8 +2222,13 @@ def report_v10():
         if pl["y"] + c.w > deck_w: bad.append("Y overflow")
         print(f"  deck     {c.name:20s} {c.d:>4.0f}x{c.w:>4.0f}x{c.h:>3.0f} @({pl['x']},{pl['y']}) {' '.join(bad) or 'ok'}")
     gap = g.get("cy0", 82)
+    if P["swap"]:
+        print(f"ports           : all on the FRONT face in one vertical strip, {gap - B:.0f} mm wide between the pedal-side corner bar and the front card "
+              f"(card pushed to the inboard rail, posts {P['post_standoff_out']:.0f} / {P['post_standoff_in']:.0f}).  Bottom to top: SB175 pack inlet on end, "
+              f"3 x 12 V + 2 x USB two per row, SB50 solar, SB50 alternator, L14-30 in, L14-30 out.  Bodies sit beside the card, {x_in0 + V8['x_inv'] - 9.6 + 24 - (x_in0 + in_D - 79):.0f} mm "
+              f"behind the deepest one to the card's post; nothing is in front of the MPPT, and the box works mirrored for the IceBox on the other side.")
     who = "the front (charge) card" if P["swap"] else "the inverter"
-    print(f"ports           : all on the y=0 side wall beside {who}, backs toward it: {gap:.0f} mm from the wall to the card's edge "
+    print(f"side-wall option: all on the y=0 side wall beside {who}, backs toward it: {gap:.0f} mm from the wall to the card's edge "
           f"(inverter card on posts {P['post_standoff_out']:.0f} / {P['post_standoff_in']:.0f} off the rails; frame widened {P['extra_width']:.0f} mm for the SB175's 79).  "
           f"2 x L14-30, 2 x SB50 inlets, 3 x 12 V, 2 x USB, SB175 pack inlet, in the 106 mm between the card's post and the front corner bar.")
     print(f"pedal room      : the box is flush with the IceBox on its +Y face; on the other side it sits {P['icebox_W'] - out_W:.0f} mm ({(P['icebox_W'] - out_W) / 25.4:.1f} in) inside the IceBox face")
