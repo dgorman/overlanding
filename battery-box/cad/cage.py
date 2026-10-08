@@ -1613,8 +1613,10 @@ def build_v8(a, nine=False):
                 plates[0] = plates[0].cut(box(100, 55, P["card_t"] + 2, (dx0 + 20, y_in0 + 1 + half * hw + hw / 2 - 27.5, dz - 1)))   # hand window over the lugs
             for (hx, ly) in ((hole_back, y_in0 + 1 + half * V7["tray_w"]), (tx + fd - 6, y_in0 + 1 + half * V7["tray_w"]),
                              (hole_back, y_in0 + 1 + half * V7["tray_w"] + fw - L), (tx + fd - 6, y_in0 + 1 + half * V7["tray_w"] + fw - L)):
+                assert dx0 + 4 <= hx <= dx0 + dL - 4, ("leg hole outside the stack plate", hx)
                 hole = cq.Workplane("XY").center(hx, ly + L / 2).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1))
                 plates = [pl.cut(hole) for pl in plates]
+                g.setdefault("deck_holes", []).append(("leg", hx, ly + L / 2))
             if COL and P["swap"]:   # the joint cleats' holes on this side of the line
                 for cx_ in (dx0 + 100, dx0 + dL - 100):
                     hole = cq.Workplane("XY").center(cx_, y_in0 + 1 + hw - 8).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1))
@@ -1651,9 +1653,12 @@ def build_v8(a, nine=False):
             xe0, xe1 = x_in0 + 2, front_post + 5                                 # plate runs post to post, clear of the front card's SB50 row
             xm = (xe0 + xe1) / 2                                       # 271 mm post to post: two plates, splined at the middle
             exts = [box(xm - xe0, y1_ext - y0_ext, P["card_t"], (xe0, y0_ext, dz)), box(xe1 - xm, y1_ext - y0_ext, P["card_t"], (xm, y0_ext, dz))]
-            for i, (lx, ll) in enumerate(((back_post, 28.0), (front_post, 12.0))):   # the posts' integral ledges: insert at half the ledge length
+            for i, (lx, ll, lx0) in enumerate(((back_post, 28.0, 0.0), (front_post, 12.0, -12.0))):   # the posts' integral ledges
                 exts[i] = exts[i].cut(box(V10["post_dx"] + 2, 12, P["card_t"] + 2, (lx - 1, py_post - 1, dz - 1)))   # the post passes through
-                exts[i] = exts[i].cut(cq.Workplane("XY").center(lx + V10["post_dx"] / 2, py_post - ll / 2).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1)))
+                hx_, hy_ = lx + lx0 + 8, py_post - ll / 2
+                assert xe0 + 4 <= hx_ <= xe1 - 4 and y0_ext + 4 <= hy_ <= y1_ext - 4, ("ledge hole outside the extension plate", hx_, hy_)
+                exts[i] = exts[i].cut(cq.Workplane("XY").center(hx_, hy_).circle(2.3).extrude(P["card_t"] + 2).translate((0, 0, dz - 1)))
+                g.setdefault("deck_holes", []).append(("ledge", hx_, hy_))
             # two cleats under the stack-half / extension joint: 40 x 30 x 14 blocks with an M4 insert each side of the line;
             # both plates screw down into them, so the extension is held at four points and the splines only locate
             for k, cx_ in enumerate((xe0 + 100, xe1 - 100)):   # between the joint splines at 25 / 50 / 75 %
@@ -1759,7 +1764,7 @@ def build_v8(a, nine=False):
     return g
 
 
-def column_post(end, h, slot=None, ledge_z=None, ledge_len=28.0):
+def column_post(end, h, slot=None, ledge_z=None, ledge_len=28.0, ledge_x0=0.0):
     """v10 column-card guide post: 16 (X) x post_w (Y), standing on the plate 12 mm off the inboard depth rail.  Card
     slot on the +X face (back post) or -X face (front post) from the card's bottom edge up; the solid sill below
     carries the card.  Feet reach +Y over the inboard rails: the bottom one lies on the bottom rail, the top one under
@@ -1784,9 +1789,10 @@ def column_post(end, h, slot=None, ledge_z=None, ledge_len=28.0):
         if ledge_z is not None and z_lo < ledge_z - 14 < z_hi:
             # deck ledge, part of this segment: a 14 mm block on the -Y face under the deck plate's edge with an M4 insert
             # from above, and a 26 mm gusset below it, so the extension plate screws straight down into the post
-            g = g.union(box(dx, ledge_len, 14, (0, -ledge_len, ledge_z - 14)))
-            g = g.union(box(dx, 12, 26, (0, -12, ledge_z - 40)))
-            g = g.cut(cq.Workplane("XY").center(dx / 2, -ledge_len / 2).circle(2.3).extrude(11).translate((0, 0, ledge_z - 10)))
+            # ledge_x0 < 0 lets the ledge overhang the post's back face so its hole lands inside a plate that ends short of the post
+            g = g.union(box(dx - ledge_x0, ledge_len, 14, (ledge_x0, -ledge_len, ledge_z - 14)))
+            g = g.union(box(dx - ledge_x0, 12, 26, (ledge_x0, -12, ledge_z - 40)))
+            g = g.cut(cq.Workplane("XY").center(ledge_x0 + 8, -ledge_len / 2).circle(2.3).extrude(11).translate((0, 0, ledge_z - 10)))
         if i == n - 1:  # foot under the top rail
             g = g.union(box(dx, S + B, 6, (0, dy, h - 6)).cut(cq.Workplane("XY").center(dx / 2, dy + S + B / 2).circle(3.4).extrude(8).translate((0, 0, h - 7))))
         slot_x = dx - sd if end == "back" else -1.0
@@ -1819,8 +1825,9 @@ def build_column_card(a, g, tx, ty0, fd, fw, ch, layout=None, conn=None, unit_st
     h = out_H - B
     sd = P["slot_depth"] if slot is None else slot
     dz_deck = 4 + 2 * COMPONENTS["battery"].h + 2 * P["term_clear"] + P["shelf_t"]   # the deck's underside
-    for end, x in (("back", back_x), ("front", front_x)):   # front ledge short: the front card's SB50 pigtails are 13 mm away
-        for k, seg in column_post(end, h, slot=sd, ledge_z=(dz_deck if P["swap"] else None), ledge_len=(28.0 if end == "back" else 12.0)):
+    for end, x in (("back", back_x), ("front", front_x)):   # front ledge short (the front card's SB50 pigtails are 13 mm away) and
+        for k, seg in column_post(end, h, slot=sd, ledge_z=(dz_deck if P["swap"] else None),   # overhanging 12 mm back so its hole is under the plate
+                                  ledge_len=(28.0 if end == "back" else 12.0), ledge_x0=(0.0 if end == "back" else -12.0)):
             add(a, seg.translate((x, py, 0)), f"print_colpost_{end}_{k}", ORANGE)
     # --- column floor: a continuous 6 mm floor from the tray's inboard wall to the inverter card's posts, the full
     # width of the column, in two halves that butt at the middle (no lap, no glue: each half is bolted at both its
@@ -2199,6 +2206,9 @@ def report_v10():
               f"(each bolted at both ends: 3 x M4 through the tray wall, 2 x M4 into the post's sill); the tray's inboard corners are tied to the frame through the posts")
         print(f"lug room        : {P['term_clear']:.0f} mm between each battery top and the deck / shelf above it (4 AWG lug + M6 bolt head ~19, cable 9); no deck windows: "
               f"the leads run under the deck to its back edge and come up in the {V7['end_gap']:.0f} mm end gap behind it; terminals go at the back end of each battery")
+        holes = g.get("deck_holes", [])
+        print(f"deck fasteners  : {len([h for h in holes if h[0] == 'leg'])} x M4 into the leg boss tabs, {len([h for h in holes if h[0] == 'ledge'])} x M4 into the column posts' ledges, "
+              f"4 x M4 into the two joint cleats, 2 x M4 + 1 T-nut at the back deck tie; every hole checked to lie >= 4 mm inside its plate")
         print(f"deck extension  : {ey[1] - ey[0]:.0f} mm wide, post to post in two splined plates over the inverter column, running to the inverter card's face "
               f"(cutouts where the two posts pass through).  HOW IT CONNECTS: each plate screws down (M4) into a ledge that is PART of the column post's top "
               f"segment (14 mm block on the post's -Y face, 26 mm gusset under it, insert from above), and into a cleat under the stack-half joint "
