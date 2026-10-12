@@ -146,6 +146,20 @@ Depth chain: bay 268 | gap 10 | inverter card 6 + 10 + 101 | front 8 = 403 inner
 
 `cage.py v10 --pack=bars` still builds the earlier bar-frame version (329 × 353 × 359, height rails = the IceBox offcuts, 4 kits for the rest) if the printed cage turns out not to be wanted.
 
+**v12: half-height IceBox footprint, not card based** (`python cage.py v12`, viewer "v12")
+
+v5's idea (a second IceBox 1.3 frame, same width and depth as the IceBox) cut to **half the IceBox height: 762 × 487 × 279 mm**. At 11 in tall nothing needs to lift out, so there are no cards, no deck, no legs and no shelves: lid off and every unit is in reach. The same principles carry over: printed trays tabbed to the rails so the box lifts as a unit, the Blue Sea 7148 breakers, 30 mm of lug room, inserts everywhere and no loose nuts inside, every print under 256 mm.
+
+| Zone | What is there |
+|---|---|
+| Back, 523 deep | four SuperPacks in **one layer, 2 × 2**, in the v9 trays: outboard pair tabbed to the outboard bottom rail, back pair bracketed to the back rail, row mates and columns bolted to each other on the bench |
+| Column beside them, 135 wide | a printed **bus shelf** on the floor in three plates, lipped and bolted to the inboard trays (M4 inserts) and flanged onto the inboard rail (T-nuts): the two breakers, the SmartShunt, the Cerbo on end and the two bus bars |
+| Front, 188 deep | the **MultiPlus on its long side** (375 wide, 249 tall, 2 mm under the top rails) bolted through a fixed two-tile plate standing in single-piece rail-footed posts; the DC leads go straight to the bus bars |
+| Front panel inside | the Orion on a printed mount; the port strip (two L14-30s, three 12 V, two USB, two SB50 inlets) in the outboard 115 mm, two columns |
+| Inboard side panel inside | the MPPT **upright** (186 tall, terminals down, as Victron asks) and the Garmin on printed mounts over the bus shelf |
+
+Panel-mounted units hang on 6 mm printed mounts screwed through the panel from outside into inserts, and are fed by SB50 pigtails, so a panel unbolts complete with its units. The MultiPlus on its long side is allowed by Victron with the terminals facing down or sideways; here they face the column. The frame is one IceBox 1.3: width and depth rails uncut, height rails cut to 229, leaving four 279 mm offcuts.
+
 **v11: v10 swapped, 431 mm deep (17.0 in)** (`python cage.py v11`, viewer "v11")
 
 **Width: 386 mm (15.2 in), 4.0 in of pedal room** inside the IceBox face (was 365 / 4.8 in); the extra 21 mm all lands in the inverter column, where 30 mm goes behind the inverter card for its SB175 and the MultiPlus face ends up 47 mm from the tray wall instead of 45. **Hard limit: 17.25 in (438 mm) deep**, set by the access port in the Goose Gear plate. v11 uses it: 28 mm behind the front card's SB50 row (was 22) and 11 mm in front of the MPPT (was 10) make it **437.8 mm, 17.24 in**.
@@ -401,6 +415,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-12 | **v12:** v5's IceBox-footprint frame at half height (762 × 487 × 279), not card based: one-layer 2 × 2 batteries, bus shelf in the column, MultiPlus on its long side on a fixed plate, Orion + ports inside the front panel, MPPT upright + Garmin inside the side panel. |
 | 2026-10-07 | Fastener rule written down: no loose nuts inside the assembled box; the deck ties' M4s go into inserts in the deck, the column floor's lip screws into inserts; nuts only on bench sub-assemblies (MultiPlus bolts, card laps, panel ports). |
 | 2026-10-07 | v11 deck fasteners audited: the front column post's ledge now overhangs the post so its hole lands inside the extension plate (it was 3 mm outside); the script asserts every deck hole is at least 4 mm inside its plate and the report counts them. |
 | 2026-10-07 | v11 ports moved to the front face: the width lets the front card sit against the inboard rail, leaving a 78 mm strip beside it for every port in one column, so the box no longer depends on which side the IceBox is on. Front column-post ledge shortened to clear the front card's SB50 pigtails. |
