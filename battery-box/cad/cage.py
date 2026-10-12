@@ -824,87 +824,88 @@ def build() -> cq.Assembly:
         if P["col_on_plate"]:   # open floor under the battery column; trays sit on the Goose Gear plate
             floor = floor.cut(box(in_D, 200, T + 2, (x_in0, y_in0, B - 1)))
         add(a, floor, "panel_floor", PANEL)
-    add(a, box(out_D, out_W, T, (0, 0, out_H)), "lid_panel", PANEL)
-    for y in (out_W * 0.3, out_W * 0.7):
-        add(a, lid_handle().translate((out_D / 2 - 6, y - 30, out_H + T)), f"lid_handle_{int(y)}", BLACK)
-    outboard = box(out_D, T, out_H, (0, -T, 0))
-    for port in SIDE_PORTS:   # v10: bodies point +Y from the y=0 wall's inner face, at the inverter's side
-        if port[0] != "out":
-            continue
-        kind, x, z = port[1], port[2], port[3]
-        if kind == "socket":
-            r = port[4] / 2
-            outboard = outboard.cut(cq.Workplane("XZ").center(x, z).circle(r).extrude(T + 2).translate((0, 1, 0)))
-            add(a, cq.Workplane("XZ").center(x, z).circle(r + 3).extrude(-40), f"socket_{int(x)}_{int(z)}", (0.3, 0.3, 0.3))
-        elif kind.startswith("l14"):
-            outboard = outboard.cut(cq.Workplane("XZ").center(x, z).circle(30).extrude(T + 2).translate((0, 1, 0)))
-            add(a, cq.Workplane("XZ").center(x, z).circle(30).extrude(-55), f"socket_{kind}", (0.3, 0.3, 0.3))
-        else:
-            w_, h_, d_ = PORT_FACE["sb175" if kind.startswith("sb175") else "sb50"]
-            outboard = outboard.cut(box(w_, T + 2, h_, (x, -T - 1, z)))
-            add(a, box(w_, d_, h_, (x, 0, z)), f"socket_{kind}", (0.3, 0.3, 0.3))
-    add(a, outboard, "panel_side_outboard", PANEL)
-    inboard = box(out_D, T, out_H, (0, out_W, 0))
-    ca = COMPONENTS["anderson"]
-    for (x, z) in ANDERSONS:
-        inboard = inboard.cut(box(ca.w, T + 2, ca.h, (x_in0 + x - ca.w / 2, out_W - 1, floor_top + z - ca.h / 2)))
-        add(a, box(ca.w, 40, ca.h, (x_in0 + x - ca.w / 2, out_W - 40, floor_top + z - ca.h / 2)),
-            f"socket_anderson_{int(z)}", (0.3, 0.3, 0.3))
-    for port in [q for q in SIDE_PORTS if q[0] == "in"]:   # bodies point -Y from the inboard panel's inner face
-        kind, x, z = port[1], port[2], port[3]
-        if kind == "socket":
-            r = port[4] / 2
-            inboard = inboard.cut(cq.Workplane("XZ").center(x, z).circle(r).extrude(-(T + 2)).translate((0, out_W - 1, 0)))
-            add(a, cq.Workplane("XZ").center(x, z).circle(r + 3).extrude(40).translate((0, out_W, 0)), f"socket_{int(x)}", (0.3, 0.3, 0.3))
-        elif kind.startswith("l14"):
-            inboard = inboard.cut(cq.Workplane("XZ").center(x, z).circle(30).extrude(-(T + 2)).translate((0, out_W - 1, 0)))
-            add(a, cq.Workplane("XZ").center(x, z).circle(30).extrude(55).translate((0, out_W, 0)), f"socket_{kind}", (0.3, 0.3, 0.3))
-        else:
-            d_, w_, h_ = INLET_BODY["sb175" if kind.startswith("sb175") else "sb50"]
-            inboard = inboard.cut(box(w_, T + 2, h_, (x, out_W - 1, z)))
-            add(a, box(w_, d_, h_, (x, out_W - d_, z)), f"socket_{kind}", (0.3, 0.3, 0.3))
-    add(a, inboard, "panel_side_inboard", PANEL)
-    back = box(T, out_W, out_H, (-T, 0, 0))
-    back = back.cut(box(T + 2, 120, 30, (-T - 1, y_in0 + in_W / 2 - 60, floor_top + 40)))   # fridge cable to the IceBox slots
-    add(a, back, "panel_back_icebox_side", PANEL)
-    front = box(T, out_W, out_H, (out_D, 0, 0))
-    for r in range(P["vent_rows"]):
-        z = floor_top + 40 + r * 60
-        for y in range(40, int(in_W) - 100, 70):
-            front = front.cut(cq.Workplane("YZ").center(y_in0 + y + 30, z).slot2D(60, 10).extrude(out_D + T + 1))
-    si = socket_insert() if SOCKETS else None
-    if si is not None:
-        bb = si.val().BoundingBox()
-        front = front.cut(box(T + 2, bb.ylen, bb.zlen, (out_D - 1, bb.ymin, bb.zmin)))
-    if P["card_plane"] == "v9":
-        for nm, y, z in FRONT_INLETS:
-            if nm.startswith("l14"):
-                front = front.cut(cq.Workplane("YZ").center(y_in0 + y, floor_top + z).circle(30).extrude(out_D + T + 1))
-                add(a, cq.Workplane("YZ").center(y_in0 + y, floor_top + z).circle(30).extrude(-55).translate((out_D, 0, 0)), f"socket_{nm}", (0.3, 0.3, 0.3))
+    if P["card_plane"] != "v12":   # v12 builds its own slot-captured panels
+        add(a, box(out_D, out_W, T, (0, 0, out_H)), "lid_panel", PANEL)
+        for y in (out_W * 0.3, out_W * 0.7):
+            add(a, lid_handle().translate((out_D / 2 - 6, y - 30, out_H + T)), f"lid_handle_{int(y)}", BLACK)
+        outboard = box(out_D, T, out_H, (0, -T, 0))
+        for port in SIDE_PORTS:   # v10: bodies point +Y from the y=0 wall's inner face, at the inverter's side
+            if port[0] != "out":
+                continue
+            kind, x, z = port[1], port[2], port[3]
+            if kind == "socket":
+                r = port[4] / 2
+                outboard = outboard.cut(cq.Workplane("XZ").center(x, z).circle(r).extrude(T + 2).translate((0, 1, 0)))
+                add(a, cq.Workplane("XZ").center(x, z).circle(r + 3).extrude(-40), f"socket_{int(x)}_{int(z)}", (0.3, 0.3, 0.3))
+            elif kind.startswith("l14"):
+                outboard = outboard.cut(cq.Workplane("XZ").center(x, z).circle(30).extrude(T + 2).translate((0, 1, 0)))
+                add(a, cq.Workplane("XZ").center(x, z).circle(30).extrude(-55), f"socket_{kind}", (0.3, 0.3, 0.3))
             else:
-                d_, w_, h_ = INLET_BODY["sb175" if nm.startswith("sb175") else "sb50"]
-                front = front.cut(box(T + 2, w_, h_, (out_D - 1, y_in0 + y, floor_top + z)))
-                add(a, box(d_, w_, h_, (out_D - d_, y_in0 + y, floor_top + z)), f"socket_{nm}", (0.3, 0.3, 0.3))
-    for port in FRONT_PORTS:   # v10 vertical port line; bodies point -X from the front panel's inner face
-        kind, y, z = port[0], port[1], port[2]
-        if kind == "socket":
-            r = port[3] / 2
-            front = front.cut(cq.Workplane("YZ").center(y, z).circle(r).extrude(T + 2).translate((out_D - 1, 0, 0)))
-            add(a, cq.Workplane("YZ").center(y, z).circle(r + 3).extrude(-40).translate((out_D, 0, 0)), f"socket_{int(y)}_{int(z)}", (0.3, 0.3, 0.3))
-        elif kind.startswith("l14"):
-            front = front.cut(cq.Workplane("YZ").center(y, z).circle(30).extrude(T + 2).translate((out_D - 1, 0, 0)))
-            add(a, cq.Workplane("YZ").center(y, z).circle(30).extrude(-55).translate((out_D, 0, 0)), f"socket_{kind}", (0.3, 0.3, 0.3))
-        else:
-            w_, h_, d_ = PORT_FACE["sb175" if kind.startswith("sb175") else "sb50" if kind.startswith("sb50") else "iec"]
-            front = front.cut(box(T + 2, w_, h_, (out_D - 1, y - w_ / 2, z - h_ / 2)))
-            add(a, box(d_, w_, h_, (out_D - d_, y - w_ / 2, z - h_ / 2)), f"socket_{kind}", (0.3, 0.3, 0.3))
-    add(a, front, "panel_front_removable", PANEL)
-    if si is not None:
-        add(a, si, "print_socket_insert", ORANGE)
-    for y, dia in SOCKETS:
-        sck = (cq.Workplane("YZ").center(y_in0 + y, floor_top + P["socket_z"]).circle(dia / 2 + 3)
-               .extrude(-40).translate((out_D, 0, 0)))
-        add(a, sck, f"socket_{y}", (0.3, 0.3, 0.3))
+                w_, h_, d_ = PORT_FACE["sb175" if kind.startswith("sb175") else "sb50"]
+                outboard = outboard.cut(box(w_, T + 2, h_, (x, -T - 1, z)))
+                add(a, box(w_, d_, h_, (x, 0, z)), f"socket_{kind}", (0.3, 0.3, 0.3))
+        add(a, outboard, "panel_side_outboard", PANEL)
+        inboard = box(out_D, T, out_H, (0, out_W, 0))
+        ca = COMPONENTS["anderson"]
+        for (x, z) in ANDERSONS:
+            inboard = inboard.cut(box(ca.w, T + 2, ca.h, (x_in0 + x - ca.w / 2, out_W - 1, floor_top + z - ca.h / 2)))
+            add(a, box(ca.w, 40, ca.h, (x_in0 + x - ca.w / 2, out_W - 40, floor_top + z - ca.h / 2)),
+                f"socket_anderson_{int(z)}", (0.3, 0.3, 0.3))
+        for port in [q for q in SIDE_PORTS if q[0] == "in"]:   # bodies point -Y from the inboard panel's inner face
+            kind, x, z = port[1], port[2], port[3]
+            if kind == "socket":
+                r = port[4] / 2
+                inboard = inboard.cut(cq.Workplane("XZ").center(x, z).circle(r).extrude(-(T + 2)).translate((0, out_W - 1, 0)))
+                add(a, cq.Workplane("XZ").center(x, z).circle(r + 3).extrude(40).translate((0, out_W, 0)), f"socket_{int(x)}", (0.3, 0.3, 0.3))
+            elif kind.startswith("l14"):
+                inboard = inboard.cut(cq.Workplane("XZ").center(x, z).circle(30).extrude(-(T + 2)).translate((0, out_W - 1, 0)))
+                add(a, cq.Workplane("XZ").center(x, z).circle(30).extrude(55).translate((0, out_W, 0)), f"socket_{kind}", (0.3, 0.3, 0.3))
+            else:
+                d_, w_, h_ = INLET_BODY["sb175" if kind.startswith("sb175") else "sb50"]
+                inboard = inboard.cut(box(w_, T + 2, h_, (x, out_W - 1, z)))
+                add(a, box(w_, d_, h_, (x, out_W - d_, z)), f"socket_{kind}", (0.3, 0.3, 0.3))
+        add(a, inboard, "panel_side_inboard", PANEL)
+        back = box(T, out_W, out_H, (-T, 0, 0))
+        back = back.cut(box(T + 2, 120, 30, (-T - 1, y_in0 + in_W / 2 - 60, floor_top + 40)))   # fridge cable to the IceBox slots
+        add(a, back, "panel_back_icebox_side", PANEL)
+        front = box(T, out_W, out_H, (out_D, 0, 0))
+        for r in range(P["vent_rows"]):
+            z = floor_top + 40 + r * 60
+            for y in range(40, int(in_W) - 100, 70):
+                front = front.cut(cq.Workplane("YZ").center(y_in0 + y + 30, z).slot2D(60, 10).extrude(out_D + T + 1))
+        si = socket_insert() if SOCKETS else None
+        if si is not None:
+            bb = si.val().BoundingBox()
+            front = front.cut(box(T + 2, bb.ylen, bb.zlen, (out_D - 1, bb.ymin, bb.zmin)))
+        if P["card_plane"] == "v9":
+            for nm, y, z in FRONT_INLETS:
+                if nm.startswith("l14"):
+                    front = front.cut(cq.Workplane("YZ").center(y_in0 + y, floor_top + z).circle(30).extrude(out_D + T + 1))
+                    add(a, cq.Workplane("YZ").center(y_in0 + y, floor_top + z).circle(30).extrude(-55).translate((out_D, 0, 0)), f"socket_{nm}", (0.3, 0.3, 0.3))
+                else:
+                    d_, w_, h_ = INLET_BODY["sb175" if nm.startswith("sb175") else "sb50"]
+                    front = front.cut(box(T + 2, w_, h_, (out_D - 1, y_in0 + y, floor_top + z)))
+                    add(a, box(d_, w_, h_, (out_D - d_, y_in0 + y, floor_top + z)), f"socket_{nm}", (0.3, 0.3, 0.3))
+        for port in FRONT_PORTS:   # v10 vertical port line; bodies point -X from the front panel's inner face
+            kind, y, z = port[0], port[1], port[2]
+            if kind == "socket":
+                r = port[3] / 2
+                front = front.cut(cq.Workplane("YZ").center(y, z).circle(r).extrude(T + 2).translate((out_D - 1, 0, 0)))
+                add(a, cq.Workplane("YZ").center(y, z).circle(r + 3).extrude(-40).translate((out_D, 0, 0)), f"socket_{int(y)}_{int(z)}", (0.3, 0.3, 0.3))
+            elif kind.startswith("l14"):
+                front = front.cut(cq.Workplane("YZ").center(y, z).circle(30).extrude(T + 2).translate((out_D - 1, 0, 0)))
+                add(a, cq.Workplane("YZ").center(y, z).circle(30).extrude(-55).translate((out_D, 0, 0)), f"socket_{kind}", (0.3, 0.3, 0.3))
+            else:
+                w_, h_, d_ = PORT_FACE["sb175" if kind.startswith("sb175") else "sb50" if kind.startswith("sb50") else "iec"]
+                front = front.cut(box(T + 2, w_, h_, (out_D - 1, y - w_ / 2, z - h_ / 2)))
+                add(a, box(d_, w_, h_, (out_D - d_, y - w_ / 2, z - h_ / 2)), f"socket_{kind}", (0.3, 0.3, 0.3))
+        add(a, front, "panel_front_removable", PANEL)
+        if si is not None:
+            add(a, si, "print_socket_insert", ORANGE)
+        for y, dia in SOCKETS:
+            sck = (cq.Workplane("YZ").center(y_in0 + y, floor_top + P["socket_z"]).circle(dia / 2 + 3)
+                   .extrude(-40).translate((out_D, 0, 0)))
+            add(a, sck, f"socket_{y}", (0.3, 0.3, 0.3))
 
     # --- floor joists: two spare bars under the battery zone ------------------
     joist_len = out_D - 2 * C
@@ -2074,16 +2075,29 @@ V12 = dict(end_gap=15.0, row_gap=2.0, plate_gap=10.0, standoff=2.0)
 
 
 def v12_post(h, mirror=False):
-    """Single-piece guide post for the fixed MultiPlus plate: 24 (X) x 18 (Y), standing on the plate, card slot on the
-    +Y face from z 2, feet over the bottom and top depth rails with 1/4-20 T-nuts.  254 tall: one print."""
+    """Single-piece guide post for the fixed MultiPlus plate: 24 (X) x 18 (Y), standing on the plate against the depth
+    rail's inner face.  The rails' top and bottom slots hold the box's panels, so the post ties in through the rails'
+    INNER slots only: a horizontal 1/4-20 through its solid sill at z 12.7 (T-nut in the bottom rail), and a printed clip
+    on its top that bolts into the top rail's inner slot the same way and screws down into the post (M4 insert).
+    Card slot on the +Y face from z 30 (above the sill bolt).  254 tall: one print."""
     gw = P["card_t"] + 2 * P["card_clear"]
     g = box(P["post_w"], P["post_d"], h)
-    g = g.cut(box(gw, P["slot_depth"] + 1, h, ((P["post_w"] - gw) / 2, P["post_d"] - P["slot_depth"], 2)))
-    for z0 in (B, h - 6):   # bottom foot lies on the bottom rail's top; top foot under the top rail
-        g = g.union(box(P["post_w"], B + P["post_d"] - P["slot_depth"], 6, (0, -B, z0))
-                    .cut(cq.Workplane("XY").center(P["post_w"] / 2, -B / 2).circle(3.4).extrude(8).translate((0, 0, z0 - 1))))
+    g = g.cut(box(gw, P["slot_depth"] + 1, h, ((P["post_w"] - gw) / 2, P["post_d"] - P["slot_depth"], 30)))
+    g = g.cut(cq.Workplane("XZ").center(P["post_w"] / 2, B / 2).circle(3.4).extrude(-(P["post_d"] + 2)).translate((0, -1, 0)))   # sill bolt
+    g = g.cut(cq.Workplane("XY").center(P["post_w"] / 2, P["post_d"] / 2).circle(2.3).extrude(12).translate((0, 0, h - 11)))        # clip insert
     if mirror:
         g = g.mirror("XZ").translate((0, P["post_d"], 0))
+    return g
+
+
+def v12_post_clip(mirror=False):
+    """Top clip for a v12 post: 24 x 20 x B block sitting on the post's top beside the top rail; horizontal 1/4-20 into the
+    rail's inner slot at mid-height, M4 down into the post."""
+    g = box(P["post_w"], 20, B)
+    g = g.cut(cq.Workplane("XZ").center(P["post_w"] / 2, B / 2).circle(3.4).extrude(-22).translate((0, -1, 0)))
+    g = g.cut(cq.Workplane("XY").center(P["post_w"] / 2, P["post_d"] / 2).circle(2.3).extrude(B + 2).translate((0, 0, -1)))
+    if mirror:
+        g = g.mirror("XZ").translate((0, 20, 0))
     return g
 
 
@@ -2111,29 +2125,16 @@ def build_v12(a):
                 tray = tray.cut(cq.Workplane("XY").center(px + 6.0 if px < 0 else px, py + 10).circle(2.8).extrude(13).translate((0, 0, lip + 4 - 12)))
             for (hx, hy) in ((wall + 20, wall + 20), (wall + b.d - 20, wall + 20), (wall + 20, wall + b.w - 20), (wall + b.d - 20, wall + b.w - 20)):
                 tray = tray.cut(cq.Workplane("XY").center(hx, hy).circle(3.4).extrude(5))   # M6 to the plate, optional
-            if c == 0:   # outboard column: side tabs onto the outboard bottom rail
-                rail_lo = -(1 + B)
-                for sx in (40, fd - 80):
-                    fl = box(40, B + 1 + 8, (lip + 4) - B, (sx, rail_lo, B))
-                    tray = tray.union(fl.cut(cq.Workplane("XY").center(sx + 20, rail_lo + B / 2).circle(3.4).extrude(lip + 5)))
+            if c == 0:   # outboard column: two countersunk 1/4-20 through the outer wall at the rail's slot height into T-nuts
+                for sx in (60, fd - 60):   # (the rails' top slots hold the side panels, so the inner slot is the only one free)
+                    tray = tray.cut(cq.Workplane("XZ").center(sx, B / 2).circle(3.4).extrude(-(wall + 2)).translate((0, -1, 0)))
+                    tray = tray.cut(cq.Workplane("XZ").center(sx, B / 2).circle(6.5).extrude(-3).translate((0, wall + 0.5, 0)))   # countersink, head flush inside
             # row mates bolt through their touching side walls (2 x M5, on the bench); rows bolt pad to pad (M4)
             for hx in (60, 180):
                 tray = tray.cut(cq.Workplane("XZ").center(hx, 17).circle(2.7).extrude(-(wall + 2)).translate((0, (fw - wall - 1) if c == 0 else -1, 0)))
             if c == 1:   # inboard column: 3 x M4 through the inboard wall into the bus shelf's lip inserts
                 for hx in (40, 120, 200):
                     tray = tray.cut(cq.Workplane("XZ").center(hx, 17).circle(2.3).extrude(-(wall + 2)).translate((0, fw - wall - 1, 0)))
-            if r == 0:   # back row: printed L brackets onto the back width rail (2 x M5 into pads, T-nut)
-                for sy in (18, fw - 58):
-                    pad = box(6, 40, lip + 4, (-6, sy, 0))
-                    for hz in (10, 24):
-                        pad = pad.cut(cq.Workplane("YZ").center(sy + 20, hz).circle(3.2).extrude(10).translate((-7, 0, 0)))
-                    tray = tray.union(pad)
-                    rail_x = -(V12["end_gap"] + B)
-                    br = box(8, 40, lip + 4, (-14, sy, 0)).union(box(-6 - rail_x, 40, (lip + 4) - B, (rail_x, sy, B)))
-                    br = br.cut(cq.Workplane("XY").center(rail_x + B / 2, sy + 20).circle(3.4).extrude(lip + 5))
-                    for hz in (10, 24):
-                        br = br.cut(cq.Workplane("YZ").center(sy + 20, hz).circle(2.7).extrude(10).translate((-15, 0, 0)))
-                    add(a, br.translate((tx, ty, 0)), f"print_tray_tab_{r}{c}_{int(sy)}", ORANGE)
             add(a, tray.translate((tx, ty, 0)), f"print_tray_battery_{r}{c}", ORANGE)
             at = (tx + wall, ty + wall, 4)
             add(a, victron_shape("battery", b.d, b.w, b.h, at, box(b.d, b.w, b.h, at).edges("|Z").fillet(6)), f"battery_{r}{c}", BATT)
@@ -2150,10 +2151,10 @@ def build_v12(a):
                 tx = x_in0 + V12["end_gap"] + r * (fd + 12 + V12["row_gap"])
                 if xa + 6 < tx + hx < xb - 6:
                     sh = sh.cut(cq.Workplane("XZ").center(tx + hx, 17).circle(2.3).extrude(-8).translate((0, y0s - 1, 0)))
-        sh = sh.union(box(xb - xa, 6, 34, (xa, y1s - 6, 0)))                 # outer wall with two flanges onto the inboard bottom rail
-        for sx in (xa + 30, xb - 70):
-            fl = box(40, B + 1 + 8, 34 - B, (sx, y1s - 8, B))
-            sh = sh.union(fl.cut(cq.Workplane("XY").center(sx + 20, y1s + 1 + B / 2).circle(3.4).extrude(35)))
+        sh = sh.union(box(xb - xa, 6, 34, (xa, y1s - 6, 0)))                 # outer wall, 1 mm off the inboard rail's inner face
+        for sx in (xa + 40, xb - 40):   # two countersunk 1/4-20 through it at the rail's slot height, heads flush inside the shelf
+            sh = sh.cut(cq.Workplane("XZ").center(sx, B / 2).circle(3.4).extrude(-8).translate((0, y1s - 7, 0)))
+            sh = sh.cut(cq.Workplane("XZ").center(sx, B / 2).circle(6.5).extrude(-3).translate((0, y1s - 6 + 0.5 + 3, 0)))
         add(a, sh, f"print_bus_shelf_{i}", ORANGE)
     V12_SHELF = [dict(comp="breaker_a", x=40, y=8), dict(comp="breaker_b", x=135, y=8), dict(comp="shunt_x", x=230, y=8),
                  dict(comp="cerbo_up", x=360, y=12), dict(comp="busbar_px", x=40, y=69), dict(comp="busbar_nx", x=200, y=69)]
@@ -2170,24 +2171,64 @@ def build_v12(a):
     ch = out_H - B - 4                                            # 2 above the plate to 2 under the top rails: 250, one tile row
     hpost = out_H - B
     for j, y in enumerate((y_in0, out_W - B - P["post_d"])):
-        add(a, v12_post(hpost, mirror=(j == 1)).translate((px_ - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"], y, 0)), f"print_post_inverter_{j}", ORANGE)
+        ppx = px_ - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]
+        add(a, v12_post(hpost, mirror=(j == 1)).translate((ppx, y, 0)), f"print_post_inverter_{j}", ORANGE)
+        add(a, v12_post_clip(mirror=(j == 1)).translate((ppx, y if j == 0 else out_W - B - 20, hpost)), f"print_post_clip_{j}", ORANGE)
     patches = [(u + (cw - inv.w) / 2, v + 2) for (u, v) in HOLES["multiplus_1200_side"]]
     for nm, shp in lattice_card_tiles_yz(cw, ch, px_, cy0, 2.0, "plate_inverter", patches):
+        if nm.endswith("tile_00"):   # bottom corners notched 12 x 28 so the plate clears the posts' solid sills (slots start at z 30)
+            shp = shp.cut(box(P["card_t"] + 2, 12, 29, (px_ - 1, cy0 - 1, 1)))
+        if nm.endswith("tile_10"):
+            shp = shp.cut(box(P["card_t"] + 2, 12, 29, (px_ - 1, cy0 + cw - 11, 1)))
         add(a, shp, nm, ORANGE if "spline" in nm else DARK)
     at = (px_ + P["card_t"] + V12["standoff"], cy0 + (cw - inv.w) / 2, 2.0)
     add(a, victron_shape("multiplus_1200_side", inv.d, inv.w, inv.h, at, box(inv.d, inv.w, inv.h, at).edges("|X").fillet(3)), "victron_multiplus_side", BLUE)
     g["inv_front"] = at[0] + inv.d
-    # --- front panel inside: the Orion on a printed mount; ports in the outboard strip (FRONT_PORTS) ---------------
+    # --- panels: 6 mm, captured in the rails' centreline slots (3 mm into each slot), the way the IceBox is built ---------
+    pm = B / 2 - 3                                                  # panel's outer face, inside the bar envelope
+    def slot_panel(along, thick_at, length, height_rails=True):
+        # a panel between the bars with 3 mm tongues into the slots: the side tongues (into the corner bars) run the
+        # bar height, the top/bottom tongues (into the rails) run between the corner cubes
+        if along == "x":
+            body = box(length, T, out_H - 2 * B, (B, thick_at, B)).union(box(length + 6, T, out_H - 2 * B, (B - 3, thick_at, B)))
+            return body.union(box(length, T, out_H - 2 * B + 6, (B, thick_at, B - 3)))
+        body = box(T, length, out_H - 2 * B, (thick_at, B, B)).union(box(T, length + 6, out_H - 2 * B, (thick_at, B - 3, B)))
+        return body.union(box(T, length, out_H - 2 * B + 6, (thick_at, B, B - 3)))
+    for nm, shp in (("panel_side_outboard", slot_panel("x", pm, in_D)),
+                    ("panel_side_inboard", slot_panel("x", out_W - pm - T, in_D)),
+                    ("panel_back_icebox_side", slot_panel("y", pm, in_W))):
+        add(a, shp, nm, PANEL)
+    front = slot_panel("y", out_D - pm - T, in_W)
+    xf = out_D - pm - T                                            # the front panel's inner face
+    for port in FRONT_PORTS:   # bodies point -X from the front panel's inner face
+        kind, y, z = port[0], port[1], port[2]
+        if kind == "socket":
+            r = port[3] / 2
+            front = front.cut(cq.Workplane("YZ").center(y, z).circle(r).extrude(T + 2).translate((xf - 1, 0, 0)))
+            add(a, cq.Workplane("YZ").center(y, z).circle(r + 3).extrude(-40).translate((xf, 0, 0)), f"socket_{int(y)}_{int(z)}", (0.3, 0.3, 0.3))
+        elif kind.startswith("l14"):
+            front = front.cut(cq.Workplane("YZ").center(y, z).circle(30).extrude(T + 2).translate((xf - 1, 0, 0)))
+            add(a, cq.Workplane("YZ").center(y, z).circle(30).extrude(-55).translate((xf, 0, 0)), f"socket_{kind}", (0.3, 0.3, 0.3))
+        else:
+            w_, h_, d_ = PORT_FACE["sb50"]
+            front = front.cut(box(T + 2, w_, h_, (xf - 1, y - w_ / 2, z - h_ / 2)))
+            add(a, box(d_, w_, h_, (xf - d_, y - w_ / 2, z - h_ / 2)), f"socket_{kind}", (0.3, 0.3, 0.3))
+    add(a, front, "panel_front_removable", PANEL)
+    add(a, box(out_D, out_W, T, (0, 0, out_H)), "lid_panel", PANEL)
+    for y in (out_W * 0.3, out_W * 0.7):
+        add(a, lid_handle().translate((out_D / 2 - 6, y - 30, out_H + T)), f"lid_handle_{int(y)}", BLACK)
+    # --- front panel inside: the Orion on a printed mount (screwed through the panel from outside into inserts) -------
     ori = COMPONENTS["orion"]
     oy, oz = out_W - B - 40 - ori.w, 60.0
-    add(a, box(6, ori.w + 20, ori.h + 20, (out_D - 6, oy - 10, oz - 10)), "print_mount_orion", ORANGE)
-    at = (out_D - 6 - ori.d, oy, oz)
+    add(a, box(6, ori.w + 20, ori.h + 20, (xf - 6, oy - 10, oz - 10)), "print_mount_orion", ORANGE)
+    at = (xf - 6 - ori.d - 3, oy, oz)
     add(a, victron_shape("orion", ori.d, ori.w, ori.h, at, box(ori.d, ori.w, ori.h, at).edges("|X").fillet(3)), "victron_orion_front", BLUE)
     # --- inboard side panel inside, over the bus shelf: MPPT upright and the Garmin on printed mounts ------------------
+    yf = out_W - pm - T                                            # the inboard panel's inner face
     mp = COMPONENTS["mppt_up"]; ga = COMPONENTS["garmin"]
     for comp, c, x0, z0, nm in (("mppt_up", mp, x_in0 + 60, 56.0, "mppt"), ("garmin", ga, x_in0 + 220, 60.0, "garmin")):
-        add(a, box(c.w + 20, 6, c.h + 20, (x0 - 10, out_W - 6, z0 - 10)), f"print_mount_{nm}", ORANGE)
-        at = (x0, out_W - 6 - c.d - 3, z0)   # 3 mm off the mount: the STEP bodies carry brackets past the bbox
+        add(a, box(c.w + 20, 6, c.h + 20, (x0 - 10, yf - 6, z0 - 10)), f"print_mount_{nm}", ORANGE)
+        at = (x0, yf - 6 - c.d - 3, z0)   # 3 mm off the mount: the STEP bodies carry brackets past the bbox
         col = BLUE if c.name.startswith("victron") else (0.08, 0.08, 0.08)
         add(a, victron_shape(comp, c.w, c.d, c.h, at, box(c.w, c.d, c.h, at).edges("|Y").fillet(3)), f"{c.name}_side", col)
     BS["_g12"] = g
@@ -2220,6 +2261,9 @@ def report_v12():
           f"bus shelf items <= 52 tall under the side-panel units; strap room over the batteries {out_H - 4 - COMPONENTS['battery'].h:.0f}")
     print("  no deck, no legs, no shelves, no cards: lid off and every unit is in reach.  Panel units (Orion, MPPT, Garmin) hang on printed mounts screwed")
     print("  through the panel from outside into inserts, fed by SB50 pigtails so a panel unbolts with its units; the MultiPlus is lugged straight to the bus bars.")
+    print("  rail slots: the IceBox's panels are captured in the rails' centreline slots, so the rails' top and bottom slots are taken; every tie")
+    print("  is a HORIZONTAL 1/4-20 into a rail's INNER slot: countersunk through the outboard trays' outer walls and the bus shelf's outer wall")
+    print("  (heads flush inside), through the posts' sills, and through printed top clips on the posts into the top rails.  Panels sit inside the bar envelope.")
     print("  caveats: the MultiPlus is on its long side (Victron: vertical preferred, horizontal allowed with the terminals down -> here the terminals face the column); verify the STEP's terminal end in the render.")
     print("== Cables and connectors (Victron manuals) ==")
     for run, size, fuse, conn in CABLE_SPEC:

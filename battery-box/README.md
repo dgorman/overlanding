@@ -152,13 +152,13 @@ v5's idea (a second IceBox 1.3 frame, same width and depth as the IceBox) cut to
 
 | Zone | What is there |
 |---|---|
-| Back, 523 deep | four SuperPacks in **one layer, 2 × 2**, in the v9 trays: outboard pair tabbed to the outboard bottom rail, back pair bracketed to the back rail, row mates and columns bolted to each other on the bench |
-| Column beside them, 135 wide | a printed **bus shelf** on the floor in three plates, lipped and bolted to the inboard trays (M4 inserts) and flanged onto the inboard rail (T-nuts): the two breakers, the SmartShunt, the Cerbo on end and the two bus bars |
-| Front, 188 deep | the **MultiPlus on its long side** (375 wide, 249 tall, 2 mm under the top rails) bolted through a fixed two-tile plate standing in single-piece rail-footed posts; the DC leads go straight to the bus bars |
+| Back, 523 deep | four SuperPacks in **one layer, 2 × 2**, in the v9 trays: the outboard pair bolt through their outer walls into the outboard rail's inner slot, rows and columns bolt to each other on the bench |
+| Column beside them, 135 wide | a printed **bus shelf** on the floor in three plates, lipped and bolted to the inboard trays (M4 inserts) and bolted through its outer wall into the inboard rail's inner slot: the two breakers, the SmartShunt, the Cerbo on end and the two bus bars |
+| Front, 178 deep | the **MultiPlus on its long side** (375 wide, 249 tall, 2 mm under the top rails) bolted through a fixed two-tile plate standing in single-piece posts that bolt into the depth rails' inner slots at the sill and through printed top clips; the DC leads go straight to the bus bars |
 | Front panel inside | the Orion on a printed mount; the port strip (two L14-30s, three 12 V, two USB, two SB50 inlets) in the outboard 115 mm, two columns |
 | Inboard side panel inside | the MPPT **upright** (186 tall, terminals down, as Victron asks) and the Garmin on printed mounts over the bus shelf |
 
-Panel-mounted units hang on 6 mm printed mounts screwed through the panel from outside into inserts, and are fed by SB50 pigtails, so a panel unbolts complete with its units. The MultiPlus on its long side is allowed by Victron with the terminals facing down or sideways; here they face the column. The frame is one IceBox 1.3: width and depth rails uncut, height rails cut to 229, leaving four 279 mm offcuts.
+**Rail slots.** The IceBox's panels are captured in the rails' centreline slots, so the top and bottom slots of every rail are taken and only the inner-face slot is free. Every tie in v12 is therefore a horizontal 1/4-20 into a rail's inner slot: countersunk through the outboard trays' outer walls and the bus shelf's outer wall with the heads flush inside, through the posts' solid sills, and through printed clips on the posts' tops into the top rails. The panels sit inside the bar envelope, 3 mm into each slot. Panel-mounted units hang on 6 mm printed mounts screwed through the panel from outside into inserts, and are fed by SB50 pigtails, so a panel unbolts complete with its units. The MultiPlus on its long side is allowed by Victron with the terminals facing down or sideways; here they face the column. The frame is one IceBox 1.3: width and depth rails uncut, height rails cut to 229, leaving four 279 mm offcuts.
 
 **v11: v10 swapped, 431 mm deep (17.0 in)** (`python cage.py v11`, viewer "v11")
 
@@ -415,6 +415,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-12 | v12 rail ties reworked: the IceBox's panels live in the rails' slots, so L tabs on the rail tops cannot work; every tie is now a horizontal bolt into the rails' inner slots, and the panels sit in the slots inside the bar envelope. |
 | 2026-10-12 | **v12:** v5's IceBox-footprint frame at half height (762 × 487 × 279), not card based: one-layer 2 × 2 batteries, bus shelf in the column, MultiPlus on its long side on a fixed plate, Orion + ports inside the front panel, MPPT upright + Garmin inside the side panel. |
 | 2026-10-07 | Fastener rule written down: no loose nuts inside the assembled box; the deck ties' M4s go into inserts in the deck, the column floor's lip screws into inserts; nuts only on bench sub-assemblies (MultiPlus bolts, card laps, panel ports). |
 | 2026-10-07 | v11 deck fasteners audited: the front column post's ledge now overhangs the post so its hole lands inside the extension plate (it was 3 mm outside); the script asserts every deck hole is at least 4 mm inside its plate and the report counts them. |
