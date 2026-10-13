@@ -512,7 +512,7 @@ def unit_fallback(key, dx, dy, dz, at, axis="|Z"):
     return breaker_shape(dx, dy, dz, at) if key.startswith("breaker") else box(dx, dy, dz, at).edges(axis).fillet(3)
 
 
-def victron_shape(key, dx, dy, dz, at, fallback, flip=None):
+def victron_shape(key, dx, dy, dz, at, fallback, flip=None, lugs=None):
     """Return the real Victron STEP body oriented so its extents match
     (dx, dy, dz) with its bounding-box corner at `at`; else the fallback box.
     Orientation: try the axis permutations until the sorted extents line up;
@@ -547,6 +547,21 @@ def victron_shape(key, dx, dy, dz, at, fallback, flip=None):
         ax, deg = fl
         axis = {"x": (1, 0, 0), "y": (0, 1, 0), "z": (0, 0, 1)}[ax]
         best = best.rotate((0, 0, 0), axis, deg); best_bb = best.BoundingBox()
+    if lugs:   # ("y", +1): the mounting-lug face (the end slab that spans the unit's full outline) must be at +y; else turn 180 about the vertical
+        ax, side = lugs
+        i = "xyz".index(ax)
+        def slab_fill(end):
+            lo = [best_bb.xmin, best_bb.ymin, best_bb.zmin]; hi = [best_bb.xmax, best_bb.ymax, best_bb.zmax]
+            lo2, hi2 = list(lo), list(hi)
+            if end < 0: hi2[i] = lo[i] + 3.0
+            else: lo2[i] = hi[i] - 3.0
+            sl = cq.Workplane("XY").box(hi2[0] - lo2[0], hi2[1] - lo2[1], hi2[2] - lo2[2], centered=False).translate(tuple(lo2)).val()
+            b = best.intersect(sl).BoundingBox()
+            ext = [b.xlen, b.ylen, b.zlen]; full = [hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]]
+            return sum(ext[j] / full[j] for j in range(3) if j != i)
+        if slab_fill(side) < slab_fill(-side):
+            spin = (0, 0, 1) if ax != "z" else (1, 0, 0)
+            best = best.rotate((0, 0, 0), spin, 180); best_bb = best.BoundingBox()
     shp = best.translate((at[0] - best_bb.xmin, at[1] - best_bb.ymin, at[2] - best_bb.zmin))
     return cq.Workplane("XY").add(shp)
 
@@ -2164,7 +2179,7 @@ def build_v12(a):
             sh = sh.cut(cq.Workplane("XZ").center(sx, B / 2).circle(6.5).extrude(-3).translate((0, y1s - 6 + 0.5 + 3, 0)))
         add(a, sh, f"print_bus_shelf_{i}", ORANGE)
     V12_SHELF = [dict(comp="breaker_a", x=40, y=8), dict(comp="breaker_b", x=135, y=8), dict(comp="shunt_x", x=230, y=8),
-                 dict(comp="cerbo_flat", x=360, y=18, z=36), dict(comp="busbar_px", x=40, y=69), dict(comp="busbar_nx", x=200, y=69)]
+                 dict(comp="busbar_px", x=40, y=69), dict(comp="busbar_nx", x=200, y=69)]
     for pl in V12_SHELF:
         c = COMPONENTS[pl["comp"]]
         at = (xs0 + pl["x"], y0s + 6 + pl["y"], 6 + pl.get("z", 0))
@@ -2184,7 +2199,8 @@ def build_v12(a):
     px_ = x_in0 + bay_D + V12["plate_gap"]
     cw = in_W - 2 * (P["post_d"] - P["slot_depth"]) - 2 * P["card_clear"]
     cy0 = y_in0 + (in_W - cw) / 2
-    ch = out_H - B - 4                                            # 2 above the plate to 2 under the top rails: 250, one tile row
+    ch = inv.h + 1                                                # 250: from z 2 to 1 above the MultiPlus's top tabs; the plate sits between the
+                                                                  # posts in the rail-free middle, so it may stand 21 mm above the posts, 2 under the lid
     hpost = out_H - B
     for j, y in enumerate((y_in0, out_W - B - P["post_d"])):
         ppx = px_ - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]
@@ -2192,10 +2208,12 @@ def build_v12(a):
         add(a, v12_post_clip(mirror=(j == 1)).translate((ppx, y if j == 0 else out_W - B - 20, hpost)), f"print_post_clip_{j}", ORANGE)
     patches = [(u + (cw - inv.w) / 2, v + 2) for (u, v) in HOLES["multiplus_1200_side"]]
     for nm, shp in lattice_card_tiles_yz(cw, ch, px_, cy0, 2.0, "plate_inverter", patches):
-        if nm.endswith("tile_00"):   # bottom corners notched 12 x 28 so the plate clears the posts' solid sills (slots start at z 30)
-            shp = shp.cut(box(P["card_t"] + 2, 12, 29, (px_ - 1, cy0 - 1, 1)))
+        if nm.endswith("tile_00"):   # corners notched 12 wide: at the bottom for the posts' solid sills (slots start at z 30),
+            shp = shp.cut(box(P["card_t"] + 2, 12, 29, (px_ - 1, cy0 - 1, 1)))          # at the top for the clips on the posts
+            shp = shp.cut(box(P["card_t"] + 2, 14, 40, (px_ - 1, cy0 - 1, hpost - 0.6)))
         if nm.endswith("tile_10"):
             shp = shp.cut(box(P["card_t"] + 2, 12, 29, (px_ - 1, cy0 + cw - 11, 1)))
+            shp = shp.cut(box(P["card_t"] + 2, 14, 40, (px_ - 1, cy0 + cw - 13, hpost - 0.6)))
         add(a, shp, nm, ORANGE if "spline" in nm else DARK)
     at = (px_ + P["card_t"] + V12["standoff"], cy0 + (cw - inv.w) / 2, 2.0)
     add(a, victron_shape("multiplus_1200_side", inv.d, inv.w, inv.h, at, box(inv.d, inv.w, inv.h, at).edges("|X").fillet(3)), "victron_multiplus_side", BLUE)
@@ -2233,20 +2251,22 @@ def build_v12(a):
     add(a, box(out_D, out_W, T, (0, 0, out_H)), "lid_panel", PANEL)
     for y in (out_W * 0.3, out_W * 0.7):
         add(a, lid_handle().translate((out_D / 2 - 6, y - 30, out_H + T)), f"lid_handle_{int(y)}", BLACK)
-    # --- front panel inside: the Orion on a printed mount (screwed through the panel from outside into inserts) -------
-    ori = COMPONENTS["orion"]
-    oy, oz = out_W - B - 40 - ori.w, 60.0
-    add(a, box(6, ori.w + 20, ori.h + 20, (xf - 6, oy - 10, oz - 10)), "print_mount_orion", ORANGE)
-    at = (xf - 6 - ori.d - 3, oy, oz)   # 40 off the panel: lugs (base) toward the mount, fins into the box
-    add(a, victron_shape("orion", ori.d, ori.w, ori.h, at, box(ori.d, ori.w, ori.h, at).edges("|X").fillet(3), flip=("z", 180)), "victron_orion_front", BLUE)
-    # --- inboard side panel inside, over the bus shelf: MPPT upright and the Garmin on printed mounts ------------------
+    # --- front panel inside: the Garmin PowerSwitch on a printed mount beside the ports it feeds (mount screwed through ---
+    ga = COMPONENTS["garmin"]                                      # the panel from outside into inserts)
+    gy, gz = out_W - B - 40 - ga.w, 60.0
+    add(a, box(6, ga.w + 20, ga.h + 20, (xf - 6, gy - 10, gz - 10)), "print_mount_garmin", ORANGE)
+    at = (xf - 6 - ga.d - 3, gy, gz)
+    add(a, victron_shape("garmin", ga.d, ga.w, ga.h, at, box(ga.d, ga.w, ga.h, at).edges("|X").fillet(3)), "garmin_powerswitch_front", (0.08, 0.08, 0.08))
+    # --- inboard side panel inside, over the bus shelf: Cerbo, Orion and MPPT (upright) on printed mounts, lugs to the panel
     yf = out_W - pm - T                                            # the inboard panel's inner face
-    mp = COMPONENTS["mppt_up"]; ga = COMPONENTS["garmin"]
-    for comp, c, x0, z0, nm in (("mppt_up", mp, x_in0 + 60, 38.0, "mppt"), ("garmin", ga, x_in0 + 220, 60.0, "garmin")):
-        add(a, box(c.w + 20, 6, c.h + 8, (x0 - 10, yf - 6, z0 - 4)), f"print_mount_{nm}", ORANGE)   # 34..228: stays under the top rail
+    V12_WALL = (("cerbo", x_in0 + 25, 120.0, "cerbo"),            # long edges horizontal: plugs out the top and bottom edges
+                ("orion", x_in0 + 215, 60.0, "orion"),            # over the shunt and the (-) bus bar, 22 mm clear of them
+                ("mppt_up", x_in0 + 370, 38.0, "mppt"))           # nearest the MultiPlus, nothing on the shelf under it
+    for comp, x0, z0, nm in V12_WALL:
+        c = COMPONENTS[comp]
+        add(a, box(c.w + 20, 6, c.h + 8, (x0 - 10, yf - 6, z0 - 4)), f"print_mount_{nm}", ORANGE)   # all under the top rail (229)
         at = (x0, yf - 6 - c.d - 3, z0)   # 3 mm off the mount: the STEP bodies carry brackets past the bbox
-        col = BLUE if c.name.startswith("victron") else (0.08, 0.08, 0.08)
-        add(a, victron_shape(comp, c.w, c.d, c.h, at, box(c.w, c.d, c.h, at).edges("|Y").fillet(3)), f"{c.name}_side", col)
+        add(a, victron_shape(comp, c.w, c.d, c.h, at, box(c.w, c.d, c.h, at).edges("|Y").fillet(3), lugs=("y", +1)), f"{c.name}_side", BLUE)
     BS["_g12"] = g
     return g
 
@@ -2274,8 +2294,10 @@ def report_v12():
     print(f"layout          : bay {bd:.0f} deep (2 x 2 SuperPacks in one layer, trays tabbed to the outboard and back rails, bolted to each other) | "
           f"column {in_W - 2 * 150 - 2:.0f} wide beside them with the bus shelf | front {in_D - bd:.0f}: fixed plate + MultiPlus on its long side ({g.get('inv_front', 0) - x_in0 - bd:.0f} used) + Orion and ports on the front panel")
     print(f"height budget   : the top rails only run along the edges, so the middle of the box is clear to the lid at {out_H:.0f}: MultiPlus on its long side 249 + 2 = 251 "
-          f"({out_H - 251:.0f} under the lid), batteries 217 + lugs 19 = 236 ({out_H - 236:.0f} under the lid); under the rails (posts, panel mounts, ports) the limit is {out_H - B:.0f}: "
-          f"MPPT upright 186 from z 40, posts {out_H - B:.0f} + clips")
+          f"({out_H - 251:.0f} under the lid) on a 250 plate, batteries 217 + lugs 19 = 236 ({out_H - 236:.0f} under the lid); under the rails (posts, panel mounts, ports) the limit is {out_H - B:.0f}: "
+          f"MPPT upright 186 from z 38, posts {out_H - B:.0f} + clips")
+    print(f"inboard wall    : Cerbo (174 mount) + Orion (143) + MPPT (150) on the panel between the back corner and the inverter posts, "
+          f"{548.8 - (x_in0 + 15):.0f} available; the Garmin on the front panel beside the ports it feeds")
     print("  no deck, no legs, no shelves, no cards: lid off and every unit is in reach.  Panel units (Orion, MPPT, Garmin) hang on printed mounts screwed")
     print("  through the panel from outside into inserts, fed by SB50 pigtails so a panel unbolts with its units; the MultiPlus is lugged straight to the bus bars.")
     print("  rail slots: the IceBox's panels are captured in the rails' centreline slots, so the rails' top and bottom slots are taken; every tie")
