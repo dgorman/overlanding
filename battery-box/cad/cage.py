@@ -2295,11 +2295,11 @@ def build_v12(a):
     return g
 
 
-V13 = dict(end_gap=10.0, row_gap=2.0, floor=6.0, standoff=2.0, plate_y=303.0, col_wall=4.0, inv_x=46.0, shelf_x0=46.0, shelf_x1=626.0, tray_lap=20.0)
+V13 = dict(end_gap=10.0, row_gap=2.0, floor=6.0, standoff=2.0, plate_y=303.0, col_wall=4.0, inv_x=46.0, shelf_x0=46.0, shelf_x1=730.0, tray_lap=20.0)
 V13_COL = [dict(comp="breaker_a", x=215, y=1), dict(comp="breaker_b", x=310, y=1),            # row 1 (52 tall) under the Cerbo, which sits high
            dict(comp="busbar_px", x=60, y=62), dict(comp="busbar_nx", x=225, y=62)]           # row 2 (38 tall) under the MPPT: 42 mm under its terminals
 V13_PLATE_UNITS = (("mppt_up", 70.0, 80.0, "mppt"), ("cerbo", 215.0, 130.0, "cerbo"), ("orion", 380.0, 80.0, "orion"),   # on the plate's column face,
-                   ("shunt_up", 515.0, 80.0, "shunt"))                                                                     # nothing on the shelf under the Orion and shunt
+                   ("shunt_up", 515.0, 80.0, "shunt"), ("garmin", 585.0, 80.0, "garmin"))                                  # nothing on the shelf under the Orion, shunt and Garmin
 
 
 def build_v13(a):
@@ -2348,6 +2348,21 @@ def build_v13(a):
             half_a, half_b = half_a.cut(bolt), half_b.cut(bolt)
         add(a, half_a.translate((tx, ty, 0)), f"print_tray_battery_{r}_back", ORANGE)
         add(a, half_b.translate((tx, ty, 0)), f"print_tray_battery_{r}_front", ORANGE)
+        # L brackets from the tray's outer pads to the width rail behind it (r 0) or in front of it (r 1): the horizontal leg bolts
+        # down into the pad's M4 insert, the vertical leg takes a countersunk 1/4-20 into the rail's inner slot (T-nut)
+        for k, py in enumerate((12, fw - 32)):
+            if r == 0:
+                xr, hx = x_in0, tx                                       # rail inner face, pad insert centre (at the pad/wall boundary)
+                br = box(hx + 5 - xr, 20, 6, (xr, 0, lip + fl)).union(box(6, 20, lip + fl + 6, (xr, 0, 0)))
+                br = br.cut(cq.Workplane("YZ").center(10, B / 2).circle(3.4).extrude(8).translate((xr - 1, 0, 0)))
+                br = br.cut(cq.Workplane("YZ").center(10, B / 2).circle(6.5).extrude(3).translate((xr + 6.5, 0, 0)))
+            else:               # the front pads end 3 mm off the front rail, so the vertical leg stands beside the pad (y 20..40)
+                xr, hx = out_D - B, tx + fd
+                br = box(xr - (hx - 5), 40, 6, (hx - 5, 0, lip + fl)).union(box(6, 20, lip + fl + 6, (xr - 6, 20, 0)))
+                br = br.cut(cq.Workplane("YZ").center(30, B / 2).circle(3.4).extrude(8).translate((xr - 7, 0, 0)))
+                br = br.cut(cq.Workplane("YZ").center(30, B / 2).circle(6.5).extrude(3).translate((xr - 9.5, 0, 0)))
+            br = br.cut(cq.Workplane("XY").center(hx, 10).circle(2.3).extrude(8).translate((0, 0, lip + fl - 1)))
+            add(a, br.translate((0, ty + py, 0)), f"print_tray_rail_bracket_{r}{k}", ORANGE)
         at = (tx + wall + clr, ty + wall + clr, fl)
         add(a, victron_shape("smart200", b.d, b.w, b.h, at, box(b.d, b.w, b.h, at).edges("|Z").fillet(6)), f"battery_{r}", BATT)
         g[f"tx{r}"] = tx
@@ -2365,7 +2380,14 @@ def build_v13(a):
                 hxa = g[f"tx{r}"] + hx
                 if xa + 6 < hxa < xb - 6:
                     sh = sh.cut(cq.Workplane("XZ").center(hxa, 17).circle(2.3).extrude(-8).translate((0, y0s - 1, 0)))
+        if i == n_pl - 1:   # front plate: 30 mm wall against the front width rail's inner face, two countersunk 1/4-20 into its inner slot;
+            sh = sh.union(box(6, y1s - 11 - y0s, 30, (xb - 6, y0s, 0)))                      # floor notched around the plate's front post
+            for yc in (y0s + 30, y1s - 40):
+                sh = sh.cut(cq.Workplane("YZ").center(yc, B / 2).circle(3.4).extrude(8).translate((xb - 7, 0, 0)))
+                sh = sh.cut(cq.Workplane("YZ").center(yc, B / 2).circle(6.5).extrude(3).translate((xb - 9.5, 0, 0)))
         sh = sh.union(box(xb - xa, V13["col_wall"], 34, (xa, y1s - V13["col_wall"], 0)))   # inboard wall = the inverter plate's sill: 2 x M4 through it into
+        if i == n_pl - 1:
+            sh = sh.cut(box(16, 14, 40, (out_D - B - P["post_d"] - 2, y1s - 10, -1)))        # corner notched around the plate's front post
         for sx in (xa + 40, xb - 40):                                        # inserts in the plate's bottom band (bolts from the column side)
             sh = sh.cut(cq.Workplane("XZ").center(sx, 28).circle(2.3).extrude(-8).translate((0, y1s - 7, 0)))
         add(a, sh, f"print_bus_shelf_{i}", ORANGE)
@@ -2386,9 +2408,12 @@ def build_v13(a):
         add(a, clip.translate((xclip, yt, hpost)), f"print_post_clip_{j}", ORANGE)
     ux = V13["inv_x"]
     patches = [(ux - px0 + u, 2.0 - zp + v) for (u, v) in HOLES["multiplus_ii_long"]]
+    V13["window"] = (640.0, 712.0, 165.0, 250.0)                   # x0, x1, z0, z1: 72 x 85 cable window in the plate's front tile, above the Garmin
+    wx0, wx1, wz0, wz1 = V13["window"]
+    window = cq.Workplane("XZ").center((wx0 + wx1) / 2, (wz0 + wz1) / 2).rect(wx1 - wx0, wz1 - wz0).extrude(-(P["card_t"] + 2)).edges("|Y").fillet(8).translate((0, yp - 1, 0))
     for nm, shp in lattice_card_tiles(px1 - px0, hp, px0, yp, zp, "plate_inverter", patches):
-        if nm.endswith("_00") or nm.endswith("_0"):
-            pass
+        if "tile" in nm:
+            shp = shp.cut(window)
         shp = shp.cut(box(12, P["card_t"] + 2, 30 - zp + 1, (px0 - 1, yp - 1, zp - 1)))              # bottom corners clear the posts' solid sills
         shp = shp.cut(box(12, P["card_t"] + 2, 30 - zp + 1, (px1 - 11, yp - 1, zp - 1)))
         shp = shp.cut(box(14, P["card_t"] + 2, 40, (px0 - 1, yp - 1, hpost - 0.6)))                  # top corners clear the post clips
@@ -2403,13 +2428,10 @@ def build_v13(a):
     for comp, x0, z0, nm in V13_PLATE_UNITS:
         c = COMPONENTS[comp]
         at = (x0, yp - c.d - 3, z0)
-        add(a, victron_shape(comp, c.w, c.d, c.h, at, box(c.w, c.d, c.h, at).edges("|Y").fillet(3), lugs=("y", +1)), f"{c.name}_plate", BLUE)
-    # --- panels, ports, lid; the Garmin flat on a floor pad in the front zone ---------------------------------------
+        col = BLUE if c.name.startswith("victron") else (0.08, 0.08, 0.08) if c.name.startswith("garmin") else GOLD
+        add(a, victron_shape(comp, c.w, c.d, c.h, at, box(c.w, c.d, c.h, at).edges("|Y").fillet(3), lugs=("y", +1)), f"{c.name}_plate", col)
+    # --- panels, ports, lid ------------------------------------------------------------------------------------------
     xf = v12_panels(a)
-    ga = COMPONENTS["garmin_flat"]
-    gx, gy = g["inv_front"] + 10, y0s + 10
-    add(a, box(ga.d + 10, ga.w + 10, 4, (gx - 5, gy - 5, 0)), "print_mount_garmin", ORANGE)   # 4 mm floor pad, screwed to the Goose Gear plate
-    add(a, box(ga.d, ga.w, ga.h, (gx, gy, 4)).edges("|Z").fillet(3), "garmin_powerswitch_front", (0.08, 0.08, 0.08))
     g["xf"] = xf
     BS["_g12"] = g
     return g
