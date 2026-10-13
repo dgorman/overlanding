@@ -179,6 +179,22 @@ v5's idea (a second IceBox 1.3 frame, same width and depth as the IceBox) cut do
 - **Lifting.** The box lifts by its bottom rails. The load path is tray wall → 1/4-20 → rail inner slot (outboard trays), and tray → M5 neighbour → shelf lip → 1/4-20 → rail (inboard trays). At a 3 g bump that is about 240 N per tray on a pair of bolts, roughly 3 MPa bearing on a 6 mm printed wall. Never lift by the lid.
 - **Budget:** about 3 kg of filament and 40 h for the trays, shelf, plate and posts; the panels are 6 mm sheet, not printed, in this version.
 
+**v13: v12 one inch taller for a 1500 W AC load, MultiPlus-II 3 kVA** (`python cage.py v13`, viewer "v13")
+
+Asked 2026-10-13: run a 1500 W AC appliance, keep the IceBox footprint, height may grow from 10 to 11 in, use the MultiPlus-II. Two things had to change, not one: four SuperPack 60Ah give 120 A continuous and a 1500 W load pulls about 130 A, so the battery changes too. **762 × 487 × 282 mm, 11.1 in** (11.0 in would put the inverter straight on the floor with 2 mm to the lid).
+
+| Zone | What is there |
+|---|---|
+| Inboard side, full depth | the **MultiPlus-II 12/3000/120-50** (578 × 277 × 148, 19 kg) on its **long side**: 578 along the depth, 148 into the box, 277 tall on two 2 mm shims, back on a printed plate (3 × 2 tiles, 256 tall from z 21) that runs the depth in two v12 posts turned 90° against the width rails; cable end faces forward |
+| Outboard side, full depth | two **Lithium Smart 12.8V/200Ah** (321 × 152 × 237, 20 kg each) end to end in trays with 6 mm floors and 1.5 mm pocket clearance; each tray prints as two halves on a 20 mm half-lap (bench bolts); outer walls bolt into the outboard rail's inner slot |
+| Column between, 110 wide | the bus shelf in three plates: breakers in the row under the Cerbo, the two bus bars in the row under the MPPT (42 mm under its terminals); its 4 mm inboard wall is the plate's sill (M4 into inserts in the plate's bottom band) |
+| Plate's column face | MPPT upright, Cerbo, Orion and the SmartShunt on end, lugs to the plate; nothing on the shelf under the Orion and shunt terminals |
+| Front zone, 113 deep | the inverter's cable end, the Garmin flat on a floor pad, the port strip on the **inboard** half of the front panel (the batteries run to the front on the outboard side) |
+
+**Why it is this way.** The MultiPlus-II does not fit the 254 or 279 box in any orientation: upright it is 578 tall, on its short side 277 × 578 beats the width, and flat on its back it needs 578 × 277 of floor, which leaves 160 mm beside it, 4 mm short of a Smart 200Ah tray. Along the depth is the only way it goes in, and Victron's manual only describes hanging it vertically on its hook and two holes, so **confirm the turned mounting with Victron** before building. The hook and hole positions on the plate are estimates (appendix G of the manual).
+
+**Electrical, not modelled yet:** the Smart batteries need a **VE.Bus BMS V2**; DC leads go to 2/0 AWG with a **400 A class T fuse**; the 150 A Blue Sea 7148 breakers and 5-stud bars drawn here are undersized for a 3 kVA and stand in for 250 A-class parts. The II's 120 A charger is within the bank's 200 A. Weight about 87 kg against v12's ~60 (batteries 40, inverter 19, frame 19).
+
 **v11: v10 swapped, 431 mm deep (17.0 in)** (`python cage.py v11`, viewer "v11")
 
 **Width: 386 mm (15.2 in), 4.0 in of pedal room** inside the IceBox face (was 365 / 4.8 in); the extra 21 mm all lands in the inverter column, where 30 mm goes behind the inverter card for its SB175 and the MultiPlus face ends up 47 mm from the tray wall instead of 45. **Hard limit: 17.25 in (438 mm) deep**, set by the access port in the Goose Gear plate. v11 uses it: 28 mm behind the front card's SB50 row (was 22) and 11 mm in front of the MPPT (was 10) make it **437.8 mm, 17.24 in**.
@@ -434,6 +450,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-13 | **v13:** MultiPlus-II 3 kVA + two Lithium Smart 200Ah in the IceBox footprint at 11.1 in (user's 1500 W load; height was the only dimension allowed to grow). Inverter on its long side along the inboard side, batteries end to end outboard, bus column between. Victron mounting orientation to confirm. |
 | 2026-10-12 | **v12 made the primary candidate.** Printing notes (materials, orientation, inserts, lifting load path) added to its section. |
 | 2026-10-12 | v12: Garmin moved to the front panel beside the external ports it feeds; the Orion joins the MPPT on the inboard wall and the Cerbo goes there too (fits with 41 mm spare). The inverter plate's top corners are notched around the post clips. |
 | 2026-10-12 | v12 inverter plate raised to 250 mm so the MultiPlus's top tabs bolt to it: the plate stands 21 mm above the 229 mm posts in the rail-free middle, with its top corners notched around the post clips. Cerbo laid flat on a pedestal, Orion turned lugs-to-mount. |
