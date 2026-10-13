@@ -93,6 +93,7 @@ if __name__ == "__main__":
     d = cage.RENDERS; os.makedirs(d, exist_ok=True)
     render(asm, os.path.join(d, "with-icebox.png"), 22, 35, hide=("lid",),
            title=("487 mm cube from 12 uncut kit bars" if cage.P["frame_source"] == "kit"
+                  else "v12: IceBox footprint, 10 in tall, not card based: 2 x 2 batteries, bus shelf, MultiPlus on its side, 762 x 487 x 254" if cage.P["card_plane"] == "v12"
                   else "v9: bus deck on the battery rack, two unpluggable cards, 539 x 345 x 559" if cage.P["card_plane"] == "v9"
                   else "v8: four SuperPack 60Ah in two touching stacks, three cards across, 598 x 345 x 559" if cage.P["card_plane"] == "v8"
                   else "v7: four SuperPack 60Ah in two touching stacks, lengthwise cards in front, 345 mm wide" if cage.P["card_plane"] == "v7"
@@ -100,18 +101,21 @@ if __name__ == "__main__":
                   else "A second IceBox 1.3 frame as the cage")
                  + ", standing against the IceBox 1.3 slotted back panel")
     render(asm, os.path.join(d, "iso-front.png"), 24, 35, hide=("lid", "panel", "icebox"),
-           title=("Front-inboard iso, panels hidden: two cards (inverter, charge) and the bus deck on the battery rack" if cage.P["card_plane"] == "v9"
+           title=("Front-inboard iso, panels hidden: MultiPlus on its side at the front, bus shelf with the Cerbo flat on its pedestal, batteries behind" if cage.P["card_plane"] == "v12"
+                  else "Front-inboard iso, panels hidden: two cards (inverter, charge) and the bus deck on the battery rack" if cage.P["card_plane"] == "v9"
                   else "Front-inboard iso, panels hidden: three cards across (inverter, charge, distribution), battery stacks behind" if cage.P["card_plane"] == "v8"
                   else "Front-inboard iso, panels hidden: lengthwise cards in front, two touching battery stacks behind the cross-bar" if cage.P["card_plane"] == "v7"
                   else "Front-inboard iso, panels hidden: inverter card along the inboard wall, dist card beside it, batteries outboard" if cage.P["card_plane"] == "xz"
                   else "Front-inboard iso, panels hidden: dist card in front, inverter/charger card behind it, batteries at the back"))
     render(asm, os.path.join(d, "iso-back.png"), 24, 215, hide=("lid", "panel", "icebox"),
            title="Back-outboard iso, panels hidden: " + ("three batteries upright, fourth on its long side on the shelf" if cage.P["batt_layout"] == "row3_top1"
+                  else "2 x 2 batteries in one layer, bus shelf beside them, MultiPlus plate in front" if cage.P["card_plane"] == "v12"
                   else "battery rack with the bus deck on top, two cards in front" if cage.P["card_plane"] == "v9"
                   else "two touching stacks of SuperPack 60Ah at the IceBox end, three cards across in front" if cage.P["card_plane"] == "v8"
                   else "two touching stacks of SuperPack 60Ah at the IceBox end, cross-bar, cards in front" if cage.P["card_plane"] == "v7"
                   else ("four Lithium Smart 200Ah in a 2 x 2 printed rack, cards along the inboard wall" if cage.BS["arrange"] == "2x2" else "two Lithium Smart 200Ah end to end in the outboard column, cards along the inboard wall") if cage.P["card_plane"] == "xz" else "two upright stacks of two batteries"))
-    render(asm, os.path.join(d, "cards-lifted.png"), 24, 35, hide=("lid", "panel", "icebox"), lift=cage.in_H * 0.8, title="All three cards lifted out the top")
+    if cage.P["card_plane"] != "v12":   # nothing lifts out of v12
+        render(asm, os.path.join(d, "cards-lifted.png"), 24, 35, hide=("lid", "panel", "icebox"), lift=cage.in_H * 0.8, title="All three cards lifted out the top")
     render(asm, os.path.join(d, "front.png"), 0, 0, hide=("lid", "panel", "icebox"), title="Front elevation, panels hidden")
-    render(asm, os.path.join(d, "top.png"), 90, -90, hide=("lid", "icebox"), title="Top-down, lid off: rear layer (left) and cards (right)")
+    render(asm, os.path.join(d, "top.png"), 90, -90, hide=("lid", "icebox"), title="Top-down, lid off: batteries and bus shelf (left), MultiPlus and front panel (right)" if cage.P["card_plane"] == "v12" else "Top-down, lid off: rear layer (left) and cards (right)")
     render(asm, os.path.join(d, "with-icebox-top.png"), 90, -90, hide=("lid",), title="Top-down with the IceBox")
