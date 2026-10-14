@@ -53,12 +53,15 @@ VARIANTS = {
     # shelf and inverter plate only: frame, panels, lid, posts, clips and the port strip carry over
     "v12": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=762.0,
                 batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
-                card_style="solid"),
+                card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long"),
+    "v12_4batt": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=762.0,   # the earlier v12 interior: 2 x 2 SuperPacks
+                      batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
+                      card_style="solid"),
     # v13: v12 one inch taller for a 1500 W AC load: MultiPlus-II 12/3000 on its long side along the inboard side, two
     # Lithium Smart 200Ah end to end along the outboard side, the bus column between them
     "v13": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=762.0,
                 batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
-                card_style="solid", box="v13"),
+                card_style="solid", box="v13", batt="smart200", inverter_long="multiplus_ii_long"),
     # v6 draft: cards run FRONT TO BACK along the inboard wall so the
     # MultiPlus-II (578 long) fits on its side; one battery column outboard.
     # v6: side-mount cards, the owner's MultiPlus 12/1200/50, four 200Ah Smarts 2 x 2 in a printed rack.
@@ -219,6 +222,7 @@ COMPONENTS = {
     "multiplus_1200_up": Comp("victron_multiplus", 249, 101, 375, "MultiPlus 12/1200/50-16 120V upright, terminals down (8.2 kg); body 374.6 tall, the datasheet's 406 includes the bracket"),
     "cerbo_up":  Comp("victron_cerbo", 78, 48, 154, "Cerbo GX turned 90 deg"),
     "multiplus_ii": Comp("victron_multiplus", 578, 148, 277, "MultiPlus-II 12/3000/120-50 120V on its side (19 kg) - 578 long"),
+    "multiplus_1200_long": Comp("victron_multiplus", 101, 375, 249, "MultiPlus 12/1200 on its long side along the box's depth (v12 on the v13 plate)"),
     "multiplus_ii_long": Comp("victron_multiplus", 148, 578, 277, "MultiPlus-II 12/3000/120-50 120V (578 x 277 x 148, 19 kg) on its long side along the box's depth, back on a plate, cable end forward"),
     "multiplus_4k": Comp("victron_multiplus", 631, 164, 277, "MultiPlus-II 12/4k/160-50 120V on its side (22 kg) - 631 long"),
     "mppt":      Comp("victron_mppt", 186, 70, 130, "SmartSolar MPPT 100/30, upright, terminals down (1.3 kg)"),
@@ -435,6 +439,7 @@ STEP_DIR = os.path.join(HERE, "step")
 STEP_FILES = {   # component key -> Victron STEP file (downloaded into cad/step/, see components.md)
     "multiplus_ii": "MultiPlus-II-12-3000-120V.step",
     "multiplus_ii_long": "MultiPlus-II-12-3000-120V.step",
+    "multiplus_1200_long": "MultiPlus-12-1200-120V.step",
     "multiplus":    "MultiPlus-12-800-120V.step",
     "multiplus_1200": "MultiPlus-12-1200-120V.step",
     "multiplus_1200_up": "MultiPlus-12-1200-120V.step",
@@ -1270,6 +1275,8 @@ HOLES["garmin_up"] = [(37, 20), (37, 105)]
 HOLES["multiplus_1200_side"] = [(68.0, 14.2), (311.8, 14.2), (68.0, 234.8), (311.8, 234.8)]   # the upright pattern turned on its side
 HOLES["mppt_up"] = HOLES.get("mppt", [])
 HOLES["multiplus_ii_long"] = [(50.0, 30.0), (528.0, 30.0), (289.0, 258.0)]   # two bottom holes + the top hook, turned on its side (verify, appendix G)
+HOLES["multiplus_1200_long"] = [(68.0, 14.2), (311.8, 14.2), (68.0, 234.8), (311.8, 234.8)]   # the upright pattern turned on its side
+INSERT["multiplus_1200_long"] = "M6"
 INSERT["multiplus_ii_long"] = "M6"
 INSERT["multiplus_1200_side"] = INSERT.get("multiplus_1200_up", "M6"); INSERT["mppt_up"] = INSERT["mppt"]
 INSERT["garmin_up"] = INSERT["garmin"]
@@ -2311,43 +2318,57 @@ def build_v13(a):
     Garmin flat on the floor in the front zone.  Ties: trays into the outboard rail's inner slot, plate in posts against
     the width rails (sill bolts + top clips) and bolted to the bus shelf's inboard wall."""
     g = dict()
-    b = COMPONENTS["smart200"]; wall, lip, fl, clr = 6.0, 30.0, V13["floor"], 1.5   # 1.5 mm pocket clearance each side
-    fd, fw = b.d + 2 * wall + 2 * clr, b.w + 2 * wall + 2 * clr  # 336 x 167
-    bay_D = V13["end_gap"] + 2 * (fd + 12) + V13["row_gap"]        # 708 of the 711
+    bkey = P.get("batt", "smart200"); small = bkey == "battery"   # v12: two SuperPack 60Ah in the same zone, trays 167 wide like v13's
+    b = COMPONENTS[bkey]; wall, lip, fl, clr = 6.0, 30.0, V13["floor"], (1.0 if small else 1.5)   # pocket clearance each side
+    bs = COMPONENTS["smart200"]
+    fw = bs.w + 2 * wall + 2 * 1.5                                 # 167: the shelf lip is in the same place for both batteries
+    fd = b.d + 2 * wall + 2 * clr                                  # 336 (200Ah) or 243 (60Ah)
+    pw = b.w + 2 * clr                                             # pocket width: 155 or 140
+    if small:   # the two 60Ah trays sit at the two ends of the zone so both rail brackets reach their rails
+        txs = (x_in0 + V13["end_gap"] + 6, out_D - B - 3 - 6 - fd)
+    else:
+        txs = tuple(x_in0 + V13["end_gap"] + 6 + r * (fd + 12 + V13["row_gap"]) for r in range(2))
+    bay_D = txs[1] + fd + 6 - x_in0
     g["bay_D"] = bay_D
+    hxs = (50, 170, 290) if not small else (40, 120, 200)
     ty = y_in0 + 1
     for r in range(2):
-        tx = x_in0 + V13["end_gap"] + 6 + r * (fd + 12 + V13["row_gap"])
-        tray = box(fd, fw, lip + fl).cut(box(fd - 2 * wall, fw - 2 * wall, lip + fl + 1, (wall, wall, fl)))
-        tray = tray.cut(box(fd + 2, 28, 5, (-1, fw / 2 - 14, fl - 2)))                           # lengthwise strap groove, 4 mm of floor under it
+        tx = txs[r]
+        tray = box(fd, fw, lip + fl).cut(box(fd - 2 * wall, pw, lip + fl + 1, (wall, wall, fl)))
+        if small:   # the 15 mm between the 60Ah pocket and the shelf-side skin is a hollow channel: two 6 mm skins on the floor
+            tray = tray.cut(box(fd - 2 * wall, fw - 2 * wall - pw - 6, lip + fl + 1, (wall, wall + pw + 6, fl)))
+        tray = tray.cut(box(fd + 2, 28, 5, (-1, wall + pw / 2 - 14, fl - 2)))                      # lengthwise strap groove, 4 mm of floor under it
         for (px, py) in ((-6, 12), (-6, fw - 32), (fd, 12), (fd, fw - 32)):                    # corner pads, M4 inserts from the top
             tray = tray.union(box(6, 20, lip + fl, (px, py, 0)))
         for (px, py) in ((-6, 12), (-6, fw - 32), (fd, 12), (fd, fw - 32)):
             tray = tray.cut(cq.Workplane("XY").center(px + 6.0 if px < 0 else px, py + 10).circle(2.8).extrude(13).translate((0, 0, lip + fl - 12)))
-        for (hx, hy) in ((wall + 25, wall + 25), (wall + b.d - 25, wall + 25), (wall + 25, wall + b.w - 25), (wall + b.d - 25, wall + b.w - 25)):
+        for (hx, hy) in ((wall + 25, wall + 25), (wall + b.d - 25, wall + 25), (wall + 25, wall + pw - 25), (wall + b.d - 25, wall + pw - 25)):
             tray = tray.cut(cq.Workplane("XY").center(hx, hy).circle(3.4).extrude(fl + 1))     # M6 to the plate, optional
         for sx in (70, fd - 70):   # outboard wall: two countersunk 1/4-20 into the outboard rail's inner slot, heads flush inside
             tray = tray.cut(cq.Workplane("XZ").center(sx, B / 2).circle(3.4).extrude(-(wall + 2)).translate((0, -1, 0)))
             tray = tray.cut(cq.Workplane("XZ").center(sx, B / 2).circle(6.5).extrude(-3).translate((0, wall + 0.5, 0)))
-        for hx in (50, 170, 290):   # inboard wall: 3 x M4 into the bus shelf's lip inserts
+        for hx in hxs:   # inboard wall: 3 x M4 into the bus shelf's lip inserts
             tray = tray.cut(cq.Workplane("XZ").center(hx, 17).circle(2.3).extrude(-(wall + 2)).translate((0, fw - wall - 1, 0)))
         # the tray is 345 long, so it prints as two halves joined on a 20 mm half-lap at mid-length: the back half keeps the
         # floor's lower half and the walls' outer halves across the lap, the front half the rest; 2 x M4 down through the
         # floor lap (countersunk, under the battery) and 1 x M4 through each wall lap, nuts in pockets, all on the bench
-        mid, lw = fd / 2, V13["tray_lap"]
-        a_keep = (box(lw, 4, 60, (mid - lw / 2, -1, -1)).union(box(lw, 4, 60, (mid - lw / 2, fw - 3, -1)))
-                  .union(box(lw, fw + 2, fl / 2 + 1, (mid - lw / 2, -1, -1))))
-        zone = box(lw, fw + 2, 60, (mid - lw / 2, -1, -1))
-        half_a = tray.intersect(box(mid + lw / 2 + 10, fw + 20, 60, (-10, -10, -1))).cut(zone.cut(a_keep))
-        half_b = tray.intersect(box(fd + 20, fw + 20, 60, (mid - lw / 2, -10, -1))).cut(a_keep)
-        for hy in (fw * 0.3, fw * 0.7):
-            bolt = cq.Workplane("XY").center(mid, hy).circle(2.3).extrude(fl + 2).translate((0, 0, -1))
-            half_a, half_b = half_a.cut(bolt), half_b.cut(bolt)
-        for yb in (-1, fw - wall - 1):
-            bolt = cq.Workplane("XZ").center(mid, 20).circle(2.3).extrude(-(wall + 2)).translate((0, yb, 0))
-            half_a, half_b = half_a.cut(bolt), half_b.cut(bolt)
-        add(a, half_a.translate((tx, ty, 0)), f"print_tray_battery_{r}_back", ORANGE)
-        add(a, half_b.translate((tx, ty, 0)), f"print_tray_battery_{r}_front", ORANGE)
+        if fd + 12 > 256:
+            mid, lw = fd / 2, V13["tray_lap"]
+            a_keep = (box(lw, 4, 60, (mid - lw / 2, -1, -1)).union(box(lw, 4, 60, (mid - lw / 2, fw - 3, -1)))
+                      .union(box(lw, fw + 2, fl / 2 + 1, (mid - lw / 2, -1, -1))))
+            zone = box(lw, fw + 2, 60, (mid - lw / 2, -1, -1))
+            half_a = tray.intersect(box(mid + lw / 2 + 10, fw + 20, 60, (-10, -10, -1))).cut(zone.cut(a_keep))
+            half_b = tray.intersect(box(fd + 20, fw + 20, 60, (mid - lw / 2, -10, -1))).cut(a_keep)
+            for hy in (fw * 0.3, fw * 0.7):
+                bolt = cq.Workplane("XY").center(mid, hy).circle(2.3).extrude(fl + 2).translate((0, 0, -1))
+                half_a, half_b = half_a.cut(bolt), half_b.cut(bolt)
+            for yb in (-1, fw - wall - 1):
+                bolt = cq.Workplane("XZ").center(mid, 20).circle(2.3).extrude(-(wall + 2)).translate((0, yb, 0))
+                half_a, half_b = half_a.cut(bolt), half_b.cut(bolt)
+            add(a, half_a.translate((tx, ty, 0)), f"print_tray_battery_{r}_back", ORANGE)
+            add(a, half_b.translate((tx, ty, 0)), f"print_tray_battery_{r}_front", ORANGE)
+        else:   # a 60Ah tray with its pads is 255: one print
+            add(a, tray.translate((tx, ty, 0)), f"print_tray_battery_{r}", ORANGE)
         # L brackets from the tray's outer pads to the width rail behind it (r 0) or in front of it (r 1): the horizontal leg bolts
         # down into the pad's M4 insert, the vertical leg takes a countersunk 1/4-20 into the rail's inner slot (T-nut)
         for k, py in enumerate((12, fw - 32)):
@@ -2364,7 +2385,7 @@ def build_v13(a):
             br = br.cut(cq.Workplane("XY").center(hx, 10).circle(2.3).extrude(8).translate((0, 0, lip + fl - 1)))
             add(a, br.translate((0, ty + py, 0)), f"print_tray_rail_bracket_{r}{k}", ORANGE)
         at = (tx + wall + clr, ty + wall + clr, fl)
-        add(a, victron_shape("smart200", b.d, b.w, b.h, at, box(b.d, b.w, b.h, at).edges("|Z").fillet(6)), f"battery_{r}", BATT)
+        add(a, victron_shape(bkey, b.d, b.w, b.h, at, box(b.d, b.w, b.h, at).edges("|Z").fillet(6)), f"battery_{r}", BATT)
         g[f"tx{r}"] = tx
     # --- bus shelf in the column between the trays and the inverter plate -----------------------------------------
     y0s, y1s = ty + fw, V13["plate_y"]                            # 190.4 .. 305: 114.6 wide
@@ -2376,7 +2397,7 @@ def build_v13(a):
         sh = box(xb - xa, y1s - y0s, 6, (xa, y0s, 0))
         sh = sh.union(box(xb - xa, 6, 34, (xa, y0s, 0)))                     # lip against the trays' inboard walls (M4 inserts)
         for r in range(2):
-            for hx in (50, 170, 290):
+            for hx in hxs:
                 hxa = g[f"tx{r}"] + hx
                 if xa + 6 < hxa < xb - 6:
                     sh = sh.cut(cq.Workplane("XZ").center(hxa, 17).circle(2.3).extrude(-8).translate((0, y0s - 1, 0)))
@@ -2397,7 +2418,8 @@ def build_v13(a):
         col = BLUE if c.name.startswith("victron") else GOLD
         add(a, victron_shape(pl["comp"], c.d, c.w, c.h, at, unit_fallback(pl["comp"], c.d, c.w, c.h, at)), c.name + f"_shelf_{int(pl['x'])}", col)
     # --- inverter plate along the depth, in posts against the two width rails ---------------------------------------
-    inv = COMPONENTS["multiplus_ii_long"]
+    ikey = P.get("inverter_long", "multiplus_ii_long"); inv = COMPONENTS[ikey]
+    iz = 2.0 if ikey == "multiplus_ii_long" else 22.0            # the 12/1200's lower keyholes are 14 up, so it stands on 22 mm shims to reach the plate
     yp = V13["plate_y"]; hpost = min(out_H - B, 254.0)            # posts print in one piece (254); the clips make up the rest to the lid
     px0, px1 = x_in0 + P["post_d"] - P["slot_depth"], out_D - B - P["post_d"] + P["slot_depth"]   # plate ends inside the post slots
     zp = 21.0; hp = min(256.0, out_H - 2 - zp)                    # 256 tall from z 21 (bed limit): bottom holes at 30 and the hook near the top land on it
@@ -2407,7 +2429,7 @@ def build_v13(a):
         clip = v12_post_clip(mirror=(j == 1), h=out_H - hpost, bolt_z=out_H - hpost - B / 2).rotate((0, 0, 0), (0, 0, 1), -90)
         add(a, clip.translate((xclip, yt, hpost)), f"print_post_clip_{j}", ORANGE)
     ux = V13["inv_x"]
-    patches = [(ux - px0 + u, 2.0 - zp + v) for (u, v) in HOLES["multiplus_ii_long"]]
+    patches = [(ux - px0 + u, iz - zp + v) for (u, v) in HOLES[ikey]]
     V13["window"] = (640.0, 712.0, 165.0, 250.0)                   # x0, x1, z0, z1: 72 x 85 cable window in the plate's front tile, above the Garmin
     wx0, wx1, wz0, wz1 = V13["window"]
     window = cq.Workplane("XZ").center((wx0 + wx1) / 2, (wz0 + wz1) / 2).rect(wx1 - wx0, wz1 - wz0).extrude(-(P["card_t"] + 2)).edges("|Y").fillet(8).translate((0, yp - 1, 0))
@@ -2419,10 +2441,10 @@ def build_v13(a):
         shp = shp.cut(box(14, P["card_t"] + 2, 40, (px0 - 1, yp - 1, hpost - 0.6)))                  # top corners clear the post clips
         shp = shp.cut(box(14, P["card_t"] + 2, 40, (px1 - 13, yp - 1, hpost - 0.6)))
         add(a, shp, nm, ORANGE if "spline" in nm else DARK)
-    at = (ux, yp + P["card_t"] + V13["standoff"], 2.0)
-    add(a, victron_shape("multiplus_ii_long", inv.d, inv.w, inv.h, at, box(inv.d, inv.w, inv.h, at).edges("|Y").fillet(3), lugs=("y", -1)), "victron_multiplus_ii", BLUE)
-    for k, sx in enumerate((ux + 20, ux + inv.d - 120)):              # two 2 mm shims carry its weight to the floor
-        add(a, box(100, inv.w, 2.0, (sx, at[1], 0)), f"print_inverter_shim_{k}", ORANGE)
+    at = (ux, yp + P["card_t"] + V13["standoff"], iz)
+    add(a, victron_shape(ikey, inv.d, inv.w, inv.h, at, box(inv.d, inv.w, inv.h, at).edges("|Y").fillet(3), lugs=("y", -1)), "victron_multiplus_long", BLUE)
+    for k, sx in enumerate((ux + 20, ux + inv.d - 120)):              # two shims carry its weight to the floor
+        add(a, box(100, inv.w, iz, (sx, at[1], 0)), f"print_inverter_shim_{k}", ORANGE)
     g["inv_front"] = ux + inv.d
     # --- charge gear on the plate's column face (lugs to the plate, inserts in the plate) ---------------------------
     for comp, x0, z0, nm in V13_PLATE_UNITS:
@@ -2444,8 +2466,8 @@ def dims_v13():
     dim([0, 0, top], [out_D, 0, top], f"depth {out_D:.0f} mm ({out_D / 25.4:.1f} in) = the IceBox", [0, -60, 0])
     dim([0, 0, top], [0, out_W, top], f"width {out_W:.0f} mm ({out_W / 25.4:.1f} in) = the IceBox", [-60, 0, 0])
     dim([out_D + 60, 0, 0], [out_D + 60, 0, out_H], f"height {out_H:.0f} mm ({out_H / 25.4:.1f} in), {P['icebox_H'] - out_H:.0f} under the IceBox", [40, 0, 0])
-    dim([x_in0, -30, 40], [x_in0 + g.get("bay_D", 702), -30, 40], f"two Smart 200Ah end to end {g.get('bay_D', 702):.0f}", [0, -40, 0])
-    dim([V13["inv_x"], out_W + 30, 40], [g.get("inv_front", 638), out_W + 30, 40], "MultiPlus-II on its long side 578", [0, 40, 0])
+    dim([x_in0, -30, 40], [x_in0 + g.get("bay_D", 702), -30, 40], f"{'two Smart 200Ah end to end' if P.get('batt') == 'smart200' else 'two SuperPack 60Ah, one at each end'} {g.get('bay_D', 702):.0f}", [0, -40, 0])
+    dim([V13["inv_x"], out_W + 30, 40], [g.get("inv_front", 638), out_W + 30, 40], f"{'MultiPlus-II' if P.get('inverter_long') == 'multiplus_ii_long' else 'MultiPlus 12/1200'} on its long side {g.get('inv_front', 638) - V13['inv_x']:.0f}", [0, 40, 0])
     dim([g.get("inv_front", 638), out_W + 30, 40], [x_in0 + in_D, out_W + 30, 40], f"front zone {x_in0 + in_D - g.get('inv_front', 638):.0f}: cable end + ports", [0, 80, 0])
     return D
 
@@ -2453,6 +2475,11 @@ def dims_v13():
 def report_v13():
     mm = lambda v: f"{v:.0f} mm ({v / 25.4:.2f} in)"
     g = BS.get("_g12") or {}
+    if P.get("batt") == "battery":
+        print("== Variant 'v12': v13's interior with two SuperPack 60Ah and the MultiPlus 12/1200: upgrade to v13 = swap trays, inverter and the DC parts ==")
+        print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}; bank 2 x 60 Ah = 120 Ah, 60 A continuous (160 A for 10 s) -> about 700 W of AC continuous from the 12/1200 (105 A at full output)")
+        print("  upgrade        : the shelf, plate, posts, clips, panels, lid, window and port strip are v13's; print v13's two split trays, fit the MultiPlus-II (2 mm shims instead of 22) and two Smart 200Ah + VE.Bus BMS, re-size the DC side")
+        return
     print("== Variant 'v13': v12 one inch taller, MultiPlus-II 12/3000 + two Lithium Smart 200Ah ==")
     print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}  -> IceBox footprint, {P['icebox_H'] - out_H:.0f} mm ({(P['icebox_H'] - out_H) / 25.4:.1f} in) lower; height rails cut to {out_H - 2 * C:.0f}")
     print(f"layout          : outboard side: two Smart 200Ah end to end ({g.get('bay_D', 0):.0f} of the {in_D:.0f}) | column {V13['plate_y'] - (y_in0 + 1 + 167):.0f} wide: breakers and bus bars in two rows | "
