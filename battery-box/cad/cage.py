@@ -53,7 +53,10 @@ VARIANTS = {
     # shelf and inverter plate only: frame, panels, lid, posts, clips and the port strip carry over
     "v12": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=762.0,
                 batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
-                card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long"),
+                card_style="solid", box="v13", batt="battery", inverter_long="multiplus_ii_long"),   # MultiPlus-II ordered 2026-10-14
+    "v12_1200": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=762.0,            # the same with the 12/1200 (reference)
+                     batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
+                     card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long"),
     "v12_4batt": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=762.0,   # the earlier v12 interior: 2 x 2 SuperPacks
                       batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                       card_style="solid"),
@@ -2477,9 +2480,13 @@ def report_v13():
     mm = lambda v: f"{v:.0f} mm ({v / 25.4:.2f} in)"
     g = BS.get("_g12") or {}
     if P.get("batt") == "battery":
-        print("== Variant 'v12': v13's interior with two SuperPack 60Ah and the MultiPlus 12/1200: upgrade to v13 = swap trays, inverter and the DC parts ==")
-        print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}; bank 2 x 60 Ah = 120 Ah, 60 A continuous (160 A for 10 s) -> about 700 W of AC continuous from the 12/1200 (105 A at full output)")
-        print("  upgrade        : the shelf, plate, posts, clips, panels, lid, window and port strip are v13's; print v13's two split trays, fit the MultiPlus-II (2 mm shims instead of 22) and two Smart 200Ah + VE.Bus BMS, re-size the DC side")
+        ii = P.get("inverter_long") == "multiplus_ii_long"
+        print(f"== Variant '{VARIANT}': v13's interior with two SuperPack 60Ah and the {'MultiPlus-II 12/3000 (ordered 2026-10-14)' if ii else 'MultiPlus 12/1200'}: upgrade to v13 = swap the trays and batteries ==")
+        print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}; bank 2 x 60 Ah = 120 Ah, 60 A continuous (160 A for 10 s) -> about 700 W of AC continuous whatever the inverter")
+        if ii:
+            print("  with the II    : set its charger to 60 A (2 x 30 A SuperPack charge limit) in VEConfigure; its 13 W idle is 1 Ah/h from a 120 Ah bank; build the DC side")
+            print("                   for v13 now (2/0 leads, 400 A class T, 250 A-class bars) so the battery upgrade touches nothing but the trays; the SuperPacks' own BMSs protect them")
+        print("  upgrade        : the shelf, plate, posts, clips, panels, lid, window, port strip and inverter are v13's; print v13's two split trays, fit two Smart 200Ah + VE.Bus BMS")
         return
     print("== Variant 'v13': v12 one inch taller, MultiPlus-II 12/3000 + two Lithium Smart 200Ah ==")
     print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}  -> IceBox footprint, {P['icebox_H'] - out_H:.0f} mm ({(P['icebox_H'] - out_H) / 25.4:.1f} in) lower; height rails cut to {out_H - 2 * C:.0f}")
