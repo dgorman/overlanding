@@ -49,7 +49,9 @@ VARIANTS = {
     # v12: v5's frame (a second IceBox 1.3, same width and depth) cut to HALF the IceBox height.  Not card based: four
     # batteries in one layer at the back, a bus shelf in the column beside them, the MultiPlus on its long side on a
     # fixed plate at the front, the charge gear on printed mounts inside the side and front panels.  Lid off = full access.
-    "v12": dict(frame_source="icebox", frame_W=487.4, frame_H=254.0, frame_D=762.0,
+    # v12 is cut at v13's height (282) with v13's front panel, so a v12 build upgrades to v13 by reprinting the trays, bus
+    # shelf and inverter plate only: frame, panels, lid, posts, clips and the port strip carry over
+    "v12": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=762.0,
                 batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                 card_style="solid"),
     # v13: v12 one inch taller for a 1500 W AC load: MultiPlus-II 12/3000 on its long side along the inboard side, two
@@ -416,14 +418,10 @@ if P.get("swap"):   # v11: every port on the FRONT face, in the 78 mm strip betw
                    ("sb50_solar", 64, 274), ("sb50_alt", 64, 330),
                    ("l14_30_in", 64, 400), ("l14_30_out", 64, 470)]
 PORT_FACE = {"sb175": (26.0, 56.0, 79.0), "sb50": (37.0, 48.0, 48.0), "iec": (24.0, 32.0, 50.0)}   # (w, h, depth), face centred
-if P["card_plane"] == "v12":   # 10 in box: the port strip is the outboard 150 mm of the front panel, three columns, under z 215
-    FRONT_PORTS = [("l14_30_in", 64, 65), ("l14_30_out", 64, 135), ("socket", 64, 190, 29),
-                   ("sb50_solar", 118, 60), ("sb50_alt", 118, 116), ("socket", 118, 160, 22), ("socket", 118, 193, 22),
-                   ("socket", 160, 60, 29), ("socket", 160, 100, 29)]
-if P.get("box") == "v13":   # v13: the batteries run the outboard side to the front, so the port strip is the INBOARD 150 mm of the front panel
-    FRONT_PORTS = [("l14_30_in", 428, 65), ("l14_30_out", 428, 135), ("socket", 428, 190, 29),            # (the inverter plate's front post
-                   ("sb50_solar", 372, 60), ("sb50_alt", 372, 116), ("socket", 372, 160, 22), ("socket", 372, 193, 22),   # ends at y 315)
-                   ("socket", 338, 150, 29), ("socket", 338, 190, 29)]
+if P["card_plane"] == "v12":   # v12 and v13 share one front panel: the port strip is the INBOARD 150 mm, three columns, under the top rail
+    FRONT_PORTS = [("l14_30_in", 428, 65), ("l14_30_out", 428, 135), ("socket", 428, 190, 29),            # (v13's batteries run the outboard
+                   ("sb50_solar", 372, 60), ("sb50_alt", 372, 116), ("socket", 372, 160, 22), ("socket", 372, 193, 22),   # side to the front; its plate's
+                   ("socket", 338, 150, 29), ("socket", 338, 190, 29)]                                                   # front post ends at y 315)
 INLET_BODY = {"l14": (60.0, 55.0), "sb50": (48.0, 37.0, 48.0), "sb175": (79.0, 56.0, 26.0)}   # (dia, depth) or (depth, w, h)
 N_BATT = 4
 post_h = in_H                                          # floor panel top to the underside of the top rails
@@ -2143,11 +2141,12 @@ def v12_inverter_plate(a, g, inv_key, px_):
     cy0 = y_in0 + (in_W - cw) / 2
     ch = min(inv.h + 1, 254.0)                                    # 250 (<= 254 for the bed): from z 2 to 1 above the MultiPlus's top tabs; the plate sits between the
                                                                   # posts in the rail-free middle, so it may stand 21 mm above the posts, 2 under the lid
-    hpost = out_H - B
+    hpost = min(out_H - B, 254.0)                                 # posts print in one piece; the clips make up the rest to the lid
     for j, y in enumerate((y_in0, out_W - B - P["post_d"])):
         ppx = px_ - (P["post_w"] - P["card_t"]) / 2 - P["card_clear"]
         add(a, v12_post(hpost, mirror=(j == 1)).translate((ppx, y, 0)), f"print_post_inverter_{j}", ORANGE)
-        add(a, v12_post_clip(mirror=(j == 1)).translate((ppx, y if j == 0 else out_W - B - 20, hpost)), f"print_post_clip_{j}", ORANGE)
+        clip = v12_post_clip(mirror=(j == 1), h=out_H - hpost, bolt_z=out_H - hpost - B / 2)
+        add(a, clip.translate((ppx, y if j == 0 else out_W - B - 20, hpost)), f"print_post_clip_{j}", ORANGE)
     patches = [(u + (cw - inv.w) / 2, v + 2) for (u, v) in HOLES[inv_key]]
     for nm, shp in lattice_card_tiles_yz(cw, ch, px_, cy0, 2.0, "plate_inverter", patches):
         if nm.endswith("tile_00"):   # corners notched 12 wide: at the bottom for the posts' solid sills (slots start at z 30),
@@ -2277,11 +2276,12 @@ def build_v12(a):
     xf = v12_panels(a)
     # --- front panel inside: the Garmin PowerSwitch on a printed mount beside the ports it feeds (mount screwed through ---
     ga = COMPONENTS["garmin"]                                      # the panel from outside into inserts)
-    gy, gz = out_W - B - 40 - ga.w, 60.0
+    gy, gz = y_in0 + 20, 60.0                                      # outboard side: the port strip has the inboard 150 mm
     add(a, box(6, ga.w + 20, ga.h + 20, (xf - 6, gy - 10, gz - 10)), "print_mount_garmin", ORANGE)
     at = (xf - 6 - ga.d - 3, gy, gz)
     add(a, victron_shape("garmin", ga.d, ga.w, ga.h, at, box(ga.d, ga.w, ga.h, at).edges("|X").fillet(3)), "garmin_powerswitch_front", (0.08, 0.08, 0.08))
     # --- inboard side panel inside, over the bus shelf: Cerbo, Orion and MPPT (upright) on printed mounts, lugs to the panel
+    pm = B / 2 - 3                                                 # panel's outer face, inside the bar envelope (as in v12_panels)
     yf = out_W - pm - T                                            # the inboard panel's inner face
     V12_WALL = (("cerbo", x_in0 + 25, 120.0, "cerbo"),            # long edges horizontal: plugs out the top and bottom edges
                 ("orion", x_in0 + 215, 60.0, "orion"),            # over the shunt and the (-) bus bar, 22 mm clear of them
@@ -2494,9 +2494,10 @@ def report_v12():
           f"column {in_W - 2 * 150 - 2:.0f} wide beside them with the bus shelf | front {in_D - bd:.0f}: fixed plate + MultiPlus on its long side ({g.get('inv_front', 0) - x_in0 - bd:.0f} used) + Orion and ports on the front panel")
     print(f"height budget   : the top rails only run along the edges, so the middle of the box is clear to the lid at {out_H:.0f}: MultiPlus on its long side 249 + 2 = 251 "
           f"({out_H - 251:.0f} under the lid) on a 250 plate, batteries 217 + lugs 19 = 236 ({out_H - 236:.0f} under the lid); under the rails (posts, panel mounts, ports) the limit is {out_H - B:.0f}: "
-          f"MPPT upright 186 from z 38, posts {out_H - B:.0f} + clips")
+          f"MPPT upright 186 from z 38, posts 254 + {out_H - 254:.0f} clips")
     print(f"inboard wall    : Cerbo (174 mount) + Orion (143) + MPPT (150) on the panel between the back corner and the inverter posts, "
-          f"{548.8 - (x_in0 + 15):.0f} available; the Garmin on the front panel beside the ports it feeds")
+          f"{548.8 - (x_in0 + 15):.0f} available; the Garmin on the front panel's outboard side, the ports on its inboard 150 mm (v13's panel)")
+    print(f"upgrade to v13  : same frame ({out_H:.0f} tall), panels, lid, posts, clips and port strip; reprint the trays, bus shelf and inverter plate, swap the MultiPlus and batteries")
     print("  no deck, no legs, no shelves, no cards: lid off and every unit is in reach.  Panel units (Orion, MPPT, Garmin) hang on printed mounts screwed")
     print("  through the panel from outside into inserts, fed by SB50 pigtails so a panel unbolts with its units; the MultiPlus is lugged straight to the bus bars.")
     print("  rail slots: the IceBox's panels are captured in the rails' centreline slots, so the rails' top and bottom slots are taken; every tie")
