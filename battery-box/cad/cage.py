@@ -562,13 +562,14 @@ def victron_shape(key, dx, dy, dz, at, fallback, flip=None, lugs=None):
         axis = {"x": (1, 0, 0), "y": (0, 1, 0), "z": (0, 0, 1)}[ax]
         best = best.rotate((0, 0, 0), axis, deg); best_bb = best.BoundingBox()
     if lugs:   # ("y", +1): the mounting-lug face (the end slab that spans the unit's full outline) must be at +y; else turn 180 about the vertical
+               # (a 6 mm slab: the MultiPlus 12/1200's keyhole tabs sit 4 mm inside its fan guard, and a 3 mm slab missed them)
         ax, side = lugs
         i = "xyz".index(ax)
         def slab_fill(end):
             lo = [best_bb.xmin, best_bb.ymin, best_bb.zmin]; hi = [best_bb.xmax, best_bb.ymax, best_bb.zmax]
             lo2, hi2 = list(lo), list(hi)
-            if end < 0: hi2[i] = lo[i] + 3.0
-            else: lo2[i] = hi[i] - 3.0
+            if end < 0: hi2[i] = lo[i] + 6.0
+            else: lo2[i] = hi[i] - 6.0
             sl = cq.Workplane("XY").box(hi2[0] - lo2[0], hi2[1] - lo2[1], hi2[2] - lo2[2], centered=False).translate(tuple(lo2)).val()
             b = best.intersect(sl).BoundingBox()
             ext = [b.xlen, b.ylen, b.zlen]; full = [hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]]
