@@ -86,6 +86,10 @@
       <summary class="eyebrow" style="cursor:pointer">Legend</summary>
       <div id="legend"></div>
     </details>
+    <details open>
+      <summary class="eyebrow" style="cursor:pointer">Sub-assemblies</summary>
+      <div id="subasm"></div>
+    </details>
     <div class="eyebrow" id="numbers-title">Cube frame, 12 uncut kit bars</div>
     <dl id="numbers"></dl>
   </div>
@@ -132,14 +136,39 @@ const GROUPS = {
   power:    ['Bus bars, breakers, shunt',   0xc9a227, 1],
   socket:   ['Sockets + Anderson SB50s',    0x444444, 1],
 };
+// Sub-assemblies: what is built on the bench and goes into the box as one piece (v12/v12s/v13 naming; other variants fall into "Everything else")
+const SUBS = {
+  frame:   ['Frame: cubes, rails, panels, lid',        /^(cube_|bar_|panel_|lid_|icebox_|print_panel_front|print_cube|print_bar)/],
+  tray0:   ['Tray 0 (back) + battery + brackets',       /(tray_battery_0|^battery_0|bracket_0)/],
+  tray1:   ['Tray 1 (front) + battery + brackets',      /(tray_battery_1|^battery_1|bracket_1)/],
+  shelf:   ['Bus shelf: plates, bus bars, shunt',       /(print_bus_shelf|_shelf_)/],
+  plate:   ['Inverter plate + charge gear + breakers',  /(print_plate_inverter|_plate$|multiplus_long|multiplus_ii|multiplus_side)/],
+  posts:   ['Posts and clips',                          /(print_post)/],
+  ports:   ['Ports and sockets',                        /^socket_/],
+  other:   ['Everything else',                          /./],
+};
+const subasm = document.getElementById('subasm');
+const subObjs = {}; const subOn = {};
+for (const [k, [label]] of Object.entries(SUBS)) {
+  subObjs[k] = []; subOn[k] = true;
+  const l = document.createElement('label');
+  l.innerHTML = `<input type="checkbox" id="s-${k}" checked data-s="${k}">${label}`;
+  l.querySelector('input').addEventListener('change', e => { subOn[k] = e.target.checked; applyVisibility(); });
+  subasm.appendChild(l);
+}
 const legend = document.getElementById('legend');
 const groupObjs = {};
+const groupOn = {};
+function applyVisibility() {
+  for (const k in groupObjs) for (const o of groupObjs[k]) o.visible = groupOn[k] !== false && subOn[o.userData.sub] !== false;
+}
 for (const [k, [label, col]] of Object.entries(GROUPS)) {
   groupObjs[k] = [];
   const l = document.createElement('label');
   const id = 'g-' + k;
   l.innerHTML = `<input type="checkbox" id="${id}" checked data-g="${k}"><span class="sw" style="background:#${col.toString(16).padStart(6,'0')}"></span>${label}`;
-  l.querySelector('input').addEventListener('change', e => { groupObjs[k].forEach(o => o.visible = e.target.checked); });
+  groupOn[k] = true;
+  l.querySelector('input').addEventListener('change', e => { groupOn[k] = e.target.checked; applyVisibility(); });
   legend.appendChild(l);
 }
 
@@ -240,6 +269,7 @@ function setVariant(v) {
   if (modelRoot) { scene.remove(modelRoot); modelRoot = null; }
   if (cardRoot) { scene.remove(cardRoot); cardRoot = null; }
   for (const k in groupObjs) groupObjs[k] = [];
+  for (const k in subObjs) subObjs[k] = [];
   cardLifted = false; document.getElementById('card').textContent = 'Lift cards';
   loadModel(v).then(gltf => {
   const root = gltf.scene; modelRoot = root;
@@ -252,7 +282,8 @@ function setVariant(v) {
     o.material = new THREE.MeshStandardMaterial({ color: col, roughness: 0.6, metalness: key === 'bar' ? 0.5 : 0.05,
       transparent: op < 1, opacity: op, depthWrite: op >= 1, side: THREE.DoubleSide });
     o.userData.key = key;
-    groupObjs[key].push(o);
+    o.userData.sub = Object.keys(SUBS).find(k => SUBS[k][1].test(name)) || 'other';
+    groupObjs[key].push(o); subObjs[o.userData.sub].push(o);
   });
   scene.add(root);
   bbox.setFromObject(root);
@@ -260,8 +291,9 @@ function setVariant(v) {
   const liftable = [];
   root.traverse(o => { if (o.isMesh && (/__card$/i.test(o.name) || /^card_/i.test(o.name))) liftable.push(o); });
   liftable.forEach(o => cardRoot.attach(o));
-  document.getElementById('g-lid').checked = false;
-  for (const inp of legend.querySelectorAll('input')) groupObjs[inp.dataset.g].forEach(o => o.visible = inp.checked);
+  document.getElementById('g-lid').checked = false; groupOn['lid'] = false;
+  for (const inp of subasm.querySelectorAll('input')) { inp.checked = true; subOn[inp.dataset.s] = true; }
+  applyVisibility();
   setView('iso');
   loadDims(v);
   document.getElementById('status').textContent = `${({ v9: 'v9 bus deck', v8: 'v8 three cards across', v7: 'v7 narrow, 4 × 60Ah', cube: 'v4 cube', icebox: 'v5 second IceBox', bookshelf: 'v6 side-mount, 4 × 200Ah', bookshelf2: 'v6 alt, 2 × 200Ah', bookshelf60: 'v6 check, 4 × 60Ah' })[v]} loaded · ${liftable.length} parts ride on the cards · units mm`;

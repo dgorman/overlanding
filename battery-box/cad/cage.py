@@ -58,7 +58,8 @@ VARIANTS = {
     # No upgrade path (the MultiPlus-II and the 200Ah pair both need the full 762)
     "v12s": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=620.0,
                  batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
-                 card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True),
+                 card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
+                 perforated_back=True, clean_trays=True),   # the IceBox's slot pattern on the back panel; trays without the unused pads and floor holes
     "v12_1200": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=762.0,            # the same with the 12/1200 (reference)
                      batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                      card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long"),
@@ -2200,9 +2201,19 @@ def v12_panels(a):
             return body.union(box(length, T, out_H - 2 * B + 6, (B, thick_at, B - 3)))
         body = box(T, length, out_H - 2 * B, (thick_at, B, B)).union(box(T, length + 6, out_H - 2 * B, (thick_at, B - 3, B)))
         return body.union(box(T, length, out_H - 2 * B + 6, (thick_at, B, B - 3)))
+    back = slot_panel("y", pm, in_W)                                                          # the IceBox's perforated rear panel, cut to height
+    if P.get("perforated_back"):   # its slot pattern (same pitch as the IceBox's own back panel), kept clear of the rail tongues
+        slot_w, slot_h, pitch_y, pitch_z = 72.0, 22.0, 92.0, 46.0
+        rows = int((out_H - 2 * B - 60) / pitch_z)
+        for r in range(rows):
+            z = B + 30 + r * pitch_z
+            y = B + 40 + ((pitch_y / 2) if r % 2 else 0)
+            while y + slot_w < out_W - B - 30:
+                back = back.cut(cq.Workplane("YZ").center(y + slot_w / 2, z + slot_h / 2).slot2D(slot_w, slot_h).extrude(T + 8).translate((pm - 4, 0, 0)))
+                y += pitch_y
     for nm, shp in (("panel_side_outboard_from_icebox", slot_panel("x", pm, in_D)),          # cut down from the IceBox's side panels
                     ("panel_side_inboard_from_icebox", slot_panel("x", out_W - pm - T, in_D)),
-                    ("panel_back_perforated_from_icebox", slot_panel("y", pm, in_W))):        # the IceBox's perforated rear panel, cut to height
+                    ("panel_back_perforated_from_icebox", back)):
         add(a, shp, nm, PANEL)
     front = slot_panel("y", out_D - pm - T, in_W)
     xf = out_D - pm - T                                            # the front panel's inner face
@@ -2376,12 +2387,16 @@ def build_v13(a):
         tx = txs[r]
         tray = box(fd, fw, lip + fl).cut(box(fd - 2 * wall, pw, lip + fl + 1, (wall, wall, fl)))
         tray = tray.cut(box(fd + 2, 28, 5, (-1, wall + pw / 2 - 14, fl - 2)))                      # lengthwise strap groove, 4 mm of floor under it
-        for (px, py) in ((-6, 12), (-6, fw - 32), (fd, 12), (fd, fw - 32)):                    # corner pads, M4 inserts from the top
+        pads = ((-6, 12), (-6, fw - 32), (fd, 12), (fd, fw - 32))
+        if P.get("clean_trays"):   # only the two pads that take this tray's rail brackets (back end of tray 0, front end of tray 1)
+            pads = tuple(pd for pd in pads if (pd[0] < 0) == (r == 0))
+        for (px, py) in pads:                                                                    # corner pads, M4 inserts from the top
             tray = tray.union(box(6, 20, lip + fl, (px, py, 0)))
-        for (px, py) in ((-6, 12), (-6, fw - 32), (fd, 12), (fd, fw - 32)):
+        for (px, py) in pads:
             tray = tray.cut(cq.Workplane("XY").center(px + 6.0 if px < 0 else px, py + 10).circle(2.8).extrude(13).translate((0, 0, lip + fl - 12)))
-        for (hx, hy) in ((wall + 25, wall + 25), (wall + b.d - 25, wall + 25), (wall + 25, wall + pw - 25), (wall + b.d - 25, wall + pw - 25)):
-            tray = tray.cut(cq.Workplane("XY").center(hx, hy).circle(3.4).extrude(fl + 1))     # M6 to the plate, optional
+        if not P.get("clean_trays"):
+            for (hx, hy) in ((wall + 25, wall + 25), (wall + b.d - 25, wall + 25), (wall + 25, wall + pw - 25), (wall + b.d - 25, wall + pw - 25)):
+                tray = tray.cut(cq.Workplane("XY").center(hx, hy).circle(3.4).extrude(fl + 1))     # M6 to the plate, optional
         for sx in (70, fd - 70):   # outboard wall: two countersunk 1/4-20 into the outboard rail's inner slot, heads flush inside
             tray = tray.cut(cq.Workplane("XZ").center(sx, B / 2).circle(3.4).extrude(-(wall + 2)).translate((0, -1, 0)))
             tray = tray.cut(cq.Workplane("XZ").center(sx, B / 2).circle(6.5).extrude(-3).translate((0, wall + 0.5, 0)))
