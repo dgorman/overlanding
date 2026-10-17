@@ -59,7 +59,8 @@ VARIANTS = {
     "v12s": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=620.0,
                  batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                  card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
-                 perforated_back=True, clean_trays=True),   # the IceBox's slot pattern on the back panel; trays without the unused pads and floor holes
+                 perforated_back=True, clean_trays=True, plate_pilots=True),   # the IceBox's slot pattern on the back panel; trays without the unused
+                                                                               # pads and floor holes; insert pilot holes in the plate under every unit
     "v12_1200": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=762.0,            # the same with the 12/1200 (reference)
                      batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                      card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long"),
@@ -1292,7 +1293,9 @@ INSERT = {"mppt": "M5", "orion": "M4", "cerbo": "M4", "cerbo_up": "M4", "cerbo_f
           "breaker_a": "M6", "breaker_b": "M6", "garmin": "M4", "bms": "M4"}
 HOLES["garmin_up"] = [(37, 20), (37, 105)]
 HOLES["multiplus_1200_side"] = [(68.0, 14.2), (311.8, 14.2), (68.0, 234.8), (311.8, 234.8)]   # the upright pattern turned on its side
-HOLES["mppt_up"] = HOLES.get("mppt", [])
+HOLES["mppt_up"] = [(v, u) for (u, v) in HOLES.get("mppt", [])]          # upright: the 186 x 130 pattern transposed (keyholes 71.5 across, 176 up)
+HOLES["breaker_face"] = [(9.0, 29.5), (78.4, 29.5)]                        # Blue Sea 7148 on its side: two #10 screws along its length (verify against the 7148 drawing)
+INSERT["breaker_face"] = "M5"
 HOLES["multiplus_ii_long"] = [(50.0, 30.0), (528.0, 30.0), (289.0, 258.0)]   # two bottom holes + the top hook, turned on its side (verify, appendix G)
 HOLES["multiplus_1200_long"] = [(68.0, 14.2), (311.8, 14.2), (68.0, 234.8), (311.8, 234.8)]   # the upright pattern turned on its side
 INSERT["multiplus_1200_long"] = "M6"
@@ -1359,6 +1362,10 @@ def lattice_card_tiles(L, H, x0, y_plate, z0, prefix, patches=(), solids=()):
                 if -LAT["boss_r"] < u < tw + LAT["boss_r"] and -LAT["boss_r"] < v < th + LAT["boss_r"]:
                     boss = cq.Workplane("XZ").center(u, v).circle(LAT["boss_r"]).extrude(-t).intersect(box(tw, t, th))
                     tile = tile.union(boss).cut(cq.Workplane("XZ").center(u, v).circle(LAT["insert_hole"] / 2).extrude(-t - 2).translate((0, 1, 0)))
+            if j < nz - 1:   # a boss near a joint must not refill the half-lap
+                tile = tile.cut(box(tw + 2, t / 2 + 1, lap + 1, (-1, -1, th - lap / 2)))
+            if j > 0:
+                tile = tile.cut(box(tw + 2, t / 2 + 1, lap + 1, (-1, t / 2, -lap / 2 - 1)))
             tiles.append((f"print_{prefix}_tile_{i}{j}", tile.translate((x0 + i * tw, y_plate, z0 + j * th))))
     # splines sit in 3 mm pockets recessed into the back (+Y) face so the back of the card is flush
     sl, sw, st = LAT["spline"]
@@ -2352,8 +2359,9 @@ V13_PLATE_UNITS = (("mppt_up", 70.0, 80.0, "mppt"), ("cerbo", 215.0, 130.0, "cer
                    ("garmin", 510.0, 40.0, "garmin"),                                                                      # nothing on the shelf under the Orion
                    ("breaker_face", 515.0, 175.0, "breaker1"), ("breaker_face", 612.0, 175.0, "breaker2"))                 # breakers high, 48 under the lid
 V13_SHORT = dict(   # the 620 mm box: Garmin stacked over the Orion, the window over the shunt, breakers under the Cerbo, bus bars under the MPPT and Cerbo
-    units=(("mppt_up", 50.0, 80.0, "mppt"), ("cerbo", 190.0, 130.0, "cerbo"), ("orion", 354.0, 45.0, "orion"), ("garmin", 354.0, 192.0, "garmin"),
-           ("breaker_face", 485.0, 120.0, "breaker1"), ("breaker_face", 485.0, 190.0, "breaker2")),   # Garmin over the Orion, breakers stacked at the front
+    units=(("mppt_up", 50.0, 80.0, "mppt"), ("cerbo", 190.0, 95.0, "cerbo"), ("orion", 354.0, 45.0, "orion"), ("garmin", 354.0, 192.0, "garmin"),
+           ("breaker_face", 485.0, 110.0, "breaker1"), ("breaker_face", 485.0, 185.0, "breaker2")),   # Garmin over the Orion, breakers stacked at the front;
+                                                                                                        # unit heights chosen so no insert lands in the tiles' lap (z 137-161)
     col=[dict(comp="shunt_x", x=195, y=1), dict(comp="busbar_px", x=50, y=62), dict(comp="busbar_nx", x=205, y=62)],
     window=(490.0, 560.0, 40.0, 110.0),
     lip_holes=(((40, 100, 160), (40, 150, 260)), ((40, 100, 140), (40, 120, 200))))
@@ -2489,6 +2497,9 @@ def build_v13(a):
         add(a, clip.translate((xclip, yt, hpost)), f"print_post_clip_{j}", ORANGE)
     ux = V13["inv_x"]
     patches = [(ux - px0 + u, iz - zp + v) for (u, v) in HOLES[ikey]]
+    if P.get("plate_pilots"):   # pilot holes for the heat-set inserts under every unit on the column face (set from that face)
+        for comp, x0, z0, nm in (V13_SHORT["units"] if short else V13_PLATE_UNITS):
+            patches += [(x0 - px0 + u, z0 - zp + v) for (u, v) in HOLES.get(comp, [])]
     V13["window"] = V13_SHORT["window"] if short else (645.0, 712.0, 40.0, 118.0)    # x0, x1, z0, z1: low cable window in the plate's front tile, where the bus is
     wx0, wx1, wz0, wz1 = V13["window"]
     window = cq.Workplane("XZ").center((wx0 + wx1) / 2, (wz0 + wz1) / 2).rect(wx1 - wx0, wz1 - wz0).extrude(-(P["card_t"] + 2)).edges("|Y").fillet(8).translate((0, yp - 1, 0))

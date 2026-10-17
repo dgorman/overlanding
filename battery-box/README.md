@@ -162,6 +162,20 @@ v5's idea (a second IceBox 1.3 frame, same width and depth as the IceBox) cut do
 
 **Breakers.** Asked 2026-10-17 for a breaker tray hanging from the top rails over the batteries, with a window between the batteries for the cables. The height is not there: 62 mm over a 60Ah battery takes a breaker on a plate, 9 mm over a 200Ah does not, so the tray would vanish at the upgrade. The breakers instead sit **high on the inverter plate's column face**, reached from above, and the SmartShunt moved down to the shelf beside the bus bars so the column holds only the low, lugged parts and the cable window sits level with them.
 
+**How the units bolt to the inverter plate** (v12s carries the pilot holes in its tiles as of 2026-10-17; v12/v13 get them when they are next touched). Every unit mounts with machine screws into **heat-set inserts** in the 6 mm plate, set from the unit's own side, so there are no nuts and no blind fastening; the plate is a bench sub-assembly, so all of this is done flat on the bench before the plate goes in.
+
+| Unit | Mounting pattern | Insert | Screw | Side of the plate |
+|---|---|---|---|---|
+| MultiPlus 12/1200 | 4 keyholes, 243.8 × 220.6 | M6 | M6 × 16 pan head, left standing 2 mm so the keyholes drop over them | inverter side |
+| MultiPlus-II | hook + 2 holes (verify, manual appendix G) | M6 | M6 × 16 | inverter side |
+| MPPT 100/30 upright | 4 keyholes, 71.5 across × 176 up | M5 | M5 × 12 pan head | column side |
+| Cerbo GX | 4 lugs, 143 × 58 | M4 | M4 × 10 | column side |
+| Orion XS | 4 lugs, 109.3 × 113 | M4 | M4 × 10 | column side |
+| Garmin PowerSwitch | its bracket, 2 screws (spacing to verify) | M4 | M4 × 10 | column side |
+| Blue Sea 7148 × 2 | 2 holes along the length, 69.4 apart (verify) | M5 | M5 × 12 | column side |
+
+The tiles print with one 5.6 mm pilot under every hole; drill the M5 and M6 pilots to 6.4 and 8.0 before setting those inserts. The SmartShunt and bus bars are on the shelf, not the plate: M6 and M5 inserts in the shelf floor.
+
 <a id="v12-assembly"></a>
 **v12 / v13 assembly order** (walked through 2026-10-17 for tool and hand access; the same for v12s)
 
@@ -485,6 +499,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-17 | Plate mounting: pilot holes for every column-face unit's inserts in the v12s tiles (upright MPPT pattern transposed, 7148 pattern added); fastener table in the README. |
 | 2026-10-17 | v12s only: back panel drawn with the IceBox's slot pattern; trays lose the unused inner-end pads and the optional floor holes (left over from the 2 × 2 layout); viewer gains a **sub-assembly legend** (frame, each tray, bus shelf, inverter plate, posts, ports) alongside the material legend. |
 | 2026-10-17 | Breakers moved high onto the plate's column face (reachable from above), shunt down to the shelf, cable window lowered to bus level; corner cubes, side panels, perforated back panel and lid taken from the second IceBox; front panel printed in two lapped tiles. |
 | 2026-10-17 | **Assembly order written up** (bench sub-assemblies, then posts → brackets → trays → shelf → plate → inverter → batteries). Shelf plates joined on half-laps; post clips widened with the rail bolt off the plate line; drop-in T-nuts specified. |
