@@ -158,6 +158,32 @@ v5's idea (a second IceBox 1.3 frame, same width and depth as the IceBox) cut do
 
 **Upgrade path to v13** (the 1500 W AC load). v12 and v13 are the same box, the same interior and the same inverter. To upgrade: lift out the two SuperPacks and their trays; print v13's two split trays (about 1 kg of filament); fit the two Smart 200Ah with their VE.Bus BMS and raise the II's charger from 60 A to its 120 A maximum (the pair would take 200). Nothing else changes.
 
+<a id="v12-assembly"></a>
+**v12 / v13 assembly order** (walked through 2026-10-17 for tool and hand access; the same for v12s)
+
+Sub-assemblies first, on the bench, where nuts and clamps are allowed:
+
+| Sub-assembly | What goes together on the bench |
+|---|---|
+| **Frame** | the IceBox-style frame with its four 6 mm panels slid into the rails' centreline slots as the corner cubes go on; lid off. Use **drop-in (roll-in) 1/4-20 T-nuts** in the rails' inner slots, so they can be added after the frame is closed: 2 per width rail for the tray brackets, 2 per bottom width rail for the post sills, 2 per top width rail for the clips, 2 for the shelf's front wall, 2 per outboard tray |
+| **Tray** × 2 | v13: the two half-lapped halves bolted (2 M4 in the floor lap, countersunk under the battery, 1 M4 through each wall lap, nuts in pockets); then all inserts: 4 M4 in the corner pads, 3 M4 in the inboard wall. The battery does **not** go in yet |
+| **Bus shelf** | the three plates joined on their 20 mm floor half-laps (2 M4 through each lap); the breakers and bus bars mounted on their inserts and the bus wiring between them made up. One 530–690 mm piece that drops in whole |
+| **Inverter plate** | tiles on their half-laps and splines (3 M4 across each lap); inserts for the shelf wall (6 M4 in the bottom band), the MPPT, Cerbo, Orion, SmartShunt and Garmin mounted on the column face and their VE.Direct / power leads dressed. Not the inverter: it goes on in place |
+| **Posts** × 2 | printed; nothing to add |
+
+Then into the box, from the top, in this order. Every fastener below is reached with a hex key from above or along the open column; nothing is blind.
+
+1. **Posts.** Stand each post against its width rail and bolt the sill (countersunk 1/4-20 along the depth into the bottom rail's drop-in T-nut). The post slot faces the box.
+2. **Tray brackets** × 4. Bolt each L bracket's vertical leg to its width rail (countersunk 1/4-20 into the inner slot) **before** the tray is there: that bolt head faces the tray and is unreachable afterwards. The horizontal legs now stand 36 mm up, waiting for the pads.
+3. **Trays**, empty. Drop each into the outboard zone with room to spare, slide it to its end so the pad goes under the bracket's leg, then two M4 down through the legs into the pad inserts (from above). Now the two countersunk 1/4-20s through the tray's outer wall into the outboard rail's T-nuts, from inside the empty pocket. The tray is tied to three rails.
+4. **Bus shelf.** Lower it into the column, lip against the trays' inboard walls; three M4 per tray through the lip into the tray inserts, bolted from the column side (heads in the column, placed where no breaker sits over them); two countersunk 1/4-20 through its front wall into the front rail's T-nuts, from inside the column.
+5. **Inverter plate.** Lower it with its units into the two post slots; the units clear everything on the shelf (the MPPT and Orion stand 42 mm over the bus bars, the Cerbo 78 mm over the breakers). Its bottom band lands on the shelf's inboard wall: six M4 through that wall into the plate inserts, from the column side at z 28, under the MPPT. Then the two clips: M4 down into each post top, countersunk 1/4-20 into the top rail's T-nut, with the clip's rail bolt 10 mm off the plate line so the key passes the plate's top edge.
+6. **Inverter.** Hang it on the plate from above (hook first on the MultiPlus-II, then its two holes; the 12/1200 on its four keyholes) and make up its DC leads through the plate's window to the bus bars, and its AC in/out to the port strip beside it.
+7. **Batteries.** Into the trays from above, straps through the floor grooves, lugs on, leads to the bus bars (v13: the VE.Bus BMS first).
+8. **Panel pigtails** (SB50s, Garmin outputs through the window to the sockets), then the **lid**.
+
+What this changed in the model: the shelf plates gained the half-laps and lap bolts; the post clips widened to 40 mm with the rail bolt moved 10 mm off the plate line; the 60Ah trays' inboard wall became solid with inserts, bolted from the column side; the inverter shims went. Lifting: trays hang on brackets + outboard-rail bolts + the shelf lip, the shelf on the trays and the front rail, the plate on the posts and the shelf wall. Strength of the weakest tie, a bracket M4 in a PETG insert in tension, is about 500 N each, two per tray plus three lip bolts in shear and two 1/4-20s per tray in the rail; a 27 kg tray at a 3 g bump is 800 N.
+
 <a id="v12-printing-notes"></a>
 **v12 printing notes** (all parts in `stl/v12/`, regenerated by `python cage.py v12`; the bed check in the export fails the build if anything outgrows 256 mm)
 
@@ -454,6 +480,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-17 | **Assembly order written up** (bench sub-assemblies, then posts → brackets → trays → shelf → plate → inverter → batteries). Shelf plates joined on half-laps; post clips widened with the rail bolt off the plate line; drop-in T-nuts specified. |
 | 2026-10-17 | Inverter shims removed (it hangs on the plate); tray-to-shelf joint reworked: M4 inserts in the trays' inboard walls, bolts through the shelf lip from the column side; v12s drawn stacked on the IceBox. |
 | 2026-10-17 | **v12s:** the 12/1200 + two 60Ah box cut to 620 deep (24.4 in), charge gear stacked on the plate; v13 shown to be depth-bound at 762 by the 200Ah pair and the II. |
 | 2026-10-14 | MultiPlus-II 12/3000 ordered: v12 now carries it with the two SuperPack 60Ah (60 A bank limit, charger set to 60 A); the 12/1200 build kept as `v12_1200`. Upgrade to v13 = batteries and trays only. |

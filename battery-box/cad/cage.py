@@ -2143,10 +2143,12 @@ def v12_post(h, mirror=False):
 
 
 def v12_post_clip(mirror=False, h=B, bolt_z=B / 2):
-    """Top clip for a v12 post: 24 x 20 x B block sitting on the post's top beside the top rail; horizontal 1/4-20 into the
-    rail's inner slot at mid-height, M4 down into the post."""
-    g = box(P["post_w"], 20, h)
-    g = g.cut(cq.Workplane("XZ").center(P["post_w"] / 2, bolt_z).circle(3.4).extrude(-22).translate((0, -1, 0)))
+    """Top clip for a v12 post: a 40 x 20 x h block sitting on the post's top beside the top rail; horizontal 1/4-20 into the
+    rail's inner slot, M4 down into the post.  The rail bolt sits 10 mm OFF the plate line (the plate stands in the post's
+    centre), so a hex key reaches its head past the plate's top edge; the clip overhangs the post 8 mm each side for it."""
+    g = box(P["post_w"] + 16, 20, h, (-8, 0, 0))
+    g = g.cut(cq.Workplane("XZ").center(P["post_w"] / 2 - 10, bolt_z).circle(3.4).extrude(-22).translate((0, -1, 0)))
+    g = g.cut(cq.Workplane("XZ").center(P["post_w"] / 2 - 10, bolt_z).circle(6.5).extrude(-4).translate((0, 20 - 3.5, 0)))   # countersink, head on the inner face
     g = g.cut(cq.Workplane("XY").center(P["post_w"] / 2, P["post_d"] / 2).circle(2.3).extrude(h + 2).translate((0, 0, -1)))
     if mirror:
         g = g.mirror("XZ").translate((0, 20, 0))
@@ -2412,6 +2414,13 @@ def build_v13(a):
     for i in range(n_pl):
         xa, xb = xs0 + i * seg, xs0 + (i + 1) * seg
         sh = box(xb - xa, y1s - y0s, 6, (xa, y0s, 0))
+        if i < n_pl - 1:   # 20 mm half-lap tongue (lower half of the floor) under the next plate, 2 x M4 through both (bench)
+            sh = sh.union(box(20, y1s - y0s - 12, 3, (xb, y0s + 6, 0)))
+        if i > 0:
+            sh = sh.cut(box(21, y1s - y0s - 10, 3.5, (xa - 1, y0s + 5, -0.5)))
+        for sx in ([xb + 10] if i < n_pl - 1 else []) + ([xa + 10] if i > 0 else []):
+            for sy in (y0s + 30, y1s - 30):
+                sh = sh.cut(cq.Workplane("XY").center(sx, sy).circle(2.3).extrude(8).translate((0, 0, -1)))
         sh = sh.union(box(xb - xa, 6, 34, (xa, y0s, 0)))                     # lip against the trays' inboard walls (M4 inserts)
         for r in range(2):
             for hx in lip_holes[r]:
