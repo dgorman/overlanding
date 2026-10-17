@@ -193,6 +193,12 @@ Asked 2026-10-13: run a 1500 W AC appliance, keep the IceBox footprint, height m
 
 **Electrical, not modelled yet:** the Smart batteries need a **VE.Bus BMS V2**; DC leads go to 2/0 AWG with a **400 A class T fuse**; the 150 A Blue Sea 7148 breakers and 5-stud bars drawn here are undersized for a 3 kVA and stand in for 250 A-class parts. The II's 120 A charger is within the bank's 200 A. Weight about 87 kg against v12's ~60 (batteries 40, inverter 19, frame 19).
 
+**v12s: the 12/1200 box cut to 24.4 in deep** (`python cage.py v12s`, viewer "v12s")
+
+Asked 2026-10-17: can either box be shorter than 30 in? **v13 cannot**: two Smart 200Ah end to end take 708 of the 711 mm inside, and the MultiPlus-II with its cable room needs about 700 on the other side, so 762 is the floor. **v12 with the 12/1200 can**: the inverter side only needs 25 + 10 + 10 + 375 + 113 + 25 = 558, the two 60Ah trays 573, and what sets the length is the charge gear on the plate's column face. Stacking the Garmin over the Orion and the cable window over the SmartShunt brings the plate to 537 mm and the box to **620 × 487 × 282 mm, 24.4 in deep**, depth rails cut to 569. Same trays, shelf plates (the third one shorter), posts, clips, ports and panels as v12 otherwise. Clash-clean.
+
+The price is the upgrade path: the MultiPlus-II is 578 mm long and the 200Ah pair needs 708, so this box can never take v13's parts. If the II ordered on 2026-10-14 stays, the box stays 30 in.
+
 **v11: v10 swapped, 431 mm deep (17.0 in)** (`python cage.py v11`, viewer "v11")
 
 **Width: 386 mm (15.2 in), 4.0 in of pedal room** inside the IceBox face (was 365 / 4.8 in); the extra 21 mm all lands in the inverter column, where 30 mm goes behind the inverter card for its SB175 and the MultiPlus face ends up 47 mm from the tray wall instead of 45. **Hard limit: 17.25 in (438 mm) deep**, set by the access port in the Goose Gear plate. v11 uses it: 28 mm behind the front card's SB50 row (was 22) and 11 mm in front of the MPPT (was 10) make it **437.8 mm, 17.24 in**.
@@ -448,6 +454,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-17 | **v12s:** the 12/1200 + two 60Ah box cut to 620 deep (24.4 in), charge gear stacked on the plate; v13 shown to be depth-bound at 762 by the 200Ah pair and the II. |
 | 2026-10-14 | MultiPlus-II 12/3000 ordered: v12 now carries it with the two SuperPack 60Ah (60 A bank limit, charger set to 60 A); the 12/1200 build kept as `v12_1200`. Upgrade to v13 = batteries and trays only. |
 | 2026-10-13 | v12 interior replaced by v13's (two SuperPack 60Ah at the ends of the outboard zone, 12/1200 on the long plate): upgrade = swap trays and inverter. 60 A phase-1 limit noted. |
 | 2026-10-13 | **v12 moved into v13's form factor** (282 tall, ports on the inboard half, posts 254 + 28 mm clips) so a v12 build upgrades to v13 by reprinting the trays, bus shelf and inverter plate. Upgrade path written up in the v12 section. |

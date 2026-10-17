@@ -54,6 +54,11 @@ VARIANTS = {
     "v12": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=762.0,
                 batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                 card_style="solid", box="v13", batt="battery", inverter_long="multiplus_ii_long"),   # MultiPlus-II ordered 2026-10-14
+    # v12s: the 12/1200 and two SuperPack 60Ah in the same interior cut to 620 deep (24.4 in): the charge gear stacks on the plate.
+    # No upgrade path (the MultiPlus-II and the 200Ah pair both need the full 762)
+    "v12s": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=620.0,
+                 batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
+                 card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long"),
     "v12_1200": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=762.0,            # the same with the 12/1200 (reference)
                      batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                      card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long"),
@@ -2311,6 +2316,11 @@ V13_COL = [dict(comp="breaker_a", x=215, y=1), dict(comp="breaker_b", x=310, y=1
            dict(comp="busbar_px", x=60, y=62), dict(comp="busbar_nx", x=225, y=62)]           # row 2 (38 tall) under the MPPT: 42 mm under its terminals
 V13_PLATE_UNITS = (("mppt_up", 70.0, 80.0, "mppt"), ("cerbo", 215.0, 130.0, "cerbo"), ("orion", 380.0, 80.0, "orion"),   # on the plate's column face,
                    ("shunt_up", 515.0, 80.0, "shunt"), ("garmin", 585.0, 80.0, "garmin"))                                  # nothing on the shelf under the Orion, shunt and Garmin
+V13_SHORT = dict(   # the 620 mm box: Garmin stacked over the Orion, the window over the shunt, breakers under the Cerbo, bus bars under the MPPT and Cerbo
+    units=(("mppt_up", 50.0, 80.0, "mppt"), ("cerbo", 190.0, 130.0, "cerbo"), ("orion", 370.0, 45.0, "orion"), ("garmin", 370.0, 192.0, "garmin"),
+           ("shunt_up", 505.0, 40.0, "shunt")),
+    col=[dict(comp="breaker_a", x=190, y=1), dict(comp="breaker_b", x=285, y=1), dict(comp="busbar_px", x=50, y=62), dict(comp="busbar_nx", x=210, y=62)],
+    window=(500.0, 570.0, 170.0, 255.0))
 
 
 def build_v13(a):
@@ -2393,8 +2403,8 @@ def build_v13(a):
         g[f"tx{r}"] = tx
     # --- bus shelf in the column between the trays and the inverter plate -----------------------------------------
     y0s, y1s = ty + fw, V13["plate_y"]                            # 190.4 .. 305: 114.6 wide
-    xs0, xs1 = x_in0 + V13["shelf_x0"] - x_in0, V13["shelf_x1"]
-    xs0 = V13["shelf_x0"]
+    short = out_D < 700.0
+    xs0, xs1 = V13["shelf_x0"], min(V13["shelf_x1"], out_D - 32.0)
     n_pl = 3; seg = (xs1 - xs0) / n_pl
     for i in range(n_pl):
         xa, xb = xs0 + i * seg, xs0 + (i + 1) * seg
@@ -2416,7 +2426,7 @@ def build_v13(a):
         for sx in (xa + 40, xb - 40):                                        # inserts in the plate's bottom band (bolts from the column side)
             sh = sh.cut(cq.Workplane("XZ").center(sx, 28).circle(2.3).extrude(-8).translate((0, y1s - 7, 0)))
         add(a, sh, f"print_bus_shelf_{i}", ORANGE)
-    for pl in V13_COL:
+    for pl in (V13_SHORT["col"] if short else V13_COL):
         c = COMPONENTS[pl["comp"]]
         at = (pl["x"], y0s + 6 + pl["y"], 6)
         col = BLUE if c.name.startswith("victron") else GOLD
@@ -2434,7 +2444,7 @@ def build_v13(a):
         add(a, clip.translate((xclip, yt, hpost)), f"print_post_clip_{j}", ORANGE)
     ux = V13["inv_x"]
     patches = [(ux - px0 + u, iz - zp + v) for (u, v) in HOLES[ikey]]
-    V13["window"] = (640.0, 712.0, 165.0, 250.0)                   # x0, x1, z0, z1: 72 x 85 cable window in the plate's front tile, above the Garmin
+    V13["window"] = V13_SHORT["window"] if short else (640.0, 712.0, 165.0, 250.0)   # x0, x1, z0, z1: 72 x 85 cable window in the plate's front tile
     wx0, wx1, wz0, wz1 = V13["window"]
     window = cq.Workplane("XZ").center((wx0 + wx1) / 2, (wz0 + wz1) / 2).rect(wx1 - wx0, wz1 - wz0).extrude(-(P["card_t"] + 2)).edges("|Y").fillet(8).translate((0, yp - 1, 0))
     for nm, shp in lattice_card_tiles(px1 - px0, hp, px0, yp, zp, "plate_inverter", patches):
@@ -2451,7 +2461,7 @@ def build_v13(a):
         add(a, box(100, inv.w, iz, (sx, at[1], 0)), f"print_inverter_shim_{k}", ORANGE)
     g["inv_front"] = ux + inv.d
     # --- charge gear on the plate's column face (lugs to the plate, inserts in the plate) ---------------------------
-    for comp, x0, z0, nm in V13_PLATE_UNITS:
+    for comp, x0, z0, nm in (V13_SHORT["units"] if short else V13_PLATE_UNITS):
         c = COMPONENTS[comp]
         at = (x0, yp - c.d - 3, z0)
         col = BLUE if c.name.startswith("victron") else (0.08, 0.08, 0.08) if c.name.startswith("garmin") else GOLD
@@ -2483,6 +2493,8 @@ def report_v13():
         ii = P.get("inverter_long") == "multiplus_ii_long"
         print(f"== Variant '{VARIANT}': v13's interior with two SuperPack 60Ah and the {'MultiPlus-II 12/3000 (ordered 2026-10-14)' if ii else 'MultiPlus 12/1200'}: upgrade to v13 = swap the trays and batteries ==")
         print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}; bank 2 x 60 Ah = 120 Ah, 60 A continuous (160 A for 10 s) -> about 700 W of AC continuous whatever the inverter")
+        if out_D < 700:
+            print(f"  short box      : depth rails cut to {out_D - 2 * C:.0f}; the plate's charge gear stacks (Garmin over the Orion, window over the shunt); NO upgrade path: the MultiPlus-II and the 200Ah pair need 762")
         if ii:
             print("  with the II    : set its charger to 60 A (2 x 30 A SuperPack charge limit) in VEConfigure; its 13 W idle is 1 Ah/h from a 120 Ah bank; build the DC side")
             print("                   for v13 now (2/0 leads, 400 A class T, 250 A-class bars) so the battery upgrade touches nothing but the trays; the SuperPacks' own BMSs protect them")
