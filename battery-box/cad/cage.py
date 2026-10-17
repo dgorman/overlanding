@@ -245,6 +245,7 @@ COMPONENTS = {
     "shunt":     Comp("power_shunt", 120, 46, 54, "SmartShunt 500A"),
     "busbar_p":  Comp("power_busbar_pos", 155, 35, 32, "5-stud covered bus bar (+)"),
     "busbar_n":  Comp("power_busbar_neg", 155, 35, 32, "5-stud covered bus bar (-)"),
+    "breaker_face": Comp("power_breaker", 87.4, 45.6, 59, "Blue Sea 7148 on the inverter plate's column face, long axis along the depth, lever outward"),
     "breaker_a": Comp("power_breaker_a", 59, 87.4, 45.6, "Blue Sea 7148, 187-series 150 A surface mount: 3.439 x 2.323 x 1.797 in, long axis along the depth"),
     "breaker_b": Comp("power_breaker_b", 59, 87.4, 45.6, "Blue Sea 7148, 187-series 150 A surface mount: 3.439 x 2.323 x 1.797 in, long axis along the depth"),
     "garmin_edge": Comp("garmin_powerswitch", 32, 125, 75, "Garmin PowerSwitch on edge on a printed angle, long axis along the depth"),
@@ -475,6 +476,7 @@ STEP_FILES = {   # component key -> Victron STEP file (downloaded into cad/step/
     "shunt_up":     "SmartShunt-500A.step",
     "shunt_y":      "SmartShunt-500A.step",
     "breaker_a":    "BlueSea-7148.step",   # download from bluesea.com product 7148 (Technical Documents > CAD), save under cad/step/
+    "breaker_face": "BlueSea-7148.step",
     "breaker_b":    "BlueSea-7148.step",
 }
 MATED = {"sb175": 133.4, "sb50": 81.3, "sb175_x": 133.4, "sb50_x": 81.3, "sb175_v": 133.4, "sb50_v": 81.3, "pp45_v": 41.0, "pp45_x": 41.0, "sb175_h": 133.4}   # Anderson mated-pair lengths
@@ -531,7 +533,11 @@ def breaker_shape(dx, dy, dz, at):
     return body.union(button)
 
 
-def unit_fallback(key, dx, dy, dz, at, axis="|Z"):
+def unit_fallback(key, dx, dy, dz, at, axis="|Z", face=False):
+    if key.startswith("breaker") and face:   # on a vertical plate at +y: build it flat (studs up), turn the studs toward -y
+        shp = breaker_shape(dx, dz, dy, (0, 0, 0)).rotate((0, 0, 0), (1, 0, 0), 90)
+        bb = shp.val().BoundingBox()
+        return shp.translate((at[0] - bb.xmin, at[1] - bb.ymin, at[2] - bb.zmin))
     return breaker_shape(dx, dy, dz, at) if key.startswith("breaker") else box(dx, dy, dz, at).edges(axis).fillet(3)
 
 
@@ -847,7 +853,7 @@ def build() -> cq.Assembly:
     for i, x in enumerate((0, out_D - C)):
         for j, y in enumerate((0, out_W - C)):
             for k, z in enumerate((0, out_H - C)):
-                add(a, cube.translate((x, y, z)), f"print_cube_{i}{j}{k}", BLACK)
+                add(a, cube.translate((x, y, z)), (f"cube_{i}{j}{k}" if P["frame_source"] == "icebox" else f"print_cube_{i}{j}{k}"), BLACK)   # the IceBox's own cubes
     if P["frame_source"] == "icebox":
         runs = {f"h{i}": [("bar", out_H - 2 * C, None)] for i in range(4)}
         runs.update({f"w{i}": [("bar", out_W - 2 * C, None)] for i in range(4)})
@@ -2194,9 +2200,9 @@ def v12_panels(a):
             return body.union(box(length, T, out_H - 2 * B + 6, (B, thick_at, B - 3)))
         body = box(T, length, out_H - 2 * B, (thick_at, B, B)).union(box(T, length + 6, out_H - 2 * B, (thick_at, B - 3, B)))
         return body.union(box(T, length, out_H - 2 * B + 6, (thick_at, B, B - 3)))
-    for nm, shp in (("panel_side_outboard", slot_panel("x", pm, in_D)),
-                    ("panel_side_inboard", slot_panel("x", out_W - pm - T, in_D)),
-                    ("panel_back_icebox_side", slot_panel("y", pm, in_W))):
+    for nm, shp in (("panel_side_outboard_from_icebox", slot_panel("x", pm, in_D)),          # cut down from the IceBox's side panels
+                    ("panel_side_inboard_from_icebox", slot_panel("x", out_W - pm - T, in_D)),
+                    ("panel_back_perforated_from_icebox", slot_panel("y", pm, in_W))):        # the IceBox's perforated rear panel, cut to height
         add(a, shp, nm, PANEL)
     front = slot_panel("y", out_D - pm - T, in_W)
     xf = out_D - pm - T                                            # the front panel's inner face
@@ -2213,8 +2219,19 @@ def v12_panels(a):
             w_, h_, d_ = PORT_FACE["sb50"]
             front = front.cut(box(T + 2, w_, h_, (xf - 1, y - w_ / 2, z - h_ / 2)))
             add(a, box(d_, w_, h_, (xf - d_, y - w_ / 2, z - h_ / 2)), f"socket_{kind}", (0.3, 0.3, 0.3))
-    add(a, front, "panel_front_removable", PANEL)
-    add(a, box(out_D, out_W, T, (0, 0, out_H)), "lid_panel", PANEL)
+    # the front panel is PRINTED (the ports are cut in it): two tiles on a vertical 20 mm half-lap at mid-width, the outboard
+    # tile keeping the outer half of the thickness across the lap, 3 x M4 through the lap (nuts on the bench); it slides into
+    # the rails' slots like the sheet panels
+    ymid, lw = B + in_W / 2, 20.0
+    big = out_H + 40
+    outb = front.intersect(box(40, ymid + lw / 2 + 20, big, (xf - 20, -20, -20))).cut(box(3.0 + 1, lw, big, (xf - 1, ymid - lw / 2, -20)))
+    inb = front.intersect(box(40, out_W, big, (xf - 20, ymid - lw / 2, -20))).cut(box(T - 3.0 + 1, lw, big, (xf + 3.0, ymid - lw / 2, -20)))
+    for zb in (60, 140, 220):
+        bolt = cq.Workplane("YZ").center(ymid, zb).circle(2.3).extrude(T + 2).translate((xf - 1, 0, 0))
+        outb, inb = outb.cut(bolt), inb.cut(bolt)
+    add(a, outb, "print_panel_front_outboard", ORANGE)
+    add(a, inb, "print_panel_front_inboard_ports", ORANGE)
+    add(a, box(out_D, out_W, T, (0, 0, out_H)), "lid_from_icebox_top", PANEL)                    # the IceBox's top panel, uncut
     for y in (out_W * 0.3, out_W * 0.7):
         add(a, lid_handle().translate((out_D / 2 - 6, y - 30, out_H + T)), f"lid_handle_{int(y)}", BLACK)
     return xf
@@ -2318,15 +2335,16 @@ def build_v12(a):
 
 V13 = dict(end_gap=10.0, row_gap=2.0, floor=6.0, standoff=2.0, plate_y=303.0, col_wall=4.0, inv_x=46.0, shelf_x0=46.0, shelf_x1=730.0, tray_lap=20.0,
            lip_holes=(((40, 100, 160), (40, 150, 260)), ((40, 100, 160), (40, 150, 200))))   # (200Ah trays, 60Ah trays): x from each tray's back end, clear of the breakers
-V13_COL = [dict(comp="breaker_a", x=215, y=1), dict(comp="breaker_b", x=310, y=1),            # row 1 (52 tall) under the Cerbo, which sits high
-           dict(comp="busbar_px", x=60, y=62), dict(comp="busbar_nx", x=225, y=62)]           # row 2 (38 tall) under the MPPT: 42 mm under its terminals
-V13_PLATE_UNITS = (("mppt_up", 70.0, 80.0, "mppt"), ("cerbo", 215.0, 130.0, "cerbo"), ("orion", 380.0, 80.0, "orion"),   # on the plate's column face,
-                   ("shunt_up", 515.0, 80.0, "shunt"), ("garmin", 585.0, 80.0, "garmin"))                                  # nothing on the shelf under the Orion, shunt and Garmin
+V13_COL = [dict(comp="shunt_x", x=215, y=1),                                                 # row 1: the SmartShunt (52 tall) under the Cerbo, which sits high
+           dict(comp="busbar_px", x=60, y=62), dict(comp="busbar_nx", x=220, y=62)]           # row 2 (38 tall) under the MPPT: 42 mm under its terminals
+V13_PLATE_UNITS = (("mppt_up", 70.0, 80.0, "mppt"), ("cerbo", 215.0, 130.0, "cerbo"), ("orion", 380.0, 80.0, "orion"),   # on the plate's column face;
+                   ("garmin", 510.0, 40.0, "garmin"),                                                                      # nothing on the shelf under the Orion
+                   ("breaker_face", 515.0, 175.0, "breaker1"), ("breaker_face", 612.0, 175.0, "breaker2"))                 # breakers high, 48 under the lid
 V13_SHORT = dict(   # the 620 mm box: Garmin stacked over the Orion, the window over the shunt, breakers under the Cerbo, bus bars under the MPPT and Cerbo
-    units=(("mppt_up", 50.0, 80.0, "mppt"), ("cerbo", 190.0, 130.0, "cerbo"), ("orion", 370.0, 45.0, "orion"), ("garmin", 370.0, 192.0, "garmin"),
-           ("shunt_up", 505.0, 40.0, "shunt")),
-    col=[dict(comp="breaker_a", x=190, y=1), dict(comp="breaker_b", x=285, y=1), dict(comp="busbar_px", x=50, y=62), dict(comp="busbar_nx", x=210, y=62)],
-    window=(500.0, 570.0, 170.0, 255.0),
+    units=(("mppt_up", 50.0, 80.0, "mppt"), ("cerbo", 190.0, 130.0, "cerbo"), ("orion", 354.0, 45.0, "orion"), ("garmin", 354.0, 192.0, "garmin"),
+           ("breaker_face", 485.0, 120.0, "breaker1"), ("breaker_face", 485.0, 190.0, "breaker2")),   # Garmin over the Orion, breakers stacked at the front
+    col=[dict(comp="shunt_x", x=195, y=1), dict(comp="busbar_px", x=50, y=62), dict(comp="busbar_nx", x=205, y=62)],
+    window=(490.0, 560.0, 40.0, 110.0),
     lip_holes=(((40, 100, 160), (40, 150, 260)), ((40, 100, 140), (40, 120, 200))))
 
 
@@ -2456,7 +2474,7 @@ def build_v13(a):
         add(a, clip.translate((xclip, yt, hpost)), f"print_post_clip_{j}", ORANGE)
     ux = V13["inv_x"]
     patches = [(ux - px0 + u, iz - zp + v) for (u, v) in HOLES[ikey]]
-    V13["window"] = V13_SHORT["window"] if short else (640.0, 712.0, 165.0, 250.0)   # x0, x1, z0, z1: 72 x 85 cable window in the plate's front tile
+    V13["window"] = V13_SHORT["window"] if short else (645.0, 712.0, 40.0, 118.0)    # x0, x1, z0, z1: low cable window in the plate's front tile, where the bus is
     wx0, wx1, wz0, wz1 = V13["window"]
     window = cq.Workplane("XZ").center((wx0 + wx1) / 2, (wz0 + wz1) / 2).rect(wx1 - wx0, wz1 - wz0).extrude(-(P["card_t"] + 2)).edges("|Y").fillet(8).translate((0, yp - 1, 0))
     for nm, shp in lattice_card_tiles(px1 - px0, hp, px0, yp, zp, "plate_inverter", patches):
@@ -2475,7 +2493,8 @@ def build_v13(a):
         c = COMPONENTS[comp]
         at = (x0, yp - c.d - 3, z0)
         col = BLUE if c.name.startswith("victron") else (0.08, 0.08, 0.08) if c.name.startswith("garmin") else GOLD
-        add(a, victron_shape(comp, c.w, c.d, c.h, at, box(c.w, c.d, c.h, at).edges("|Y").fillet(3), lugs=("y", +1)), f"{c.name}_plate", col)
+        fb = unit_fallback(comp, c.w, c.d, c.h, at, axis="|Y", face=True)
+        add(a, victron_shape(comp, c.w, c.d, c.h, at, fb, lugs=("y", +1)), f"{c.name}_{nm}_plate", col)
     # --- panels, ports, lid ------------------------------------------------------------------------------------------
     xf = v12_panels(a)
     g["xf"] = xf
@@ -3112,7 +3131,7 @@ def report():
     print(f"  est. mass ~{kg:.0f} kg; box depth {out_D:.0f} -> tie it to the IceBox panel / plate")
 
 
-def clash_report(a: cq.Assembly, prefixes=("print_", "bar_", "battery_", "power_", "socket_", "victron_", "panel_", "lid_")):
+def clash_report(a: cq.Assembly, prefixes=("print_", "cube_", "bar_", "battery_", "power_", "socket_", "victron_", "panel_", "lid_", "garmin_")):
     """Pairwise solid intersections between parts (bbox prefilter).  Anything over 1 mm3 is printed;
     judge the list by eye: a battery sitting in its tray should NOT appear, a leg inside a tray should."""
     parts = [(c.name, c.obj.val()) for c in a.children if any(c.name.startswith(p) for p in prefixes)]

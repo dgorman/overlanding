@@ -158,6 +158,10 @@ v5's idea (a second IceBox 1.3 frame, same width and depth as the IceBox) cut do
 
 **Upgrade path to v13** (the 1500 W AC load). v12 and v13 are the same box, the same interior and the same inverter. To upgrade: lift out the two SuperPacks and their trays; print v13's two split trays (about 1 kg of filament); fit the two Smart 200Ah with their VE.Bus BMS and raise the II's charger from 60 A to its 120 A maximum (the pair would take 200). Nothing else changes.
 
+**From the second IceBox, not printed.** The 8 corner cubes and 12 rails (height rails cut to 231), the two side panels cut down to 237 tall, the **perforated rear panel cut down** to be the box's back panel (against the IceBox), and the top panel uncut as the lid. Only the **front panel is printed**, because the ports are cut in it: two tiles 231 × 237 × 6 on a vertical 20 mm half-lap at mid-width with three M4 through it (bench), sliding into the rails' slots like the sheets.
+
+**Breakers.** Asked 2026-10-17 for a breaker tray hanging from the top rails over the batteries, with a window between the batteries for the cables. The height is not there: 62 mm over a 60Ah battery takes a breaker on a plate, 9 mm over a 200Ah does not, so the tray would vanish at the upgrade. The breakers instead sit **high on the inverter plate's column face**, reached from above, and the SmartShunt moved down to the shelf beside the bus bars so the column holds only the low, lugged parts and the cable window sits level with them.
+
 <a id="v12-assembly"></a>
 **v12 / v13 assembly order** (walked through 2026-10-17 for tool and hand access; the same for v12s)
 
@@ -165,10 +169,10 @@ Sub-assemblies first, on the bench, where nuts and clamps are allowed:
 
 | Sub-assembly | What goes together on the bench |
 |---|---|
-| **Frame** | the IceBox-style frame with its four 6 mm panels slid into the rails' centreline slots as the corner cubes go on; lid off. Use **drop-in (roll-in) 1/4-20 T-nuts** in the rails' inner slots, so they can be added after the frame is closed: 2 per width rail for the tray brackets, 2 per bottom width rail for the post sills, 2 per top width rail for the clips, 2 for the shelf's front wall, 2 per outboard tray |
+| **Frame** | the second IceBox's cubes and rails with the four panels slid into the rails' centreline slots as the cubes go on: its two side panels and perforated rear panel cut down, and the printed two-tile front panel (lapped and bolted on the bench first); lid off. Use **drop-in (roll-in) 1/4-20 T-nuts** in the rails' inner slots, so they can be added after the frame is closed: 2 per width rail for the tray brackets, 2 per bottom width rail for the post sills, 2 per top width rail for the clips, 2 for the shelf's front wall, 2 per outboard tray |
 | **Tray** × 2 | v13: the two half-lapped halves bolted (2 M4 in the floor lap, countersunk under the battery, 1 M4 through each wall lap, nuts in pockets); then all inserts: 4 M4 in the corner pads, 3 M4 in the inboard wall. The battery does **not** go in yet |
-| **Bus shelf** | the three plates joined on their 20 mm floor half-laps (2 M4 through each lap); the breakers and bus bars mounted on their inserts and the bus wiring between them made up. One 530–690 mm piece that drops in whole |
-| **Inverter plate** | tiles on their half-laps and splines (3 M4 across each lap); inserts for the shelf wall (6 M4 in the bottom band), the MPPT, Cerbo, Orion, SmartShunt and Garmin mounted on the column face and their VE.Direct / power leads dressed. Not the inverter: it goes on in place |
+| **Bus shelf** | the three plates joined on their 20 mm floor half-laps (2 M4 through each lap); the two bus bars and the SmartShunt mounted on their inserts and the bus wiring between them made up. One 530–690 mm piece that drops in whole |
+| **Inverter plate** | tiles on their half-laps and splines (3 M4 across each lap); inserts for the shelf wall (6 M4 in the bottom band), the MPPT, Cerbo, Orion, Garmin and the two breakers mounted on the column face and their leads dressed. Not the inverter: it goes on in place |
 | **Posts** × 2 | printed; nothing to add |
 
 Then into the box, from the top, in this order. Every fastener below is reached with a hex key from above or along the open column; nothing is blind.
@@ -195,7 +199,8 @@ What this changed in the model: the shelf plates gained the half-laps and lap bo
 | 2 inverter posts | 254 × 24 × 18 | on a side | PETG or ASA, 5 walls, 50 % (the slot and the sill take the plate's weight); shared with v13 |
 | 2 post clips | 28 × 24 × 20 | as modelled | same as the posts; shared with v13 |
 | 5 panel mounts (Garmin, Cerbo, Orion, MPPT, plus the port strip backer) | up to 194 × 150 × 6 | flat | PETG, 4 walls, 30 % |
-| 4 corner cubes, 2 lid handles | small | as modelled | PETG, 4 walls, 30 % |
+| Front panel, 2 tiles | 231 × 237 × 6 | flat, brim | PETG or ASA, 4 walls, 30 %; vertical half-lap, 3 M4 (bench); the port cutouts are in the inboard tile |
+| 2 lid handles | small | as modelled | PETG, 4 walls, 30 % |
 
 - **Not PLA.** The trays and shelf plates sit in a closed truck in summer; PLA creeps under the battery load. PETG is enough everywhere, ASA if the printer has an enclosure.
 - **Orientation matters for the trays and posts.** The trays print floor down so the bolt holes in their walls load along the layers, not across them. The posts print on a side for the same reason: the plate's slot and the sill bolt then load across whole layers.
@@ -211,9 +216,9 @@ Asked 2026-10-13: run a 1500 W AC appliance, keep the IceBox footprint, height m
 |---|---|
 | Inboard side, full depth | the **MultiPlus-II 12/3000/120-50** (578 × 277 × 148, 19 kg) on its **long side**: 578 along the depth, 148 into the box, 277 tall on two 2 mm shims, back on a printed plate (3 × 2 tiles, 256 tall from z 21) that runs the depth in two v12 posts turned 90° against the width rails; cable end faces forward |
 | Outboard side, full depth | two **Lithium Smart 12.8V/200Ah** (321 × 152 × 237, 20 kg each) end to end in trays with 6 mm floors and 1.5 mm pocket clearance; each tray prints as two halves on a 20 mm half-lap (bench bolts); outer walls bolt into the outboard rail's inner slot, inboard walls into the shelf's lip, and **L brackets** from the trays' outer pads bolt into the back and front width rails' inner slots, so each tray is tied to three rails |
-| Column between, 110 wide | the bus shelf in three plates **running to the front rail** (its front wall bolts into the front rail's inner slot): breakers in the row under the Cerbo, the two bus bars in the row under the MPPT (42 mm under its terminals); its 4 mm inboard wall is the plate's sill (M4 into inserts in the plate's bottom band) |
-| Plate's column face | MPPT upright, Cerbo, Orion, the SmartShunt on end and the Garmin, lugs to the plate; nothing on the shelf under the Orion, shunt and Garmin. A **72 × 85 cable window** in the plate's front tile above the Garmin (x 640–712, z 165–250) passes the MultiPlus DC leads, the Garmin outputs and the inlet pigtails between the two sides; fit an edge grommet |
-| Front zone, 113 deep | the inverter's cable end and the port strip on the **inboard** half of the front panel (the batteries run to the front on the outboard side) |
+| Column between, 110 wide | the bus shelf in three half-lapped plates **running to the front rail** (its front wall bolts into the front rail's inner slot): only the low, lugged parts live here, the two bus bars in the row under the MPPT (42 mm under its terminals) and the SmartShunt in the row under the Cerbo, so there is room for 2/0 lugs; its 4 mm inboard wall is the plate's sill (M4 into inserts in the plate's bottom band) |
+| Plate's column face | MPPT upright, Cerbo, Orion and the Garmin low; the **two Blue Sea 7148 breakers high at the front** (z 175–234, 48 mm under the lid, levers facing the open column) so they are reached from above with the lid off; nothing on the shelf under the Orion. A **67 × 78 cable window** low in the plate's front tile (x 645–712, z 40–118), level with the bus bars, passes the MultiPlus DC leads, the Garmin outputs and the inlet pigtails; fit an edge grommet |
+| Front zone, 113 deep | the inverter's cable end and the port strip on the **inboard** half of the **printed** front panel (the batteries run to the front on the outboard side) |
 
 **Why it is this way.** The MultiPlus-II does not fit the 254 or 279 box in any orientation: upright it is 578 tall, on its short side 277 × 578 beats the width, and flat on its back it needs 578 × 277 of floor, which leaves 160 mm beside it, 4 mm short of a Smart 200Ah tray. Along the depth is the only way it goes in, and Victron's manual only describes hanging it vertically on its hook and two holes, so **confirm the turned mounting with Victron** before building. The hook and hole positions on the plate are estimates (appendix G of the manual).
 
@@ -480,6 +485,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-17 | Breakers moved high onto the plate's column face (reachable from above), shunt down to the shelf, cable window lowered to bus level; corner cubes, side panels, perforated back panel and lid taken from the second IceBox; front panel printed in two lapped tiles. |
 | 2026-10-17 | **Assembly order written up** (bench sub-assemblies, then posts → brackets → trays → shelf → plate → inverter → batteries). Shelf plates joined on half-laps; post clips widened with the rail bolt off the plate line; drop-in T-nuts specified. |
 | 2026-10-17 | Inverter shims removed (it hangs on the plate); tray-to-shelf joint reworked: M4 inserts in the trays' inboard walls, bolts through the shelf lip from the column side; v12s drawn stacked on the IceBox. |
 | 2026-10-17 | **v12s:** the 12/1200 + two 60Ah box cut to 620 deep (24.4 in), charge gear stacked on the plate; v13 shown to be depth-bound at 762 by the 200Ah pair and the II. |
