@@ -58,7 +58,7 @@ VARIANTS = {
     # No upgrade path (the MultiPlus-II and the 200Ah pair both need the full 762)
     "v12s": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=620.0,
                  batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
-                 card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long"),
+                 card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True),
     "v12_1200": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=762.0,            # the same with the 12/1200 (reference)
                      batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                      card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long"),
@@ -141,6 +141,7 @@ P = dict(
     icebox_W=487.4, icebox_H=558.8, icebox_D=762.0,   # owner's IceBox 1.3 is the 30" deep one
     icebox_gap=12.0,     # frame-to-frame: IceBox back panel + cage back panel
     show_icebox=True,
+    stack_on_icebox=False,   # True: draw the IceBox UNDER the box with the two rear faces flush (the box's port face and the IceBox's back panel)
 
     bar=25.4,            # Goose Gear MaxLite 1" extrusion (profile verify)
     cube=25.4,           # printed 3-way corner cube
@@ -822,6 +823,8 @@ def icebox_parts():
     parts.append(("icebox_tray", tray))
     if yoff:
         parts = [(n, shp.translate((0, yoff, 0))) for n, shp in parts]
+    if P["stack_on_icebox"]:   # the box rides on the IceBox's deck: its port face flush with the IceBox's back panel
+        parts = [(nm, shp.translate((out_D + P["icebox_gap"], 0, -H))) for nm, shp in parts]
     return parts
 
 
@@ -2311,7 +2314,8 @@ def build_v12(a):
     return g
 
 
-V13 = dict(end_gap=10.0, row_gap=2.0, floor=6.0, standoff=2.0, plate_y=303.0, col_wall=4.0, inv_x=46.0, shelf_x0=46.0, shelf_x1=730.0, tray_lap=20.0)
+V13 = dict(end_gap=10.0, row_gap=2.0, floor=6.0, standoff=2.0, plate_y=303.0, col_wall=4.0, inv_x=46.0, shelf_x0=46.0, shelf_x1=730.0, tray_lap=20.0,
+           lip_holes=(((40, 100, 160), (40, 150, 260)), ((40, 100, 160), (40, 150, 200))))   # (200Ah trays, 60Ah trays): x from each tray's back end, clear of the breakers
 V13_COL = [dict(comp="breaker_a", x=215, y=1), dict(comp="breaker_b", x=310, y=1),            # row 1 (52 tall) under the Cerbo, which sits high
            dict(comp="busbar_px", x=60, y=62), dict(comp="busbar_nx", x=225, y=62)]           # row 2 (38 tall) under the MPPT: 42 mm under its terminals
 V13_PLATE_UNITS = (("mppt_up", 70.0, 80.0, "mppt"), ("cerbo", 215.0, 130.0, "cerbo"), ("orion", 380.0, 80.0, "orion"),   # on the plate's column face,
@@ -2320,7 +2324,8 @@ V13_SHORT = dict(   # the 620 mm box: Garmin stacked over the Orion, the window 
     units=(("mppt_up", 50.0, 80.0, "mppt"), ("cerbo", 190.0, 130.0, "cerbo"), ("orion", 370.0, 45.0, "orion"), ("garmin", 370.0, 192.0, "garmin"),
            ("shunt_up", 505.0, 40.0, "shunt")),
     col=[dict(comp="breaker_a", x=190, y=1), dict(comp="breaker_b", x=285, y=1), dict(comp="busbar_px", x=50, y=62), dict(comp="busbar_nx", x=210, y=62)],
-    window=(500.0, 570.0, 170.0, 255.0))
+    window=(500.0, 570.0, 170.0, 255.0),
+    lip_holes=(((40, 100, 160), (40, 150, 260)), ((40, 100, 140), (40, 120, 200))))
 
 
 def build_v13(a):
@@ -2332,6 +2337,7 @@ def build_v13(a):
     Garmin flat on the floor in the front zone.  Ties: trays into the outboard rail's inner slot, plate in posts against
     the width rails (sill bolts + top clips) and bolted to the bus shelf's inboard wall."""
     g = dict()
+    short = out_D < 700.0
     bkey = P.get("batt", "smart200"); small = bkey == "battery"   # v12: two SuperPack 60Ah in the same zone, trays 167 wide like v13's
     b = COMPONENTS[bkey]; wall, lip, fl, clr = 6.0, 30.0, V13["floor"], (1.0 if small else 1.5)   # pocket clearance each side
     bs = COMPONENTS["smart200"]
@@ -2344,13 +2350,11 @@ def build_v13(a):
         txs = tuple(x_in0 + V13["end_gap"] + 6 + r * (fd + 12 + V13["row_gap"]) for r in range(2))
     bay_D = txs[1] + fd + 6 - x_in0
     g["bay_D"] = bay_D
-    hxs = (50, 170, 290) if not small else (40, 120, 200)
+    lip_holes = (V13_SHORT if short else V13)["lip_holes"][1 if small else 0]   # per tray, placed where the column has no part over the lip
     ty = y_in0 + 1
     for r in range(2):
         tx = txs[r]
         tray = box(fd, fw, lip + fl).cut(box(fd - 2 * wall, pw, lip + fl + 1, (wall, wall, fl)))
-        if small:   # the 15 mm between the 60Ah pocket and the shelf-side skin is a hollow channel: two 6 mm skins on the floor
-            tray = tray.cut(box(fd - 2 * wall, fw - 2 * wall - pw - 6, lip + fl + 1, (wall, wall + pw + 6, fl)))
         tray = tray.cut(box(fd + 2, 28, 5, (-1, wall + pw / 2 - 14, fl - 2)))                      # lengthwise strap groove, 4 mm of floor under it
         for (px, py) in ((-6, 12), (-6, fw - 32), (fd, 12), (fd, fw - 32)):                    # corner pads, M4 inserts from the top
             tray = tray.union(box(6, 20, lip + fl, (px, py, 0)))
@@ -2361,8 +2365,8 @@ def build_v13(a):
         for sx in (70, fd - 70):   # outboard wall: two countersunk 1/4-20 into the outboard rail's inner slot, heads flush inside
             tray = tray.cut(cq.Workplane("XZ").center(sx, B / 2).circle(3.4).extrude(-(wall + 2)).translate((0, -1, 0)))
             tray = tray.cut(cq.Workplane("XZ").center(sx, B / 2).circle(6.5).extrude(-3).translate((0, wall + 0.5, 0)))
-        for hx in hxs:   # inboard wall: 3 x M4 into the bus shelf's lip inserts
-            tray = tray.cut(cq.Workplane("XZ").center(hx, 17).circle(2.3).extrude(-(wall + 2)).translate((0, fw - wall - 1, 0)))
+        for hx in lip_holes[r]:   # inboard wall: 3 x M4 heat-set inserts in its outer face; the shelf's lip bolts to them from the column
+            tray = tray.cut(cq.Workplane("XZ").center(hx, 17).circle(2.8).extrude(-8).translate((0, fw - 7, 0)))         # side (heads reachable from above)
         # the tray is 345 long, so it prints as two halves joined on a 20 mm half-lap at mid-length: the back half keeps the
         # floor's lower half and the walls' outer halves across the lap, the front half the rest; 2 x M4 down through the
         # floor lap (countersunk, under the battery) and 1 x M4 through each wall lap, nuts in pockets, all on the bench
@@ -2403,7 +2407,6 @@ def build_v13(a):
         g[f"tx{r}"] = tx
     # --- bus shelf in the column between the trays and the inverter plate -----------------------------------------
     y0s, y1s = ty + fw, V13["plate_y"]                            # 190.4 .. 305: 114.6 wide
-    short = out_D < 700.0
     xs0, xs1 = V13["shelf_x0"], min(V13["shelf_x1"], out_D - 32.0)
     n_pl = 3; seg = (xs1 - xs0) / n_pl
     for i in range(n_pl):
@@ -2411,7 +2414,7 @@ def build_v13(a):
         sh = box(xb - xa, y1s - y0s, 6, (xa, y0s, 0))
         sh = sh.union(box(xb - xa, 6, 34, (xa, y0s, 0)))                     # lip against the trays' inboard walls (M4 inserts)
         for r in range(2):
-            for hx in hxs:
+            for hx in lip_holes[r]:
                 hxa = g[f"tx{r}"] + hx
                 if xa + 6 < hxa < xb - 6:
                     sh = sh.cut(cq.Workplane("XZ").center(hxa, 17).circle(2.3).extrude(-8).translate((0, y0s - 1, 0)))
@@ -2457,8 +2460,6 @@ def build_v13(a):
         add(a, shp, nm, ORANGE if "spline" in nm else DARK)
     at = (ux, yp + P["card_t"] + V13["standoff"], iz)
     add(a, victron_shape(ikey, inv.d, inv.w, inv.h, at, box(inv.d, inv.w, inv.h, at).edges("|Y").fillet(3), lugs=("y", -1)), "victron_multiplus_long", BLUE)
-    for k, sx in enumerate((ux + 20, ux + inv.d - 120)):              # two shims carry its weight to the floor
-        add(a, box(100, inv.w, iz, (sx, at[1], 0)), f"print_inverter_shim_{k}", ORANGE)
     g["inv_front"] = ux + inv.d
     # --- charge gear on the plate's column face (lugs to the plate, inserts in the plate) ---------------------------
     for comp, x0, z0, nm in (V13_SHORT["units"] if short else V13_PLATE_UNITS):
