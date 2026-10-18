@@ -59,7 +59,7 @@ VARIANTS = {
     "v12s": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=620.0,
                  batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                  card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
-                 perforated_back=True, clean_trays=True, plate_pilots=True),   # the IceBox's slot pattern on the back panel; trays without the unused
+                 perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front=True),   # front panel = the slotted offcut + a printed port bezel   # the IceBox's slot pattern on the back panel; trays without the unused
                                                                                # pads and floor holes; insert pilot holes in the plate under every unit
     "v12_1200": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=762.0,            # the same with the 12/1200 (reference)
                      batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
@@ -435,9 +435,13 @@ if P.get("swap"):   # v11: every port on the FRONT face, in the 78 mm strip betw
                    ("l14_30_in", 64, 400), ("l14_30_out", 64, 470)]
 PORT_FACE = {"sb175": (26.0, 56.0, 79.0), "sb50": (37.0, 48.0, 48.0), "iec": (24.0, 32.0, 50.0)}   # (w, h, depth), face centred
 if P["card_plane"] == "v12":   # v12 and v13 share one front panel: the port strip is the INBOARD 150 mm, three columns, under the top rail
-    FRONT_PORTS = [("l14_30_in", 428, 65), ("l14_30_out", 428, 135), ("socket", 428, 190, 29),            # (v13's batteries run the outboard
-                   ("sb50_solar", 372, 60), ("sb50_alt", 372, 116), ("socket", 372, 160, 22), ("socket", 372, 193, 22),   # side to the front; its plate's
+    FRONT_PORTS = [("l14_30_in", 423, 65), ("l14_30_out", 423, 135), ("socket", 423, 190, 29),            # (v13's batteries run the outboard
+                   ("sb50_solar", 370, 60), ("sb50_alt", 370, 116), ("socket", 370, 160, 22), ("socket", 370, 193, 22),   # side to the front; its plate's
                    ("socket", 338, 150, 29), ("socket", 338, 190, 29)]                                                   # front post ends at y 315)
+if P.get("icebox_front"):   # v12s: ports on the printed bezel behind the slotted panel's opening (z 34-244); flanges inside the opening
+    FRONT_PORTS = [("l14_30_in", 423, 72), ("l14_30_out", 423, 142), ("socket", 423, 197, 29),
+                   ("sb50_solar", 370, 62), ("sb50_alt", 370, 118), ("socket", 370, 162, 22), ("socket", 370, 195, 22),
+                   ("socket", 338, 157, 29), ("socket", 338, 197, 29)]
 INLET_BODY = {"l14": (60.0, 55.0), "sb50": (48.0, 37.0, 48.0), "sb175": (79.0, 56.0, 26.0)}   # (dia, depth) or (depth, w, h)
 N_BATT = 4
 post_h = in_H                                          # floor panel top to the underside of the top rails
@@ -2209,37 +2213,64 @@ def v12_panels(a):
         body = box(T, length, out_H - 2 * B, (thick_at, B, B)).union(box(T, length + 6, out_H - 2 * B, (thick_at, B - 3, B)))
         return body.union(box(T, length, out_H - 2 * B + 6, (thick_at, B, B - 3)))
     back = slot_panel("y", pm, in_W)                                                          # the IceBox's perforated rear panel, cut to height
-    if P.get("perforated_back"):   # its slot pattern (same pitch as the IceBox's own back panel), kept clear of the rail tongues
-        slot_w, slot_h, pitch_y, pitch_z = 72.0, 22.0, 92.0, 46.0
-        rows = int((out_H - 2 * B - 60) / pitch_z)
-        for r in range(rows):
-            z = B + 30 + r * pitch_z
+    slot_w, slot_h, pitch_y, pitch_z = 72.0, 22.0, 92.0, 46.0
+    def icebox_slots(panel, x_face, first_row, n_rows, z_shift):
+        # the IceBox back panel's slot rows are at z = B + 60 + r * 46 (r = 0..7) with the odd rows staggered half a pitch;
+        # the box's back panel is its bottom 237 mm (rows 0-3), the front panel the offcut above it (rows 4-7, shifted down)
+        for r in range(first_row, first_row + n_rows):
+            z = B + 60 + r * pitch_z - z_shift
+            if z < B + 4 or z + slot_h > out_H - B - 4:
+                continue
             y = B + 40 + ((pitch_y / 2) if r % 2 else 0)
             while y + slot_w < out_W - B - 30:
-                back = back.cut(cq.Workplane("YZ").center(y + slot_w / 2, z + slot_h / 2).slot2D(slot_w, slot_h).extrude(T + 8).translate((pm - 4, 0, 0)))
+                panel = panel.cut(cq.Workplane("YZ").center(y + slot_w / 2, z + slot_h / 2).slot2D(slot_w, slot_h).extrude(T + 8).translate((x_face - 4, 0, 0)))
                 y += pitch_y
+        return panel
+    if P.get("perforated_back"):
+        back = icebox_slots(back, pm, 0, 4, 0.0)
     for nm, shp in (("panel_side_outboard_from_icebox", slot_panel("x", pm, in_D)),          # cut down from the IceBox's side panels
                     ("panel_side_inboard_from_icebox", slot_panel("x", out_W - pm - T, in_D)),
                     ("panel_back_perforated_from_icebox", back)):
         add(a, shp, nm, PANEL)
     front = slot_panel("y", out_D - pm - T, in_W)
     xf = out_D - pm - T                                            # the front panel's inner face
+    if P.get("icebox_front"):   # the slotted offcut (IceBox rows 4-7) with a 139 x 216 opening for a printed port bezel behind it
+        front = icebox_slots(front, xf, 4, 4, 237.0)
+        opening = (318.0, 457.0, 34.0, 244.0)
+        front = front.cut(box(T + 2, opening[1] - opening[0], opening[3] - opening[2], (xf - 1, opening[0], opening[2])))
+        bezel = box(T, 461.0 - 308.0, 254.0 - 27.0, (xf - T, 308.0, 27.0))   # 153 x 227 x 6, one print, between the rails, 10 mm behind the opening's
+        for (by, bz) in ((313, 60), (313, 140), (313, 220), (340, 249), (440, 249)):   # outboard edge; 5 x M4 countersunk from outside into
+            front = front.cut(cq.Workplane("YZ").center(by, bz).circle(2.3).extrude(T + 2).translate((xf - 1, 0, 0)))   # inserts in the bezel
+            bezel = bezel.cut(cq.Workplane("YZ").center(by, bz).circle(2.8).extrude(T + 2).translate((xf - T - 1, 0, 0)))
+        xf_ports = xf - T                                          # the port bodies stand off the bezel's inner face
+    else:
+        bezel = None; xf_ports = xf
     for port in FRONT_PORTS:   # bodies point -X from the front panel's inner face
         kind, y, z = port[0], port[1], port[2]
+        tgt = bezel if bezel is not None else front
         if kind == "socket":
             r = port[3] / 2
-            front = front.cut(cq.Workplane("YZ").center(y, z).circle(r).extrude(T + 2).translate((xf - 1, 0, 0)))
-            add(a, cq.Workplane("YZ").center(y, z).circle(r + 3).extrude(-40).translate((xf, 0, 0)), f"socket_{int(y)}_{int(z)}", (0.3, 0.3, 0.3))
+            tgt = tgt.cut(cq.Workplane("YZ").center(y, z).circle(r).extrude(T + 2).translate((xf_ports - 1, 0, 0)))
+            add(a, cq.Workplane("YZ").center(y, z).circle(r + 3).extrude(-40).translate((xf_ports, 0, 0)), f"socket_{int(y)}_{int(z)}", (0.3, 0.3, 0.3))
         elif kind.startswith("l14"):
-            front = front.cut(cq.Workplane("YZ").center(y, z).circle(30).extrude(T + 2).translate((xf - 1, 0, 0)))
-            add(a, cq.Workplane("YZ").center(y, z).circle(30).extrude(-55).translate((xf, 0, 0)), f"socket_{kind}", (0.3, 0.3, 0.3))
+            tgt = tgt.cut(cq.Workplane("YZ").center(y, z).circle(30).extrude(T + 2).translate((xf_ports - 1, 0, 0)))
+            add(a, cq.Workplane("YZ").center(y, z).circle(30).extrude(-55).translate((xf_ports, 0, 0)), f"socket_{kind}", (0.3, 0.3, 0.3))
         else:
             w_, h_, d_ = PORT_FACE["sb50"]
-            front = front.cut(box(T + 2, w_, h_, (xf - 1, y - w_ / 2, z - h_ / 2)))
-            add(a, box(d_, w_, h_, (xf - d_, y - w_ / 2, z - h_ / 2)), f"socket_{kind}", (0.3, 0.3, 0.3))
+            tgt = tgt.cut(box(T + 2, w_, h_, (xf_ports - 1, y - w_ / 2, z - h_ / 2)))
+            add(a, box(d_, w_, h_, (xf_ports - d_, y - w_ / 2, z - h_ / 2)), f"socket_{kind}", (0.3, 0.3, 0.3))
+        if bezel is not None: bezel = tgt
+        else: front = tgt
     # the front panel is PRINTED (the ports are cut in it): two tiles on a vertical 20 mm half-lap at mid-width, the outboard
     # tile keeping the outer half of the thickness across the lap, 3 x M4 through the lap (nuts on the bench); it slides into
     # the rails' slots like the sheet panels
+    if bezel is not None:
+        add(a, front, "panel_front_slotted_from_icebox", PANEL)
+        add(a, bezel, "print_port_bezel", ORANGE)
+        add(a, box(out_D, out_W, T, (0, 0, out_H)), "lid_from_icebox_top", PANEL)
+        for y in (out_W * 0.3, out_W * 0.7):
+            add(a, lid_handle().translate((out_D / 2 - 6, y - 30, out_H + T)), f"lid_handle_{int(y)}", BLACK)
+        return xf
     ymid, lw = B + in_W / 2, 20.0
     big = out_H + 40
     outb = front.intersect(box(40, ymid + lw / 2 + 20, big, (xf - 20, -20, -20))).cut(box(3.0 + 1, lw, big, (xf - 1, ymid - lw / 2, -20)))

@@ -213,7 +213,8 @@ What this changed in the model: the shelf plates gained the half-laps and lap bo
 | 2 inverter posts | 254 × 24 × 18 | on a side | PETG or ASA, 5 walls, 50 % (the slot and the sill take the plate's weight); shared with v13 |
 | 2 post clips | 28 × 24 × 20 | as modelled | same as the posts; shared with v13 |
 | 5 panel mounts (Garmin, Cerbo, Orion, MPPT, plus the port strip backer) | up to 194 × 150 × 6 | flat | PETG, 4 walls, 30 % |
-| Front panel, 2 tiles | 231 × 237 × 6 | flat, brim | PETG or ASA, 4 walls, 30 %; vertical half-lap, 3 M4 (bench); the port cutouts are in the inboard tile |
+| Front panel, 2 tiles (v12, v13) | 231 × 237 × 6 | flat, brim | PETG or ASA, 4 walls, 30 %; vertical half-lap, 3 M4 (bench); the port cutouts are in the inboard tile |
+| Port bezel (v12s) | 153 × 227 × 6 | flat, brim | PETG or ASA, 4 walls, 30 %; one print; sits behind the slotted offcut's opening, 5 M4 inserts on its outboard and top edges |
 | 2 lid handles | small | as modelled | PETG, 4 walls, 30 % |
 
 - **Not PLA.** The trays and shelf plates sit in a closed truck in summer; PLA creeps under the battery load. PETG is enough everywhere, ASA if the printer has an enclosure.
@@ -499,6 +500,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-17 | v12s: **front panel from the slotted offcut** (the IceBox rear panel is 514 tall inside its rails; the box's back takes its bottom 237, the front its next 237, with 40 to spare). The ports cannot go through slots, so the offcut gets a 139 × 210 opening and a **one-piece printed port bezel** (153 × 227 × 6, 5 M4 countersunk from outside into inserts) carries them behind it. The two-tile printed front panel is gone from v12s. |
 | 2026-10-17 | Plate mounting: pilot holes for every column-face unit's inserts in the v12s tiles (upright MPPT pattern transposed, 7148 pattern added); fastener table in the README. |
 | 2026-10-17 | v12s only: back panel drawn with the IceBox's slot pattern; trays lose the unused inner-end pads and the optional floor holes (left over from the 2 × 2 layout); viewer gains a **sub-assembly legend** (frame, each tray, bus shelf, inverter plate, posts, ports) alongside the material legend. |
 | 2026-10-17 | Breakers moved high onto the plate's column face (reachable from above), shunt down to the shelf, cable window lowered to bus level; corner cubes, side panels, perforated back panel and lid taken from the second IceBox; front panel printed in two lapped tiles. |
