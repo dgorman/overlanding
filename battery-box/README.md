@@ -176,6 +176,24 @@ v5's idea (a second IceBox 1.3 frame, same width and depth as the IceBox) cut do
 
 The tiles print with one 5.6 mm pilot under every hole; drill the M5 and M6 pilots to 6.4 and 8.0 before setting those inserts. The SmartShunt and bus bars are on the shelf, not the plate: M6 and M5 inserts in the shelf floor.
 
+<a id="rail-cutting"></a>
+**Cutting and tapping the rails, one shot** (2026-10-17). The frame rails come from the second IceBox already end-tapped for the corner-cube bolts; a cut rail needs its **new end** tapped. Cut only one end of each rail and keep the factory end.
+
+| Box | Height rails ×4 | Depth rails ×4 | Width rails ×4 |
+|---|---|---|---|
+| v12 (762 deep, the build) | 508.0 → **231.2** (offcut 276.8 each) | 711.2 uncut | 436.6 uncut |
+| v12s (620 deep) | 508.0 → **231.2** | 711.2 → **569.2** (offcut 142.0) | 436.6 uncut |
+
+Those lengths assume 25.4 mm corner cubes with the rails butting the cube faces. **Before cutting anything, measure an uncut width rail**: it should be 436.6. If it is not, the cube is not 25.4 and every cut length shifts by the same amount; tell the model (`C`) and re-read the table.
+
+1. **Order the cuts if you can.** An 80/20 distributor or a machine shop will cut to ±0.1 mm and end-tap 1/4-20 for a few dollars a rail. That is the only way the first shot is guaranteed. If you cut at home, the rest of this list is how to make it survivable.
+2. **Practice on what you cannot ruin.** The four height-rail offcuts are 276.8 long: tap those ends first. Each 508 height rail also holds a second 231.2 if the first cut is bad, so cut the height rails before the depth rails and treat them as practice. A 711 depth rail gives one 569 and no second chance, so those are last, after the saw and the tap are proven.
+3. **Cut square and slightly long.** Mitre saw with a non-ferrous carbide blade (80 to 100 teeth, blade waxed) or a bandsaw, rail clamped, a stop block so all four are identical, cut at 569.7 or 231.7. Then face the end to length on a disc sander or with a mill file, checking with a square in both directions and a caliper at all four corners. Deburr inside the bore and the slots.
+4. **Tap, don't drill.** The 10-series bore is 0.20 in, which is the 1/4-20 tap drill, so no drilling; if a caliper shows the bore under 5.0 mm, run a #7 drill (5.1 mm) through first. Use a spiral-point (gun) tap for aluminium, a tap guide block so it starts square, tapping fluid, a quarter turn back every half turn, and chips blown out twice. Tap 30 mm deep, more than the cube bolt needs. A plug tap in a hand chuck without a guide is how threads get cross-cut.
+5. **Dry-fit before the panels.** Bolt the four cut rails into their cubes with no panels, check the diagonals of each face match within 1 mm, then take it apart and build it properly with the panels in the slots.
+
+**One thing to decide before the saw touches a depth rail:** v12s cuts them to 569. That is permanent, and the MultiPlus-II you ordered is 578 long and will never fit a 620 box. Cut the depth rails only if the 12/1200 stays for good; the v12 build at 762 needs no depth cut at all.
+
 <a id="v12-assembly"></a>
 **v12 / v13 assembly order** (walked through 2026-10-17 for tool and hand access; the same for v12s)
 
@@ -500,6 +518,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-17 | **Rail cutting and tapping guide** added (cut lengths per variant, cut-order so the height rails are practice, tap without drilling, dry-fit) with the warning that cutting the depth rails for v12s rules out the MultiPlus-II. |
 | 2026-10-17 | v12s: **front panel from a side-panel offcut.** The IceBox's side panels are solid; cut to 237 each leaves a 762 × 277 offcut, and the front needs 443 × 237, so the ports go straight through solid sheet. No printed front, no bezel; the slotted rear offcut is spare. |
 | 2026-10-17 | (superseded the same day) v12s: front panel from the slotted offcut (the IceBox rear panel is 514 tall inside its rails; the box's back takes its bottom 237, the front its next 237, with 40 to spare). The ports cannot go through slots, so the offcut gets a 139 × 210 opening and a **one-piece printed port bezel** (153 × 227 × 6, 5 M4 countersunk from outside into inserts) carries them behind it. The two-tile printed front panel is gone from v12s. |
 | 2026-10-17 | Plate mounting: pilot holes for every column-face unit's inserts in the v12s tiles (upright MPPT pattern transposed, 7148 pattern added); fastener table in the README. |
