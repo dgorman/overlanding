@@ -59,7 +59,7 @@ VARIANTS = {
     "v12s": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=620.0,
                  batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                  card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
-                 perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front=True),   # front panel = the slotted offcut + a printed port bezel   # the IceBox's slot pattern on the back panel; trays without the unused
+                 perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side"),   # front panel = a SOLID offcut of an IceBox side panel   # the IceBox's slot pattern on the back panel; trays without the unused
                                                                                # pads and floor holes; insert pilot holes in the plate under every unit
     "v12_1200": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=762.0,            # the same with the 12/1200 (reference)
                      batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
@@ -438,7 +438,7 @@ if P["card_plane"] == "v12":   # v12 and v13 share one front panel: the port str
     FRONT_PORTS = [("l14_30_in", 423, 65), ("l14_30_out", 423, 135), ("socket", 423, 190, 29),            # (v13's batteries run the outboard
                    ("sb50_solar", 370, 60), ("sb50_alt", 370, 116), ("socket", 370, 160, 22), ("socket", 370, 193, 22),   # side to the front; its plate's
                    ("socket", 338, 150, 29), ("socket", 338, 190, 29)]                                                   # front post ends at y 315)
-if P.get("icebox_front"):   # v12s: ports on the printed bezel behind the slotted panel's opening (z 34-244); flanges inside the opening
+if P.get("icebox_front") in ("bezel", "side"):   # v12s port strip: the same nine ports with 5 mm more between the SB50s and the socket columns
     FRONT_PORTS = [("l14_30_in", 423, 72), ("l14_30_out", 423, 142), ("socket", 423, 197, 29),
                    ("sb50_solar", 370, 62), ("sb50_alt", 370, 118), ("socket", 370, 162, 22), ("socket", 370, 195, 22),
                    ("socket", 338, 157, 29), ("socket", 338, 197, 29)]
@@ -2234,7 +2234,7 @@ def v12_panels(a):
         add(a, shp, nm, PANEL)
     front = slot_panel("y", out_D - pm - T, in_W)
     xf = out_D - pm - T                                            # the front panel's inner face
-    if P.get("icebox_front"):   # the slotted offcut (IceBox rows 4-7) with a 139 x 216 opening for a printed port bezel behind it
+    if P.get("icebox_front") == "bezel":   # the slotted rear-panel offcut (IceBox rows 4-7) with a 139 x 210 opening for a printed port bezel behind it
         front = icebox_slots(front, xf, 4, 4, 237.0)
         opening = (318.0, 457.0, 34.0, 244.0)
         front = front.cut(box(T + 2, opening[1] - opening[0], opening[3] - opening[2], (xf - 1, opening[0], opening[2])))
@@ -2264,9 +2264,12 @@ def v12_panels(a):
     # the front panel is PRINTED (the ports are cut in it): two tiles on a vertical 20 mm half-lap at mid-width, the outboard
     # tile keeping the outer half of the thickness across the lap, 3 x M4 through the lap (nuts on the bench); it slides into
     # the rails' slots like the sheet panels
-    if bezel is not None:
-        add(a, front, "panel_front_slotted_from_icebox", PANEL)
-        add(a, bezel, "print_port_bezel", ORANGE)
+    if bezel is not None or P.get("icebox_front") == "side":
+        if bezel is not None:
+            add(a, front, "panel_front_slotted_from_icebox", PANEL)
+            add(a, bezel, "print_port_bezel", ORANGE)
+        else:   # a solid offcut of an IceBox side panel (762 x 277 left after the side is cut to 237): the ports go straight through it
+            add(a, front, "panel_front_solid_from_icebox_side", PANEL)
         add(a, box(out_D, out_W, T, (0, 0, out_H)), "lid_from_icebox_top", PANEL)
         for y in (out_W * 0.3, out_W * 0.7):
             add(a, lid_handle().translate((out_D / 2 - 6, y - 30, out_H + T)), f"lid_handle_{int(y)}", BLACK)
