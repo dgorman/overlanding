@@ -61,6 +61,11 @@ VARIANTS = {
                  card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
                  perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side"),   # front panel = a SOLID offcut of an IceBox side panel   # the IceBox's slot pattern on the back panel; trays without the unused
                                                                                # pads and floor holes; insert pilot holes in the plate under every unit
+    # pack2: the stacked add-on pack for v12s: 2 x 2 SuperPack 60Ah (two pairs, one above the other) in an all-printed cage,
+    # bus bars + one breaker on a top shelf, SB175 umbilical inlet in its back panel.  Standalone model (frame_* = the pack's envelope)
+    "pack2": dict(frame_source="icebox", frame_W=314.0, frame_H=572.0, frame_D=325.0, show_icebox=False,
+                  batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="pack2", col_on_plate=True,
+                  card_style="solid"),
     "v12_1200": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=762.0,            # the same with the 12/1200 (reference)
                      batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                      card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long"),
@@ -441,7 +446,8 @@ if P["card_plane"] == "v12":   # v12 and v13 share one front panel: the port str
 if P.get("icebox_front") in ("bezel", "side"):   # v12s port strip: the same nine ports with 5 mm more between the SB50s and the socket columns
     FRONT_PORTS = [("l14_30_in", 423, 72), ("l14_30_out", 423, 142), ("socket", 423, 197, 29),
                    ("sb50_solar", 370, 62), ("sb50_alt", 370, 118), ("socket", 370, 162, 22), ("socket", 370, 195, 22),
-                   ("socket", 338, 157, 29), ("socket", 338, 197, 29)]
+                   ("socket", 338, 157, 29), ("socket", 338, 197, 29),
+                   ("sb175_pack", 215, 110)]   # umbilical inlet for the add-on pack, in front of the bus column, clear of the breakers on the plate
 INLET_BODY = {"l14": (60.0, 55.0), "sb50": (48.0, 37.0, 48.0), "sb175": (79.0, 56.0, 26.0)}   # (dia, depth) or (depth, w, h)
 N_BATT = 4
 post_h = in_H                                          # floor panel top to the underside of the top rails
@@ -853,6 +859,9 @@ def add(a, shape, name, rgb):
 
 def build() -> cq.Assembly:
     a = cq.Assembly(name="cage")
+    if P["card_plane"] == "pack2":
+        build_pack2(a)
+        return a
 
     # --- frame ---------------------------------------------------------------
     cube = corner_cube()
@@ -2030,6 +2039,120 @@ def build_pack_printed_frame(a, ox, pD, pW, pH):
     add(a, lid_handle().translate((ox + pD / 2 - 6, pW / 2 - 30, pH)), "lid_pack_handle", BLACK)
 
 
+PACK2 = dict(post=30.0, skin=6.0, lug=30.0, top=60.0, rib=20.0)   # stacked add-on pack: 2 x 2 SuperPack 60Ah, bus + breaker on a top shelf
+
+
+def build_pack2(a):
+    """Stacked add-on pack for v12s: four SuperPack 60Ah as two side-by-side pairs, one pair above the other, in an all-printed
+    cage.  Four 30 mm corner posts (three half-lapped segments, foot tabs M4'd into the lower trays' pads, M4 insert on top for
+    the lid) carry two ledge levels: a mid-deck (two plates) that the upper trays bolt down onto, and a top shelf (two plates)
+    with the two bus bars and the one 150 A breaker.  Ribs on the back and front panels' inner faces support the plates' edges
+    between the posts.  SB175 umbilical inlet in the back panel at shelf level.  6 mm panel tiles outside the posts, lid on top."""
+    po, sk, lug, rib = PACK2["post"], PACK2["skin"], PACK2["lug"], PACK2["rib"]
+    b = COMPONENTS["battery"]; wall, lip = 6.0, 30.0                   # the v9 tray: 6 mm walls, 30 mm lip over a 4 mm floor
+    fd, fw = b.d + 2 * wall, b.w + 2 * wall                            # 241 x 150
+    pD = sk + po + 6 + fd + 6 + po + sk                                # 325
+    pW = sk + 2 * fw + 2 + sk                                          # 314
+    z_deck = 4 + b.h + lug                                             # 247: mid-deck plate sits here
+    z_shelf = z_deck + 6 + 4 + b.h + lug                               # 500: top shelf plate
+    z_lid = z_shelf + 6 + PACK2["top"]                                 # 566: lid underside; posts this tall
+    pH = z_lid + sk
+    PACK.update(D=pD, W=pW, H=pH)
+    tx, ty0 = sk + po + 6, sk
+    # --- posts: full solid with ledges, foot tab, insert, then split into three half-lapped segments ------------------
+    h = z_lid; seams = (h / 3, 2 * h / 3); lapw = 40.0
+    for (px, py, back, outer) in ((tx - 6 - po, ty0, True, True), (tx - 6 - po, ty0 + 2 * fw + 2 - po, True, False),
+                                  (tx + fd + 6, ty0, False, True), (tx + fd + 6, ty0 + 2 * fw + 2 - po, False, False)):
+        g = box(po, po, h)
+        for zl in (z_deck, z_shelf):   # ledge 28 inward under each plate level, with a 12 mm block under it, M4 insert from the top
+            lx = po if back else -28
+            g = g.union(box(28, po, 6, (lx, 0, zl - 6))).union(box(28, po, 12, (lx, 0, zl - 18)))
+            g = g.cut(cq.Workplane("XY").center(lx + 14, po / 2).circle(2.3).extrude(14).translate((0, 0, zl - 13)))
+        tx0, tx1 = (po, po + 12) if back else (-12, 0)                 # foot tab over the lower tray's pad, M4 down into its insert
+        ty0_, ty1_ = (0, 32) if outer else (po - 32, po)
+        hx = po + 6 if back else -6; hy = 22 if outer else po - 22
+        g = g.union(box(tx1 - tx0, ty1_ - ty0_, 6, (tx0, ty0_, lip + 4))).cut(cq.Workplane("XY").center(hx, hy).circle(2.3).extrude(8).translate((0, 0, lip + 3)))
+        g = g.cut(cq.Workplane("XY").center(po / 2, po / 2).circle(2.3).extrude(12).translate((0, 0, h - 11)))      # lid insert
+        for zs in seams:   # 2 x M4 pins through each lap
+            for hz in (zs - 12, zs + 12):
+                g = g.cut(cq.Workplane("XZ").center(po / 2, hz).circle(2.3).extrude(-(po + 2)).translate((0, -1, 0)))
+        bounds = ((-1, seams[0] + lapw / 2), (seams[0] - lapw / 2, seams[1] + lapw / 2), (seams[1] - lapw / 2, h + 1))
+        for k, (za, zb) in enumerate(bounds):
+            seg = g.intersect(box(po + 80, po + 2, zb - za, (-40, -1, za)))
+            if k > 0:   # bottom lap: keep the inner half (y po/2..po) -> cut the outer half
+                seg = seg.cut(box(po + 82, po / 2 + 1, lapw + 1, (-41, -1, za - 0.5)))
+            if k < 2:   # top lap: keep the outer half -> cut the inner half
+                seg = seg.cut(box(po + 82, po / 2 + 1, lapw + 1, (-41, po / 2, zb - lapw - 0.5)))
+            add(a, seg.translate((px, py, 0)), f"print_pack_post_{int(px)}_{int(py)}_{k}", ORANGE)
+    # --- trays: lower pair on the floor (pads take the posts' foot tabs), upper pair bolted down onto the mid-deck ------
+    for layer, zb in enumerate((0.0, z_deck + 6)):
+        for sidx in range(2):
+            ty = ty0 + sidx * (fw + 2)
+            tray = box(fd, fw, lip + 4).cut(box(b.d, b.w, lip + 5, (wall, wall, 4)))
+            tray = tray.cut(box(fd + 2, 28, 5, (-1, wall + b.w / 2 - 14, 2)))
+            if layer == 0:
+                for (px, py) in ((-6, 12), (-6, fw - 32), (fd, 12), (fd, fw - 32)):
+                    tray = tray.union(box(6, 20, lip + 4, (px, py, 0)))
+                    tray = tray.cut(cq.Workplane("XY").center(px + 6.0 if px < 0 else px, py + 10).circle(2.8).extrude(13).translate((0, 0, lip + 4 - 12)))
+            else:   # 4 x M4 down through the floor into the deck plate's inserts (from inside the empty tray)
+                for (hx, hy) in ((wall + 20, wall + 20), (wall + b.d - 20, wall + 20), (wall + 20, wall + b.w - 20), (wall + b.d - 20, wall + b.w - 20)):
+                    tray = tray.cut(cq.Workplane("XY").center(hx, hy).circle(2.3).extrude(6).translate((0, 0, -1)))
+            add(a, tray.translate((tx, ty, zb)), f"print_pack_tray_{layer}{sidx}", ORANGE)
+            at = (tx + wall, ty + wall, zb + 4)
+            add(a, victron_shape("battery", b.d, b.w, b.h, at, box(b.d, b.w, b.h, at).edges("|Z").fillet(6)), f"battery_pack_{layer}{sidx}", BATT)
+    # --- mid-deck and top shelf: two plates each (253 x 151), corners on the post ledges, back/front edges on panel ribs ----
+    for lvl, zp in (("deck", z_deck), ("shelf", z_shelf)):
+        for sidx in range(2):
+            y0 = ty0 + sidx * (fw + 1)
+            pl = box(fd + 12, fw + 1, 6, (tx - 6, y0, zp))
+            for (cx, cy) in ((tx - 6 + 14, y0 + (po / 2 if sidx == 0 else fw + 1 - po / 2)), (tx + fd + 6 - 14, y0 + (po / 2 if sidx == 0 else fw + 1 - po / 2))):
+                pl = pl.cut(cq.Workplane("XY").center(cx, cy).circle(2.3).extrude(8).translate((0, 0, zp - 1)))   # M4 down into the ledge inserts
+            if lvl == "deck":   # inserts for the upper tray's floor bolts
+                for (hx, hy) in ((wall + 20, wall + 20), (wall + b.d - 20, wall + 20), (wall + 20, wall + b.w - 20), (wall + b.d - 20, wall + b.w - 20)):
+                    pl = pl.cut(cq.Workplane("XY").center(tx + hx, ty0 + sidx * (fw + 2) + hy).circle(2.8).extrude(7).translate((0, 0, zp - 0.5)))
+            add(a, pl, f"print_pack_{lvl}_{sidx}", ORANGE)
+        for side, xr in (("back", sk), ("front", pD - sk - rib)):   # ribs on the back/front panels' inner faces between the posts
+            rb = box(rib, pW - 2 * sk - 2 * po, rib, (xr, sk + po, zp - rib))
+            for yc in (pW / 2 - 80, pW / 2, pW / 2 + 80):   # 3 x M4 through the panel into inserts in the rib
+                rb = rb.cut(cq.Workplane("YZ").center(yc, zp - rib / 2).circle(2.8).extrude(8).translate((xr - (1 if side == "back" else -rib + 1 - 7), 0, 0)))
+            add(a, rb, f"print_pack_rib_{lvl}_{side}", ORANGE)
+    # --- bus bars and breaker on the top shelf, SB175 inlet in the back panel at shelf level --------------------------
+    for comp, (bx, by) in (("busbar_p", (tx + 64, ty0 + 60)), ("busbar_n", (tx + 109, ty0 + 60)), ("breaker_a", (tx + 154, ty0 + 100))):   # clear of the SB175 body at the back
+        c = COMPONENTS[comp]
+        at = (bx, by, z_shelf + 6)
+        add(a, victron_shape(comp, c.d, c.w, c.h, at, unit_fallback(comp, c.d, c.w, c.h, at)), f"power_pack_{comp}", GOLD)
+    d_, w_, h_ = INLET_BODY["sb175"]
+    add(a, box(d_, w_, h_, (sk, pW / 2 - w_ / 2, z_shelf + 14)), "socket_pack_sb175", (0.3, 0.3, 0.3))
+    # --- panels (6 mm tiles outside the posts) and lid --------------------------------------------------------------------
+    for nm, shp in lattice_card_tiles(pD - 2 * sk, z_lid, sk, 0.0, 0.0, "pack_panel_outboard"):
+        add(a, shp, nm, PANEL)
+    for nm, shp in lattice_card_tiles(pD - 2 * sk, z_lid, sk, pW - sk, 0.0, "pack_panel_inboard"):
+        add(a, shp, nm, PANEL)
+    for nm, shp in lattice_card_tiles_yz(pW, z_lid, 0.0, 0.0, 0.0, "pack_panel_back"):
+        add(a, shp, nm, PANEL)
+    for nm, shp in lattice_card_tiles_yz(pW, z_lid, pD - sk, 0.0, 0.0, "pack_panel_front"):
+        add(a, shp, nm, PANEL)
+    for i, x in enumerate((0, pD / 2)):
+        for j, y in enumerate((0, pW / 2)):
+            add(a, box(pD / 2, pW / 2, sk, (x, y, z_lid)), f"print_pack_lid_{i}{j}", PANEL)
+    add(a, lid_handle().translate((pD / 2 - 6, pW / 2 - 30, pH)), "lid_pack_handle", BLACK)
+    PACK.update(z_deck=z_deck, z_shelf=z_shelf, z_lid=z_lid)
+
+
+def report_pack2():
+    mm = lambda v: f"{v:.0f} mm ({v / 25.4:.1f} in)"
+    D, W, H = PACK["D"], PACK["W"], PACK["H"]
+    print("== Variant 'pack2': stacked add-on pack for v12s, 2 x 2 SuperPack 60Ah, all printed ==")
+    print(f"outer D x W x H : {mm(D)} x {mm(W)} x {mm(H)}; the IceBox + v12s stack is {558.8 + 282:.0f} ({(558.8 + 282) / 25.4:.1f} in) tall, so {558.8 + 282 - H:.0f} mm of height is unused")
+    print(f"layers          : lower pair on the floor, mid-deck at z {PACK['z_deck']:.0f} (30 mm lug room), upper pair on it, top shelf at z {PACK['z_shelf']:.0f} with the bus bars + one 150 A breaker, lid at {PACK['z_lid']:.0f}")
+    print("  a third pair would need 247 more: 819 tall, 22 under the stack height, but the bus shelf would have to move to a side column")
+    print("  electrical     : 4 x 60 Ah = 240 Ah, 120 A continuous; paralleled on the two bus bars, one breaker in the + lead to the SB175; 2 AWG umbilical to the")
+    print("                   SB175 inlet on the v12s front panel (in front of its bus column); with the box's own pair: 360 Ah, 180 A")
+    print("  assembly       : lower trays -> posts (foot tabs) -> back/front panels with their ribs -> mid-deck plates (M4 into ledges) -> upper trays (M4 down into deck")
+    print("                   inserts) -> top shelf plates -> bus + breaker -> side panels -> batteries, lugs, lid.  Posts: 3 segments x ~209 with 2 M4 pins per lap")
+    print(f"  weight         : ~{4 * 7.5 + 6:.0f} kg (batteries 30, prints ~6): two people, or strap handles through the side panels")
+
+
 def build_pack(a, ox):
     """v10 add-on pack: the two displaced SuperPacks side by side in their own cage, built from the leftover stock.
     Height rails = the four IceBox depth-rail offcuts (uncut); width and depth rails cut from 8 kit bars.  Same trays,
@@ -2256,7 +2379,7 @@ def v12_panels(a):
             tgt = tgt.cut(cq.Workplane("YZ").center(y, z).circle(30).extrude(T + 2).translate((xf_ports - 1, 0, 0)))
             add(a, cq.Workplane("YZ").center(y, z).circle(30).extrude(-55).translate((xf_ports, 0, 0)), f"socket_{kind}", (0.3, 0.3, 0.3))
         else:
-            w_, h_, d_ = PORT_FACE["sb50"]
+            w_, h_, d_ = PORT_FACE["sb175" if kind.startswith("sb175") else "sb50"]
             tgt = tgt.cut(box(T + 2, w_, h_, (xf_ports - 1, y - w_ / 2, z - h_ / 2)))
             add(a, box(d_, w_, h_, (xf_ports - d_, y - w_ / 2, z - h_ / 2)), f"socket_{kind}", (0.3, 0.3, 0.3))
         if bezel is not None: bezel = tgt
@@ -3120,6 +3243,8 @@ def report_v7():
 
 
 def report():
+    if P["card_plane"] == "pack2":
+        return report_pack2()
     if P["card_plane"] == "v12":
         return report_v13() if P.get("box") == "v13" else report_v12()
     if P["card_plane"] == "v9":

@@ -274,6 +274,20 @@ Asked 2026-10-17: can either box be shorter than 30 in? **v13 cannot**: two Smar
 
 The price is the upgrade path: the MultiPlus-II is 578 mm long and the 200Ah pair needs 708, so this box can never take v13's parts. If the II ordered on 2026-10-14 stays, the box stays 30 in.
 
+**pack2: the stacked add-on pack for v12s** (`python cage.py pack2`, viewer "pack2")
+
+Asked 2026-10-18: an external battery pack on an umbilical, 2 × 2 SuperPack 60Ah stacked, as small a footprint as possible, using the height up to the IceBox + v12s stack (841 mm). **325 × 314 × 572 mm (12.8 × 12.4 × 22.5 in)**, all printed, 269 mm under the stack height.
+
+| Level | What is there |
+|---|---|
+| Floor | two SuperPacks side by side in v9-style trays; the four 30 mm corner posts stand on foot tabs M4'd into the trays' pads |
+| z 247, mid-deck | two 253 × 151 plates on the posts' gusseted ledges (M4 into ledge inserts) and on 20 mm ribs screwed to the back and front panels' inner faces; the upper trays bolt down onto them with 4 M4 each, from inside the empty tray |
+| z 253–500 | the upper pair, 30 mm lug room above them like the lower pair |
+| z 500, top shelf | two more plates the same way: the two bus bars and the one Blue Sea 7148, all four batteries paralleled here; the **SB175 umbilical inlet** in the back panel at shelf level |
+| z 566 | lid in four tiles on the posts' M4 inserts |
+
+Posts print in three half-lapped segments of about 209 mm with two M4 pins per lap; every tile under 256. The v12s front panel gains an **SB175 inlet in front of its bus column** (y 215, z 110) so the 2 AWG umbilical lands straight on the box's bus bars. Bank: 240 Ah and 120 A continuous in the pack, 360 Ah and 180 A with the box's own pair. A third pair would reach 819 mm, 22 under the stack height, but the bus shelf would have to move to a side column. Loaded weight about 36 kg: two people, or strap handles through the side panels. Assembly order is in the model's report (`python cage.py pack2`).
+
 **v11: v10 swapped, 431 mm deep (17.0 in)** (`python cage.py v11`, viewer "v11")
 
 **Width: 386 mm (15.2 in), 4.0 in of pedal room** inside the IceBox face (was 365 / 4.8 in); the extra 21 mm all lands in the inverter column, where 30 mm goes behind the inverter card for its SB175 and the MultiPlus face ends up 47 mm from the tray wall instead of 45. **Hard limit: 17.25 in (438 mm) deep**, set by the access port in the Goose Gear plate. v11 uses it: 28 mm behind the front card's SB50 row (was 22) and 11 mm in front of the MPPT (was 10) make it **437.8 mm, 17.24 in**.
@@ -529,6 +543,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-18 | **pack2:** stacked 2 × 2 SuperPack add-on pack for v12s (325 × 314 × 572, all printed, bus + breaker on a top shelf, SB175 in its back panel); v12s front panel gets the SB175 umbilical inlet in front of the bus column. |
 | 2026-10-18 | Tapping tools BOM added to the rail-cutting guide (spiral-point 1/4-20 HSS tap, T-handle, guide block, fluid). |
 | 2026-10-18 | **v12s is the build.** MultiPlus-II order cancelled; depth rails will be cut to 569.2 and height rails to 231.2. |
 | 2026-10-17 | **Rail cutting and tapping guide** added (cut lengths per variant, cut-order so the height rails are practice, tap without drilling, dry-fit) with the warning that cutting the depth rails for v12s rules out the MultiPlus-II. |
