@@ -543,6 +543,7 @@ Change a number in `P`, `COMPONENTS`, `FLOOR_LAYOUT` or `CARD_LAYOUT`, re-run, a
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-18 | `v12s_pack` view: v12s on the IceBox with pack2 on the floor 80 mm in front of its port face (umbilical side toward the box), to see the two together. |
 | 2026-10-18 | **pack2:** stacked 2 × 2 SuperPack add-on pack for v12s (325 × 314 × 572, all printed, bus + breaker on a top shelf, SB175 in its back panel); v12s front panel gets the SB175 umbilical inlet in front of the bus column. |
 | 2026-10-18 | Tapping tools BOM added to the rail-cutting guide (spiral-point 1/4-20 HSS tap, T-handle, guide block, fluid). |
 | 2026-10-18 | **v12s is the build.** MultiPlus-II order cancelled; depth rails will be cut to 569.2 and height rails to 231.2. |

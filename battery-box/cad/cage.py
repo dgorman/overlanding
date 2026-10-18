@@ -61,6 +61,11 @@ VARIANTS = {
                  card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
                  perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side"),   # front panel = a SOLID offcut of an IceBox side panel   # the IceBox's slot pattern on the back panel; trays without the unused
                                                                                # pads and floor holes; insert pilot holes in the plate under every unit
+    # v12s_pack: v12s on the IceBox with pack2 standing on the floor in front of the box's port face, umbilical side toward it
+    "v12s_pack": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=620.0,
+                      batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
+                      card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
+                      perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", with_pack2=True),
     # pack2: the stacked add-on pack for v12s: 2 x 2 SuperPack 60Ah (two pairs, one above the other) in an all-printed cage,
     # bus bars + one breaker on a top shelf, SB175 umbilical inlet in its back panel.  Standalone model (frame_* = the pack's envelope)
     "pack2": dict(frame_source="icebox", frame_W=314.0, frame_H=572.0, frame_D=325.0, show_icebox=False,
@@ -983,6 +988,14 @@ def build() -> cq.Assembly:
 
     if P["card_plane"] == "v12":
         (build_v13 if P.get("box") == "v13" else build_v12)(a)
+        if P.get("with_pack2"):   # pack2 on the vehicle floor in front of the box's port face, its SB175 back panel toward the box
+            tmp = cq.Assembly()
+            build_pack2(tmp)
+            dz = -P["icebox_H"] if P["stack_on_icebox"] else 0.0
+            for ch in tmp.children:
+                shp = ch.obj.val().translate((out_D + 80.0, (out_W - PACK["W"]) / 2, dz))
+                col = {"battery": BATT, "power": GOLD, "socket": (0.3, 0.3, 0.3), "lid": PANEL}.get(ch.name.split("_")[0], ORANGE if ch.name.startswith("print_") and "panel" not in ch.name and "lid" not in ch.name else PANEL)
+                add(a, cq.Workplane("XY").add(shp), ch.name, col)
         if P["show_icebox"]:
             for nm, shp in icebox_parts():
                 col = BLACK if "cube" in nm else GRAY if "bar" in nm else (0.35, 0.35, 0.35)
