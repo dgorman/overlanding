@@ -2602,10 +2602,10 @@ def build_v13(a):
             add(a, half_a.translate((tx, ty, 0)), f"print_tray_battery_{r}_back", ORANGE)
             add(a, half_b.translate((tx, ty, 0)), f"print_tray_battery_{r}_front", ORANGE)
         else:   # a 60Ah tray with its pads is 255: one print
-            if P.get("breaker_shelf"):   # two M4 inserts down into the 21 mm inboard wall's top for the drop shelf's leg
+            if P.get("breaker_shelf"):   # two M4 inserts down into the 21 mm inboard wall's top, under the drop shelf's foot
                 xs_ = wall + clr + (b.d - 130) / 2
                 for hx in (25, 105):
-                    tray = tray.cut(cq.Workplane("XY").center(xs_ + hx, fw - wall - 15 + 3).circle(2.8).extrude(13).translate((0, 0, lip + fl - 12)))
+                    tray = tray.cut(cq.Workplane("XY").center(xs_ + hx, fw - wall - 15 + 13).circle(2.8).extrude(13).translate((0, 0, lip + fl - 12)))
             add(a, tray.translate((tx, ty, 0)), f"print_tray_battery_{r}", ORANGE)
         # L brackets from the tray's outer pads to the width rail behind it (r 0) or in front of it (r 1): the horizontal leg bolts
         # down into the pad's M4 insert, the vertical leg takes a countersunk 1/4-20 into the rail's inner slot (T-nut)
@@ -2630,15 +2630,22 @@ def build_v13(a):
         hz = out_H - B / 2                                        # 21 mm inboard wall (two M4 down into inserts in the wall top); the breaker on top
         for r in range(2):
             tx = txs[r]; xs = tx + wall + clr + (b.d - 130) / 2   # 130 long, centred on the battery, clear of the terminals at its ends
-            yw = ty + fw - wall - 15                              # leg over the thick inboard wall (y 172..193)
-            sh = box(130, yw + 6 - (y_in0 + 0.0), 6, (xs, y_in0, zs))                                       # plate from the rail face to the leg
-            sh = sh.union(box(130, 6, out_H - 1 - zs, (xs, y_in0, zs)))                                     # hanger against the top rail's inner face
-            sh = sh.union(box(130, 6, zs - (lip + fl), (xs, yw, lip + fl)))                                  # leg down onto the wall top
+            yw = ty + fw - wall - 15                              # leg at the inner edge of the 21 mm inboard wall (y 172..193)
+            wt = lip + fl                                         # wall top, z 36
+            sh = box(130, yw + 6 - y_in0, 6, (xs, y_in0, zs))                                                # plate from the rail face to the leg
+            sh = sh.union(box(130, 6, out_H - 3 - zs, (xs, y_in0, zs)))                                      # hanger up the top rail's inner face
+            sh = sh.union(box(130, 6, zs + 24 - wt, (xs, yw, wt)))                                            # leg down onto the wall top, 24 up past the plate as a lip
+            sh = sh.union(box(130, 15, 6, (xs, yw + 6, wt)))                                                  # foot over the wall top: 2 x M4 down into it
+            for (gy, gz, dy, dz) in ((y_in0 + 6, zs + 6, 1, 1), (yw, zs + 6, -1, 1)):                        # gussets above the plate at the hanger and the lip
+                                                                                                              # (nothing below it: the battery is 6 mm under)
+                for gx in (xs, xs + 130 - 6):
+                    tri = cq.Workplane("YZ").polyline([(gy, gz), (gy + 18 * dy, gz), (gy, gz + 18 * dz)]).close().extrude(6).translate((gx, 0, 0))
+                    sh = sh.union(tri)
             for hx in (25, 105):
                 sh = sh.cut(cq.Workplane("XZ").center(xs + hx, hz).circle(3.4).extrude(-8).translate((0, y_in0 - 1, 0)))          # 1/4-20 into the rail slot
-                sh = sh.cut(cq.Workplane("XZ").center(xs + hx, hz).circle(6.5).extrude(-3).translate((0, y_in0 + 6.5, 0)))        # countersink, head inside
-                sh = sh.cut(cq.Workplane("XY").center(xs + hx, yw + 3).circle(2.3).extrude(10).translate((0, 0, lip + fl - 1)))  # M4 into the wall top
-            bx, by = xs + 24, y_in0 + 100                          # breaker inboard of the hanger bolts so a key reaches them over the empty shelf
+                sh = sh.cut(cq.Workplane("XZ").center(xs + hx, hz).circle(6.5).extrude(-3).translate((0, y_in0 + 3.5, 0)))        # countersink on the inner face
+                sh = sh.cut(cq.Workplane("XY").center(xs + hx, yw + 13).circle(2.3).extrude(8).translate((0, 0, wt - 1)))        # M4 down through the foot
+            bx, by = xs + 24, y_in0 + 92                           # breaker inboard of the hanger bolts (key path over the empty plate), 7 mm off the lip
             for (u, v) in HOLES["breaker_a"]:                      # its two 6.6 mm holes: M6 inserts in the shelf, 1/4-20 or M6 from above
                 sh = sh.cut(cq.Workplane("XY").center(bx + u, by + v).circle(4.0).extrude(8).translate((0, 0, zs - 1)))
             add(a, sh, f"print_breaker_shelf_{r}", ORANGE)
