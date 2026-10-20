@@ -71,14 +71,14 @@ The v12s plate tiles carry a pilot hole under every unit. Every unit mounts with
 
 | Unit | Mounting pattern | Insert | Screw | Side of the plate |
 |---|---|---|---|---|
-| MultiPlus 12/1200 | 4 keyholes, 243.8 × 220.6 | M6 | M6 × 16 pan head, left standing 2 mm so the keyholes drop over them | inverter side |
+| MultiPlus 12/1200 | 4 keyholes, 243.8 × 220.6 | M5 (an M6 insert is longer than the 6 mm plate) | M5 × 12 button head + 10 mm washer, left 3 mm proud so the keyholes drop over them | inverter side |
 | MPPT 100/30 upright | 4 keyholes, 71.5 across × 176 up | M5 | M5 × 12 pan head | column side |
 | Cerbo GX | 4 lugs, 143 × 58 | M4 | M4 × 10 | column side |
 | Orion XS | 4 lugs, 109.3 × 113 | M4 | M4 × 10 | column side |
 | Garmin PowerSwitch | its bracket, 2 screws (spacing to verify) | M4 | M4 × 10 | column side |
-| Bussmann 285 × 2 | 2 × 6.6 mm holes on a 56.6 × 26.7 diagonal (datasheet) | M6 | M6 × 16 or 1/4-20 | drop shelf, from above |
+| Bussmann 285 × 2 | 2 × 6.6 mm holes on a 56.6 × 26.7 diagonal (datasheet) | M5 | M5 × 12 + washer | drop shelf, from above |
 
-The tiles print with one 5.6 mm pilot under every hole; drill the M5 and M6 pilots to 6.4 and 8.0 before setting those inserts. The SmartShunt and bus bars are on the shelf, not the plate: M6 and M5 inserts in the shelf floor.
+The tiles print with one 4.6 mm pilot under every hole; drill to 5.6 for M4 and 6.4 for M5 before setting the inserts, and use the short (under 6 mm) M4 inserts in the plate. The SmartShunt and bus bars are on the shelf, not the plate: M5 inserts in the shelf floor. Nothing in a 6 mm part takes an M6 insert.
 
 ### Breaker drop shelf: print and build
 
@@ -600,6 +600,7 @@ Same 487.4 mm width, so the vertical bars line up and the outboard faces are flu
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-20 | Fasteners: everything in a 6 mm part moves to M5 with a washer (inverter keyholes, breakers, shunt) because M6 inserts are longer than the plate; short M4 inserts for the plate's own units. First McMaster order placed. |
 | 2026-10-20 | Manual: simple dimensioned drawing for step 3 (`cad/simple_steps.py`): plan with the two post positions in big numbers and a side view with the bolt height. |
 | 2026-10-20 | Manual: **placement drawing and tables** from `cad/placement.py`: every part's position from the back-rail and outboard-rail faces, and the 18 drop-in T-nut positions along each rail. |
 | 2026-10-20 | Manual: McMaster-Carr order list (inserts, screws, locknuts, T-nuts, tapping tools) with verified part numbers where confirmed. |

@@ -1324,10 +1324,10 @@ HOLES["garmin_up"] = [(37, 20), (37, 105)]
 HOLES["multiplus_1200_side"] = [(68.0, 14.2), (311.8, 14.2), (68.0, 234.8), (311.8, 234.8)]   # the upright pattern turned on its side
 HOLES["mppt_up"] = [(v, u) for (u, v) in HOLES.get("mppt", [])]          # upright: the 186 x 130 pattern transposed (keyholes 71.5 across, 176 up)
 HOLES["breaker_face"] = [(12.32, 37.40), (68.96, 10.73)]                     # Bussmann 285 on its side: two 6.6 mm holes on a 56.64 x 26.67 diagonal (datasheet)
-INSERT["breaker_face"] = "M6"
+INSERT["breaker_face"] = "M5"
 HOLES["multiplus_ii_long"] = [(50.0, 30.0), (528.0, 30.0), (289.0, 258.0)]   # two bottom holes + the top hook, turned on its side (verify, appendix G)
 HOLES["multiplus_1200_long"] = [(68.0, 14.2), (311.8, 14.2), (68.0, 234.8), (311.8, 234.8)]   # the upright pattern turned on its side
-INSERT["multiplus_1200_long"] = "M6"
+INSERT["multiplus_1200_long"] = "M5"   # + washer: an M6 insert is longer than the 6 mm plate
 INSERT["multiplus_ii_long"] = "M6"
 INSERT["multiplus_1200_side"] = INSERT.get("multiplus_1200_up", "M6"); INSERT["mppt_up"] = INSERT["mppt"]
 INSERT["garmin_up"] = INSERT["garmin"]

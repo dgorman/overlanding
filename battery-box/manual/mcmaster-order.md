@@ -10,7 +10,7 @@ Items marked **verify** are the right catalogue line but the exact length or typ
 |---|---|---|---|
 | 1 pack of 50 | 94180A353 | https://www.mcmaster.com/94180A353/ | M4 brass heat-set insert, 5.25 mm hole. 32 needed |
 | 1 pack of 25 | 94180A361 | https://www.mcmaster.com/94180A361/ | M5 brass heat-set insert, 6.7 mm long. 8 needed |
-| 1 pack of 25 | 94180A371 **verify M6** | https://www.mcmaster.com/94180A371/ | M6 brass heat-set insert, standard length. 10 needed |
+| 1 pack of 25 | 94180A351 **verify: installed length under 6 mm** | https://www.mcmaster.com/94180A351/ | M4 brass heat-set insert, **short**, for the 6 mm inverter plate. 16 needed (the 7.9 mm 94180A353 go in the thick parts) |
 
 ## Screws and nuts
 
@@ -19,8 +19,8 @@ Items marked **verify** are the right catalogue line but the exact length or typ
 | 1 pack of 100 | 92095A190 | https://www.mcmaster.com/92095A190/ | M4 × 10 button head, 18-8. 32 needed |
 | 1 pack of 50 | 92095A196 **verify 16 mm** | https://www.mcmaster.com/92095A196/ | M4 × 16 button head, 18-8, lap joints. 13 needed |
 | 1 pack of 100 | 93625A150 | https://www.mcmaster.com/93625A150/ | M4 nylon-insert locknut, 18-8. 13 needed |
-| 1 pack of 50 | 92095A210 | https://www.mcmaster.com/92095A210/ | M5 × 12 button head, 18-8. 8 needed |
-| 1 pack of 50 | 92095A226 | https://www.mcmaster.com/92095A226/ | M6 × 12 button head, 18-8. 10 needed |
+| 1 pack of 50 | 92095A210 | https://www.mcmaster.com/92095A210/ | M5 × 12 button head, 18-8. 18 needed: MPPT, bus bars, inverter keyholes, breakers, shunt |
+| 1 pack of 100 | **verify** | https://www.mcmaster.com/products/washers/thread-size~m5/material~18-8-stainless-steel/ | M5 flat washer, 18-8: under the inverter keyhole, breaker and shunt screws. 10 needed |
 | 1 pack of 25 | **verify: 1/4"-20 × 3/4 in** on the 92210A page | https://www.mcmaster.com/products/screws/thread-size~1-4-20/head-type~flat/material~18-8-stainless-steel/ | 1/4"-20 × 3/4 in flat-head 82° hex-drive, 18-8. 18 needed. 92210A542 on that page is the 1 in: too long |
 
 ## T-nuts
@@ -57,4 +57,4 @@ Items marked **verify** are the right catalogue line but the exact length or typ
 92095A226,1
 ```
 
-Then add the verify items from their pages: the M6 insert, the M4 × 16, the 3/4 in flat-heads, the drop-in T-nuts, the tapping tools, the glue and the straps.
+Ordered 2026-10-20: 94180A353, 94180A361, 92095A190, 93625A150, 92095A210, 92095A226 (the M6 screws are now spare). Still to add: the short M4 insert 94180A351, M5 washers, the M4 × 16, the 3/4 in flat-heads, the drop-in T-nuts, the tapping tools, the glue and the straps.
