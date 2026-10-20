@@ -64,6 +64,8 @@ Plus the electrical parts on the component list in `components.md`: MultiPlus, t
 
 ### 1.3a McMaster-Carr order
 
+A click-through version with a direct link per line and an Order Pad block is in [manual/mcmaster-order.md](manual/mcmaster-order.md).
+
 One order covers every fastener, insert and tapping tool in this manual. Part numbers marked **verified** were checked against McMaster listings on 2026-10-20; the others are the right catalogue line but confirm the length or type on the product page before adding to the cart (McMaster's part numbers change with length, and a 1 in screw where 3/4 in is specified bottoms out in the rail slot).
 
 | Item | McMaster part | Qty needed | Pack |
