@@ -117,8 +117,8 @@ Sub-assemblies first, on the bench, where nuts and clamps are allowed:
 |---|---|
 | **Frame** | the second IceBox's cubes and rails with the four panels slid into the rails' centreline slots as the cubes go on: its two side panels and perforated rear panel cut down, and the solid front panel cut from a side-panel offcut with the ports cut through it; lid off. Use **drop-in (roll-in) 1/4-20 T-nuts** in the rails' inner slots, so they can be added after the frame is closed: 2 per width rail for the tray brackets, 2 per bottom width rail for the post sills, 2 per top width rail for the clips, 2 for the shelf's front wall, 2 per outboard tray |
 | **Tray** × 2 | one print each; inserts: 2 M4 in the outer-end corner pads, 3 M4 in the inboard wall. The battery does **not** go in yet |
-| **Bus shelf** | the three plates joined on their 20 mm floor half-laps (2 M4 through each lap); the two bus bars and the SmartShunt mounted on their inserts and the bus wiring between them made up. One 530–690 mm piece that drops in whole |
-| **Inverter plate** | tiles on their half-laps and splines (3 M4 across each lap); inserts for the shelf wall (6 M4 in the bottom band), the MPPT, Cerbo, Orion and Garmin mounted on the column face and their leads dressed. Not the inverter: it goes on in place |
+| **Bus shelf** | the three plates laid on their 20 mm floor half-laps and tacked with CA (no lap bolts: each plate bolts to the trays and the inverter plate on its own); the two bus bars and the SmartShunt mounted on their inserts and the bus wiring between them made up. One 530 mm piece that drops in whole |
+| **Inverter plate** | tiles on their half-laps and glued splines (no lap bolts: the MPPT, Cerbo and Orion each screw into both tiles of their column); inserts for the shelf wall (6 short M4 in the bottom band), the MPPT, Cerbo, Orion and Garmin mounted on the column face and their leads dressed. Not the inverter: it goes on in place |
 | **Posts** × 2 | printed; nothing to add |
 
 Then into the box, from the top, in this order. Every fastener below is reached with a hex key from above or along the open column; nothing is blind.
@@ -600,6 +600,7 @@ Same 487.4 mm width, so the vertical bars line up and the outboard faces are flu
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-20 | Lap bolts dropped from v12s (their nuts landed under the shunt, bus bars and plate units): the shelf plates each bolt to the trays and the plate, the tiles are held by the units screwed across the laps and the splines. M4 × 16 and locknuts off the BOM. |
 | 2026-10-20 | Fasteners: everything in a 6 mm part moves to M5 with a washer (inverter keyholes, breakers, shunt) because M6 inserts are longer than the plate; short M4 inserts for the plate's own units. First McMaster order placed. |
 | 2026-10-20 | Manual: simple dimensioned drawing for step 3 (`cad/simple_steps.py`): plan with the two post positions in big numbers and a side view with the bolt height. |
 | 2026-10-20 | Manual: **placement drawing and tables** from `cad/placement.py`: every part's position from the back-rail and outboard-rail faces, and the 18 drop-in T-nut positions along each rail. |

@@ -39,7 +39,7 @@ All files are in [`stl/v12s/`](stl/v12s/). Click a link, then **Download** on Gi
 | Breaker drop shelf | 2 | [shelf_0](stl/v12s/print_breaker_shelf_0.stl), [shelf_1](stl/v12s/print_breaker_shelf_1.stl) | **on its side**, the 130 mm edge vertical: every wall then prints upright, no supports | 4 / 40 % | 130 × 168 × 243, ~400 g each. Never flat: the leg would be 189 mm of overhang |
 | Bus shelf plate | 3 | [0](stl/v12s/print_bus_shelf_0.stl), [1](stl/v12s/print_bus_shelf_1.stl), [2](stl/v12s/print_bus_shelf_2.stl) | flat | 4 / 30 % | 177 × 110 × 34. Plate 2 has the front wall and bolts into the front rail |
 | Inverter plate tile | 6 | [00](stl/v12s/print_plate_inverter_tile_00.stl), [01](stl/v12s/print_plate_inverter_tile_01.stl), [10](stl/v12s/print_plate_inverter_tile_10.stl), [11](stl/v12s/print_plate_inverter_tile_11.stl), [20](stl/v12s/print_plate_inverter_tile_20.stl), [21](stl/v12s/print_plate_inverter_tile_21.stl) | flat on the face | 4 / 30 % | 179 × 140 × 6. First digit = column from the back, second = row from the bottom. Pilot holes for every unit are in them |
-| Plate spline | 6 | [v1_85](stl/v12s/print_plate_inverter_spline_v1_85.stl), [v1_149](stl/v12s/print_plate_inverter_spline_v1_149.stl), [v1_213](stl/v12s/print_plate_inverter_spline_v1_213.stl), [v2_85](stl/v12s/print_plate_inverter_spline_v2_85.stl), [v2_149](stl/v12s/print_plate_inverter_spline_v2_149.stl), [v2_213](stl/v12s/print_plate_inverter_spline_v2_213.stl) | flat | 3 / 100 % | 60 × 18 × 3, all identical: print six of one |
+| Plate spline | 6 | [v1_85](stl/v12s/print_plate_inverter_spline_v1_85.stl), [v1_149](stl/v12s/print_plate_inverter_spline_v1_149.stl), [v1_213](stl/v12s/print_plate_inverter_spline_v1_213.stl), [v2_85](stl/v12s/print_plate_inverter_spline_v2_85.stl), [v2_149](stl/v12s/print_plate_inverter_spline_v2_149.stl), [v2_213](stl/v12s/print_plate_inverter_spline_v2_213.stl) | flat | 3 / 100 % | 60 × 18 × 3, all identical: print six of one. Glued; they and the units hold the tiles, there are no lap bolts |
 | Inverter post | 2 | [post_0](stl/v12s/print_post_inverter_0.stl), [post_1](stl/v12s/print_post_inverter_1.stl) | **on a side** | 5 / 50 % | 254 × 24 × 18. Mirror pair: 0 at the back rail, 1 at the front |
 | Post clip | 2 | [clip_0](stl/v12s/print_post_clip_0.stl), [clip_1](stl/v12s/print_post_clip_1.stl) | as modelled | 5 / 50 % | 40 × 24 × 28, mirror pair |
 
@@ -54,9 +54,8 @@ About 2.5 kg of filament, 35 hours. Pictures of each part are in [section 4](#4-
 | M4 heat-set inserts, 7.9 mm (94180A353) | 16 (50) | the thick parts: tray pads 4, tray inboard walls 6, tray wall tops 4, post tops 2 |
 | M4 heat-set inserts, **short** (94180A351, under 6 mm) | 16 (25) | the 6 mm plate: bottom band 6, Cerbo 4, Orion 4, Garmin 2 |
 | M4 × 10 button-head screws | 32 (40) | into those inserts |
-| M4 × 16 screws + nylock nuts | 13 (15) | lap joints, bench only: bus shelf laps 4, plate laps 9 |
 | M5 heat-set inserts, 6.7 mm (94180A361) + M5 × 12 button heads + M5 washers | 20 (50) | MPPT 4, bus bars 4, **inverter keyholes 4** (washer under the head, left 3 mm proud), **breakers 4**, **shunt 2**. M6 inserts are too long for a 6 mm plate, so everything that was M6 is M5 with a washer |
-| CA glue | | the six splines, which locate only |
+| CA glue | | the six splines and the half-laps, which locate only |
 | 1 in cam straps, 1.5 m | 2 | one per battery through the tray's floor groove |
 
 Plus the electrical parts on the component list in `components.md`: MultiPlus, two SuperPack 60Ah, two Bussmann 285060F breakers, two 5-stud bus bars, SmartShunt, MPPT 100/30, Cerbo GX, Orion XS, Garmin PowerSwitch, two L14-30 panel inlets, two SB50 and one SB175 panel inlets, three 12 V and two USB sockets, and the cable in section 3.
@@ -73,12 +72,11 @@ One order covers every fastener, insert and tapping tool in this manual. Part nu
 | M5 × 0.8 brass heat-set insert, 6.7 mm long | **94180A361** (verified) | 8 | 25 |
 | M4 × 0.7 brass heat-set insert, **short**, for the 6 mm plate | 94180A351 (confirm installed length under 6 mm) | 16 | 25 |
 | M4 × 10 button-head hex-drive screw, 18-8 | **92095A190** (verified) | 32 | 100 |
-| M4 × 16 button-head screw, 18-8, for the lap joints | 92095A196 (confirm length 16 mm on the page) | 13 | 50 |
-| M4 nylon-insert locknut, 18-8 | **93625A150** (verified) | 13 | 100 |
+| (M4 locknuts 93625A150 were ordered before the lap bolts were dropped; spare) | | | |
 | M5 × 12 button-head screw, 18-8 | **92095A210** (verified) | 18 | 50 |
-| M5 flat washer, 18-8, 10 mm OD | search "M5 washer 18-8" | 10 | 100 |
+| M5 flat washer, 18-8, 10 mm OD | **93475A240** (verified) | 10 | 100 |
 | (M6 × 12 button heads 92095A226 were ordered; they are spare: nothing in the box takes M6 any more) | | | |
-| 1/4"-20 × 3/4 in flat-head (82°) hex-drive screw, 18-8 | 92210A5xx: open the 1/4"-20 flat-head 18-8 page and pick **3/4 in** (92210A542 is the 1 in, too long) | 18 | 25 or 50 |
+| 1/4"-20 × 3/4 in flat-head (82°) hex-drive screw, 18-8 | 92210A540 (confirm it reads 3/4 in; 92210A542 is the 1 in, too long) | 18 | 25 or 50 |
 | 1/4"-20 **drop-in** T-slot nut for 1 in (10-series) framing | McMaster "T-slotted framing drop-in fastener nut, 1 in, 1/4"-20"; 47065T142 is the **end-feed** economy nut and will not do. The 80/20 equivalent is **#3382** | 18 | 25 |
 | 1/4"-20 HSS spiral-point (gun) tap, plug | "Spiral-point taps, 1/4"-20, high-speed steel" | 1 | |
 | T-handle tap wrench for 1/4 in taps | "T-handle tap wrenches, 1/16 to 1/4 in" | 1 | |
@@ -129,11 +127,11 @@ Set every insert with the iron before anything is assembled; the table in 1.3 sa
 
 ### 2.4 Bus shelf sub-assembly
 
-Join the three plates on their 20 mm floor half-laps with two M4 × 16 and nuts per lap, plate 0 at the back, plate 2 with the front wall at the front. Mount the two bus bars on their M5 inserts in the row nearest the inverter plate and the SmartShunt on its M5 inserts (washers under the heads) in the row nearest the trays, and make up the bus-bar-to-shunt link. The result is one 530 mm piece that drops into the box in step 7.
+Lay the three plates out on their 20 mm floor half-laps, plate 0 at the back, plate 2 with the front wall at the front, and tack each lap with a drop of CA. There are no bolts across the laps: once in the box each plate is bolted to the trays through its lip and to the inverter plate through its wall, so the laps only locate. Mount the two bus bars on their M5 inserts in the row nearest the inverter plate and the SmartShunt on its M5 inserts (washers under the heads) in the row nearest the trays, and make up the bus-bar-to-shunt link. The result is one 530 mm piece that drops into the box in step 7.
 
 ### 2.5 Inverter plate sub-assembly
 
-Lay the six tiles out: columns 0, 1, 2 from the back, rows 0 (bottom) and 1 (top). Each column's two tiles join on a horizontal half-lap with three M4 × 16 and nuts; the columns join on vertical joints with the splines glued into their pockets on the inverter side. Set the inserts: six short M4 in the bottom band for the bus shelf wall, and on the **column face** M5 × 4 for the MPPT, short M4 × 4 for the Cerbo, × 4 for the Orion, × 2 for the Garmin; on the **inverter face** M5 × 4 for the keyholes, with M5 × 12 button heads and a 10 mm washer under each driven in and left 3 mm proud, so the keyholes drop over them. Mount the MPPT (upright, terminals down), Cerbo, Orion (terminals down) and Garmin on the column face and dress their short leads. The inverter does not go on yet.
+Lay the six tiles out: columns 0, 1, 2 from the back, rows 0 (bottom) and 1 (top). Each column's two tiles meet on a horizontal half-lap, tacked with CA; the columns join on vertical joints with the splines glued into their pockets on the inverter side. There are no bolts across the laps: the MPPT, Cerbo and Orion each screw into both tiles of their column, which is what holds the laps closed, and the plate's ends sit in the post slots. Set the inserts: six short M4 in the bottom band for the bus shelf wall, and on the **column face** M5 × 4 for the MPPT, short M4 × 4 for the Cerbo, × 4 for the Orion, × 2 for the Garmin; on the **inverter face** M5 × 4 for the keyholes, with M5 × 12 button heads and a 10 mm washer under each driven in and left 3 mm proud, so the keyholes drop over them. Mount the MPPT (upright, terminals down), Cerbo, Orion (terminals down) and Garmin on the column face and dress their short leads. The inverter does not go on yet.
 
 ### 2.6 Breaker shelves
 

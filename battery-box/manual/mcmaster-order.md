@@ -17,11 +17,10 @@ Items marked **verify** are the right catalogue line but the exact length or typ
 | Qty | Part | Link | What it is |
 |---|---|---|---|
 | 1 pack of 100 | 92095A190 | https://www.mcmaster.com/92095A190/ | M4 × 10 button head, 18-8. 32 needed |
-| 1 pack of 50 | 92095A196 **verify 16 mm** | https://www.mcmaster.com/92095A196/ | M4 × 16 button head, 18-8, lap joints. 13 needed |
-| 1 pack of 100 | 93625A150 | https://www.mcmaster.com/93625A150/ | M4 nylon-insert locknut, 18-8. 13 needed |
+| (ordered) | 93625A150 | https://www.mcmaster.com/93625A150/ | M4 locknuts: no longer used (the lap bolts were dropped), keep as spares |
 | 1 pack of 50 | 92095A210 | https://www.mcmaster.com/92095A210/ | M5 × 12 button head, 18-8. 18 needed: MPPT, bus bars, inverter keyholes, breakers, shunt |
-| 1 pack of 100 | **verify** | https://www.mcmaster.com/products/washers/thread-size~m5/material~18-8-stainless-steel/ | M5 flat washer, 18-8: under the inverter keyhole, breaker and shunt screws. 10 needed |
-| 1 pack of 25 | **verify: 1/4"-20 × 3/4 in** on the 92210A page | https://www.mcmaster.com/products/screws/thread-size~1-4-20/head-type~flat/material~18-8-stainless-steel/ | 1/4"-20 × 3/4 in flat-head 82° hex-drive, 18-8. 18 needed. 92210A542 on that page is the 1 in: too long |
+| 1 pack of 100 | 93475A240 | https://www.mcmaster.com/93475A240/ | M5 flat washer, 18-8, 5.3 ID × 10 OD: under the inverter keyhole, breaker and shunt screws. 10 needed |
+| 1 pack of 25 | 92210A540 **verify it reads 3/4 in** | https://www.mcmaster.com/92210A540/ | 1/4"-20 × 3/4 in flat-head 82° hex-drive, 18-8. 18 needed. 92210A542 is the 1 in: too long |
 
 ## T-nuts
 
@@ -57,4 +56,14 @@ Items marked **verify** are the right catalogue line but the exact length or typ
 92095A226,1
 ```
 
-Ordered 2026-10-20: 94180A353, 94180A361, 92095A190, 93625A150, 92095A210, 92095A226 (the M6 screws are now spare). Still to add: the short M4 insert 94180A351, M5 washers, the M4 × 16, the 3/4 in flat-heads, the drop-in T-nuts, the tapping tools, the glue and the straps.
+Ordered 2026-10-20 (order 1): 94180A353, 94180A361, 92095A190, 93625A150, 92095A210, 92095A226. The M6 screws and the M4 locknuts are spares now.
+
+## Order 2: Order Pad block
+
+```
+94180A351,1
+93475A240,1
+92210A540,1
+```
+
+(94180A351: confirm the installed length is under 6 mm; 92210A540: confirm it reads 1/4"-20 × 3/4 in.) Then from their pages: the drop-in T-nuts, the tap, tap wrench, tap guide, Tap Magic Aluminum, the #7 drill if needed, the CA glue and two cam straps.

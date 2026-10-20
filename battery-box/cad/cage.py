@@ -60,13 +60,13 @@ VARIANTS = {
     "v12s": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=635.0,
                  batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                  card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
-                 perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True),   # front panel = a SOLID offcut of an IceBox side panel   # the IceBox's slot pattern on the back panel; trays without the unused
+                 perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True, lap_bolts=False),   # front panel = a SOLID offcut of an IceBox side panel   # the IceBox's slot pattern on the back panel; trays without the unused
                                                                                # pads and floor holes; insert pilot holes in the plate under every unit
     # v12s_pack: v12s on the IceBox with pack2 standing on the floor in front of the box's port face, umbilical side toward it
     "v12s_pack": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=635.0,
                       batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                       card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
-                      perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True, with_pack2=True),
+                      perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True, lap_bolts=False, with_pack2=True),
     # pack2: the stacked add-on pack for v12s: 2 x 2 SuperPack 60Ah (two pairs, one above the other) in an all-printed cage,
     # bus bars + one breaker on a top shelf, SB175 umbilical inlet in its back panel.  Standalone model (frame_* = the pack's envelope)
     "pack2": dict(frame_source="icebox", frame_W=314.0, frame_H=572.0, frame_D=325.0, show_icebox=False,
@@ -1364,8 +1364,8 @@ def lattice_card_tiles(L, H, x0, y_plate, z0, prefix, patches=(), solids=()):
                 tile = tile.cut(box(tw + 2, t / 2 + 1, lap + 1, (-1, -1, th - lap / 2)))
             if j > 0:        # bottom edge: remove the BACK half of the strip
                 tile = tile.cut(box(tw + 2, t / 2 + 1, lap + 1, (-1, t / 2, -lap / 2 - 1)))
-            for jl in (j, j + 1):   # 3 x M4 through-bolts across each lap this tile is part of
-                if 0 < jl < nz:
+            for jl in ((j, j + 1) if P.get("lap_bolts", True) else ()):   # 3 x M4 through-bolts across each lap this tile is part of
+                if 0 < jl < nz:                                              # (v12s: none; the units screwed across the lap and the splines hold it)
                     for xc in (L * 0.25 - i * tw, L * 0.5 - i * tw, L * 0.75 - i * tw):
                         if 0 < xc < tw:
                             tile = tile.cut(cq.Workplane("XZ").center(xc, (jl - j) * th).circle(2.3).extrude(-t - 2).translate((0, 1, 0)))
@@ -2664,8 +2664,8 @@ def build_v13(a):
             sh = sh.union(box(20, y1s - y0s - 12, 3, (xb, y0s + 6, 0)))
         if i > 0:
             sh = sh.cut(box(21, y1s - y0s - 10, 3.5, (xa - 1, y0s + 5, -0.5)))
-        for sx in ([xb + 10] if i < n_pl - 1 else []) + ([xa + 10] if i > 0 else []):
-            for sy in (y0s + 30, y1s - 30):
+        for sx in (([xb + 10] if i < n_pl - 1 else []) + ([xa + 10] if i > 0 else [])) if P.get("lap_bolts", True) else []:
+            for sy in (y0s + 30, y1s - 30):   # (v12s: no lap bolts; each plate is bolted to the trays and the inverter plate on its own)
                 sh = sh.cut(cq.Workplane("XY").center(sx, sy).circle(2.3).extrude(8).translate((0, 0, -1)))
         sh = sh.union(box(xb - xa, 6, 34, (xa, y0s, 0)))                     # lip against the trays' inboard walls (M4 inserts)
         for r in range(2):
