@@ -10,7 +10,7 @@ Items marked **verify** are the right catalogue line but the exact length or typ
 |---|---|---|---|
 | 1 pack of 50 | 94180A353 | https://www.mcmaster.com/94180A353/ | M4 brass heat-set insert, 5.25 mm hole. 32 needed |
 | 1 pack of 25 | 94180A361 | https://www.mcmaster.com/94180A361/ | M5 brass heat-set insert, 6.7 mm long. 8 needed |
-| 1 pack of 25 | 94180A351 **verify: installed length under 6 mm** | https://www.mcmaster.com/94180A351/ | M4 brass heat-set insert, **short**, for the 6 mm inverter plate. 16 needed (the 7.9 mm 94180A353 go in the thick parts) |
+| 1 pack of 100 | 94180A351 | https://www.mcmaster.com/94180A351/ | M4 brass heat-set insert, **short**, for the 6 mm inverter plate. 16 needed (the 7.9 mm 94180A353 go in the thick parts) |
 
 ## Screws and nuts
 
@@ -20,13 +20,13 @@ Items marked **verify** are the right catalogue line but the exact length or typ
 | (ordered) | 93625A150 | https://www.mcmaster.com/93625A150/ | M4 locknuts: no longer used (the lap bolts were dropped), keep as spares |
 | 1 pack of 50 | 92095A210 | https://www.mcmaster.com/92095A210/ | M5 × 12 button head, 18-8. 18 needed: MPPT, bus bars, inverter keyholes, breakers, shunt |
 | 1 pack of 100 | 93475A240 | https://www.mcmaster.com/93475A240/ | M5 flat washer, 18-8, 5.3 ID × 10 OD: under the inverter keyhole, breaker and shunt screws. 10 needed |
-| 1 pack of 25 | 92210A540 **verify it reads 3/4 in** | https://www.mcmaster.com/92210A540/ | 1/4"-20 × 3/4 in flat-head 82° hex-drive, 18-8. 18 needed. 92210A542 is the 1 in: too long |
+| 1 pack of 50 | 92210A540 | https://www.mcmaster.com/92210A540/ | 1/4"-20 × 3/4 in flat-head 82° hex-drive, 18-8. 18 needed. 92210A542 is the 1 in: too long |
 
 ## T-nuts
 
 | Qty | Part | Link | What it is |
 |---|---|---|---|
-| 1 pack (20 or 25) | **verify: drop-in type** | https://www.mcmaster.com/products/t-slotted-framing-fasteners/for-t-slot-size~1-inch/thread-size~1-4-20/ | 1/4"-20 **drop-in** T-slot nut for 1 in (10-series) framing. 18 needed. The page lists end-feed, drop-in and hammer types; take the drop-in. 47065T142 is end-feed and will not do |
+| 5 packs of 4 | 6000N501 | https://www.mcmaster.com/6000N501/ | 1/4"-20 drop-in spring-loaded ball nut for 1 in (10-series) rail. 18 needed, 20 bought. End-feed nuts (47065T142) will not do: the rails are capped by cubes |
 
 ## Tapping
 
@@ -40,7 +40,7 @@ Items marked **verify** are the right catalogue line but the exact length or typ
 
 | Qty | Part | Link | What it is |
 |---|---|---|---|
-| 1 | **verify** | https://www.mcmaster.com/products/adhesives/adhesive-type~instant-adhesive/ | medium-viscosity cyanoacrylate for the six splines |
+| 1 | 74765A63 | https://www.mcmaster.com/74765A63/ | Loctite 401, 0.1 oz: enough for the six splines and the laps |
 | 2 | **verify** | https://www.mcmaster.com/products/cam-buckle-straps/ | 1 in cam-buckle strap, 5 ft or longer |
 
 ## Order Pad block (the verified lines)
@@ -66,14 +66,4 @@ Ordered 2026-10-20 (order 1): 94180A353, 94180A361, 92095A190, 93625A150, 92095A
 6000N501,5     drop-in spring-loaded nut for 1 in rail, 1/4"-20, packs of 4 (20 nuts)
 ```
 
-That completes the McMaster list. Still to get elsewhere: cutting fluid (WD-40 is fine), two 1/8 in adhesive-backed closed-cell foam pads 130 x 140 for the drop shelves, the Diablo D1084L blade, and a #7 drill only if a rail bore measures under 5.0 mm.
-
-## Order 2: Order Pad block (as planned)
-
-```
-94180A351,1
-93475A240,1
-92210A540,1
-```
-
-(94180A351: confirm the installed length is under 6 mm; 92210A540: confirm it reads 1/4"-20 × 3/4 in.) Then from their pages: the drop-in T-nuts, the tap, tap wrench, tap guide, Tap Magic Aluminum, the #7 drill if needed, the CA glue and two cam straps.
+That completes the McMaster list. The Diablo D1084L blade is ordered from Home Depot (2026-10-20). Still to get elsewhere: cutting fluid (WD-40 is fine), two 1/8 in adhesive-backed closed-cell foam pads 130 x 140 for the drop shelves, a #7 drill only if a rail bore measures under 5.0 mm.
