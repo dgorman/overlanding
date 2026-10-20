@@ -62,6 +62,32 @@ About 2.5 kg of filament, 35 hours. Pictures of each part are in [section 4](#4-
 
 Plus the electrical parts on the component list in `components.md`: MultiPlus, two SuperPack 60Ah, two Bussmann 285060F breakers, two 5-stud bus bars, SmartShunt, MPPT 100/30, Cerbo GX, Orion XS, Garmin PowerSwitch, two L14-30 panel inlets, two SB50 and one SB175 panel inlets, three 12 V and two USB sockets, and the cable in section 3.
 
+### 1.3a McMaster-Carr order
+
+One order covers every fastener, insert and tapping tool in this manual. Part numbers marked **verified** were checked against McMaster listings on 2026-10-20; the others are the right catalogue line but confirm the length or type on the product page before adding to the cart (McMaster's part numbers change with length, and a 1 in screw where 3/4 in is specified bottoms out in the rail slot).
+
+| Item | McMaster part | Qty needed | Pack |
+|---|---|---|---|
+| M4 × 0.7 brass heat-set insert for plastic, 5.25 mm hole | **94180A353** (verified) | 32 | 50 |
+| M5 × 0.8 brass heat-set insert, 6.7 mm long | **94180A361** (verified) | 8 | 25 |
+| M6 × 1 brass heat-set insert | 94180A371 (confirm: the M6 in the same "heat-set inserts for plastic" family, standard length) | 10 | 25 |
+| M4 × 10 button-head hex-drive screw, 18-8 | **92095A190** (verified) | 32 | 100 |
+| M4 × 16 button-head screw, 18-8, for the lap joints | 92095A196 (confirm length 16 mm on the page) | 13 | 50 |
+| M4 nylon-insert locknut, 18-8 | **93625A150** (verified) | 13 | 100 |
+| M5 × 12 button-head screw, 18-8 | **92095A210** (verified) | 8 | 50 |
+| M6 × 12 button-head screw, 18-8 (inverter keyholes left 2 mm proud, breakers, shunt) | **92095A226** (verified) | 10 | 50 |
+| 1/4"-20 × 3/4 in flat-head (82°) hex-drive screw, 18-8 | 92210A5xx: open the 1/4"-20 flat-head 18-8 page and pick **3/4 in** (92210A542 is the 1 in, too long) | 18 | 25 or 50 |
+| 1/4"-20 **drop-in** T-slot nut for 1 in (10-series) framing | McMaster "T-slotted framing drop-in fastener nut, 1 in, 1/4"-20"; 47065T142 is the **end-feed** economy nut and will not do. The 80/20 equivalent is **#3382** | 18 | 25 |
+| 1/4"-20 HSS spiral-point (gun) tap, plug | "Spiral-point taps, 1/4"-20, high-speed steel" | 1 | |
+| T-handle tap wrench for 1/4 in taps | "T-handle tap wrenches, 1/16 to 1/4 in" | 1 | |
+| Tap guide block | "Tap guides" (the hardened block with graded holes, #0 to 5/8 in) | 1 | |
+| Tapping fluid for aluminium | Tap Magic Aluminum, 4 oz | 1 | |
+| #7 (0.201 in) jobber drill, HSS | only if the bore measures under 5.0 mm | 1 | |
+| Cyanoacrylate, medium viscosity | for the six splines | 1 | |
+| 1 in cam-buckle strap, 5 ft or longer | 2 | | |
+
+Not from McMaster: the 285 breakers' M6 stud hardware comes fitted; the IceBox's own corner-cube screws re-use.
+
 ### 1.4 Tools
 
 Hex keys 2.5, 3, 4 and 5 mm plus 5/32 in for the 1/4-20 flat-heads; a soldering iron with insert tips; caliper and a small square; a non-ferrous mitre blade or bandsaw, a disc sander or mill file; the 1/4-20 tapping set from the README's rail-cutting guide (HSS spiral-point tap, T-handle, guide block, fluid); a 6 mm and a 60 mm hole saw and a step drill for the front panel ports; crimper and heat gun for the lugs.
