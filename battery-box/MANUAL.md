@@ -115,7 +115,7 @@ Set the two M6 inserts in each shelf plate. The breakers go on in step 6, in the
 
 ## 3. Assembly, step by step
 
-Work from the top with the lid off. Every fastener is reached with a hex key from above or along the open column.
+Work from the top with the lid off. Every fastener is reached with a hex key from above or along the open column. The batteries go in at step 6, before the drop shelves cover them.
 
 ### Step 1: the frame
 
@@ -150,38 +150,38 @@ Four L brackets bolt to the width rails **before** the trays go in, because each
 
 Empty trays. Drop tray 0 into the outboard zone with room to spare, slide it to the back so its pads go under the bracket legs, then two M4 × 10 down through the legs into the pad inserts. Now the two countersunk 1/4-20s through the tray's outer wall into the outboard rail's T-nuts, from inside the empty pocket. Tray 1 the same at the front. Each tray is now tied to a width rail and the outboard rail.
 
-### Step 6: breaker drop shelves
+### Step 6: the batteries
 
-![Step 6](manual/img/06-shelves.png)
-![Step 6 from above](manual/img/06-shelves-top.png)
+![Step 6](manual/img/06-batteries.png)
 
-For each tray: lower the empty shelf in, hanger against the top outboard rail's inner face, foot on the tray's inboard wall. Start all four screws by hand: two M4 × 10 down through the foot into the wall-top inserts, two countersunk 1/4-20 through the hanger into the rail's T-nuts. Tighten the foot screws first, then the hanger screws with the key coming along the open box over the empty plate. Then the Bussmann 285 down onto the plate's M6 inserts, studs toward the column.
+The batteries go in **before** the drop shelves: once a shelf is on, nothing 229 mm long can pass under its plate. Each SuperPack into its tray from above, strap through the floor groove and over the top with the buckle at the battery's end (the shelf plate will sit 6 mm above the battery, so keep the strap flat across the middle). No lugs yet: the leads go on in step 10.
 
-### Step 7: the bus shelf
+### Step 7: breaker drop shelves
 
-![Step 7](manual/img/07-bus.png)
-![Step 7 from above](manual/img/07-bus-top.png)
+![Step 7](manual/img/07-shelves.png)
+![Step 7 from above](manual/img/07-shelves-top.png)
+
+For each battery: lower the empty shelf over it, hanger against the top outboard rail's inner face, foot on the tray's inboard wall beyond the battery; the plate clears the battery top by 6 mm and the hanger key path at 269 mm clears the lugs' height. Start all four screws by hand: two M4 × 10 down through the foot into the wall-top inserts, two countersunk 1/4-20 through the hanger into the rail's T-nuts. Tighten the foot screws first, then the hanger screws with the key coming along the open box over the empty plate. Then the Bussmann 285 down onto the plate's M6 inserts, studs toward the column.
+
+### Step 8: the bus shelf
+
+![Step 8](manual/img/08-bus.png)
+![Step 8 from above](manual/img/08-bus-top.png)
 
 Lower the sub-assembly into the column, lip against the trays' inboard walls. Three M4 × 10 per tray through the lip into the tray wall inserts, driven from the column side (heads in the column). Two countersunk 1/4-20 through the front wall into the front rail's T-nuts, from inside the column.
 
-### Step 8: the inverter plate and clips
+### Step 9: the inverter plate and clips
 
-![Step 8](manual/img/08-plate.png)
-![Step 8 from above](manual/img/08-plate-top.png)
+![Step 9](manual/img/09-plate.png)
+![Step 9 from above](manual/img/09-plate-top.png)
 
 Lower the plate with its units into the two post slots, column face toward the batteries. Its units clear everything on the shelf. The bottom band lands against the bus shelf's inboard wall: six M4 × 10 through that wall into the plate's inserts, from the column side, under the MPPT. Then the two clips: one M4 × 10 down into each post top, one countersunk 1/4-20 into the top width rail's T-nut; the clip's rail bolt sits 10 mm off the plate line so the key passes the plate's edge.
 
-### Step 9: the inverter
+### Step 10: the inverter and the DC leads
 
-![Step 9](manual/img/09-inverter.png)
+![Step 10](manual/img/10-inverter.png)
 
-Hang the MultiPlus on its four keyholes over the proud M6 heads, cable end toward the front, and snug the heads. Its DC leads go through the plate's low window to the bus bars; AC in and out to the L14-30s beside it.
-
-### Step 10: the batteries
-
-![Step 10](manual/img/10-batteries.png)
-
-Each SuperPack into its tray from above, strap through the floor groove and over the top. Lugs on: positive straight up to its breaker's battery-side stud, 4 AWG from the breaker's other stud over the shelf lip to the positive bus bar; negative to the shunt's battery side. Fit the breaker stud covers.
+Hang the MultiPlus on its four keyholes over the proud M6 heads, cable end toward the front, and snug the heads. Now the lugs: each battery's positive straight up to its breaker's battery-side stud, 4 AWG from the breaker's other stud over the shelf lip to the positive bus bar; negatives to the shunt's battery side; the MultiPlus DC leads through the plate's low window to the bus bars; AC in and out to the L14-30s beside it. Fit the breaker stud covers.
 
 ### Step 11: ports, pigtails and the lid
 

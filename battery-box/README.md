@@ -97,10 +97,10 @@ The hanger has no inserts: its two 1/4-20s go through 6.6 mm clearance holes, co
 
 **Hardware per shelf:** 2 × 1/4-20 × 3/4 in flat-head (countersunk) screws + 2 drop-in 10-series T-nuts; 2 × M4 × 10 button heads; 2 × M6 × 16 (or the breaker's own 1/4-20s) with washers; the breaker's M6 stud nuts and lock washers come fitted on the 285.
 
-**Build order** (with the trays already bolted in, batteries not yet in):
+**Build order** (with the trays bolted in and the batteries already in them: the shelf covers the battery's middle, so the battery cannot go in afterwards):
 
 1. Drop two T-nuts into the top outboard rail's inner slot and slide them to about 25 and 105 mm from the shelf's back edge position (over the middle of the tray; the model puts the shelf at 98–228 on tray 0 and 414–544 on tray 1, measured from the box's back face).
-2. Lower the empty shelf in: hanger against the rail's inner face, foot onto the tray wall's top. Start both 1/4-20s by hand through the hanger into the T-nuts, then the two M4s down through the foot into the wall inserts. Tighten the M4s first (they locate the shelf on the wall), then the 1/4-20s with a hex key coming along the open box over the empty plate.
+2. Lower the empty shelf over the battery: hanger against the rail's inner face, foot onto the tray wall's top beyond the battery; the plate clears the battery by 6 mm. Start both 1/4-20s by hand through the hanger into the T-nuts, then the two M4s down through the foot into the wall inserts. Tighten the M4s first (they locate the shelf on the wall), then the 1/4-20s with a hex key coming along the open box over the empty plate.
 3. Screw the breaker down onto the plate's M6 inserts from above, studs toward the column.
 4. Later, with the battery in: its positive lead goes up to the breaker's battery-side stud, 4 AWG from the other stud to the positive bus bar in the column, both over the lip. Fit the stud covers.
 
@@ -126,11 +126,12 @@ Then into the box, from the top, in this order. Every fastener below is reached 
 1. **Posts.** Stand each post against its width rail and bolt the sill (countersunk 1/4-20 along the depth into the bottom rail's drop-in T-nut). The post slot faces the box.
 2. **Tray brackets** × 4. Bolt each L bracket's vertical leg to its width rail (countersunk 1/4-20 into the inner slot) **before** the tray is there: that bolt head faces the tray and is unreachable afterwards. The horizontal legs now stand 36 mm up, waiting for the pads.
 3. **Trays**, empty. Drop each into the outboard zone with room to spare, slide it to its end so the pad goes under the bracket's leg, then two M4 down through the legs into the pad inserts (from above). Now the two countersunk 1/4-20s through the tray's outer wall into the outboard rail's T-nuts, from inside the empty pocket. The tray is tied to three rails.
-   **Breaker drop shelves.** As in the sub-assembly section above: empty shelf in, foot M4s first, hanger 1/4-20s over the empty plate, then the breaker from above. Its lead to the battery waits for step 7.
+   **Batteries.** Into the trays from above now, strapped, no lugs yet: once the drop shelves are on, nothing 229 mm long passes under their plates.
+   **Breaker drop shelves.** As in the sub-assembly section above: empty shelf lowered over the battery (6 mm clear), foot M4s first, hanger 1/4-20s over the empty plate, then the breaker from above.
 4. **Bus shelf.** Lower it into the column, lip against the trays' inboard walls; three M4 per tray through the lip into the tray inserts, bolted from the column side (heads in the column, placed where no breaker sits over them); two countersunk 1/4-20 through its front wall into the front rail's T-nuts, from inside the column.
 5. **Inverter plate.** Lower it with its units into the two post slots; the units clear everything on the shelf (the MPPT and Orion stand 42 mm over the bus bars, the Cerbo 78 mm over the breakers). Its bottom band lands on the shelf's inboard wall: six M4 through that wall into the plate inserts, from the column side at z 28, under the MPPT. Then the two clips: M4 down into each post top, countersunk 1/4-20 into the top rail's T-nut, with the clip's rail bolt 10 mm off the plate line so the key passes the plate's top edge.
 6. **Inverter.** Hang it on the plate from above on its four keyholes over the M6 pan heads and make up its DC leads through the plate's window to the bus bars, and its AC in/out to the port strip beside it.
-7. **Batteries.** Into the trays from above, straps through the floor grooves, lugs on, leads to the bus bars.
+7. **Lugs.** Each battery's positive up to its breaker, breaker to the + bus bar, negatives to the shunt; the inverter's DC leads through the window.
 8. **Panel pigtails** (SB50s, the pack's SB175, Garmin outputs through the window to the sockets), then the **lid**.
 
 
@@ -599,6 +600,7 @@ Same 487.4 mm width, so the vertical bars line up and the outboard faces are flu
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-20 | Assembly order corrected: batteries go in **before** the breaker drop shelves (a shelf covers the battery's middle; user caught it). Manual and diagrams renumbered. |
 | 2026-10-20 | **Build manual** (`MANUAL.md`): rendered step diagrams from `cad/manual.py`, print list with STL links, hardware and tool lists, port hole positions, wiring table. |
 | 2026-10-20 | Drop shelf made buildable: the leg's wall bolts now go down through a 15 mm **foot** on the wall top (they had been drawn through the leg itself), the leg carries on 24 mm above the plate as a lip, gussets moved above the plate (the battery is 6 mm under it), hanger countersinks on the inner face. Print-and-build section written. |
 | 2026-10-20 | **Breakers are Eaton Bussmann 285060F-121-S** (60 A, 48 V, IP67, M6 studs, 81.3 × 48.1 × 31.5 + 6.4 button): low enough to sit on a **drop shelf over each battery**, hung from the top outboard rail and standing on the tray wall, 13 mm under the lid. Breakers leave the plate face. |
