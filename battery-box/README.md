@@ -15,7 +15,7 @@
 
 ## The build: v12s
 
-A second Goose Gear IceBox 1.3 frame cut down to **620 × 487 × 282 mm (24.4 × 19.2 × 11.1 in)**: the IceBox's width, 142 mm shorter and 277 mm lower. Not card based: lid off and every unit is in reach. Inside it, your MultiPlus 12/1200-class inverter and two SuperPack 60Ah; four more SuperPacks live in pack2 on an SB175 umbilical. The viewer draws it stacked on the IceBox, rear faces flush, which puts the lid 841 mm (33.1 in) above the plate; where it actually sits in the truck is still yours to decide.
+The frame of the **25 in IceBox 1.3** you were given, cut down in height only: **635 × 487 × 282 mm (25.0 × 19.2 × 11.1 in)**, the IceBox's width, 127 mm shorter than the 30 in IceBox it stands against and 277 mm lower. Not card based: lid off and every unit is in reach. Inside it, your MultiPlus 12/1200-class inverter and two SuperPack 60Ah; four more SuperPacks live in pack2 on an SB175 umbilical. The viewer draws it stacked on the IceBox, rear faces flush, which puts the lid 841 mm (33.1 in) above the plate; where it actually sits in the truck is still yours to decide.
 
 | Zone | What is there |
 |---|---|
@@ -32,7 +32,7 @@ A second Goose Gear IceBox 1.3 frame cut down to **620 × 487 × 282 mm (24.4 ×
 
 ### From the second IceBox, not printed
 
-The 8 corner cubes and 12 rails (depth rails cut to 569.2, height rails to 231.2, width rails uncut), the two side panels cut down to 237 tall, the **perforated rear panel cut down** to be the box's back panel, the top panel uncut as the lid, and the **front panel cut from a side-panel offcut** (762 × 277 is left after each side is cut to 237; the front needs 443 × 237) with the ports cut through it. Nothing on the box is printed sheet.
+The 8 corner cubes and 12 rails (the 25 in box's depth rails 584.2 and width rails 436.6 **uncut**; only the height rails cut, to 231.2), the two side panels cut down to 237 tall, the **perforated rear panel cut down** to be the box's back panel, the top panel uncut as the lid, and the **front panel cut from a side-panel offcut** (762 × 277 is left after each side is cut to 237; the front needs 443 × 237) with the ports cut through it. Nothing on the box is printed sheet.
 
 <a id="rail-cutting"></a>
 ### Cutting and tapping the rails, one shot
@@ -41,13 +41,13 @@ The frame rails come from the second IceBox already end-tapped for the corner-cu
 
 | Box | Height rails ×4 | Depth rails ×4 | Width rails ×4 |
 |---|---|---|---|
-| **v12s (the build)** | 508.0 → **231.2** | 711.2 → **569.2** (offcut 142.0) | 436.6 uncut |
+| **v12s (the build, 25 in donor)** | 508.0 → **231.2** (offcut 276.8) | 584.2 **uncut** | 436.6 uncut |
 
 Those lengths assume 25.4 mm corner cubes with the rails butting the cube faces. **Before cutting anything, measure an uncut width rail**: it should be 436.6. If it is not, the cube is not 25.4 and every cut length shifts by the same amount; tell the model (`C`) and re-read the table.
 
 1. **Order the cuts if you can.** An 80/20 distributor or a machine shop will cut to ±0.1 mm and end-tap 1/4-20 for a few dollars a rail. That is the only way the first shot is guaranteed. If you cut at home, the rest of this list is how to make it survivable.
-2. **Practice on what you cannot ruin.** The four height-rail offcuts are 276.8 long: tap those ends first. Each 508 height rail also holds a second 231.2 if the first cut is bad, so cut the height rails before the depth rails and treat them as practice. A 711 depth rail gives one 569 and no second chance, so those are last, after the saw and the tap are proven.
-3. **Cut square and slightly long.** Mitre saw with a non-ferrous carbide blade (80 to 100 teeth, blade waxed) or a bandsaw, rail clamped, a stop block so all four are identical, cut at 569.7 or 231.7. Then face the end to length on a disc sander or with a mill file, checking with a square in both directions and a caliper at all four corners. Deburr inside the bore and the slots.
+2. **Practice on what you cannot ruin.** The four height-rail offcuts are 276.8 long: tap those ends first. Each 508 height rail also holds a second 231.2 if the first cut is bad. With the 25 in donor there are no depth cuts at all: four cuts, four taps.
+3. **Cut square and slightly long.** Mitre saw with a non-ferrous carbide blade (80 to 100 teeth, blade waxed) or a bandsaw, rail clamped, a stop block so all four are identical, cut at 231.7. Then face the end to length on a disc sander or with a mill file, checking with a square in both directions and a caliper at all four corners. Deburr inside the bore and the slots.
 **Tapping tools to buy** (one size, 1/4-20; not a tap-and-die set, whose carbon-steel plug tap and loose handle are how a bore gets cross-threaded):
 
 | Item | What to get | Why |
@@ -62,7 +62,7 @@ Those lengths assume 25.4 mm corner cubes with the rails butting the cube faces.
 4. **Tap, don't drill.** The 10-series bore is 0.20 in, which is the 1/4-20 tap drill, so no drilling; if a caliper shows the bore under 5.0 mm, run a #7 drill (5.1 mm) through first. Use a spiral-point (gun) tap for aluminium, a tap guide block so it starts square, tapping fluid, a quarter turn back every half turn, and chips blown out twice. Tap 30 mm deep, more than the cube bolt needs. A plug tap in a hand chuck without a guide is how threads get cross-cut.
 5. **Dry-fit before the panels.** Bolt the four cut rails into their cubes with no panels, check the diagonals of each face match within 1 mm, then take it apart and build it properly with the panels in the slots.
 
-The depth cut is permanent: a 620 box can never take a 578 mm MultiPlus-II or two 200Ah batteries. That was decided on 2026-10-18 when the II was cancelled.
+A 635 box cannot take a 578 mm MultiPlus-II with its cable room, or two 200Ah batteries; that was decided on 2026-10-18 when the II was cancelled.
 
 ### How the units bolt to the inverter plate
 
@@ -570,6 +570,7 @@ Same 487.4 mm width, so the vertical bars line up and the outboard faces are flu
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-20 | The donor IceBox turned out to be the **25 in model**: v12s is now 635 deep with its depth rails **uncut**; only the four height rails are cut and tapped. Interior unchanged, clash-clean. |
 | 2026-10-18 | **README restructured around the v12s build**: the build, its zones, electrical, IceBox-sourced parts, rail cutting, fasteners, assembly order, printing notes and pack2 at the top; every earlier version collapsed under Reference designs. |
 | 2026-10-18 | `v12s_pack` view: v12s on the IceBox with pack2 on the floor 80 mm in front of its port face (umbilical side toward the box), to see the two together. |
 | 2026-10-18 | **pack2:** stacked 2 × 2 SuperPack add-on pack for v12s (325 × 314 × 572, all printed, bus + breaker on a top shelf, SB175 in its back panel); v12s front panel gets the SB175 umbilical inlet in front of the bus column. |

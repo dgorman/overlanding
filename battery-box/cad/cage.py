@@ -56,13 +56,14 @@ VARIANTS = {
                 card_style="solid", box="v13", batt="battery", inverter_long="multiplus_ii_long"),   # MultiPlus-II ordered 2026-10-14
     # v12s: the 12/1200 and two SuperPack 60Ah in the same interior cut to 620 deep (24.4 in): the charge gear stacks on the plate.
     # No upgrade path (the MultiPlus-II and the 200Ah pair both need the full 762)
-    "v12s": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=620.0,
+    # v12s: the build. The donor IceBox is the 25 in model (635 deep), so the depth rails go in UNCUT; only the height rails are cut
+    "v12s": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=635.0,
                  batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                  card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
                  perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side"),   # front panel = a SOLID offcut of an IceBox side panel   # the IceBox's slot pattern on the back panel; trays without the unused
                                                                                # pads and floor holes; insert pilot holes in the plate under every unit
     # v12s_pack: v12s on the IceBox with pack2 standing on the floor in front of the box's port face, umbilical side toward it
-    "v12s_pack": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=620.0,
+    "v12s_pack": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=635.0,
                       batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                       card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
                       perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", with_pack2=True),
@@ -2719,7 +2720,7 @@ def report_v13():
         print(f"== Variant '{VARIANT}': v13's interior with two SuperPack 60Ah and the {'MultiPlus-II 12/3000 (ordered 2026-10-14)' if ii else 'MultiPlus 12/1200'}: upgrade to v13 = swap the trays and batteries ==")
         print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}; bank 2 x 60 Ah = 120 Ah, 60 A continuous (160 A for 10 s) -> about 700 W of AC continuous whatever the inverter")
         if out_D < 700:
-            print(f"  short box      : depth rails cut to {out_D - 2 * C:.0f}; the plate's charge gear stacks (Garmin over the Orion, window over the shunt); NO upgrade path: the MultiPlus-II and the 200Ah pair need 762")
+            print(f"  short box      : depth rails {out_D - 2 * C:.1f} = the 25 in IceBox's, uncut; height rails cut to {out_H - 2 * C:.1f}; the plate's charge gear stacks; no room for a MultiPlus-II or a 200Ah pair")
         if ii:
             print("  with the II    : set its charger to 60 A (2 x 30 A SuperPack charge limit) in VEConfigure; its 13 W idle is 1 Ah/h from a 120 Ah bank; build the DC side")
             print("                   for v13 now (2/0 leads, 400 A class T, 250 A-class bars) so the battery upgrade touches nothing but the trays; the SuperPacks' own BMSs protect them")
