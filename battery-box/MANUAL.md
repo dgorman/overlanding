@@ -160,7 +160,7 @@ Perforated panel at the back, side panels each side, the solid front panel with 
 ![Step 3](manual/img/03-posts.png)
 ![Step 3 from above](manual/img/03-posts-top.png)
 
-Stand post 0 against the back width rail and post 1 against the front width rail, on the inboard side, slots facing each other. One countersunk 1/4-20 through each post's sill into the bottom rail's T-nut, head on the post's inner face.
+Stand post 0 against the back width rail and post 1 against the front width rail, on the inboard side, slots facing each other. One countersunk 1/4-20 through each post's sill into the bottom rail's T-nut, head on the post's inner face. That is the only fastener a post gets for now: it stands against the rail's face until the plate drops into its slot in step 9, when the clip ties its top into the top rail. The single sill bolt is all the inner slot has room for and all the post needs until then.
 
 ### Step 4: the tray brackets
 
