@@ -56,7 +56,19 @@ Items marked **verify** are the right catalogue line but the exact length or typ
 
 Ordered 2026-10-20 (order 1): 94180A353, 94180A361, 92095A190, 93625A150, 92095A210, 92095A226. The M6 screws and the M4 locknuts are spares now.
 
-## Order 2: Order Pad block
+## Order 2 (placed 2026-10-20)
+
+```
+94180A351,1    short M4 inserts, 4.7 mm, pack of 100
+93475A240,1    M5 washers, pack of 100
+92210A540,1    1/4"-20 x 3/4 flat-head 82 deg, 18-8, pack of 50
+74765A63,1     Loctite 401 instant adhesive, 0.1 oz
+6000N501,5     drop-in spring-loaded nut for 1 in rail, 1/4"-20, packs of 4 (20 nuts)
+```
+
+That completes the McMaster list. Still to get elsewhere: cutting fluid (WD-40 is fine), two 1/8 in adhesive-backed closed-cell foam pads 130 x 140 for the drop shelves, the Diablo D1084L blade, and a #7 drill only if a rail bore measures under 5.0 mm.
+
+## Order 2: Order Pad block (as planned)
 
 ```
 94180A351,1
