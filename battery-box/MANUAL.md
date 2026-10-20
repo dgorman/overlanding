@@ -192,6 +192,10 @@ Perforated panel at the back, side panels each side, the solid front panel with 
 
 ![Step 3](manual/img/03-posts.png)
 ![Step 3 from above](manual/img/03-posts-top.png)
+![Step 3, simple drawing with the measurements](manual/img/03-posts-simple.png)
+
+In plain words: each post stands on the floor of the box, **281 mm in from the outboard rail** (the battery side), measured to the middle of the post, which leaves 156 mm to the inboard rail. Post 0 is pushed hard against the **back** rail, post 1 hard against the **front** rail. The slot in each post faces the other post. One bolt per post, **13 mm up from the floor**, through the post into the T-nut in the rail. That is all for now.
+
 
 Stand post 0 against the back width rail and post 1 against the front width rail, on the inboard side, slots facing each other. One countersunk 1/4-20 through each post's sill into the bottom rail's T-nut, head on the post's inner face. That is the only fastener a post gets for now: it stands against the rail's face until the plate drops into its slot in step 9, when the clip ties its top into the top rail. The single sill bolt is all the inner slot has room for and all the post needs until then.
 
