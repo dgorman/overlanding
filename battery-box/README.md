@@ -600,6 +600,7 @@ Same 487.4 mm width, so the vertical bars line up and the outboard faces are flu
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-20 | Manual: **placement drawing and tables** from `cad/placement.py`: every part's position from the back-rail and outboard-rail faces, and the 18 drop-in T-nut positions along each rail. |
 | 2026-10-20 | Manual: McMaster-Carr order list (inserts, screws, locknuts, T-nuts, tapping tools) with verified part numbers where confirmed. |
 | 2026-10-20 | Assembly order corrected: batteries go in **before** the breaker drop shelves (a shelf covers the battery's middle; user caught it). Manual and diagrams renumbered. |
 | 2026-10-20 | **Build manual** (`MANUAL.md`): rendered step diagrams from `cad/manual.py`, print list with STL links, hardware and tool lists, port hole positions, wiring table. |

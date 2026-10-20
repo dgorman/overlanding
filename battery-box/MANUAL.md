@@ -143,6 +143,39 @@ Set the two M6 inserts in each shelf plate. The breakers go on in step 6, in the
 
 Work from the top with the lid off. Every fastener is reached with a hex key from above or along the open column. The batteries go in at step 6, before the drop shelves cover them.
 
+### Where everything goes: the placement drawing
+
+![Placement plan](manual/img/placement-plan.png)
+
+Every position below is measured from two reference faces inside the box: **depth** from the inner face of the **back** width rail (the rail against the main IceBox), and **width** from the inner face of the **outboard** depth rail (the battery side). Heights are from the underside of the frame, i.e. the surface the box stands on. Numbers come from the model (`cad/placement.py` regenerates them and the drawing).
+
+**Where the parts sit** (mm, each as a range along the box):
+
+| Part | Depth from the back rail face | Width from the outboard rail face | Height |
+|---|---|---|---|
+| Tray 0 (back) | 10 to 259 | 1 to 168 | 0 to 36 |
+| Tray 1 (front) | 332 to 581 (its front pads 3 mm off the front rail) | 1 to 168 | 0 to 36 |
+| Post 0 / post 1 | against the back rail / against the front rail | 269 to 293 (centre 281) | 0 to 254 |
+| Brackets 00, 01 (back) | against the back rail, legs reach 21 in | 13 to 33 and 136 to 156 | 0 to 42 |
+| Brackets 10, 11 (front) | against the front rail | 13 to 53 and 136 to 176 (the vertical leg is the inboard 20 mm) | 0 to 42 |
+| Drop shelf 0 / 1 | 72 to 202 / 389 to 519 (centred on each battery) | 0 to 168 (hanger on the rail, foot on the tray wall) | 36 to 279 |
+| Bus shelf plates 0, 1, 2 | 21 to 226, 206 to 412, 392 to 578 (laps overlap 20) | 168 to 278 | 0 to 34 |
+| Inverter plate | 8 to 576 (in the post slots) | 278 to 284 | 21 to 277 |
+| MultiPlus | 21 to 395 on the plate's inboard face | 286 to 387 | 22 to 271 |
+
+**Where the T-nuts go.** Slide each drop-in nut to the position below, measured along the rail from the same reference faces, then the bolt finds it. The bottom rails' inner slot is at 12.7 mm above the floor, the top rails' at 269.
+
+| Rail | Positions along the rail | For |
+|---|---|---|
+| Bottom outboard depth rail | 86, 189, 402, 505 from the back | the trays' outer-wall 1/4-20s (two per tray) |
+| Top outboard depth rail | 97, 177, 414, 494 from the back | the drop-shelf hangers (two per shelf) |
+| Bottom back width rail | 23, 146, 281 from the outboard side | brackets 00 and 01, post 0 sill |
+| Bottom front width rail | 43, 166, 198, 238, 281 from the outboard side | brackets 10 and 11, bus shelf front wall (two), post 1 sill |
+| Top back width rail | 291 from the outboard side | clip 0 |
+| Top front width rail | 291 from the outboard side | clip 1 |
+
+Eighteen nuts. If you load them from the rail ends before the cubes go on instead of dropping them in, put them in these rails in these counts and slide them to the positions once the frame is up.
+
 ### Step 1: the frame
 
 ![Step 1](manual/img/01-frame.png)
