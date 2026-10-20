@@ -44,6 +44,8 @@ The frame rails come from the second IceBox already end-tapped for the corner-cu
 |---|---|---|---|
 | **v12s (the build, 25 in donor)** | 508.0 → **231.2** (offcut 276.8) | 584.2 **uncut** | 436.6 uncut |
 
+Rail length = outside dimension − 2 × 25.4 (one cube at each end): 282 − 50.8 = 231.2 for the height rails. The stock box checks out the same way: 558.8 − 50.8 = 508.
+
 Those lengths assume 25.4 mm corner cubes with the rails butting the cube faces. **Before cutting anything, measure an uncut width rail**: it should be 436.6. If it is not, the cube is not 25.4 and every cut length shifts by the same amount; tell the model (`C`) and re-read the table.
 
 1. **Order the cuts if you can.** An 80/20 distributor or a machine shop will cut to ±0.1 mm and end-tap 1/4-20 for a few dollars a rail. That is the only way the first shot is guaranteed. If you cut at home, the rest of this list is how to make it survivable.
@@ -616,7 +618,7 @@ Same 487.4 mm width, so the vertical bars line up and the outboard faces are flu
 | 2026-10-18 | `v12s_pack` view: v12s on the IceBox with pack2 on the floor 80 mm in front of its port face (umbilical side toward the box), to see the two together. |
 | 2026-10-18 | **pack2:** stacked 2 × 2 SuperPack add-on pack for v12s (325 × 314 × 572, all printed, bus + breaker on a top shelf, SB175 in its back panel); v12s front panel gets the SB175 umbilical inlet in front of the bus column. |
 | 2026-10-18 | Tapping tools BOM added to the rail-cutting guide (spiral-point 1/4-20 HSS tap, T-handle, guide block, fluid). |
-| 2026-10-18 | **v12s is the build.** MultiPlus-II order cancelled; depth rails will be cut to 569.2 and height rails to 231.2. |
+| 2026-10-18 | **v12s is the build.** MultiPlus-II order cancelled; height rails cut to 231.2 (282 − two 25.4 cubes). Depth rails were to be cut to 569.2 until the donor turned out to be the 25 in box, which needs no depth cut. |
 | 2026-10-17 | **Rail cutting and tapping guide** added (cut lengths per variant, cut-order so the height rails are practice, tap without drilling, dry-fit) with the warning that cutting the depth rails for v12s rules out the MultiPlus-II. |
 | 2026-10-17 | v12s: **front panel from a side-panel offcut.** The IceBox's side panels are solid; cut to 237 each leaves a 762 × 277 offcut, and the front needs 443 × 237, so the ports go straight through solid sheet. No printed front, no bezel; the slotted rear offcut is spare. |
 | 2026-10-17 | (superseded the same day) v12s: front panel from the slotted offcut (the IceBox rear panel is 514 tall inside its rails; the box's back takes its bottom 237, the front its next 237, with 40 to spare). The ports cannot go through slots, so the offcut gets a 139 × 210 opening and a **one-piece printed port bezel** (153 × 227 × 6, 5 M4 countersunk from outside into inserts) carries them behind it. The two-tile printed front panel is gone from v12s. |

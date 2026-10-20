@@ -21,6 +21,8 @@ Outer size: **635 × 487 × 282 mm (25.0 × 19.2 × 11.1 in)**. Loaded weight ab
 | 4 width rails, 436.6 mm | front and back, top and bottom | none |
 | 4 depth rails, 584.2 mm | sides, top and bottom | none |
 | 4 height rails, 508 mm | corners | **cut to 231.2 mm**, one end, re-tap 1/4-20 |
+
+The cut length already allows for the corner cubes: the box is 282 mm (11.1 in) tall outside, a cube is 25.4 mm, and the rail runs between two cubes, so 282 − 2 × 25.4 = **231.2 mm (9.10 in)**. Check: the stock 558.8 mm (22 in) box uses the same cubes and its height rails are 558.8 − 50.8 = 508, which is what you have. Width and depth rails stay as they are.
 | 2 side panels | the box's sides | cut to 237 mm tall |
 | perforated rear panel | the box's back (against the main IceBox) | cut to 237 mm tall, slots and all |
 | one side-panel offcut (635 × 277) | the box's **front panel** | cut to 443 × 237, then the port holes |
