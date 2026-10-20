@@ -42,6 +42,7 @@ All files are in [`stl/v12s/`](stl/v12s/). Click a link, then **Download** on Gi
 | Plate spline | 6 | [v1_85](stl/v12s/print_plate_inverter_spline_v1_85.stl), [v1_149](stl/v12s/print_plate_inverter_spline_v1_149.stl), [v1_213](stl/v12s/print_plate_inverter_spline_v1_213.stl), [v2_85](stl/v12s/print_plate_inverter_spline_v2_85.stl), [v2_149](stl/v12s/print_plate_inverter_spline_v2_149.stl), [v2_213](stl/v12s/print_plate_inverter_spline_v2_213.stl) | flat | 3 / 100 % | 60 × 18 × 3, all identical: print six of one. Glued; they and the units hold the tiles, there are no lap bolts |
 | Inverter post | 2 | [post_0](stl/v12s/print_post_inverter_0.stl), [post_1](stl/v12s/print_post_inverter_1.stl) | **on a side** | 5 / 50 % | 254 × 24 × 18. Mirror pair: 0 at the back rail, 1 at the front |
 | Post clip | 2 | [clip_0](stl/v12s/print_post_clip_0.stl), [clip_1](stl/v12s/print_post_clip_1.stl) | as modelled | 5 / 50 % | 40 × 24 × 28, mirror pair |
+| **Tool:** rail-end tap guide | 1 | [tap_guide](stl/v12s/print_tool_tap_guide.stl) | pocket up | 4 / 100 % | 46 × 46 × 32 cap that fits over the 1 in rail end with a 6.5 mm bore in line with the rail's centre hole: starts the 1/4-20 tap square and centred. Print this first |
 
 About 2.5 kg of filament, 35 hours. Pictures of each part are in [section 4](#4-the-printed-parts).
 
@@ -91,7 +92,7 @@ Not from McMaster: the 285 breakers' M6 stud hardware comes fitted; the IceBox's
 
 ### 1.4 Tools
 
-Hex keys 2.5, 3, 4 and 5 mm plus 5/32 in for the 1/4-20 flat-heads; a soldering iron with insert tips; caliper and a small square; a non-ferrous mitre blade or bandsaw, a disc sander or mill file; the 1/4-20 tapping set from the README's rail-cutting guide (HSS spiral-point tap, T-handle, guide block, fluid); a 6 mm and a 60 mm hole saw and a step drill for the front panel ports; crimper and heat gun for the lugs.
+Hex keys 2.5, 3, 4 and 5 mm plus 5/32 in for the 1/4-20 flat-heads; a soldering iron with insert tips; caliper and a small square; a non-ferrous mitre blade (Diablo D1084L) or bandsaw, a disc sander or mill file; a 1/4-20 tap with its handle (the Milwaukee SAE tap-and-die set's plug tap works: back it out a quarter turn every half turn and clear the chips twice, and never use the die), cutting fluid, and the **printed rail-end tap guide** above instead of a guide block; a 6 mm and a 60 mm hole saw and a step drill for the front panel ports; crimper and heat gun for the lugs.
 
 ---
 
@@ -101,7 +102,7 @@ Everything in this section happens before the box is assembled, where nuts, clam
 
 ### 2.1 Cut and tap the height rails
 
-Follow the README's [cutting and tapping guide](README.md#rail-cutting). Four cuts, 508 → 231.2 mm, one end of each rail only; tap the cut end 1/4-20, 30 mm deep. The four 276.8 mm offcuts are your tapping practice. Dry-fit the bare frame and check the diagonals.
+Follow the README's [cutting and tapping guide](README.md#rail-cutting). Four cuts, 508 → 231.2 mm, one end of each rail only. To tap: slide the printed tap guide cap over the squared rail end, oil the tap, start it through the cap's bore so it is square and centred on the rail's hole, and cut 30 mm deep, backing off every half turn to break the chip. The four 276.8 mm offcuts are your tapping practice; do all four before a real rail. Dry-fit the bare frame and check the diagonals.
 
 ### 2.2 Cut the panels
 

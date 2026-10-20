@@ -32,9 +32,7 @@ Items marked **verify** are the right catalogue line but the exact length or typ
 
 | Qty | Part | Link | What it is |
 |---|---|---|---|
-| 1 | **verify** | https://www.mcmaster.com/products/taps/thread-size~1-4-20/tap-type~spiral-point/ | 1/4"-20 spiral-point tap, high-speed steel, plug |
-| 1 | **verify** | https://www.mcmaster.com/products/tap-wrenches/ | T-handle tap wrench for 1/16 to 1/4 in taps |
-| 1 | **verify** | https://www.mcmaster.com/products/tap-guides/ | tap guide block, hardened, graded holes |
+| (not needed) | | | tap and handle: the Milwaukee SAE tap-and-die set bought at Home Depot covers them; the guide is printed (`stl/v12s/print_tool_tap_guide.stl`) |
 | 1 | **verify** | https://www.mcmaster.com/products/tapping-fluid/ | Tap Magic Aluminum, 4 oz |
 | 1 | **verify** | https://www.mcmaster.com/products/drill-bits/size~7/ | #7 jobber drill, only if a rail bore measures under 5.0 mm |
 

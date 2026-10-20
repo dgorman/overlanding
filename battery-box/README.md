@@ -53,9 +53,9 @@ Those lengths assume 25.4 mm corner cubes with the rails butting the cube faces.
 
 | Item | What to get | Why |
 |---|---|---|
-| Tap | 1/4-20 **HSS spiral-point** ("gun") tap: Irwin Hanson HSS, Vermont American HSS, Drill America or OSG | pushes chips ahead of itself in a deep bore; carbon steel and plug taps do not |
+| Tap | 1/4-20 tap: a spiral-point ("gun") HSS tap is best; the plug tap in a Milwaukee SAE tap-and-die set (bought 2026-10-20) works if you back it out every half turn and clear the chips twice | a spiral point pushes chips ahead of itself; a plug tap packs them, so clear them |
 | Handle | T-handle tap wrench sized for 1/4 in taps | the ratcheting handle from a kit wobbles |
-| Guide | tap guide block with a 1/4 in hole (Big Gator or any aluminium tapping block) | sits on the rail end and holds the tap square for the first threads; the piece that makes it a one-shot job |
+| Guide | **printed**: `stl/v12s/print_tool_tap_guide.stl`, a cap that fits over the rail end with a 6.5 mm bore on the rail's centre (or a Big Gator block) | holds the tap square and centred for the first threads; the piece that makes it a one-shot job |
 | Fluid | Tap Magic Aluminum or WD-40 Specialist cutting oil | aluminium galls a dry tap |
 | Drill | #7 (5.1 mm) bit, **only if** a caliper shows the bore under 5.0 mm | the 10-series bore is normally the tap-drill size already |
 | Checks | caliper, small machinist's square | squareness of the cut end before tapping |
@@ -600,6 +600,7 @@ Same 487.4 mm width, so the vertical bars line up and the outboard faces are flu
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-20 | Printed rail-end tap guide (`cad/tools.py` → `print_tool_tap_guide.stl`) replaces the bought guide block; manual and tool list say the Milwaukee tap set is usable with chip clearing. |
 | 2026-10-20 | Drop shelf lowered onto a 3 mm foam pad on the battery: it is now the battery hold-down (user's idea); straps optional. |
 | 2026-10-20 | Lap bolts dropped from v12s (their nuts landed under the shunt, bus bars and plate units): the shelf plates each bolt to the trays and the plate, the tiles are held by the units screwed across the laps and the splines. M4 × 16 and locknuts off the BOM. |
 | 2026-10-20 | Fasteners: everything in a 6 mm part moves to M5 with a washer (inverter keyholes, breakers, shunt) because M6 inserts are longer than the plate; short M4 inserts for the plate's own units. First McMaster order placed. |
