@@ -56,7 +56,8 @@ About 2.5 kg of filament, 35 hours. Pictures of each part are in [section 4](#4-
 | M4 × 10 button-head screws | 32 (40) | into those inserts |
 | M5 heat-set inserts, 6.7 mm (94180A361) + M5 × 12 button heads + M5 washers | 20 (50) | MPPT 4, bus bars 4, **inverter keyholes 4** (washer under the head, left 3 mm proud), **breakers 4**, **shunt 2**. M6 inserts are too long for a 6 mm plate, so everything that was M6 is M5 with a washer |
 | CA glue | | the six splines and the half-laps, which locate only |
-| 1 in cam straps, 1.5 m | 2 | one per battery through the tray's floor groove |
+| 3 mm closed-cell EPDM foam, adhesive-backed, 130 × 140 | 2 | glued under each drop shelf's plate: the shelf is the battery hold-down |
+| 1 in cam straps, 1.5 m | 2 | optional: through the tray's floor groove under the shelf, if you want a belt as well as the braces |
 
 Plus the electrical parts on the component list in `components.md`: MultiPlus, two SuperPack 60Ah, two Bussmann 285060F breakers, two 5-stud bus bars, SmartShunt, MPPT 100/30, Cerbo GX, Orion XS, Garmin PowerSwitch, two L14-30 panel inlets, two SB50 and one SB175 panel inlets, three 12 V and two USB sockets, and the cable in section 3.
 
@@ -217,14 +218,14 @@ Empty trays. Drop tray 0 into the outboard zone with room to spare, slide it to 
 
 ![Step 6](manual/img/06-batteries.png)
 
-The batteries go in **before** the drop shelves: once a shelf is on, nothing 229 mm long can pass under its plate. Each SuperPack into its tray from above, strap through the floor groove and over the top with the buckle at the battery's end (the shelf plate will sit 6 mm above the battery, so keep the strap flat across the middle). No lugs yet: the leads go on in step 10.
+The batteries go in **before** the drop shelves: once a shelf is on, nothing 229 mm long can pass under its plate. Each SuperPack into its tray from above. The drop shelf in the next step is the hold-down, so a strap is optional; if you fit one, run it through the floor groove with the buckle at the battery's end so the middle stays flat. No lugs yet: the leads go on in step 10.
 
 ### Step 7: breaker drop shelves
 
 ![Step 7](manual/img/07-shelves.png)
 ![Step 7 from above](manual/img/07-shelves-top.png)
 
-For each battery: lower the empty shelf over it, hanger against the top outboard rail's inner face, foot on the tray's inboard wall beyond the battery; the plate clears the battery top by 6 mm and the hanger key path at 269 mm clears the lugs' height. Start all four screws by hand: two M4 × 10 down through the foot into the wall-top inserts, two countersunk 1/4-20 through the hanger into the rail's T-nuts. Tighten the foot screws first, then the hanger screws with the key coming along the open box over the empty plate. Then the Bussmann 285 down onto the plate's M5 inserts with washers, studs toward the column.
+For each battery: glue the 3 mm foam pad to the underside of the shelf plate, then lower the empty shelf over the battery, hanger against the top outboard rail's inner face, foot on the tray's inboard wall beyond the battery. The pad lands on the battery's top and compresses about a millimetre as the four screws go in, so **the shelf is the battery's hold-down**: the battery cannot lift, and the tray walls stop it sliding. The hanger key path at 269 mm clears the lugs' height. Start all four screws by hand: two M4 × 10 down through the foot into the wall-top inserts, two countersunk 1/4-20 through the hanger into the rail's T-nuts. Tighten the foot screws first, then the hanger screws with the key coming along the open box over the empty plate. Then the Bussmann 285 down onto the plate's M5 inserts with washers, studs toward the column.
 
 ### Step 8: the bus shelf
 

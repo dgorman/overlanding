@@ -2625,8 +2625,8 @@ def build_v13(a):
         at = (tx + wall + clr, ty + wall + clr, fl)
         add(a, victron_shape(bkey, b.d, b.w, b.h, at, box(b.d, b.w, b.h, at).edges("|Z").fillet(6)), f"battery_{r}", BATT)
         g[f"tx{r}"] = tx
-    if P.get("breaker_shelf"):   # one drop shelf per battery: a 6 mm plate 6 mm over the battery's middle, hung from the top outboard rail's
-        zs = fl + b.h + 6                                         # inner slot (two countersunk 1/4-20 into drop-in T-nuts) and standing on the tray's
+    if P.get("breaker_shelf"):   # one drop shelf per battery, doubling as its HOLD-DOWN: a 6 mm plate on a 3 mm closed-cell pad pressed onto the
+        zs = fl + b.h + 3                                         # battery's middle, hung from the top outboard rail's inner slot and standing on the tray's
         hz = out_H - B / 2                                        # 21 mm inboard wall (two M4 down into inserts in the wall top); the breaker on top
         for r in range(2):
             tx = txs[r]; xs = tx + wall + clr + (b.d - 130) / 2   # 130 long, centred on the battery, clear of the terminals at its ends
@@ -2649,6 +2649,7 @@ def build_v13(a):
             for (u, v) in HOLES["breaker_a"]:                      # its two 6.6 mm holes: M6 inserts in the shelf, 1/4-20 or M6 from above
                 sh = sh.cut(cq.Workplane("XY").center(bx + u, by + v).circle(4.0).extrude(8).translate((0, 0, zs - 1)))
             add(a, sh, f"print_breaker_shelf_{r}", ORANGE)
+            add(a, box(130, b.w + 2 * clr, 3.0, (xs, ty + wall, fl + b.h)), f"pad_breaker_shelf_{r}", (0.15, 0.15, 0.15))   # 3 mm EPDM pad, glued to the plate
             c = COMPONENTS["breaker_a"]
             at = (bx, by, zs + 6)
             add(a, victron_shape("breaker_a", c.d, c.w, c.h, at, unit_fallback("breaker_a", c.d, c.w, c.h, at)), f"power_breaker_shelf_{r}", GOLD)
