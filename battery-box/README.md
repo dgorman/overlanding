@@ -20,13 +20,13 @@ The frame of the **25 in IceBox 1.3** you were given, cut down in height only: *
 | Zone | What is there |
 |---|---|
 | Inboard side, full depth | the **MultiPlus 12/1200 on its long side**, hanging by its four keyholes on a printed plate that runs the depth (6 tiles on half-laps and splines) and stands in two printed posts against the width rails, bolted to the bus shelf's inboard wall; its cable end faces the front |
-| Outboard side | **two SuperPack 60Ah** in single-print trays, one at each end of the zone, each tied to the outboard rail (two countersunk 1/4-20 into its inner slot), to the bus shelf (three M4 from the column side) and to a width rail through an L bracket; 30 mm of lug room over each |
+| Outboard side | **two SuperPack 60Ah** in single-print trays, one at each end of the zone, each tied to the outboard rail (two countersunk 1/4-20 into its inner slot), to the bus shelf (three M4 from the column side) and to a width rail through an L bracket; 30 mm of lug room over each. Over the middle of each battery a **breaker drop shelf**: a printed plate hung from the top outboard rail's inner slot (two countersunk 1/4-20 into drop-in T-nuts) and standing on the tray's 21 mm inboard wall (two M4 into its top), carrying that battery's **Eaton Bussmann 285 60 A breaker** 13 mm under the lid, its positive lead going straight up to it |
 | Column between, 110 wide | the **bus shelf** in three half-lapped plates running to the front rail: the two bus bars and the SmartShunt, nothing tall, so there is room for lugs |
-| Plate's column face | MPPT 100/30 upright, Cerbo GX, Orion XS with the Garmin PowerSwitch above it, and the **two Blue Sea 7148 breakers stacked at the front** 28 mm under the lid, levers facing the open column; a 70 × 70 cable window low in the front tile, level with the bus bars |
+| Plate's column face | MPPT 100/30 upright, Cerbo GX, Orion XS with the Garmin PowerSwitch above it; a 70 × 70 cable window low in the front tile, level with the bus bars |
 | Front panel | a **solid offcut of an IceBox side panel** with the ports cut straight through it: two L14-30 (shore in, inverter out), two SB50 inlets (solar, alternator), three 12 V and two USB sockets on the inboard half, and the **SB175 inlet for pack2** in front of the bus column |
 | Back, sides, lid | the IceBox's perforated rear panel cut down (slots and all), its two side panels cut down, its top panel uncut |
 
-**Electrical.** Two SuperPack 60Ah are 120 Ah and **60 A continuous** (160 A for 10 s), about 700 W of AC; the SuperPacks' own BMSs cut out above that, and the 12/1200's 50 A charger is already under their 60 A charge limit. With pack2 on the umbilical the bank is six SuperPacks: 360 Ah, 180 A continuous, enough for the inverter's full 105 A. Leads inside the box are 4 AWG through the two 150 A breakers; the umbilical is 2 AWG.
+**Electrical.** Two SuperPack 60Ah are 120 Ah and **60 A continuous** (160 A for 10 s), about 700 W of AC; the SuperPacks' own BMSs cut out above that, and the 12/1200's 50 A charger is already under their 60 A charge limit. With pack2 on the umbilical the bank is six SuperPacks: 360 Ah, 180 A continuous, enough for the inverter's full 105 A. Each battery's positive lead goes through its own Bussmann 285 60 A breaker on the drop shelf above it (the SuperPack is 30 A continuous, 80 A for 10 s), then 4 AWG to the bus bars; the umbilical is 2 AWG.
 
 **Rail slots.** The IceBox's panels are captured in the rails' centreline slots, so the top and bottom slots of every rail are taken and only the inner-face slot is free. Every tie to the frame is therefore a horizontal 1/4-20 into a rail's inner slot through a drop-in T-nut: countersunk through the trays' outer walls, the shelf's front wall, the posts' sills, the tray brackets and the post clips. The panels sit inside the bar envelope, 3 mm into each slot.
 
@@ -75,7 +75,7 @@ The v12s plate tiles carry a pilot hole under every unit. Every unit mounts with
 | Cerbo GX | 4 lugs, 143 × 58 | M4 | M4 × 10 | column side |
 | Orion XS | 4 lugs, 109.3 × 113 | M4 | M4 × 10 | column side |
 | Garmin PowerSwitch | its bracket, 2 screws (spacing to verify) | M4 | M4 × 10 | column side |
-| Blue Sea 7148 × 2 | 2 holes along the length, 69.4 apart (verify) | M5 | M5 × 12 | column side |
+| Bussmann 285 × 2 | 2 × 6.6 mm holes on a 56.6 × 26.7 diagonal (datasheet) | M6 | M6 × 16 or 1/4-20 | drop shelf, from above |
 
 The tiles print with one 5.6 mm pilot under every hole; drill the M5 and M6 pilots to 6.4 and 8.0 before setting those inserts. The SmartShunt and bus bars are on the shelf, not the plate: M6 and M5 inserts in the shelf floor.
 
@@ -91,7 +91,7 @@ Sub-assemblies first, on the bench, where nuts and clamps are allowed:
 | **Frame** | the second IceBox's cubes and rails with the four panels slid into the rails' centreline slots as the cubes go on: its two side panels and perforated rear panel cut down, and the solid front panel cut from a side-panel offcut with the ports cut through it; lid off. Use **drop-in (roll-in) 1/4-20 T-nuts** in the rails' inner slots, so they can be added after the frame is closed: 2 per width rail for the tray brackets, 2 per bottom width rail for the post sills, 2 per top width rail for the clips, 2 for the shelf's front wall, 2 per outboard tray |
 | **Tray** × 2 | one print each; inserts: 2 M4 in the outer-end corner pads, 3 M4 in the inboard wall. The battery does **not** go in yet |
 | **Bus shelf** | the three plates joined on their 20 mm floor half-laps (2 M4 through each lap); the two bus bars and the SmartShunt mounted on their inserts and the bus wiring between them made up. One 530–690 mm piece that drops in whole |
-| **Inverter plate** | tiles on their half-laps and splines (3 M4 across each lap); inserts for the shelf wall (6 M4 in the bottom band), the MPPT, Cerbo, Orion, Garmin and the two breakers mounted on the column face and their leads dressed. Not the inverter: it goes on in place |
+| **Inverter plate** | tiles on their half-laps and splines (3 M4 across each lap); inserts for the shelf wall (6 M4 in the bottom band), the MPPT, Cerbo, Orion and Garmin mounted on the column face and their leads dressed. Not the inverter: it goes on in place |
 | **Posts** × 2 | printed; nothing to add |
 
 Then into the box, from the top, in this order. Every fastener below is reached with a hex key from above or along the open column; nothing is blind.
@@ -99,6 +99,7 @@ Then into the box, from the top, in this order. Every fastener below is reached 
 1. **Posts.** Stand each post against its width rail and bolt the sill (countersunk 1/4-20 along the depth into the bottom rail's drop-in T-nut). The post slot faces the box.
 2. **Tray brackets** × 4. Bolt each L bracket's vertical leg to its width rail (countersunk 1/4-20 into the inner slot) **before** the tray is there: that bolt head faces the tray and is unreachable afterwards. The horizontal legs now stand 36 mm up, waiting for the pads.
 3. **Trays**, empty. Drop each into the outboard zone with room to spare, slide it to its end so the pad goes under the bracket's leg, then two M4 down through the legs into the pad inserts (from above). Now the two countersunk 1/4-20s through the tray's outer wall into the outboard rail's T-nuts, from inside the empty pocket. The tray is tied to three rails.
+   **Breaker drop shelves.** Hang each empty shelf on the top outboard rail: two countersunk 1/4-20 into drop-in T-nuts, the key reaching along the open box over the shelf; two M4 down into the tray wall's top. Then the breaker onto the shelf's inserts from above. Its lead to the battery waits for step 7.
 4. **Bus shelf.** Lower it into the column, lip against the trays' inboard walls; three M4 per tray through the lip into the tray inserts, bolted from the column side (heads in the column, placed where no breaker sits over them); two countersunk 1/4-20 through its front wall into the front rail's T-nuts, from inside the column.
 5. **Inverter plate.** Lower it with its units into the two post slots; the units clear everything on the shelf (the MPPT and Orion stand 42 mm over the bus bars, the Cerbo 78 mm over the breakers). Its bottom band lands on the shelf's inboard wall: six M4 through that wall into the plate inserts, from the column side at z 28, under the MPPT. Then the two clips: M4 down into each post top, countersunk 1/4-20 into the top rail's T-nut, with the clip's rail bolt 10 mm off the plate line so the key passes the plate's top edge.
 6. **Inverter.** Hang it on the plate from above on its four keyholes over the M6 pan heads and make up its DC leads through the plate's window to the bus bars, and its AC in/out to the port strip beside it.
@@ -119,6 +120,7 @@ All parts are in `stl/v12s/`, regenerated by `python cage.py v12s`; the bed chec
 | 2 inverter posts | 254 × 24 × 18 | on a side | PETG or ASA, 5 walls, 50 % (the slot and the sill take the plate's weight) |
 | 2 post clips | 28 × 40 × 20 | as modelled | same as the posts |
 | 4 tray rail brackets | small L | as modelled | PETG or ASA, 5 walls, 50 % |
+| 2 breaker drop shelves | 130 × 167 × 56 | on a side (hanger down) | PETG or ASA, 4 walls, 40 %; M6 inserts for the breaker |
 | 2 lid handles | small | as modelled | PETG, 4 walls, 30 % |
 
 - **Not PLA.** The trays and shelf plates sit in a closed truck in summer; PLA creeps under the battery load. PETG is enough everywhere, ASA if the printer has an enclosure.
@@ -570,6 +572,7 @@ Same 487.4 mm width, so the vertical bars line up and the outboard faces are flu
 |---|---|
 | 2026-10-04 | Project started. Identified components from photos, pulled datasheet dims, built parametric CadQuery model with drop-in card, printed-part STLs, renders and web viewer. Four Goose Gear mod kits on order. |
 | 2026-10-04 | Owner confirmed the list: 2 × SuperPack 60Ah, MultiPlus 12/800/35, MPPT 100/30 with Anderson solar ingress, Cerbo, Orion XS 12/12-50, SmartShunt, Garmin PowerSwitch, battery breakers, 6 AWG. Dropped the unidentified parts. Added the IceBox 1.3 to the model and switched the frame to kit bars + printed rails. |
+| 2026-10-20 | **Breakers are Eaton Bussmann 285060F-121-S** (60 A, 48 V, IP67, M6 studs, 81.3 × 48.1 × 31.5 + 6.4 button): low enough to sit on a **drop shelf over each battery**, hung from the top outboard rail and standing on the tray wall, 13 mm under the lid. Breakers leave the plate face. |
 | 2026-10-20 | The donor IceBox turned out to be the **25 in model**: v12s is now 635 deep with its depth rails **uncut**; only the four height rails are cut and tapped. Interior unchanged, clash-clean. |
 | 2026-10-18 | **README restructured around the v12s build**: the build, its zones, electrical, IceBox-sourced parts, rail cutting, fasteners, assembly order, printing notes and pack2 at the top; every earlier version collapsed under Reference designs. |
 | 2026-10-18 | `v12s_pack` view: v12s on the IceBox with pack2 on the floor 80 mm in front of its port face (umbilical side toward the box), to see the two together. |

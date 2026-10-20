@@ -60,13 +60,13 @@ VARIANTS = {
     "v12s": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=635.0,
                  batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                  card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
-                 perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side"),   # front panel = a SOLID offcut of an IceBox side panel   # the IceBox's slot pattern on the back panel; trays without the unused
+                 perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True),   # front panel = a SOLID offcut of an IceBox side panel   # the IceBox's slot pattern on the back panel; trays without the unused
                                                                                # pads and floor holes; insert pilot holes in the plate under every unit
     # v12s_pack: v12s on the IceBox with pack2 standing on the floor in front of the box's port face, umbilical side toward it
     "v12s_pack": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=635.0,
                       batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                       card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
-                      perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", with_pack2=True),
+                      perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True, with_pack2=True),
     # pack2: the stacked add-on pack for v12s: 2 x 2 SuperPack 60Ah (two pairs, one above the other) in an all-printed cage,
     # bus bars + one breaker on a top shelf, SB175 umbilical inlet in its back panel.  Standalone model (frame_* = the pack's envelope)
     "pack2": dict(frame_source="icebox", frame_W=314.0, frame_H=572.0, frame_D=325.0, show_icebox=False,
@@ -258,9 +258,9 @@ COMPONENTS = {
     "shunt":     Comp("power_shunt", 120, 46, 54, "SmartShunt 500A"),
     "busbar_p":  Comp("power_busbar_pos", 155, 35, 32, "5-stud covered bus bar (+)"),
     "busbar_n":  Comp("power_busbar_neg", 155, 35, 32, "5-stud covered bus bar (-)"),
-    "breaker_face": Comp("power_breaker", 87.4, 45.6, 59, "Blue Sea 7148 on the inverter plate's column face, long axis along the depth, lever outward"),
-    "breaker_a": Comp("power_breaker_a", 59, 87.4, 45.6, "Blue Sea 7148, 187-series 150 A surface mount: 3.439 x 2.323 x 1.797 in, long axis along the depth"),
-    "breaker_b": Comp("power_breaker_b", 59, 87.4, 45.6, "Blue Sea 7148, 187-series 150 A surface mount: 3.439 x 2.323 x 1.797 in, long axis along the depth"),
+    "breaker_face": Comp("power_breaker", 81.28, 37.85, 48.13, "Bussmann 285 on the inverter plate's column face, long axis along the depth, lever outward"),
+    "breaker_a": Comp("power_breaker_a", 48.13, 81.28, 37.85, "Eaton Bussmann 285060F-121-S Hi-Amp 60 A surface mount (owner's): 81.28 long x 48.13 wide, 31.5 tall + 6.35 push-to-trip button, M6 studs; long axis along the depth"),
+    "breaker_b": Comp("power_breaker_b", 48.13, 81.28, 37.85, "second Bussmann 285, long axis along the depth"),
     "garmin_edge": Comp("garmin_powerswitch", 32, 125, 75, "Garmin PowerSwitch on edge on a printed angle, long axis along the depth"),
     "anderson":  Comp("socket_anderson", 48, 10, 36, "Anderson SB50 panel mount, solar in (verify hole 48 x 36)"),
     "sb175":     Comp("socket_sb175", 79, 56, 26, "Anderson SB175 housing (Anderson STEP 55.6 x 79.4 x 25.5), 4 AWG contacts, inverter DC; mates along its 79 mm axis, laid across the deck"),
@@ -542,12 +542,14 @@ def load_victron(key):
 
 
 def breaker_shape(dx, dy, dz, at):
-    """Stand-in for the Blue Sea 187: rounded body, two 5/16 studs at the ends, the trip button on top."""
-    body = box(dx, dy, dz - 12, at).edges("|Z").fillet(8)
-    for ex in (12, dx - 12):
-        stud = cq.Workplane("XY").center(at[0] + ex, at[1] + dy / 2).circle(4).extrude(12).translate((0, 0, at[2] + dz - 12))
+    """Stand-in for the Bussmann 285 (until its STEP is dropped in): low rounded body, two M6 studs near the ends with their
+    covers, the push-to-trip button standing 6.35 above the body.  dx is the 81.28 length."""
+    bh = dz - 6.35
+    body = box(dx, dy, bh, at).edges("|Z").fillet(6)
+    for ex in (14, dx - 14):
+        stud = cq.Workplane("XY").center(at[0] + ex, at[1] + dy / 2).circle(3).extrude(8.13).translate((0, 0, at[2] + bh - 8.13))
         body = body.union(stud)
-    button = box(22, 14, 8, (at[0] + dx / 2 - 11, at[1] + dy / 2 - 7, at[2] + dz - 12)).edges("|Z").fillet(3)
+    button = box(12, 8, 6.35, (at[0] + dx / 2 - 6, at[1] + dy / 2 - 4, at[2] + bh)).edges("|Z").fillet(2)
     return body.union(button)
 
 
@@ -1311,7 +1313,7 @@ HOLES = {
     "multiplus_1200":   [(99.4, 14.7), (343.2, 14.7), (99.4, 235.3), (343.2, 235.3)],
     "busbar_n":         [(12, 16), (143, 16)],      # verify
     "busbar_p":         [(12, 16), (143, 16)],      # verify
-    "breaker_a":        [(24, 8), (24, 66)],        # verify (285-series: 2 x 1/4")
+    "breaker_a":        [(12.32, 37.40), (68.96, 10.73)],   # Bussmann 285: two 6.6 mm holes on a 56.64 x 26.67 diagonal (x along the 81.28 length)
     "breaker_b":        [(24, 8), (24, 66)],        # verify
     "garmin":           [(20, 37), (105, 37)],      # verify (Garmin bracket, 2 screws)
     "bms":              [(10, 10), (112, 10), (10, 96), (112, 96)],   # verify
@@ -1321,8 +1323,8 @@ INSERT = {"mppt": "M5", "orion": "M4", "cerbo": "M4", "cerbo_up": "M4", "cerbo_f
 HOLES["garmin_up"] = [(37, 20), (37, 105)]
 HOLES["multiplus_1200_side"] = [(68.0, 14.2), (311.8, 14.2), (68.0, 234.8), (311.8, 234.8)]   # the upright pattern turned on its side
 HOLES["mppt_up"] = [(v, u) for (u, v) in HOLES.get("mppt", [])]          # upright: the 186 x 130 pattern transposed (keyholes 71.5 across, 176 up)
-HOLES["breaker_face"] = [(9.0, 29.5), (78.4, 29.5)]                        # Blue Sea 7148 on its side: two #10 screws along its length (verify against the 7148 drawing)
-INSERT["breaker_face"] = "M5"
+HOLES["breaker_face"] = [(12.32, 37.40), (68.96, 10.73)]                     # Bussmann 285 on its side: two 6.6 mm holes on a 56.64 x 26.67 diagonal (datasheet)
+INSERT["breaker_face"] = "M6"
 HOLES["multiplus_ii_long"] = [(50.0, 30.0), (528.0, 30.0), (289.0, 258.0)]   # two bottom holes + the top hook, turned on its side (verify, appendix G)
 HOLES["multiplus_1200_long"] = [(68.0, 14.2), (311.8, 14.2), (68.0, 234.8), (311.8, 234.8)]   # the upright pattern turned on its side
 INSERT["multiplus_1200_long"] = "M6"
@@ -2600,6 +2602,10 @@ def build_v13(a):
             add(a, half_a.translate((tx, ty, 0)), f"print_tray_battery_{r}_back", ORANGE)
             add(a, half_b.translate((tx, ty, 0)), f"print_tray_battery_{r}_front", ORANGE)
         else:   # a 60Ah tray with its pads is 255: one print
+            if P.get("breaker_shelf"):   # two M4 inserts down into the 21 mm inboard wall's top for the drop shelf's leg
+                xs_ = wall + clr + (b.d - 130) / 2
+                for hx in (25, 105):
+                    tray = tray.cut(cq.Workplane("XY").center(xs_ + hx, fw - wall - 15 + 3).circle(2.8).extrude(13).translate((0, 0, lip + fl - 12)))
             add(a, tray.translate((tx, ty, 0)), f"print_tray_battery_{r}", ORANGE)
         # L brackets from the tray's outer pads to the width rail behind it (r 0) or in front of it (r 1): the horizontal leg bolts
         # down into the pad's M4 insert, the vertical leg takes a countersunk 1/4-20 into the rail's inner slot (T-nut)
@@ -2619,6 +2625,27 @@ def build_v13(a):
         at = (tx + wall + clr, ty + wall + clr, fl)
         add(a, victron_shape(bkey, b.d, b.w, b.h, at, box(b.d, b.w, b.h, at).edges("|Z").fillet(6)), f"battery_{r}", BATT)
         g[f"tx{r}"] = tx
+    if P.get("breaker_shelf"):   # one drop shelf per battery: a 6 mm plate 6 mm over the battery's middle, hung from the top outboard rail's
+        zs = fl + b.h + 6                                         # inner slot (two countersunk 1/4-20 into drop-in T-nuts) and standing on the tray's
+        hz = out_H - B / 2                                        # 21 mm inboard wall (two M4 down into inserts in the wall top); the breaker on top
+        for r in range(2):
+            tx = txs[r]; xs = tx + wall + clr + (b.d - 130) / 2   # 130 long, centred on the battery, clear of the terminals at its ends
+            yw = ty + fw - wall - 15                              # leg over the thick inboard wall (y 172..193)
+            sh = box(130, yw + 6 - (y_in0 + 0.0), 6, (xs, y_in0, zs))                                       # plate from the rail face to the leg
+            sh = sh.union(box(130, 6, out_H - 1 - zs, (xs, y_in0, zs)))                                     # hanger against the top rail's inner face
+            sh = sh.union(box(130, 6, zs - (lip + fl), (xs, yw, lip + fl)))                                  # leg down onto the wall top
+            for hx in (25, 105):
+                sh = sh.cut(cq.Workplane("XZ").center(xs + hx, hz).circle(3.4).extrude(-8).translate((0, y_in0 - 1, 0)))          # 1/4-20 into the rail slot
+                sh = sh.cut(cq.Workplane("XZ").center(xs + hx, hz).circle(6.5).extrude(-3).translate((0, y_in0 + 6.5, 0)))        # countersink, head inside
+                sh = sh.cut(cq.Workplane("XY").center(xs + hx, yw + 3).circle(2.3).extrude(10).translate((0, 0, lip + fl - 1)))  # M4 into the wall top
+            bx, by = xs + 24, y_in0 + 100                          # breaker inboard of the hanger bolts so a key reaches them over the empty shelf
+            for (u, v) in HOLES["breaker_a"]:                      # its two 6.6 mm holes: M6 inserts in the shelf, 1/4-20 or M6 from above
+                sh = sh.cut(cq.Workplane("XY").center(bx + u, by + v).circle(4.0).extrude(8).translate((0, 0, zs - 1)))
+            add(a, sh, f"print_breaker_shelf_{r}", ORANGE)
+            c = COMPONENTS["breaker_a"]
+            at = (bx, by, zs + 6)
+            add(a, victron_shape("breaker_a", c.d, c.w, c.h, at, unit_fallback("breaker_a", c.d, c.w, c.h, at)), f"power_breaker_shelf_{r}", GOLD)
+            g[f"shelf_leg_{r}"] = (xs, yw)
     # --- bus shelf in the column between the trays and the inverter plate -----------------------------------------
     y0s, y1s = ty + fw, V13["plate_y"]                            # 190.4 .. 305: 114.6 wide
     xs0, xs1 = V13["shelf_x0"], min(V13["shelf_x1"], out_D - 32.0)
@@ -2670,6 +2697,8 @@ def build_v13(a):
     patches = [(ux - px0 + u, iz - zp + v) for (u, v) in HOLES[ikey]]
     if P.get("plate_pilots"):   # pilot holes for the heat-set inserts under every unit on the column face (set from that face)
         for comp, x0, z0, nm in (V13_SHORT["units"] if short else V13_PLATE_UNITS):
+            if P.get("breaker_shelf") and comp == "breaker_face":
+                continue
             patches += [(x0 - px0 + u, z0 - zp + v) for (u, v) in HOLES.get(comp, [])]
     V13["window"] = V13_SHORT["window"] if short else (645.0, 712.0, 40.0, 118.0)    # x0, x1, z0, z1: low cable window in the plate's front tile, where the bus is
     wx0, wx1, wz0, wz1 = V13["window"]
@@ -2686,7 +2715,8 @@ def build_v13(a):
     add(a, victron_shape(ikey, inv.d, inv.w, inv.h, at, box(inv.d, inv.w, inv.h, at).edges("|Y").fillet(3), lugs=("y", -1)), "victron_multiplus_long", BLUE)
     g["inv_front"] = ux + inv.d
     # --- charge gear on the plate's column face (lugs to the plate, inserts in the plate) ---------------------------
-    for comp, x0, z0, nm in (V13_SHORT["units"] if short else V13_PLATE_UNITS):
+    plate_units = [u for u in (V13_SHORT["units"] if short else V13_PLATE_UNITS) if not (P.get("breaker_shelf") and u[0] == "breaker_face")]
+    for comp, x0, z0, nm in plate_units:
         c = COMPONENTS[comp]
         at = (x0, yp - c.d - 3, z0)
         col = BLUE if c.name.startswith("victron") else (0.08, 0.08, 0.08) if c.name.startswith("garmin") else GOLD
