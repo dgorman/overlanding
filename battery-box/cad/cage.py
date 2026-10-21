@@ -829,8 +829,10 @@ def icebox_parts():
             parts.append((f"icebox_bar_y_{int(x)}_{int(z)}", bar(W - 2 * C, "y").translate((x + B / 2, C, z + B / 2))))
         for y in (0, W - B):
             parts.append((f"icebox_bar_z_{int(x)}_{int(y)}", bar(H - 2 * C, "z").translate((x + B / 2, y + B / 2, C))))
-    parts.append(("icebox_panel_top", box(D, W, T, (x0, 0, H))))
-    parts.append(("icebox_panel_floor", box(D - 2 * B, W - 2 * B, T, (x0 + B, B, B))))
+    # the IceBox's top panel sits IN its top rails' centreline slots (confirmed 2026-10-21): its surface is B/2 - 3 = 9.7 mm
+    # below the rail tops, so a box stacked on it stands rail on rail and nothing inside the box can bear on the lid
+    parts.append(("icebox_panel_top", box(D - 2 * B + 6, W - 2 * B + 6, T, (x0 + B - 3, B - 3, H - B / 2 - 3))))
+    parts.append(("icebox_panel_floor", box(D - 2 * B + 6, W - 2 * B + 6, T, (x0 + B - 3, B - 3, B / 2 - 3))))
     parts.append(("icebox_panel_side_out", box(D, T, H, (x0, -T, 0))))
     parts.append(("icebox_panel_side_in", box(D, T, H, (x0, W, 0))))
     back = box(T, W, H, (x0 + D, 0, 0))
