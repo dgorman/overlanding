@@ -33,7 +33,7 @@ The frame of the **25 in IceBox 1.3** you were given, cut down in height only: *
 
 ### From the second IceBox, not printed
 
-The 8 corner cubes and 12 rails (the 25 in box's depth rails 584.2 and width rails 436.6 **uncut**; only the height rails cut, to 231.2), the two side panels cut down to 237 tall, the **perforated rear panel cut down** to be the box's back panel, the top panel uncut as the lid, and the **front panel cut from a side-panel offcut** (762 × 277 is left after each side is cut to 237; the front needs 443 × 237) with the ports cut through it. Nothing on the box is printed sheet.
+The 8 corner cubes and 12 rails (the 25 in box's depth rails 584.2 and width rails 436.6 **uncut**; only the height rails cut, to 231.2), the two side panels cut down to 237 tall, the **perforated rear panel cut down** to be the box's back panel, the top panel uncut as the lid, and the **front panel cut from a side-panel offcut** (762 × 277 is left after each side is cut to 237; the front needs 443 × 237) with the ports cut through it. Nothing on the box is printed sheet. The panels are phenolic-faced plywood (confirmed on the donor box, 2026-10-21), modelled at 6 mm; caliper a panel edge before cutting the front, since the slot fit depends on it.
 
 <a id="rail-cutting"></a>
 ### Cutting and tapping the rails, one shot

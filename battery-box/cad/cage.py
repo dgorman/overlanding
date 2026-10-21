@@ -158,7 +158,7 @@ P = dict(
 
     bar=25.4,            # Goose Gear MaxLite 1" extrusion (profile verify)
     cube=25.4,           # printed 3-way corner cube
-    panel_t=6.0,         # panels: 6 mm phenolic ply / HDPE, screwed to the OUTSIDE
+    panel_t=6.0,         # panels: phenolic-faced ply (confirmed), 6 mm assumed; screwed to the OUTSIDE
                          # of the bars with T-nuts (Goose Gear style); the floor
                          # panel rests on the bottom rails inside the frame
     card_t=6.0,
