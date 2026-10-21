@@ -96,6 +96,8 @@ Not from McMaster: the 285 breakers' M6 stud hardware comes fitted; the IceBox's
 
 Hex keys 2.5, 3, 4 and 5 mm plus 5/32 in for the 1/4-20 flat-heads; a soldering iron with insert tips; caliper and a small square; a non-ferrous mitre blade (Diablo D1084L) or bandsaw, a disc sander or mill file; a 1/4-20 tap with its handle (the Milwaukee SAE tap-and-die set's plug tap works: back it out a quarter turn every half turn and clear the chips twice, and never use the die), cutting fluid, and the **printed rail-end tap guide** above instead of a guide block; a 6 mm and a 60 mm hole saw and a step drill for the front panel ports; crimper and heat gun for the lugs.
 
+**Panel cuts.** The same Diablo D1084L cuts the panels: an 80-tooth triple-chip blade leaves a chip-free edge on plastic sheet and on phenolic-faced ply alike. Rip the panels on the table saw against the fence (every panel cut is a long straight rip), good face up, masking tape over the line, a sacrificial sheet of hardboard under the cut, blade just above the panel, and a steady feed without stopping (a pause melts the kerf in plastic). Cut 1 mm proud and sand to the line on the front panel so its edges drop into the rail slots. Port holes: hole saw or step drill for the round sockets; the L14-30 and SB175 rectangles get their corners drilled and the sides cut with a fine jigsaw blade.
+
 ---
 
 ## 2. Bench work
