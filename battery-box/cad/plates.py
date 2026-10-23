@@ -26,6 +26,43 @@ def edge_x_up(tris):
     return [[(v[1], v[2], v[0]) for v in t] for t in tris]
 
 
+def face_areas(tris):
+    """Flat area lying on each of the six bounding-box faces: {(axis, 'min'|'max'): mm2}."""
+    lo = [min(v[k] for t in tris for v in t) for k in range(3)]; hi = [max(v[k] for t in tris for v in t) for k in range(3)]
+    area = {}
+    for a, b, c in tris:
+        for k in range(3):
+            for side, ref in (("min", lo[k]), ("max", hi[k])):
+                if all(abs(v[k] - ref) < 1e-3 for v in (a, b, c)):
+                    ux, uy, uz = (b[i] - a[i] for i in range(3)); vx, vy, vz = (c[i] - a[i] for i in range(3))
+                    area[(k, side)] = area.get((k, side), 0.0) + 0.5 * ((uy * vz - uz * vy) ** 2 + (uz * vx - ux * vz) ** 2 + (ux * vy - uy * vx) ** 2) ** 0.5
+    return area
+
+
+ROT = {   # proper rotations that bring the named bounding-box face to the bottom (no mirroring)
+    (2, "min"): lambda v: v,
+    (2, "max"): lambda v: (v[0], -v[1], -v[2]),
+    (1, "min"): lambda v: (v[0], -v[2], v[1]),
+    (1, "max"): lambda v: (v[0], v[2], -v[1]),
+    (0, "min"): lambda v: (-v[2], v[1], v[0]),
+    (0, "max"): lambda v: (v[2], v[1], -v[0]),
+}
+
+
+def flat(tris):
+    """Lay the part on its largest flat face (a post's solid back, a clip's plain outer face): slots and countersinks
+    face up, sideways bolt holes become vertical, and the long parts print lying down with the layers along them."""
+    face = max(face_areas(tris).items(), key=lambda kv: kv[1])[0]
+    f = ROT[face]
+    return [[f(v) for v in t] for t in tris]
+
+
+def rot_z(tris, deg):
+    import math
+    c, s_ = math.cos(math.radians(deg)), math.sin(math.radians(deg))
+    return [[(v[0] * c - v[1] * s_, v[0] * s_ + v[1] * c, v[2]) for v in t] for t in tris]
+
+
 def normalise(tris):
     x0 = min(v[0] for t in tris for v in t); y0 = min(v[1] for t in tris for v in t); z0 = min(v[2] for t in tris for v in t)
     return [[(v[0] - x0, v[1] - y0, v[2] - z0) for v in t] for t in tris]
@@ -45,13 +82,47 @@ PLATES = {
     "plate_breaker_shelf": (edge_x_up, ["print_breaker_shelf_0.stl"]),   # one shelf, 130 mm edge vertical; print it twice (two do not fit a bed)
 }
 
+PLATES["plate_inverter_posts"] = (flat, [   # the two 254 posts lie flat on their backs at 45 deg so a brim fits
+    ("print_post_inverter_0.stl", 45, (6, 32)), ("print_post_inverter_1.stl", 45, (32, 6)),   # on the 256 bed; the two
+    ("print_post_clip_0.stl", 0, (6, 210)), ("print_post_clip_1.stl", 0, (205, 6))])          # clips sit in the free corners
+
+
+def place(tris, rotz, at):
+    tris = normalise(rot_z(tris, rotz)) if rotz else tris
+    return [[(v[0] + at[0], v[1] + at[1], v[2]) for v in t] for t in tris]
+
+
 for name, (orient, files) in PLATES.items():
-    out, x = [], 0.0
-    for fn in files:
+    out, x, boxes, parts = [], 0.0, [], []
+    for item in files:
+        fn, rotz, at = item if isinstance(item, tuple) else (item, 0, None)
         tris = normalise(orient(read(os.path.join(STL, fn))))
         w = max(v[0] for t in tris for v in t); h = max(v[2] for t in tris for v in t); d = max(v[1] for t in tris for v in t)
-        out += [[(v[0] + x, v[1], v[2]) for v in t] for t in tris]
-        print(f"  {fn}: {w:.0f} x {d:.0f} footprint, {h:.0f} tall, at x {x:.0f}")
-        x += w + GAP
-    assert x - GAP <= BED and max(v[1] for t in out for v in t) <= BED
-    write(os.path.join(STL, name + ".stl"), out); print("wrote", name + ".stl", f"({x - GAP:.0f} mm wide)")
+        if at is None:
+            at = (x, 0.0); x += w + GAP
+        tris = place(tris, rotz, at)
+        bb = (min(v[0] for t in tris for v in t), min(v[1] for t in tris for v in t), max(v[0] for t in tris for v in t), max(v[1] for t in tris for v in t))
+        boxes.append((fn, bb)); out += tris; parts.append((fn, tris))
+        print(f"  {fn}: {w:.0f} x {d:.0f} footprint, {h:.0f} tall, rot {rotz}, bbox x {bb[0]:.0f}..{bb[2]:.0f} y {bb[1]:.0f}..{bb[3]:.0f}")
+    assert max(v[0] for t in out for v in t) <= BED and max(v[1] for t in out for v in t) <= BED, name
+    cells = {}   # 1 mm raster of every part's footprint: no two parts may share a cell
+    for fn, _bb in boxes:
+        pass
+    import itertools
+    def raster(tris):
+        got = set()
+        for a, b, c in tris:
+            xs = [a[0], b[0], c[0]]; ys = [a[1], b[1], c[1]]
+            for gx in range(int(min(xs)), int(max(xs)) + 1):
+                for gy in range(int(min(ys)), int(max(ys)) + 1):
+                    px, py = gx + 0.5, gy + 0.5
+                    d1 = (px - b[0]) * (a[1] - b[1]) - (a[0] - b[0]) * (py - b[1])
+                    d2 = (px - c[0]) * (b[1] - c[1]) - (b[0] - c[0]) * (py - c[1])
+                    d3 = (px - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (py - a[1])
+                    if not ((d1 < 0 or d2 < 0 or d3 < 0) and (d1 > 0 or d2 > 0 or d3 > 0)):
+                        got.add((gx, gy))
+        return got
+    foot = [(fn, raster(tr)) for fn, tr in parts]
+    for (f1, r1), (f2, r2) in itertools.combinations(foot, 2):
+        assert not (r1 & r2), f"{name}: {f1} overlaps {f2} on the bed"
+    write(os.path.join(STL, name + ".stl"), out); print("wrote", name + ".stl")
