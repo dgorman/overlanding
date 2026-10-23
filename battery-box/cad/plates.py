@@ -21,6 +21,11 @@ def on_side(tris):
     return [[(v[0], v[2], ymax - v[1]) for v in t] for t in tris]        # rotation about X (proper, no mirror) + shift
 
 
+def edge_x_up(tris):
+    """Stand the part on the face that is its +X end: X becomes the print height (a cyclic axis permutation, no mirror)."""
+    return [[(v[1], v[2], v[0]) for v in t] for t in tris]
+
+
 def normalise(tris):
     x0 = min(v[0] for t in tris for v in t); y0 = min(v[1] for t in tris for v in t); z0 = min(v[2] for t in tris for v in t)
     return [[(v[0] - x0, v[1] - y0, v[2] - z0) for v in t] for t in tris]
@@ -37,6 +42,7 @@ def write(path, tris):
 
 PLATES = {
     "plate_tray_rail_brackets": (on_side, [f"print_tray_rail_bracket_{k}.stl" for k in ("00", "01", "10", "11")]),
+    "plate_breaker_shelf": (edge_x_up, ["print_breaker_shelf_0.stl"]),   # one shelf, 130 mm edge vertical; print it twice (two do not fit a bed)
 }
 
 for name, (orient, files) in PLATES.items():
