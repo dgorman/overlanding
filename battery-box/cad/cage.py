@@ -3186,7 +3186,7 @@ def dims_bookshelf():
 def export(a: cq.Assembly):
     os.makedirs(OUT, exist_ok=True); os.makedirs(VIEWER, exist_ok=True); os.makedirs(STL, exist_ok=True)
     for old in os.listdir(STL):          # part names carry positions; drop stale files from earlier layouts
-        if old.endswith(".stl") and not old.startswith("print_tool_"):   # shop tools come from tools.py, keep them
+        if old.endswith(".stl") and not old.startswith(("print_tool_", "plate_")):   # tools.py / plates.py output, keep
             os.remove(os.path.join(STL, old))
     glb = os.path.join(OUT, "cage.glb"); a.export(glb, tolerance=1.5, angularTolerance=0.7)
     glb_to_json(glb, os.path.join(VIEWER, f"cage-{VARIANT}.json"))
