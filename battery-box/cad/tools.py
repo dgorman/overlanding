@@ -17,4 +17,5 @@ cap = cap.cut(cq.Workplane("XY").circle(6.0).extrude(6).translate((0, 0, 32 - 5)
 cap = cap.edges("|Z").fillet(4)
 path = os.path.join(OUT, "print_tool_tap_guide.stl")
 cq.exporters.export(cap, path)
+import plates; plates.reorient_file(path)   # pocket up, at the origin
 print("wrote", path)

@@ -35,6 +35,7 @@ import sys
 from dataclasses import dataclass
 
 import cadquery as cq
+import plates   # print orientation + print plates for the exported STLs
 
 # ----------------------------------------------------------------------------
 # Variants:  python cage.py cube     (v4: 487 mm cube from 12 uncut kit bars)
@@ -3197,14 +3198,20 @@ def export(a: cq.Assembly):
     seen = {}
     for child in a.children:
         if child.name.startswith("print_"):
-            cq.exporters.export(child.obj, os.path.join(STL, f"{child.name.replace('__card', '')}.stl"))
-            bb = child.obj.val().BoundingBox()
-            dims = tuple(round(v, 1) for v in sorted((bb.xlen, bb.ylen, bb.zlen), reverse=True))
+            path = os.path.join(STL, f"{child.name.replace('__card', '')}.stl")
+            cq.exporters.export(child.obj, path)
+            tris = plates.reorient_file(path)      # the file lies in its print orientation at the origin (plates.ORIENT_RULES)
+            dims = tuple(round(max(v[k] for t in tris for v in t), 1) for k in range(3))   # as it sits on the bed: x, y, height
             key = child.name.split("_")[1]
             seen.setdefault((key, dims), 0); seen[(key, dims)] += 1
     for (key, dims), n in seen.items():
-        flag = "" if dims[0] <= 256 and dims[1] <= 256 else "  <-- exceeds bed"
-        print(f"  {n:2d} x {key:10s} {dims[0]:6.1f} x {dims[1]:6.1f} x {dims[2]:6.1f}{flag}")
+        flag = "" if dims[0] <= 256 and dims[1] <= 256 and dims[2] <= 256 else "  <-- exceeds bed"
+        print(f"  {n:2d} x {key:10s} {dims[0]:6.1f} x {dims[1]:6.1f} x {dims[2]:6.1f} tall{flag}")
+    if any(c.name.startswith("print_") for c in a.children):
+        try:
+            plates.build_plates(STL, quiet=True)   # the plate_*.stl beds of grouped small parts
+        except FileNotFoundError as e:
+            print("  (no plates for this variant:", e.filename, ")")
 
 
 def report_bookshelf():
