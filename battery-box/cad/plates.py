@@ -57,6 +57,12 @@ def flat(tris):
     return [[f(v) for v in t] for t in tris]
 
 
+def top_down(tris):
+    """Flip the part over: its top face goes on the bed (a bracket whose wide top leg is its only big flat face)."""
+    f = ROT[(2, "max")]
+    return [[f(v) for v in t] for t in tris]
+
+
 def rot_z(tris, deg):
     import math
     c, s_ = math.cos(math.radians(deg)), math.sin(math.radians(deg))
@@ -78,7 +84,10 @@ def write(path, tris):
 
 
 PLATES = {
-    "plate_tray_rail_brackets": (on_side, [f"print_tray_rail_bracket_{k}.stl" for k in ("00", "01", "10", "11")]),
+    "plate_tray_rail_brackets": (on_side, [   # back pair on their sides (L profile flat); the FRONT pair upside down: their
+        "print_tray_rail_bracket_00.stl", "print_tray_rail_bracket_01.stl",       # top leg is 14 x 40 and on its side it
+        ("print_tray_rail_bracket_10.stl", 0, None, top_down),                      # became a 6 x 14 fin 40 tall that printed
+        ("print_tray_rail_bracket_11.stl", 0, None, top_down)]),                    # badly (2026-10-22); flat it is a 14 x 40 base
     "plate_breaker_shelf": (edge_x_up, ["print_breaker_shelf_0.stl"]),   # one shelf, 130 mm edge vertical; print it twice (two do not fit a bed)
 }
 
@@ -95,8 +104,8 @@ def place(tris, rotz, at):
 for name, (orient, files) in PLATES.items():
     out, x, boxes, parts = [], 0.0, [], []
     for item in files:
-        fn, rotz, at = item if isinstance(item, tuple) else (item, 0, None)
-        tris = normalise(orient(read(os.path.join(STL, fn))))
+        fn, rotz, at, o = (item + (orient,))[:4] if isinstance(item, tuple) else (item, 0, None, orient)
+        tris = normalise(o(read(os.path.join(STL, fn))))
         w = max(v[0] for t in tris for v in t); h = max(v[2] for t in tris for v in t); d = max(v[1] for t in tris for v in t)
         if at is None:
             at = (x, 0.0); x += w + GAP
