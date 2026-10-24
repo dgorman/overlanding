@@ -2666,9 +2666,13 @@ def build_v13(a):
         sh = box(xb - xa, y1s - y0s, 6, (xa, y0s, 0))
         if i < n_pl - 1:   # 20 mm half-lap tongue (lower half of the floor) under the next plate, 2 x M4 through both (bench)
             sh = sh.union(box(20, y1s - y0s - 12, 3, (xb, y0s + 6, 0)))
-        if i > 0:
-            sh = sh.cut(box(21, y1s - y0s - 10, 3.5, (xa - 1, y0s + 5, -0.5)))
-        for sx in (([xb + 10] if i < n_pl - 1 else []) + ([xa + 10] if i > 0 else [])) if P.get("lap_bolts", True) else []:
+        if i > 0:          # the pocket under this plate's back edge: a 3 mm ceiling over a 20 x 105 pocket open at the edge. Printed
+            sh = sh.cut(box(21, y1s - y0s - 10, 3.5, (xa - 1, y0s + 5, -0.5)))   # floor-down the slicer bridged it the long way (105 mm) and
+            sh = sh.union(box(0.84, y1s - y0s - 10, 3.0, (xa, y0s + 5, 0)))      # it strung (2026-10-23), so a 2-line SACRIFICIAL STRIP closes
+                                                                                  # the mouth: the ceiling bridges 20 mm instead. Cut the strip
+                                                                                  # off after printing (the plates cannot print upside down: walls)
+        lap_x = ([xb + 10] if i < n_pl - 1 else []) + ([xa + 10] if i > 0 else [])
+        for sx in lap_x if P.get("lap_bolts", True) else []:
             for sy in (y0s + 30, y1s - 30):   # (v12s: no lap bolts; each plate is bolted to the trays and the inverter plate on its own)
                 sh = sh.cut(cq.Workplane("XY").center(sx, sy).circle(2.3).extrude(8).translate((0, 0, -1)))
         sh = sh.union(box(xb - xa, 6, 34, (xa, y0s, 0)))                     # lip against the trays' inboard walls (M4 inserts)
