@@ -543,16 +543,25 @@ def load_victron(key):
 
 
 def breaker_shape(dx, dy, dz, at):
-    """Stand-in for the Bussmann 285 (until its STEP is dropped in): low rounded body, two 1/4-28 studs near the ends on the
-    diagonal OPPOSITE the mounting holes (series drawing: at each end the stud sits beside the hole, 13.3 off the centreline),
-    the push-to-trip button standing 6.35 above the body.  dx is the 81.28 length; HOLES["breaker_a"] has the holes."""
-    bh = dz - 6.35
-    body = box(dx, dy, bh, at).edges("|Z").fillet(6)
-    for ex, ey in ((14, dy / 2 + 13.33), (dx - 14, dy / 2 - 13.33)):   # holes are at (12.32, dy/2 - 13.33) and (dx - 12.32, dy/2 + 13.33)
-        stud = cq.Workplane("XY").center(at[0] + ex, at[1] + ey).circle(3.2).extrude(8.13).translate((0, 0, at[2] + bh - 8.13))
-        body = body.union(stud)
+    """Eaton Bussmann 285-series Hi-Amp breaker (285150F-121-S) from the series drawing (no STEP published): an 8.13 mm base
+    flange with the two mounting holes at the lower-left / upper-right corners, the body to 31.5, square stud insulators at
+    the other two corners with the 1/4-28 studs inside, the push-to-trip button 6.35 above the body at mid-length, and the
+    yellow reset lever standing out ~10 mm from the -dy side at mid-length (keep that side clear).  dx is the 81.28 length,
+    dy the 48.13 width; holes are HOLES["breaker_a"] = (12.32, 10.73) and (68.96, 37.40)."""
+    bh = dz - 6.35; base_h = 8.13
+    base = box(dx, dy, base_h, at).edges("|Z").fillet(5)
+    body = box(dx - 6, dy - 4, bh - base_h, (at[0] + 3, at[1] + 2, at[2] + base_h)).edges("|Z").fillet(7)
+    shp = base.union(body)
+    for (u, v) in ((12.32, 10.73), (dx - 12.32, dy - 10.73)):                      # the two 6.6 mm mounting holes through the flange, in
+        shp = shp.cut(cq.Workplane("XY").center(at[0] + u, at[1] + v).circle(3.3).extrude(base_h + 2).translate((0, 0, at[2] - 1)))
+        shp = shp.cut(cq.Workplane("XY").center(at[0] + u, at[1] + v).circle(7.0).extrude(dz).translate((0, 0, at[2] + base_h)))   # corner wells
+    for (ex, ey) in ((14, dy / 2 + 13.33), (dx - 14, dy / 2 - 13.33)):            # stud insulators (16 sq) on the opposite diagonal, studs inside
+        cap = box(16, 16, 9, (at[0] + ex - 8, at[1] + ey - 8, at[2] + bh - 1)).edges("|Z").fillet(2)
+        stud = cq.Workplane("XY").center(at[0] + ex, at[1] + ey).circle(3.2).extrude(14).translate((0, 0, at[2] + bh - 2))
+        shp = shp.union(cap).union(stud)
     button = box(12, 8, 6.35, (at[0] + dx / 2 - 6, at[1] + dy / 2 - 4, at[2] + bh)).edges("|Z").fillet(2)
-    return body.union(button)
+    lever = box(14, 10 + 4, 6, (at[0] + dx / 2 - 7, at[1] - 10, at[2] + bh - 12)).edges("|Z").fillet(2)   # reset lever out of the -y side
+    return shp.union(button).union(lever)
 
 
 def unit_fallback(key, dx, dy, dz, at, axis="|Z", face=False):
