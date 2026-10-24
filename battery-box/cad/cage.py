@@ -2664,17 +2664,6 @@ def build_v13(a):
     for i in range(n_pl):
         xa, xb = xs0 + i * seg, xs0 + (i + 1) * seg
         sh = box(xb - xa, y1s - y0s, 6, (xa, y0s, 0))
-        if i < n_pl - 1:   # 20 mm half-lap tongue (lower half of the floor) under the next plate, 2 x M4 through both (bench)
-            sh = sh.union(box(20, y1s - y0s - 12, 3, (xb, y0s + 6, 0)))
-        if i > 0:          # the pocket under this plate's back edge: a 3 mm ceiling over a 20 x 105 pocket open at the edge. Printed
-            sh = sh.cut(box(21, y1s - y0s - 10, 3.5, (xa - 1, y0s + 5, -0.5)))   # floor-down the slicer bridged it the long way (105 mm) and
-            sh = sh.union(box(0.84, y1s - y0s - 10, 3.0, (xa, y0s + 5, 0)))      # it strung (2026-10-23), so a 2-line SACRIFICIAL STRIP closes
-                                                                                  # the mouth: the ceiling bridges 20 mm instead. Cut the strip
-                                                                                  # off after printing (the plates cannot print upside down: walls)
-        lap_x = ([xb + 10] if i < n_pl - 1 else []) + ([xa + 10] if i > 0 else [])
-        for sx in lap_x if P.get("lap_bolts", True) else []:
-            for sy in (y0s + 30, y1s - 30):   # (v12s: no lap bolts; each plate is bolted to the trays and the inverter plate on its own)
-                sh = sh.cut(cq.Workplane("XY").center(sx, sy).circle(2.3).extrude(8).translate((0, 0, -1)))
         sh = sh.union(box(xb - xa, 6, 34, (xa, y0s, 0)))                     # lip against the trays' inboard walls (M4 inserts)
         for r in range(2):
             for hx in lip_holes[r]:
@@ -2691,6 +2680,23 @@ def build_v13(a):
             sh = sh.cut(box(16, 14, 40, (out_D - B - P["post_d"] - 2, y1s - 10, -1)))        # corner notched around the plate's front post
         for sx in (xa + 40, xb - 40):                                        # inserts in the plate's bottom band (bolts from the column side)
             sh = sh.cut(cq.Workplane("XZ").center(sx, 28).circle(2.3).extrude(-8).translate((0, y1s - 7, 0)))
+        # --- WALL half-laps (2026-10-23): the floor BUTTS; the lip and the inboard wall each carry a 20 mm half-lap, the tongue
+        # being the OUTER half of the wall standing on the bed from the floor to the wall top (it fills a matching notch cut through
+        # the next plate's wall and floor edge). Every plate prints flat with no bridge or overhang. The earlier FLOOR half-lap's
+        # 3 mm pocket ceiling bridged 105 mm (open at the plate edge) and strung, and the U-channel plates cannot print upside down.
+        # Tongues point forward (+X) from plates 0 and 1 into the back ends of plates 1 and 2. 0.3 mm thickness clearance, butts touch.
+        cw = V13["col_wall"]
+        for (yt, tw, out) in ((y0s, 3.0, -1), (y1s - cw / 2, cw / 2, +1)):   # (tongue y0, tongue thickness, which side is outside)
+            if i < n_pl - 1:
+                sh = sh.union(box(20, tw, 34, (xb, yt, 0)))
+            if i > 0:
+                sh = sh.cut(box(21, tw + 1.3, 36, (xa - 1, yt - (1.0 if out < 0 else 0.3), -1)))   # notch: wall half + 0.3, 1 mm past the face
+            for sx in (([xb + 10] if i < n_pl - 1 else []) + ([xa + 10] if i > 0 else [])) if P.get("lap_bolts", True) else []:
+                sh = sh.cut(cq.Workplane("XZ").center(sx, 26).circle(2.3).extrude(-8).translate((0, yt - (1 if out < 0 else 7 - tw), 0)))   # (not v12s)
+        for xj in (xs0 + seg, xs0 + 2 * seg):   # the trays' lip bolts must stay clear of the laps (hole in only one of the two wall halves)
+            for r in range(2):
+                for hx in lip_holes[r]:
+                    assert not (xj - 6 < g[f"tx{r}"] + hx < xj + 26), f"shelf lip hole at x {g[f'tx{r}'] + hx:.1f} lands in the lap at {xj:.1f}"
         add(a, sh, f"print_bus_shelf_{i}", ORANGE)
     for pl in (V13_SHORT["col"] if short else V13_COL):
         c = COMPONENTS[pl["comp"]]
