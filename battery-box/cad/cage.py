@@ -1323,6 +1323,7 @@ HOLES = {
                                                             # earlier (37.40, 10.73) order was the MIRROR and did not fit the printed shelf (2026-10-24).
     "breaker_b":        [(24, 8), (24, 66)],        # verify
     "garmin":           [(20, 37), (105, 37)],      # verify (Garmin bracket, 2 screws)
+    "garmin_up":        [(37, 20), (37, 105)],      # the same bracket turned 90 deg (verify)
     "bms":              [(10, 10), (112, 10), (10, 96), (112, 96)],   # verify
 }
 INSERT = {"mppt": "M5", "orion": "M4", "cerbo": "M4", "cerbo_up": "M4", "cerbo_flat": "M4", "shunt": "M6", "busbar_n": "M5", "busbar_p": "M5",
@@ -2538,10 +2539,13 @@ V13_COL = [dict(comp="shunt_x", x=215, y=1),                                    
 V13_PLATE_UNITS = (("mppt_up", 70.0, 80.0, "mppt"), ("cerbo", 215.0, 130.0, "cerbo"), ("orion", 380.0, 80.0, "orion"),   # on the plate's column face;
                    ("garmin", 510.0, 40.0, "garmin"),                                                                      # nothing on the shelf under the Orion
                    ("breaker_face", 515.0, 175.0, "breaker1"), ("breaker_face", 612.0, 175.0, "breaker2"))                 # breakers high, 48 under the lid
-V13_SHORT = dict(   # the 620 mm box: Garmin stacked over the Orion, the window over the shunt, breakers under the Cerbo, bus bars under the MPPT and Cerbo
-    units=(("mppt_up", 50.0, 80.0, "mppt"), ("cerbo", 190.0, 95.0, "cerbo"), ("orion", 354.0, 45.0, "orion"), ("garmin", 354.0, 192.0, "garmin"),
-           ("breaker_face", 485.0, 110.0, "breaker1"), ("breaker_face", 485.0, 185.0, "breaker2")),   # Garmin over the Orion, breakers stacked at the front;
-                                                                                                        # unit heights chosen so no insert lands in the tiles' lap (z 137-161)
+V13_SHORT = dict(   # the 635 mm box (2026-10-24 layout): ONE ROW of charge gear along the top of the plate's column face, tops at the MPPT's
+    # (266; the Orion 11 lower so its lugs clear the tile lap), the band under them open for the lugs and cables to the shelf's bus bars and
+    # shunt; the Garmin turned 90 deg on the plate's INVERTER face above the cable window, 59 mm in front of the MultiPlus's cable end and
+    # 18 mm behind the socket bodies, so only its feed passes through the window and its outputs run straight to the front-panel ports.
+    # (comp, x, z, tag[, side]): side +1 = inverter face, default -1 = column face. Unit heights keep every insert out of the lap (z 137-161).
+    units=(("mppt_up", 50.0, 80.0, "mppt"), ("cerbo", 190.0, 188.0, "cerbo"), ("orion", 354.0, 118.0, "orion"), ("garmin_up", 480.0, 145.0, "garmin", +1),
+           ("breaker_face", 485.0, 110.0, "breaker1"), ("breaker_face", 485.0, 185.0, "breaker2")),   # (breakers: pre-drop-shelf, filtered out)
     col=[dict(comp="shunt_x", x=195, y=1), dict(comp="busbar_px", x=50, y=62), dict(comp="busbar_nx", x=205, y=62)],
     window=(490.0, 560.0, 40.0, 110.0),
     lip_holes=(((40, 100, 160), (40, 150, 260)), ((40, 100, 140), (40, 120, 200))))
@@ -2724,10 +2728,14 @@ def build_v13(a):
     ux = V13["inv_x"]
     patches = [(ux - px0 + u, iz - zp + v) for (u, v) in HOLES[ikey]]
     if P.get("plate_pilots"):   # pilot holes for the heat-set inserts under every unit on the column face (set from that face)
-        for comp, x0, z0, nm in (V13_SHORT["units"] if short else V13_PLATE_UNITS):
+        for comp, x0, z0, nm, *_side in (V13_SHORT["units"] if short else V13_PLATE_UNITS):   # pilots go through: inserts set from the unit's side
             if P.get("breaker_shelf") and comp == "breaker_face":
                 continue
-            patches += [(x0 - px0 + u, z0 - zp + v) for (u, v) in HOLES.get(comp, [])]
+            assert comp in HOLES, f"no HOLES pattern for {comp}: the plate would get no pilots under it"
+            patches += [(x0 - px0 + u, z0 - zp + v) for (u, v) in HOLES[comp]]
+            lap_lo, lap_hi = zp + hp / 2 - LAT["lap"] / 2, zp + hp / 2 + LAT["lap"] / 2         # the two tile rows' half-lap band
+            for (u, v) in HOLES[comp]:
+                assert not (lap_lo - 3 < z0 + v < lap_hi + 3), f"{comp} insert at z {z0 + v:.0f} lands in the tiles' lap ({lap_lo:.0f}-{lap_hi:.0f})"
     V13["window"] = V13_SHORT["window"] if short else (645.0, 712.0, 40.0, 118.0)    # x0, x1, z0, z1: low cable window in the plate's front tile, where the bus is
     wx0, wx1, wz0, wz1 = V13["window"]
     window = cq.Workplane("XZ").center((wx0 + wx1) / 2, (wz0 + wz1) / 2).rect(wx1 - wx0, wz1 - wz0).extrude(-(P["card_t"] + 2)).edges("|Y").fillet(8).translate((0, yp - 1, 0))
@@ -2744,12 +2752,13 @@ def build_v13(a):
     g["inv_front"] = ux + inv.d
     # --- charge gear on the plate's column face (lugs to the plate, inserts in the plate) ---------------------------
     plate_units = [u for u in (V13_SHORT["units"] if short else V13_PLATE_UNITS) if not (P.get("breaker_shelf") and u[0] == "breaker_face")]
-    for comp, x0, z0, nm in plate_units:
+    for comp, x0, z0, nm, *side in plate_units:
+        side = side[0] if side else -1                                   # -1: column face (default); +1: inverter face, in front of the MultiPlus
         c = COMPONENTS[comp]
-        at = (x0, yp - c.d - 3, z0)
+        at = (x0, yp - c.d - 3 if side < 0 else yp + P["card_t"] + 3, z0)
         col = BLUE if c.name.startswith("victron") else (0.08, 0.08, 0.08) if c.name.startswith("garmin") else GOLD
         fb = unit_fallback(comp, c.w, c.d, c.h, at, axis="|Y", face=True)
-        add(a, victron_shape(comp, c.w, c.d, c.h, at, fb, lugs=("y", +1)), f"{c.name}_{nm}_plate", col)
+        add(a, victron_shape(comp, c.w, c.d, c.h, at, fb, lugs=("y", -side)), f"{c.name}_{nm}_plate", col)
     # --- panels, ports, lid ------------------------------------------------------------------------------------------
     xf = v12_panels(a)
     g["xf"] = xf
@@ -2778,7 +2787,7 @@ def report_v13():
         print(f"== Variant '{VARIANT}': v13's interior with two SuperPack 60Ah and the {'MultiPlus-II 12/3000 (ordered 2026-10-14)' if ii else 'MultiPlus 12/1200'}: upgrade to v13 = swap the trays and batteries ==")
         print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}; bank 2 x 60 Ah = 120 Ah, 60 A continuous (160 A for 10 s) -> about 700 W of AC continuous whatever the inverter")
         if out_D < 700:
-            print(f"  short box      : depth rails {out_D - 2 * C:.1f} = the 25 in IceBox's, uncut; height rails cut to {out_H - 2 * C:.1f}; the plate's charge gear stacks; no room for a MultiPlus-II or a 200Ah pair")
+            print(f"  short box      : depth rails {out_D - 2 * C:.1f} = the 25 in IceBox's, uncut; height rails cut to {out_H - 2 * C:.1f}; the plate's charge gear in one row, the Garmin on the inverter face by the ports; no room for a MultiPlus-II or a 200Ah pair")
         if ii:
             print("  with the II    : set its charger to 60 A (2 x 30 A SuperPack charge limit) in VEConfigure; its 13 W idle is 1 Ah/h from a 120 Ah bank; build the DC side")
             print("                   for v13 now (2/0 leads, 400 A class T, 250 A-class bars) so the battery upgrade touches nothing but the trays; the SuperPacks' own BMSs protect them")
