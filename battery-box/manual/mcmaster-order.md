@@ -41,7 +41,6 @@ Items marked **verify** are the right catalogue line but the exact length or typ
 | Qty | Part | Link | What it is |
 |---|---|---|---|
 | 1 | 74765A63 | https://www.mcmaster.com/74765A63/ | Loctite 401, 0.1 oz: enough for the six splines and the laps |
-| 2 | **verify** | https://www.mcmaster.com/products/cam-buckle-straps/ | 1 in cam-buckle strap, 5 ft or longer |
 
 ## Order Pad block (the verified lines)
 

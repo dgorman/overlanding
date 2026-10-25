@@ -38,7 +38,7 @@ Every `print_*.stl` and `plate_*.stl` is exported **already lying in its print o
 
 | Part | Qty | File(s) | Orientation on the bed | Walls / infill | Notes |
 |---|---|---|---|---|---|
-| Battery tray | 2 | [tray_0](stl/v12s/print_tray_battery_0.stl), [tray_1](stl/v12s/print_tray_battery_1.stl) | flat, floor down | 5 / 40 % (100 % floor is cheap insurance) | 243 × 167 × 36. They differ only in which end wall carries the rail bolts: tray 0's back wall, tray 1's front wall |
+| Battery tray | 2 | [tray_0](stl/v12s/print_tray_battery_0.stl), [tray_1](stl/v12s/print_tray_battery_1.stl) | flat, floor down | 5 / 40 % (100 % floor is cheap insurance) | 242 × 167 × 36. Pocket 0.5 mm clear of the battery each side (snug), no strap groove. They differ only in which end wall carries the rail bolts: tray 0's back wall, tray 1's front wall |
 | Breaker drop shelf | 2 | [plate_breaker_shelf.stl](stl/v12s/plate_breaker_shelf.stl), **print it twice** (both shelves are the same part; two do not fit one bed: each takes 168 × 243 of it) | already on its side in the plate file, the 130 mm edge vertical, no supports (the two ribs run the full height, so every layer has the same section; the earlier end gussets strung at the top and are gone) | 4 / 40 % | 130 × 168 × 243, ~400 g each. Never flat: the leg would be 189 mm of overhang |
 | Bus shelf plate | 3 | [0](stl/v12s/print_bus_shelf_0.stl), [1](stl/v12s/print_bus_shelf_1.stl), [2](stl/v12s/print_bus_shelf_2.stl) | flat, as exported. **Plates 1 and 2: supports on, build plate only**: the floor half-lap leaves a 3 mm ledge at one end that needs a 3 mm support block (snaps off). Plate 0 needs none | 4 / 30 % | 206 × 110 × 34 (plate 2 is 186). Plate 2 has the front wall and bolts into the front rail |
 | Inverter plate tile | 6 | [00](stl/v12s/print_plate_inverter_tile_00.stl), [01](stl/v12s/print_plate_inverter_tile_01.stl), [10](stl/v12s/print_plate_inverter_tile_10.stl), [11](stl/v12s/print_plate_inverter_tile_11.stl), [20](stl/v12s/print_plate_inverter_tile_20.stl), [21](stl/v12s/print_plate_inverter_tile_21.stl) | flat, as exported. Every tile has one untouched face and prints on it: the lower row carries its lap rabbet and spline pockets on the inverter face, the upper row on the column face. No bridges, no supports | 4 / 30 % | 179 × 140 × 6. First digit = column from the back, second = row from the bottom. Pilot holes for every unit are in them |
@@ -60,7 +60,6 @@ About 2.5 kg of filament, 35 hours. Pictures of each part are in [section 4](#4-
 | M5 heat-set inserts, 6.7 mm (94180A361) + M5 × 12 button heads + M5 washers | 20 (50) | MPPT 4, bus bars 4, **inverter keyholes 4** (washer under the head, left 3 mm proud), **breakers 4**, **shunt 2**. M6 inserts are too long for a 6 mm plate, so everything that was M6 is M5 with a washer |
 | CA glue | | the eight splines and the half-laps, which locate only |
 | closed-cell EPDM foam, adhesive-backed, 130 × 140, 1/16 in (1.5 mm), or 3 mm if soft | 2 | glued under each drop shelf's plate: the plate sits 1 mm over the battery body, so the shelf is the battery hold-down |
-| 1 in cam straps, 1.5 m | 2 | optional: through the tray's floor groove under the shelf, if you want a belt as well as the braces |
 
 Plus the electrical parts on the component list in `components.md`: MultiPlus, two SuperPack 60Ah, two Bussmann 285060F breakers, two 5-stud bus bars, SmartShunt, MPPT 100/30, Cerbo GX, Orion XS, Garmin PowerSwitch, two L14-30 panel inlets, two SB50 and one SB175 panel inlets, three 12 V and two USB sockets, and the cable in section 3.
 
@@ -88,7 +87,6 @@ One order covers every fastener, insert and tapping tool in this manual. Part nu
 | Tapping fluid for aluminium | Tap Magic Aluminum, 4 oz | 1 | |
 | #7 (0.201 in) jobber drill, HSS | only if the bore measures under 5.0 mm | 1 | |
 | Cyanoacrylate, medium viscosity | for the eight splines | 1 | |
-| 1 in cam-buckle strap, 5 ft or longer | 2 | | |
 
 Not from McMaster: the 285 breakers' M6 stud hardware comes fitted; the IceBox's own corner-cube screws re-use.
 
@@ -159,8 +157,8 @@ Every position below is measured from two reference faces inside the box: **dept
 
 | Part | Depth from the back rail face | Width from the outboard rail face | Height |
 |---|---|---|---|
-| Tray 0 (back) | 0 to 243 (its back wall on the back rail) | 1 to 168 | 0 to 36 |
-| Tray 1 (front) | 341 to 584 (its front wall on the front rail) | 1 to 168 | 0 to 36 |
+| Tray 0 (back) | 0 to 242 (its back wall on the back rail) | 1 to 168 | 0 to 36 |
+| Tray 1 (front) | 342 to 584 (its front wall on the front rail) | 1 to 168 | 0 to 36 |
 | Post 0 / post 1 | against the back rail / against the front rail | 269 to 293 (centre 281) | 0 to 254 |
 | Drop shelf 0 / 1 | 57 to 187 / 398 to 528 (centred on each battery) | 0 to 168 (hanger on the rail, foot on the tray wall) | 36 to 279 |
 | Bus shelf plates 0, 1, 2 | 0 to 215, 195 to 410, 390 to 584 (rail face to rail face; wall laps overlap 20) | 168 to 278 | 0 to 34 |
@@ -171,8 +169,8 @@ Every position below is measured from two reference faces inside the box: **dept
 
 | Rail | Positions along the rail | For |
 |---|---|---|
-| Bottom outboard depth rail | 70, 173, 411, 514 from the back | the trays' outer-wall 1/4-20s (two per tray) |
-| Top outboard depth rail | 82, 162, 423, 503 from the back | the drop-shelf hangers (two per shelf) |
+| Bottom outboard depth rail | 70, 172, 412, 514 from the back | the trays' outer-wall 1/4-20s (two per tray) |
+| Top outboard depth rail | 81, 161, 423, 503 from the back | the drop-shelf hangers (two per shelf) |
 | Bottom back width rail | 29, 140, 198, 238, 281 from the outboard side | tray 0's end wall (two), bus shelf back wall (two), post 0 sill |
 | Bottom front width rail | 29, 140, 198, 238, 281 from the outboard side | tray 1's end wall (two), bus shelf front wall (two), post 1 sill |
 | Top back width rail | 291 from the outboard side | clip 0 |
@@ -208,13 +206,13 @@ Stand post 0 against the back width rail and post 1 against the front width rail
 ![Step 4](manual/img/04-trays.png)
 ![Step 4 from above](manual/img/04-trays-top.png)
 
-Empty trays, each bolted straight to two rails. Drop tray 0 into the outboard zone and push it back until its back wall sits on the back width rail's inner face and its outer wall on the outboard rail. From inside the empty pocket: two countersunk 1/4-20 through the back wall into the back rail's T-nuts (at 29 and 140 across), two through the outer wall into the outboard rail's T-nuts (at 70 and 173 along). Heads flush in their countersinks, so the battery can sit against the walls. Tray 1 the same at the front: front wall on the front rail (nuts at 29 and 140), outer wall on the outboard rail (411 and 514).
+Empty trays, each bolted straight to two rails. Drop tray 0 into the outboard zone and push it back until its back wall sits on the back width rail's inner face and its outer wall on the outboard rail. From inside the empty pocket: two countersunk 1/4-20 through the back wall into the back rail's T-nuts (at 29 and 140 across), two through the outer wall into the outboard rail's T-nuts (at 70 and 172 along). Heads flush in their countersinks, so the battery can sit against the walls. Tray 1 the same at the front: front wall on the front rail (nuts at 29 and 140), outer wall on the outboard rail (412 and 514).
 
 ### Step 5: the batteries
 
 ![Step 5](manual/img/05-batteries.png)
 
-The batteries go in **before** the drop shelves: once a shelf is on, nothing 229 mm long can pass under its plate. Each SuperPack into its tray from above. The drop shelf in the next step is the hold-down, so a strap is optional; if you fit one, run it through the floor groove with the buckle at the battery's end so the middle stays flat. No lugs yet: the leads go on in step 9.
+The batteries go in **before** the drop shelves: once a shelf is on, nothing 229 mm long can pass under its plate. Each SuperPack into its tray from above. The pocket is a snug 0.5 mm clear of the battery each side, so it goes in square, not tilted. The drop shelf in the next step is the hold-down; there is no strap and no groove. No lugs yet: the leads go on in step 9.
 
 ### Step 6: breaker drop shelves
 
