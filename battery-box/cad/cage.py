@@ -2705,6 +2705,7 @@ def build_v13(a):
             sh = sh.cut(box(16, 14, 40, (out_D - B - P["post_d"] - 2, y1s - 10, -1)))        # corner notched around the plate's front post
         for sx in (xa + 40, xb - 40):                                        # inserts in the plate's bottom band (bolts from the column side)
             sh = sh.cut(cq.Workplane("XZ").center(sx, 28).circle(2.3).extrude(-8).translate((0, y1s - 7, 0)))
+            g.setdefault("sill_holes", []).append((sx, 28.0))                  # -> the plate gets a pilot for each (found missing 2026-10-25)
         # --- WALL half-laps (2026-10-23): the floor BUTTS; the lip and the inboard wall each carry a 20 mm half-lap, the tongue
         # being the OUTER half of the wall standing on the bed from the floor to the wall top (it fills a matching notch cut through
         # the next plate's wall and floor edge). Every plate prints flat with no bridge or overhang. The earlier FLOOR half-lap's
@@ -2741,6 +2742,7 @@ def build_v13(a):
         add(a, clip.translate((xclip, yt, hpost)), f"print_post_clip_{j}", ORANGE)
     ux = V13["inv_x"]
     patches = [(ux - px0 + u, iz - zp + v) for (u, v) in HOLES[ikey]]
+    patches += [(sx - px0, sz - zp) for (sx, sz) in g.get("sill_holes", ())]   # the 6 short M4 in the bottom band, for the bus shelf wall's bolts
     if P.get("plate_pilots"):   # pilot holes for the heat-set inserts under every unit on the column face (set from that face)
         for comp, x0, z0, nm, *_side in (V13_SHORT["units"] if short else V13_PLATE_UNITS):   # pilots go through: inserts set from the unit's side
             if P.get("breaker_shelf") and comp == "breaker_face":
@@ -2753,6 +2755,7 @@ def build_v13(a):
     V13["window"] = V13_SHORT["window"] if short else (645.0, 712.0, 40.0, 118.0)    # x0, x1, z0, z1: low cable window in the plate's front tile, where the bus is
     wx0, wx1, wz0, wz1 = V13["window"]
     window = cq.Workplane("XZ").center((wx0 + wx1) / 2, (wz0 + wz1) / 2).rect(wx1 - wx0, wz1 - wz0).extrude(-(P["card_t"] + 2)).edges("|Y").fillet(8).translate((0, yp - 1, 0))
+    PLATE_PILOTS.update(x0=px0, y=yp, z0=zp, patches=list(patches))   # for check_plate_pilots (--clash)
     for nm, shp in lattice_card_tiles(px1 - px0, hp, px0, yp, zp, "plate_inverter", patches):
         if "tile" in nm:
             shp = shp.cut(window)
@@ -3224,6 +3227,30 @@ def dims_bookshelf():
     return D
 
 
+PLATE_PILOTS = {}   # set by build_v13: where the inverter plate's pilots are, for the pin check below
+
+
+def check_plate_pilots(a):
+    """Push a 3.6 mm pin along Y through every pilot the plate was asked for and report any that is blocked (a pilot
+    that a tile cut missed, or a skin left on one face).  Added 2026-10-25 after the six bottom-band pilots for the bus
+    shelf wall turned out never to have been collected into the plate's patch list."""
+    if not PLATE_PILOTS:
+        return
+    tiles = [c.obj.val() for c in a.children if "plate_inverter_tile" in c.name]
+    solid = tiles[0]
+    for t_ in tiles[1:]:
+        solid = solid.fuse(t_)
+    x0, y, z0, t = PLATE_PILOTS["x0"], PLATE_PILOTS["y"], PLATE_PILOTS["z0"], P["card_t"]
+    blocked = []
+    for (u, v) in PLATE_PILOTS["patches"]:
+        pin = cq.Workplane("XZ").center(x0 + u, z0 + v).circle(1.8).extrude(-(t + 4)).translate((0, y - 2, 0)).val()
+        if pin.intersect(solid).Volume() > 1e-6:
+            blocked.append((x0 + u, z0 + v))
+    print(f"== Plate pilots: {len(PLATE_PILOTS['patches'])} asked for, {len(blocked)} blocked ==")
+    for (x, z) in blocked:
+        print(f"  BLOCKED pilot at x {x:.1f} z {z:.1f}")
+
+
 def export(a: cq.Assembly):
     os.makedirs(OUT, exist_ok=True); os.makedirs(VIEWER, exist_ok=True); os.makedirs(STL, exist_ok=True)
     for old in os.listdir(STL):          # part names carry positions; drop stale files from earlier layouts
@@ -3449,6 +3476,7 @@ if __name__ == "__main__":
     asm = build()
     report()
     if "--clash" in sys.argv:
+        check_plate_pilots(asm)
         clash_report(asm)
     export(asm)
     print("wrote", os.path.abspath(os.path.join(VIEWER, f"cage-{VARIANT}.json")))
