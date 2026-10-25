@@ -1371,16 +1371,23 @@ def lattice_card_tiles(L, H, x0, y_plate, z0, prefix, patches=(), solids=()):
     tw, th = L / nx, H / nz
     t, rib, b = LAT["t"], LAT["rib"], LAT["border"]
     tiles = []
-    lap = LAT["lap"]            # horizontal joints are HALF-LAPS: the lower tile keeps the back half of a
-    for i in range(nx):         # lap-wide strip past the joint line, the upper tile the front half.  Each tile
-        for j in range(nz):     # prints flat with its rabbet facing up (lower tiles back face down, upper tiles
-            z_lo = 0.0 if j == 0 else -lap / 2                       # front face down): no supports.
+    lap = LAT["lap"]            # horizontal joints are HALF-LAPS over a lap-wide strip past the joint line.  EVERY cut a
+    # tile carries (its lap rabbets at the top and bottom edges, and its spline pockets) is on ONE face, which alternates
+    # by row: even rows (0, 2, ..) cut into the BACK (+Y) face, odd rows into the FRONT (-Y) face, so the neighbours
+    # across a joint always keep opposite halves and each tile prints on its untouched face with no bridge or overhang
+    # (2026-10-25: before this the lower row's rabbet was on the front and its pockets on the back, leaving 18 mm
+    # bridges under the lower tiles).
+    cut_y = lambda j: (t / 2, t / 2 + 1) if j % 2 == 0 else (-1, t / 2 + 1)   # (y0, depth) of row j's cut face
+    for i in range(nx):
+        for j in range(nz):
+            z_lo = 0.0 if j == 0 else -lap / 2
             z_hi = th if j == nz - 1 else th + lap / 2
             tile = box(tw, t, z_hi - z_lo, (0, 0, z_lo))
-            if j < nz - 1:   # top edge: remove the FRONT half of the strip
-                tile = tile.cut(box(tw + 2, t / 2 + 1, lap + 1, (-1, -1, th - lap / 2)))
-            if j > 0:        # bottom edge: remove the BACK half of the strip
-                tile = tile.cut(box(tw + 2, t / 2 + 1, lap + 1, (-1, t / 2, -lap / 2 - 1)))
+            cy, cd = cut_y(j)
+            if j < nz - 1:   # top edge: remove this row's half of the strip
+                tile = tile.cut(box(tw + 2, cd, lap + 1, (-1, cy, th - lap / 2)))
+            if j > 0:        # bottom edge: the same half (the row below removed the other one)
+                tile = tile.cut(box(tw + 2, cd, lap + 1, (-1, cy, -lap / 2 - 1)))
             for jl in ((j, j + 1) if P.get("lap_bolts", True) else ()):   # 3 x M4 through-bolts across each lap this tile is part of
                 if 0 < jl < nz:                                              # (v12s: none; the units screwed across the lap and the splines hold it)
                     for xc in (L * 0.25 - i * tw, L * 0.5 - i * tw, L * 0.75 - i * tw):
@@ -1409,20 +1416,24 @@ def lattice_card_tiles(L, H, x0, y_plate, z0, prefix, patches=(), solids=()):
                     boss = cq.Workplane("XZ").center(u, v).circle(LAT["boss_r"]).extrude(-t).intersect(box(tw, t, th))
                     tile = tile.union(boss).cut(cq.Workplane("XZ").center(u, v).circle(LAT["insert_hole"] / 2).extrude(-t - 2).translate((0, -1, 0)))   # -1..t+1: THROUGH (2026-10-24: +1 left a 1 mm skin on the column face)
             if j < nz - 1:   # a boss near a joint must not refill the half-lap
-                tile = tile.cut(box(tw + 2, t / 2 + 1, lap + 1, (-1, -1, th - lap / 2)))
+                tile = tile.cut(box(tw + 2, cd, lap + 1, (-1, cy, th - lap / 2)))
             if j > 0:
-                tile = tile.cut(box(tw + 2, t / 2 + 1, lap + 1, (-1, t / 2, -lap / 2 - 1)))
+                tile = tile.cut(box(tw + 2, cd, lap + 1, (-1, cy, -lap / 2 - 1)))
             tiles.append((f"print_{prefix}_tile_{i}{j}", tile.translate((x0 + i * tw, y_plate, z0 + j * th))))
-    # splines sit in 3 mm pockets recessed into the back (+Y) face so the back of the card is flush
+    # splines sit flush in 3 mm pockets on the row's cut face (back for even rows, front for odd rows): two per row per
+    # vertical joint, at 30 % and 70 % of the row height, so none straddles a horizontal lap
     sl, sw, st = LAT["spline"]
     splines = []
     for i in range(1, nx):            # vertical joints
-        for zc in (z0 + H * 0.25, z0 + H * 0.5, z0 + H * 0.75):
-            splines.append((f"print_{prefix}_spline_v{i}_{int(zc)}", box(sl, st, sw, (x0 + i * tw - sl / 2, y_plate + t - st, zc - sw / 2))))
+        for j in range(nz):
+            yf = (y_plate + t - st) if j % 2 == 0 else y_plate
+            for zc in (z0 + j * th + th * 0.3, z0 + j * th + th * 0.7):
+                splines.append((f"print_{prefix}_spline_v{i}_{int(zc)}", box(sl, st, sw, (x0 + i * tw - sl / 2, yf, zc - sw / 2))))
     for nm, tile in tiles:
         for _, sp in splines:
             bb = sp.val().BoundingBox()
-            tile = tile.cut(box(bb.xlen + 0.4, st + 1, bb.zlen + 0.4, (bb.xmin - 0.2, bb.ymin, bb.zmin - 0.2)))
+            back = bb.ymin > y_plate + 0.1
+            tile = tile.cut(box(bb.xlen + 0.4, st + 1, bb.zlen + 0.4, (bb.xmin - 0.2, bb.ymin if back else bb.ymin - 1, bb.zmin - 0.2)))
         yield nm, tile
     for nm, sp in splines:
         yield nm, sp

@@ -42,8 +42,8 @@ Every `print_*.stl` and `plate_*.stl` is exported **already lying in its print o
 | Tray rail bracket | 4 | [00](stl/v12s/print_tray_rail_bracket_00.stl), [01](stl/v12s/print_tray_rail_bracket_01.stl), [10](stl/v12s/print_tray_rail_bracket_10.stl), [11](stl/v12s/print_tray_rail_bracket_11.stl) | all four on [plate_tray_rail_brackets.stl](stl/v12s/plate_tray_rail_brackets.stl), or just the front pair on [plate_tray_rail_brackets_front.stl](stl/v12s/plate_tray_rail_brackets_front.stl); no supports. The back pair (00, 01) lie on their sides with the L flat; the front pair (10, 11) stand upside down on their wide top leg, since on their side that leg is a thin fin that prints badly | 5 / 50 % | 0x fit tray 0 at the back rail, 1x fit tray 1 at the front rail |
 | Breaker drop shelf | 2 | [plate_breaker_shelf.stl](stl/v12s/plate_breaker_shelf.stl), **print it twice** (both shelves are the same part; two do not fit one bed: each takes 168 × 243 of it) | already on its side in the plate file, the 130 mm edge vertical, no supports (the two ribs run the full height, so every layer has the same section; the earlier end gussets strung at the top and are gone) | 4 / 40 % | 130 × 168 × 243, ~400 g each. Never flat: the leg would be 189 mm of overhang |
 | Bus shelf plate | 3 | [0](stl/v12s/print_bus_shelf_0.stl), [1](stl/v12s/print_bus_shelf_1.stl), [2](stl/v12s/print_bus_shelf_2.stl) | flat, as exported. **Plates 1 and 2: supports on, build plate only**: the floor half-lap leaves a 3 mm ledge at one end that needs a 3 mm support block (snaps off). Plate 0 needs none | 4 / 30 % | 206 × 110 × 34 (plate 2 is 186). Plate 2 has the front wall and bolts into the front rail |
-| Inverter plate tile | 6 | [00](stl/v12s/print_plate_inverter_tile_00.stl), [01](stl/v12s/print_plate_inverter_tile_01.stl), [10](stl/v12s/print_plate_inverter_tile_10.stl), [11](stl/v12s/print_plate_inverter_tile_11.stl), [20](stl/v12s/print_plate_inverter_tile_20.stl), [21](stl/v12s/print_plate_inverter_tile_21.stl) | flat, as exported (the plain face down). The lower-row tiles 00, 10, 20 have the half-lap rabbet on top and two 18 mm bridges on the underside at the spline pockets: no supports | 4 / 30 % | 179 × 140 × 6. First digit = column from the back, second = row from the bottom. Pilot holes for every unit are in them |
-| Plate spline | 6 | [v1_85](stl/v12s/print_plate_inverter_spline_v1_85.stl), [v1_149](stl/v12s/print_plate_inverter_spline_v1_149.stl), [v1_213](stl/v12s/print_plate_inverter_spline_v1_213.stl), [v2_85](stl/v12s/print_plate_inverter_spline_v2_85.stl), [v2_149](stl/v12s/print_plate_inverter_spline_v2_149.stl), [v2_213](stl/v12s/print_plate_inverter_spline_v2_213.stl) | flat | 3 / 100 % | 60 × 18 × 3, all identical: print six of one. Glued; they and the units hold the tiles, there are no lap bolts |
+| Inverter plate tile | 6 | [00](stl/v12s/print_plate_inverter_tile_00.stl), [01](stl/v12s/print_plate_inverter_tile_01.stl), [10](stl/v12s/print_plate_inverter_tile_10.stl), [11](stl/v12s/print_plate_inverter_tile_11.stl), [20](stl/v12s/print_plate_inverter_tile_20.stl), [21](stl/v12s/print_plate_inverter_tile_21.stl) | flat, as exported. Every tile has one untouched face and prints on it: the lower row carries its lap rabbet and spline pockets on the inverter face, the upper row on the column face. No bridges, no supports | 4 / 30 % | 179 × 140 × 6. First digit = column from the back, second = row from the bottom. Pilot holes for every unit are in them |
+| Plate spline | 8 | [plate_inverter_splines.stl](stl/v12s/plate_inverter_splines.stl), all eight on one bed (two per row at each of the two vertical joints) | flat, as exported | 4 / 100 % | 60 × 18 × 3; glued into their flush pockets, lower row's on the inverter face, upper row's on the column face |
 | Inverter post + clip | 2 + 2 | [plate_inverter_posts.stl](stl/v12s/plate_inverter_posts.stl): both posts and both clips on one bed | pre-laid: posts flat on their solid backs, slot up, at 45° across the bed; clips on their plain face, countersink up; no supports | 5 / 50 % | posts 254 × 24 × 18, clips 40 × 20 × 28. Mirror pairs: 0 at the back rail, 1 at the front; mark them as they come off the bed |
 | **Tool:** rail-end tap guide | 1 | [tap_guide](stl/v12s/print_tool_tap_guide.stl) | pocket up, as exported | 4 / 100 % | 46 × 46 × 32 cap that fits over the 1 in rail end with a 6.5 mm bore in line with the rail's centre hole: starts the 1/4-20 tap square and centred. Print this first |
 
@@ -59,7 +59,7 @@ About 2.5 kg of filament, 35 hours. Pictures of each part are in [section 4](#4-
 | M4 heat-set inserts, **short** (94180A351, under 6 mm) | 16 (25) | the 6 mm plate: bottom band 6, Cerbo 4, Orion 4, Garmin 2 |
 | M4 × 10 button-head screws | 32 (40) | into those inserts |
 | M5 heat-set inserts, 6.7 mm (94180A361) + M5 × 12 button heads + M5 washers | 20 (50) | MPPT 4, bus bars 4, **inverter keyholes 4** (washer under the head, left 3 mm proud), **breakers 4**, **shunt 2**. M6 inserts are too long for a 6 mm plate, so everything that was M6 is M5 with a washer |
-| CA glue | | the six splines and the half-laps, which locate only |
+| CA glue | | the eight splines and the half-laps, which locate only |
 | closed-cell EPDM foam, adhesive-backed, 130 × 140, 1/16 in (1.5 mm), or 3 mm if soft | 2 | glued under each drop shelf's plate: the plate sits 1 mm over the battery body, so the shelf is the battery hold-down |
 | 1 in cam straps, 1.5 m | 2 | optional: through the tray's floor groove under the shelf, if you want a belt as well as the braces |
 
@@ -88,7 +88,7 @@ One order covers every fastener, insert and tapping tool in this manual. Part nu
 | Tap guide block | "Tap guides" (the hardened block with graded holes, #0 to 5/8 in) | 1 | |
 | Tapping fluid for aluminium | Tap Magic Aluminum, 4 oz | 1 | |
 | #7 (0.201 in) jobber drill, HSS | only if the bore measures under 5.0 mm | 1 | |
-| Cyanoacrylate, medium viscosity | for the six splines | 1 | |
+| Cyanoacrylate, medium viscosity | for the eight splines | 1 | |
 | 1 in cam-buckle strap, 5 ft or longer | 2 | | |
 
 Not from McMaster: the 285 breakers' M6 stud hardware comes fitted; the IceBox's own corner-cube screws re-use.
@@ -138,7 +138,7 @@ Lay the three plates out on their 20 mm floor half-laps, plate 0 at the back, pl
 
 ### 2.5 Inverter plate sub-assembly
 
-Lay the six tiles out: columns 0, 1, 2 from the back, rows 0 (bottom) and 1 (top). Each column's two tiles meet on a horizontal half-lap, tacked with CA; the columns join on vertical joints with the splines glued into their pockets on the inverter side. There are no bolts across the laps: the MPPT, Cerbo and Orion each screw into both tiles of their column, which is what holds the laps closed, and the plate's ends sit in the post slots. Set the inserts: six short M4 in the bottom band for the bus shelf wall, and on the **column face** M5 × 4 for the MPPT, short M4 × 4 for the Cerbo, × 4 for the Orion, × 2 for the Garmin; on the **inverter face** M5 × 4 for the keyholes, with M5 × 12 button heads and a 10 mm washer under each driven in and left 3 mm proud, so the keyholes drop over them. Mount the MPPT (upright, terminals down), Cerbo, Orion (terminals down) and Garmin on the column face and dress their short leads. The inverter does not go on yet.
+Lay the six tiles out: columns 0, 1, 2 from the back, rows 0 (bottom) and 1 (top). Each column's two tiles meet on a horizontal half-lap, tacked with CA; the columns join on vertical joints with the splines glued into their flush pockets: the lower row's four on the inverter face, the upper row's four on the column face (each row carries all its cuts on one face, which is why the tiles print without bridges). There are no bolts across the laps: the MPPT, Cerbo and Orion each screw into both tiles of their column, which is what holds the laps closed, and the plate's ends sit in the post slots. Set the inserts: six short M4 in the bottom band for the bus shelf wall, and on the **column face** M5 × 4 for the MPPT, short M4 × 4 for the Cerbo, × 4 for the Orion, × 2 for the Garmin; on the **inverter face** M5 × 4 for the keyholes, with M5 × 12 button heads and a 10 mm washer under each driven in and left 3 mm proud, so the keyholes drop over them. Mount the MPPT (upright, terminals down), Cerbo, Orion (terminals down) and Garmin on the column face and dress their short leads. The inverter does not go on yet.
 
 ### 2.6 Breaker shelves
 
@@ -287,7 +287,7 @@ Port bodies into the front panel from inside, SB50 pigtails to the MPPT and Orio
 | ![post](manual/img/part-print_post_inverter_0.png) | ![clip](manual/img/part-print_post_clip_0.png) |
 | ![bus shelf 0](manual/img/part-print_bus_shelf_0.png) | ![bus shelf 2](manual/img/part-print_bus_shelf_2.png) |
 | ![tile 00](manual/img/part-print_plate_inverter_tile_00.png) | ![tile 21](manual/img/part-print_plate_inverter_tile_21.png) |
-| ![spline](manual/img/part-print_plate_inverter_spline_v1_85.png) | |
+| ![spline](manual/img/part-print_plate_inverter_spline_v1_59.png) | |
 
 ---
 

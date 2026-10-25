@@ -111,6 +111,7 @@ PLATES = {   # plate name: list of (file, rotation about Z, (x, y) of the boundi
                                  ("print_tray_rail_bracket_10.stl", 0, None), ("print_tray_rail_bracket_11.stl", 0, None)],
     "plate_tray_rail_brackets_front": [("print_tray_rail_bracket_10.stl", 0, None), ("print_tray_rail_bracket_11.stl", 0, None)],
     "plate_breaker_shelf": [("print_breaker_shelf_0.stl", 0, None)],   # one shelf (print it twice: two do not fit a bed)
+    "plate_inverter_splines": [("print_plate_inverter_spline_*.stl", 0, None)],   # all the plate's splines in a row
     "plate_inverter_posts": [("print_post_inverter_0.stl", 45, (6, 32)), ("print_post_inverter_1.stl", 45, (32, 6)),   # 254 posts at
                              ("print_post_clip_0.stl", 0, (6, 210)), ("print_post_clip_1.stl", 0, (205, 6))],        # 45 deg, clips in the corners
 }
@@ -134,14 +135,20 @@ def raster(tris):
 
 def build_plates(stl_dir, quiet=False):
     for name, items in PLATES.items():
-        out, x, parts = [], 0.0, []
-        for fn, rotz, at in items:
+        out, x, parts, y_row, row_h = [], 0.0, [], 0.0, 0.0
+        import glob
+        expanded = []
+        for fn, rotz, at in items:   # a glob entry stands for every matching file
+            expanded += [(os.path.basename(m), rotz, at) for m in sorted(glob.glob(os.path.join(stl_dir, fn)))] if "*" in fn else [(fn, rotz, at)]
+        for fn, rotz, at in expanded:
             tris = read(os.path.join(stl_dir, fn))                       # already oriented by reorient_file
             if rotz:
                 tris = normalise(rot_z(tris, rotz))
             w = max(v[0] for t in tris for v in t); d = max(v[1] for t in tris for v in t); h = max(v[2] for t in tris for v in t)
-            if at is None:
-                at = (x, 0.0); x += w + GAP
+            if at is None:                       # next in a row, wrapping to a new row when the bed is full
+                if x + w > BED:
+                    x, y_row, row_h = 0.0, y_row + row_h + GAP, 0.0
+                at = (x, y_row); x += w + GAP; row_h = max(row_h, d)
             tris = [[(v[0] + at[0], v[1] + at[1], v[2]) for v in t] for t in tris]
             parts.append((fn, tris)); out += tris
             if not quiet:
