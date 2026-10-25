@@ -2571,6 +2571,20 @@ V13_SHORT = dict(   # the 635 mm box (2026-10-24 layout): ONE ROW of charge gear
     lip_holes=(((40, 100, 160), (40, 150, 260)), ((40, 100, 140), (40, 120, 200))))
 
 
+COUNTERSINKS = []   # (part name, face point, unit axis INTO the part): every conical countersink, for check_countersinks (--clash)
+
+
+def countersink(part, face_pt, axis):
+    """An 82-degree countersink for a 1/4-20 flat head (13.2 mm at the face, 3.6 mm deep to the 6.8 mm hole), starting
+    0.5 mm outside the face so the cut is through.  Registers itself so --clash can probe that it really opens the face.
+    (2026-10-25: the earlier 'countersinks' were 13 mm counterbores placed 0.5 mm OFF the wall, in air: no cut at all on
+    the trays, brackets and shelf front wall, so their flat heads would have stood 4 mm proud against the batteries.)"""
+    ax = cq.Vector(*axis).normalized()
+    pnt = cq.Vector(*face_pt) - ax * 0.5
+    COUNTERSINKS.append((part, tuple(face_pt), tuple(axis)))
+    return cq.Workplane("XY").add(cq.Solid.makeCone(7.0, 3.4, 4.1, pnt, ax))
+
+
 def build_v13(a):
     """v12 grown one inch (282 tall) for a 1500 W AC load, MultiPlus-II 12/3000/120-50 as asked.  The II is 578 x 277 x 148
     and does not fit the v12 box any way up, so it lies on its LONG SIDE along the inboard side of the box: back on a
@@ -2587,11 +2601,14 @@ def build_v13(a):
     fw = bs.w + 2 * wall + 2 * 1.5                                 # 167: the shelf lip is in the same place for both batteries
     fd = b.d + 2 * wall + 2 * clr                                  # 336 (200Ah) or 243 (60Ah)
     pw = b.w + 2 * clr                                             # pocket width: 155 or 140
-    if small:   # the two 60Ah trays sit at the two ends of the zone so both rail brackets reach their rails
+    direct = bool(P.get("clean_trays"))   # 2026-10-25: the trays BUTT the width rails and bolt straight into them (no brackets)
+    if small and direct:
+        txs = (x_in0, out_D - B - fd)   # tray 0's back wall on the back rail, tray 1's front wall on the front rail
+    elif small:   # the two 60Ah trays sit at the two ends of the zone so both rail brackets reach their rails
         txs = (x_in0 + V13["end_gap"] + 6, out_D - B - 3 - 6 - fd)
     else:
         txs = tuple(x_in0 + V13["end_gap"] + 6 + r * (fd + 12 + V13["row_gap"]) for r in range(2))
-    bay_D = txs[1] + fd + 6 - x_in0
+    bay_D = txs[1] + fd + (0 if direct else 6) - x_in0
     g["bay_D"] = bay_D
     lip_holes = (V13_SHORT if short else V13)["lip_holes"][1 if small else 0]   # per tray, placed where the column has no part over the lip
     ty = y_in0 + 1
@@ -2600,7 +2617,9 @@ def build_v13(a):
         tray = box(fd, fw, lip + fl).cut(box(fd - 2 * wall, pw, lip + fl + 1, (wall, wall, fl)))
         tray = tray.cut(box(fd + 2, 28, 5, (-1, wall + pw / 2 - 14, fl - 2)))                      # lengthwise strap groove, 4 mm of floor under it
         pads = ((-6, 12), (-6, fw - 32), (fd, 12), (fd, fw - 32))
-        if P.get("clean_trays"):   # only the two pads that take this tray's rail brackets (back end of tray 0, front end of tray 1)
+        if direct:                 # no pads: the end walls bolt to the rails themselves
+            pads = ()
+        elif P.get("clean_trays"):   # only the two pads that take this tray's rail brackets (back end of tray 0, front end of tray 1)
             pads = tuple(pd for pd in pads if (pd[0] < 0) == (r == 0))
         for (px, py) in pads:                                                                    # corner pads, M4 inserts from the top
             tray = tray.union(box(6, 20, lip + fl, (px, py, 0)))
@@ -2611,7 +2630,12 @@ def build_v13(a):
                 tray = tray.cut(cq.Workplane("XY").center(hx, hy).circle(3.4).extrude(fl + 1))     # M6 to the plate, optional
         for sx in (70, fd - 70):   # outboard wall: two countersunk 1/4-20 into the outboard rail's inner slot, heads flush inside
             tray = tray.cut(cq.Workplane("XZ").center(sx, B / 2).circle(3.4).extrude(-(wall + 2)).translate((0, -1, 0)))
-            tray = tray.cut(cq.Workplane("XZ").center(sx, B / 2).circle(6.5).extrude(-3).translate((0, wall + 0.5, 0)))
+            tray = tray.cut(countersink(f"print_tray_battery_{r}", (tx + sx, ty + wall, B / 2), (0, -1, 0)).translate((-tx, -ty, 0)))
+        if direct:                 # end wall on the width rail: two countersunk 1/4-20 into its inner slot, heads flush inside the pocket
+            xw = wall if r == 0 else fd - wall                                   # the wall's inner face
+            for sy in (28, fw - 28):                                             # clear of the strap channel (62..90) and the side walls
+                tray = tray.cut(cq.Workplane("YZ").center(sy, B / 2).circle(3.4).extrude(wall + 2).translate(((-1 if r == 0 else fd - wall - 1), 0, 0)))
+                tray = tray.cut(countersink(f"print_tray_battery_{r}", (tx + xw, ty + sy, B / 2), ((-1, 0, 0) if r == 0 else (1, 0, 0))).translate((-tx, -ty, 0)))
         for hx in lip_holes[r]:   # inboard wall: 3 x M4 heat-set inserts in its outer face; the shelf's lip bolts to them from the column
             tray = tray.cut(cq.Workplane("XZ").center(hx, 17).circle(2.8).extrude(-8).translate((0, fw - 7, 0)))         # side (heads reachable from above)
         # the tray is 345 long, so it prints as two halves joined on a 20 mm half-lap at mid-length: the back half keeps the
@@ -2639,8 +2663,9 @@ def build_v13(a):
                     tray = tray.cut(cq.Workplane("XY").center(xs_ + hx, fw - wall - 15 + 13).circle(2.8).extrude(13).translate((0, 0, lip + fl - 12)))
             add(a, tray.translate((tx, ty, 0)), f"print_tray_battery_{r}", ORANGE)
         # L brackets from the tray's outer pads to the width rail behind it (r 0) or in front of it (r 1): the horizontal leg bolts
-        # down into the pad's M4 insert, the vertical leg takes a countersunk 1/4-20 into the rail's inner slot (T-nut)
-        for k, py in enumerate((12, fw - 32)):
+        # down into the pad's M4 insert, the vertical leg takes a countersunk 1/4-20 into the rail's inner slot (T-nut).
+        # Not with direct trays (v12s since 2026-10-25): the end walls bolt to the rails themselves.
+        for k, py in (() if direct else enumerate((12, fw - 32))):
             if r == 0:
                 xr, hx = x_in0, tx                                       # rail inner face, pad insert centre (at the pad/wall boundary)
                 br = box(hx + 5 - xr, 20, 6, (xr, 0, lip + fl)).union(box(6, 20, lip + fl + 6, (xr, 0, 0)))
@@ -2680,7 +2705,7 @@ def build_v13(a):
                 sh = sh.union(rib)
             for hx in (25, 105):
                 sh = sh.cut(cq.Workplane("XZ").center(xs + hx, hz).circle(3.4).extrude(-8).translate((0, y_in0 - 1, 0)))          # 1/4-20 into the rail slot
-                sh = sh.cut(cq.Workplane("XZ").center(xs + hx, hz).circle(6.5).extrude(-3).translate((0, y_in0 + 3.5, 0)))        # countersink on the inner face
+                sh = sh.cut(countersink(f"print_breaker_shelf_{r}", (xs + hx, y_in0 + 6, hz), (0, -1, 0)))                      # countersink on the inner face
                 sh = sh.cut(cq.Workplane("XY").center(xs + hx, yw + 13).circle(2.3).extrude(8).translate((0, 0, wt - 1)))        # M4 down through the foot
             bx, by = xs + 24, y_in0 + 92                           # breaker inboard of the hanger bolts (key path over the empty plate), 7 mm off the lip
             for (u, v) in HOLES["breaker_a"]:                      # its two 6.6 mm holes: M5 inserts (McMaster 94180A361, 6.4 mm pilot) in the shelf,
@@ -2695,7 +2720,7 @@ def build_v13(a):
             g[f"shelf_leg_{r}"] = (xs, yw)
     # --- bus shelf in the column between the trays and the inverter plate -----------------------------------------
     y0s, y1s = ty + fw, V13["plate_y"]                            # 190.4 .. 305: 114.6 wide
-    xs0, xs1 = V13["shelf_x0"], min(V13["shelf_x1"], out_D - 32.0)
+    xs0, xs1 = x_in0, out_D - B                                       # rail face to rail face (2026-10-25; was 46 .. out_D - 32, short of both)
     n_pl = 3; seg = (xs1 - xs0) / n_pl
     for i in range(n_pl):
         xa, xb = xs0 + i * seg, xs0 + (i + 1) * seg
@@ -2706,14 +2731,17 @@ def build_v13(a):
                 hxa = g[f"tx{r}"] + hx
                 if xa + 6 < hxa < xb - 6:
                     sh = sh.cut(cq.Workplane("XZ").center(hxa, 17).circle(2.3).extrude(-8).translate((0, y0s - 1, 0)))
-        if i == n_pl - 1:   # front plate: 30 mm wall against the front width rail's inner face, two countersunk 1/4-20 into its inner slot;
-            sh = sh.union(box(6, y1s - 11 - y0s, 30, (xb - 6, y0s, 0)))                      # floor notched around the plate's front post
+        if i in (0, n_pl - 1):   # end plates: a 30 mm wall on the width rail's inner face, two countersunk 1/4-20 into its inner slot,
+            xw0 = xa if i == 0 else xb - 6                                                   # the corner notched around the plate's post
+            sh = sh.union(box(6, y1s - 11 - y0s, 30, (xw0, y0s, 0)))
             for yc in (y0s + 30, y1s - 40):
-                sh = sh.cut(cq.Workplane("YZ").center(yc, B / 2).circle(3.4).extrude(8).translate((xb - 7, 0, 0)))
-                sh = sh.cut(cq.Workplane("YZ").center(yc, B / 2).circle(6.5).extrude(3).translate((xb - 9.5, 0, 0)))
+                sh = sh.cut(cq.Workplane("YZ").center(yc, B / 2).circle(3.4).extrude(8).translate((xw0 - 1, 0, 0)))
+                sh = sh.cut(countersink(f"print_bus_shelf_{i}", (xw0 + 6 if i == 0 else xw0, yc, B / 2), ((-1, 0, 0) if i == 0 else (1, 0, 0))))
         sh = sh.union(box(xb - xa, V13["col_wall"], 34, (xa, y1s - V13["col_wall"], 0)))   # inboard wall = the inverter plate's sill: 2 x M4 through it into
         if i == n_pl - 1:
-            sh = sh.cut(box(16, 14, 40, (out_D - B - P["post_d"] - 2, y1s - 10, -1)))        # corner notched around the plate's front post
+            sh = sh.cut(box(P["post_d"] + 4, 14, 40, (out_D - B - P["post_d"] - 2, y1s - 10, -1)))   # corner notched around the plate's front post
+        if i == 0:
+            sh = sh.cut(box(P["post_d"] + 4, 14, 40, (x_in0 - 2, y1s - 10, -1)))                     # and the back post
         for sx in (xa + 40, xb - 40):                                        # inserts in the plate's bottom band (bolts from the column side)
             sh = sh.cut(cq.Workplane("XZ").center(sx, 28).circle(2.3).extrude(-8).translate((0, y1s - 7, 0)))
             g.setdefault("sill_holes", []).append((sx, 28.0))                  # -> the plate gets a pilot for each (found missing 2026-10-25)
@@ -3241,6 +3269,19 @@ def dims_bookshelf():
 PLATE_PILOTS = {}   # set by build_v13: where the inverter plate's pilots are, for the pin check below
 
 
+def check_countersinks(a):
+    """A 11 mm disc 1 mm thick just inside every registered countersink's face must meet no material."""
+    bad = 0
+    parts = {c.name: c.obj.val() for c in a.children}
+    for (part, pt, axis) in COUNTERSINKS:
+        ax = cq.Vector(*axis).normalized()
+        probe = cq.Workplane("XY").add(cq.Solid.makeCylinder(5.5, 1.0, cq.Vector(*pt), ax)).val()
+        vol = probe.intersect(parts[part]).Volume() if part in parts else -1
+        if vol != 0 and vol > 1e-6 or vol < 0:
+            bad += 1; print(f"  NO COUNTERSINK on {part} at {tuple(round(v, 1) for v in pt)}" + ("" if vol >= 0 else " (part not found)"))
+    print(f"== Countersinks: {len(COUNTERSINKS)} registered, {bad} not cut ==")
+
+
 def check_plate_pilots(a):
     """Push a 3.6 mm pin along Y through every pilot the plate was asked for and report any that is blocked (a pilot
     that a tile cut missed, or a skin left on one face).  Added 2026-10-25 after the six bottom-band pilots for the bus
@@ -3488,6 +3529,7 @@ if __name__ == "__main__":
     report()
     if "--clash" in sys.argv:
         check_plate_pilots(asm)
+        check_countersinks(asm)
         clash_report(asm)
     export(asm)
     print("wrote", os.path.abspath(os.path.join(VIEWER, f"cage-{VARIANT}.json")))

@@ -18,14 +18,13 @@ STEPS = [  # (slug, title, new-part regex, context panels?)
     ("01-frame",     "Step 1: the frame, cubes and rails from the 25 in IceBox",          r"^(cube_|bar_)", False),
     ("02-panels",    "Step 2: the four panels slide into the rails' centre slots",        r"^panel_", True),
     ("03-posts",     "Step 3: the two inverter-plate posts, sill bolts into the width rails", r"^print_post_inverter_", False),
-    ("04-brackets",  "Step 4: four tray brackets bolted to the width rails",              r"^print_tray_rail_bracket_", False),
-    ("05-trays",     "Step 5: the two battery trays, empty",                              r"^print_tray_battery_", False),
-    ("06-batteries", "Step 6: batteries into the trays, strapped (before the shelves)",   r"^battery_", False),
-    ("07-shelves",   "Step 7: breaker drop shelves over the batteries, then the breakers", r"^(print_breaker_shelf_|power_breaker_shelf_)", False),
-    ("08-bus",       "Step 8: the bus shelf with the bus bars and shunt",                 r"^(print_bus_shelf_|power_busbar_|power_shunt_)", False),
-    ("09-plate",     "Step 9: the inverter plate with its units, then the post clips",    r"^(print_plate_inverter_|victron_mppt_|victron_cerbo_|victron_orion_|garmin_powerswitch_|print_post_clip_)", False),
-    ("10-inverter",  "Step 10: hang the MultiPlus on the plate",                          r"^victron_multiplus_", False),
-    ("11-ports-lid", "Step 11: port bodies, pigtails and the lid",                        r"^(socket_|lid_)", True),
+    ("04-trays",     "Step 4: the two battery trays, bolted to the outboard and width rails", r"^print_tray_battery_", False),
+    ("05-batteries", "Step 5: batteries into the trays (before the shelves)",             r"^battery_", False),
+    ("06-shelves",   "Step 6: breaker drop shelves over the batteries, then the breakers", r"^(print_breaker_shelf_|power_breaker_shelf_)", False),
+    ("07-bus",       "Step 7: the bus shelf with the bus bars and shunt, bolted to both width rails", r"^(print_bus_shelf_|power_busbar_|power_shunt_)", False),
+    ("08-plate",     "Step 8: the inverter plate with its units, then the post clips",    r"^(print_plate_inverter_|victron_mppt_|victron_cerbo_|victron_orion_|garmin_powerswitch_|print_post_clip_)", False),
+    ("09-inverter",  "Step 9: hang the MultiPlus on the plate",                           r"^victron_multiplus_", False),
+    ("10-ports-lid", "Step 10: port bodies, pigtails and the lid",                        r"^(socket_|lid_)", True),
 ]
 HIDE_ALWAYS = re.compile(r"^icebox_")
 
@@ -100,10 +99,10 @@ if __name__ == "__main__":
     placed = []
     for slug, title, new_re, panels_ctx in STEPS:
         render_set(asm, os.path.join(OUT, f"{slug}.png"), title, new_re, placed, 24, -50, panels_ctx)
-        if slug in ("03-posts", "04-brackets", "05-trays", "07-shelves", "08-bus", "09-plate"):
+        if slug in ("03-posts", "04-trays", "06-shelves", "07-bus", "08-plate"):
             render_set(asm, os.path.join(OUT, f"{slug}-top.png"), title + " (from above)", new_re, placed, 90, -90, panels_ctx)
         placed.append(new_re)
-    for name in ("print_tray_battery_0", "print_tray_rail_bracket_00", "print_tray_rail_bracket_10", "print_post_inverter_0", "print_post_clip_0",
+    for name in ("print_tray_battery_0", "print_post_inverter_0", "print_post_clip_0",
                  "print_breaker_shelf_0", "print_bus_shelf_0", "print_bus_shelf_2", "print_plate_inverter_tile_00", "print_plate_inverter_tile_21",
                  "print_plate_inverter_spline_"):          # a prefix: the first spline, whatever its z in the name
         name = next(c.name for c in asm.children if c.name.startswith(name))

@@ -74,8 +74,6 @@ def flat(tris):
 
 
 ORIENT_RULES = [   # (file-name prefix, orientation); first match wins; anything else prints as modelled
-    ("print_tray_rail_bracket_0", on_side_y),   # back pair: L profile flat on the bed
-    ("print_tray_rail_bracket_1", top_down),    # front pair: on their 14 x 40 top leg (on the side that leg is a fin)
     ("print_breaker_shelf", edge_x_up),         # 130 mm edge vertical: every wall upright, the plate and leg need no support
     ("print_post_inverter", flat),              # on the solid back, slot up, sill bolt hole vertical
     ("print_post_clip", flat),                  # on the plain outer face, countersink up
@@ -107,9 +105,6 @@ def rot_z(tris, deg):
 
 
 PLATES = {   # plate name: list of (file, rotation about Z, (x, y) of the bounding box corner or None = next in a row)
-    "plate_tray_rail_brackets": [("print_tray_rail_bracket_00.stl", 0, None), ("print_tray_rail_bracket_01.stl", 0, None),
-                                 ("print_tray_rail_bracket_10.stl", 0, None), ("print_tray_rail_bracket_11.stl", 0, None)],
-    "plate_tray_rail_brackets_front": [("print_tray_rail_bracket_10.stl", 0, None), ("print_tray_rail_bracket_11.stl", 0, None)],
     "plate_breaker_shelf": [("print_breaker_shelf_0.stl", 0, None)],   # one shelf (print it twice: two do not fit a bed)
     "plate_inverter_splines": [("print_plate_inverter_spline_*.stl", 0, None)],   # all the plate's splines in a row
     "plate_inverter_posts": [("print_post_inverter_0.stl", 45, (6, 32)), ("print_post_inverter_1.stl", 45, (32, 6)),   # 254 posts at
