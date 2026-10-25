@@ -61,13 +61,13 @@ VARIANTS = {
     "v12s": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=635.0,
                  batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                  card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
-                 perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True, lap_bolts=False, batt_body_h=208.0, shelf_pad=3.0, shelf_drop=2.0),   # front panel = a SOLID offcut of an IceBox side panel   # the IceBox's slot pattern on the back panel; trays without the unused
+                 perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True, lap_bolts=False, tray_clr=0.5, strap=False, batt_body_h=208.0, shelf_pad=3.0, shelf_drop=2.0),   # front panel = a SOLID offcut of an IceBox side panel   # the IceBox's slot pattern on the back panel; trays without the unused
                                                                                # pads and floor holes; insert pilot holes in the plate under every unit
     # v12s_pack: v12s on the IceBox with pack2 standing on the floor in front of the box's port face, umbilical side toward it
     "v12s_pack": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=635.0,
                       batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                       card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
-                      perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True, lap_bolts=False, batt_body_h=208.0, shelf_pad=3.0, shelf_drop=2.0, with_pack2=True),
+                      perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True, lap_bolts=False, tray_clr=0.5, strap=False, batt_body_h=208.0, shelf_pad=3.0, shelf_drop=2.0, with_pack2=True),
     # pack2: the stacked add-on pack for v12s: 2 x 2 SuperPack 60Ah (two pairs, one above the other) in an all-printed cage,
     # bus bars + one breaker on a top shelf, SB175 umbilical inlet in its back panel.  Standalone model (frame_* = the pack's envelope)
     "pack2": dict(frame_source="icebox", frame_W=314.0, frame_H=572.0, frame_D=325.0, show_icebox=False,
@@ -2596,7 +2596,8 @@ def build_v13(a):
     g = dict()
     short = out_D < 700.0
     bkey = P.get("batt", "smart200"); small = bkey == "battery"   # v12: two SuperPack 60Ah in the same zone, trays 167 wide like v13's
-    b = COMPONENTS[bkey]; wall, lip, fl, clr = 6.0, 30.0, V13["floor"], (1.0 if small else 1.5)   # pocket clearance each side
+    b = COMPONENTS[bkey]; wall, lip, fl = 6.0, 30.0, V13["floor"]
+    clr = P.get("tray_clr", 1.0 if small else 1.5)   # pocket clearance each side (v12s: 0.5, a snug fit, user 2026-10-25)
     bs = COMPONENTS["smart200"]
     fw = bs.w + 2 * wall + 2 * 1.5                                 # 167: the shelf lip is in the same place for both batteries
     fd = b.d + 2 * wall + 2 * clr                                  # 336 (200Ah) or 243 (60Ah)
@@ -2615,7 +2616,8 @@ def build_v13(a):
     for r in range(2):
         tx = txs[r]
         tray = box(fd, fw, lip + fl).cut(box(fd - 2 * wall, pw, lip + fl + 1, (wall, wall, fl)))
-        tray = tray.cut(box(fd + 2, 28, 5, (-1, wall + pw / 2 - 14, fl - 2)))                      # lengthwise strap groove, 4 mm of floor under it
+        if P.get("strap", True):   # v12s: no strap (the drop shelf is the hold-down), so no groove and no slots through the end walls
+            tray = tray.cut(box(fd + 2, 28, 5, (-1, wall + pw / 2 - 14, fl - 2)))                  # lengthwise strap groove, 4 mm of floor under it
         pads = ((-6, 12), (-6, fw - 32), (fd, 12), (fd, fw - 32))
         if direct:                 # no pads: the end walls bolt to the rails themselves
             pads = ()

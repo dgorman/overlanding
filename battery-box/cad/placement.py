@@ -20,7 +20,7 @@ fx = lambda x: x - X0                                 # measured from the back r
 fy = lambda y: y - Y0                                 # measured from the outboard rail's inner face
 
 # --- bolt positions (same formulas as cage.build_v13) -------------------------------------------------------------
-b = cage.COMPONENTS["battery"]; wall, clr = 6.0, 1.0
+b = cage.COMPONENTS["battery"]; wall, clr = 6.0, cage.P.get("tray_clr", 1.0)
 fd = b.d + 2 * wall + 2 * clr; fw = cage.COMPONENTS["smart200"].w + 2 * wall + 3.0
 txs = (X0, cage.out_D - B - fd); ty = Y0 + 1                    # trays butt the width rails (2026-10-25)
 nuts = {}
