@@ -105,5 +105,6 @@ if __name__ == "__main__":
         placed.append(new_re)
     for name in ("print_tray_battery_0", "print_tray_rail_bracket_00", "print_tray_rail_bracket_10", "print_post_inverter_0", "print_post_clip_0",
                  "print_breaker_shelf_0", "print_bus_shelf_0", "print_bus_shelf_2", "print_plate_inverter_tile_00", "print_plate_inverter_tile_21",
-                 "print_plate_inverter_spline_v1_85"):
+                 "print_plate_inverter_spline_"):          # a prefix: the first spline, whatever its z in the name
+        name = next(c.name for c in asm.children if c.name.startswith(name))
         render_part(asm, name, os.path.join(OUT, f"part-{name}.png"))
