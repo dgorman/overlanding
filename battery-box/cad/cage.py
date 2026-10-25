@@ -61,13 +61,13 @@ VARIANTS = {
     "v12s": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=635.0,
                  batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                  card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
-                 perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True, lap_bolts=False, batt_body_h=208.0, shelf_pad=3.0),   # front panel = a SOLID offcut of an IceBox side panel   # the IceBox's slot pattern on the back panel; trays without the unused
+                 perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True, lap_bolts=False, batt_body_h=208.0, shelf_pad=3.0, shelf_drop=2.0),   # front panel = a SOLID offcut of an IceBox side panel   # the IceBox's slot pattern on the back panel; trays without the unused
                                                                                # pads and floor holes; insert pilot holes in the plate under every unit
     # v12s_pack: v12s on the IceBox with pack2 standing on the floor in front of the box's port face, umbilical side toward it
     "v12s_pack": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=635.0,
                       batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                       card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
-                      perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True, lap_bolts=False, batt_body_h=208.0, shelf_pad=3.0, with_pack2=True),
+                      perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True, lap_bolts=False, batt_body_h=208.0, shelf_pad=3.0, shelf_drop=2.0, with_pack2=True),
     # pack2: the stacked add-on pack for v12s: 2 x 2 SuperPack 60Ah (two pairs, one above the other) in an all-printed cage,
     # bus bars + one breaker on a top shelf, SB175 umbilical inlet in its back panel.  Standalone model (frame_* = the pack's envelope)
     "pack2": dict(frame_source="icebox", frame_W=314.0, frame_H=572.0, frame_D=325.0, show_icebox=False,
@@ -2647,8 +2647,9 @@ def build_v13(a):
         g[f"tx{r}"] = tx
     if P.get("breaker_shelf"):   # one drop shelf per battery, doubling as its HOLD-DOWN: a 6 mm plate on a 3 mm closed-cell pad pressed onto the
         body_h = P.get("batt_body_h", b.h); pad = P.get("shelf_pad", 3.0)   # SuperPack 60Ah: 213 overall is to the TOP OF THE TERMINALS; the flat body
-        zs = fl + body_h + pad                                    # top is at 208 (Victron STEP: 5 mm studs), so the pad sits on the body with no gap
-                                                                  # (2026-10-24: the printed shelf stood ~3/8 in off the battery at 213 + 3)
+        drop = P.get("shelf_drop", 0.0)                           # top is at 208 (Victron STEP: 5 mm studs), so the pad sits on the body with no gap
+        zs = fl + body_h + pad - drop                             # (2026-10-24: the printed shelf stood ~3/8 in off the battery at 213 + 3; 2026-10-25:
+                                                                  # 2 mm of daylight remained at 208 + 3, so shelf_drop=2 and the pad space is pad - drop)
                                                                   # battery's middle, hung from the top outboard rail's inner slot and standing on the tray's
         hz = out_H - B / 2                                        # 21 mm inboard wall (two M4 down into inserts in the wall top); the breaker on top
         for r in range(2):
@@ -2659,20 +2660,24 @@ def build_v13(a):
             sh = sh.union(box(130, 6, out_H - 3 - zs, (xs, y_in0, zs)))                                      # hanger up the top rail's inner face
             sh = sh.union(box(130, 6, zs + 24 - wt, (xs, yw, wt)))                                            # leg down onto the wall top, 24 up past the plate as a lip
             sh = sh.union(box(130, 15, 6, (xs, yw + 6, wt)))                                                  # foot over the wall top: 2 x M4 down into it
-            for (gy, gz, dy, dz) in ((y_in0 + 6, zs + 6, 1, 1), (yw, zs + 6, -1, 1)):                        # gussets above the plate at the hanger and the lip
-                                                                                                              # (nothing below it: the battery is 6 mm under)
-                for gx in (xs, xs + 130 - 6):
-                    tri = cq.Workplane("YZ").polyline([(gy, gz), (gy + 18 * dy, gz), (gy, gz + 18 * dz)]).close().extrude(6).translate((gx, 0, 0))
-                    sh = sh.union(tri)
+            for (gy, dy, rs) in ((y_in0 + 6, 1, 18), (yw, -1, 5)):                                           # full-length ribs above the plate along the hanger (18)
+                                                                                                              # and the lip (5: the breaker flange is 7 off the lip). Ribs,
+                                                                                                              # not end gussets: the shelf prints on its 130 mm edge, and an
+                                                                                                              # end gusset at the top of the print is 162 mm2 hanging in air
+                                                                                                              # (2026-10-25: it strung). Nothing below the plate: the battery
+                rib = cq.Workplane("YZ").polyline([(gy, zs + 6), (gy + rs * dy, zs + 6), (gy, zs + 6 + rs)]).close().extrude(130).translate((xs, 0, 0))
+                sh = sh.union(rib)
             for hx in (25, 105):
                 sh = sh.cut(cq.Workplane("XZ").center(xs + hx, hz).circle(3.4).extrude(-8).translate((0, y_in0 - 1, 0)))          # 1/4-20 into the rail slot
                 sh = sh.cut(cq.Workplane("XZ").center(xs + hx, hz).circle(6.5).extrude(-3).translate((0, y_in0 + 3.5, 0)))        # countersink on the inner face
                 sh = sh.cut(cq.Workplane("XY").center(xs + hx, yw + 13).circle(2.3).extrude(8).translate((0, 0, wt - 1)))        # M4 down through the foot
             bx, by = xs + 24, y_in0 + 92                           # breaker inboard of the hanger bolts (key path over the empty plate), 7 mm off the lip
-            for (u, v) in HOLES["breaker_a"]:                      # its two 6.6 mm holes: M6 inserts in the shelf, 1/4-20 or M6 from above
-                sh = sh.cut(cq.Workplane("XY").center(bx + u, by + v).circle(4.0).extrude(8).translate((0, 0, zs - 1)))
+            for (u, v) in HOLES["breaker_a"]:                      # its two 6.6 mm holes: M5 inserts (McMaster 94180A361, 6.4 mm pilot) in the shelf,
+                sh = sh.cut(cq.Workplane("XY").center(bx + u, by + v).circle(3.2).extrude(8).translate((0, 0, zs - 1)))   # M5 x 12 + washer from above
+            assert by + COMPONENTS["breaker_a"].w + 2 <= yw, "breaker flange runs into the lip rib"
+            assert zs + 6 + 18 < hz - 7, "hanger rib under the 1/4-20 countersink"
             add(a, sh, f"print_breaker_shelf_{r}", ORANGE)
-            add(a, box(130, b.w + 2 * clr, pad, (xs, ty + wall, fl + body_h)), f"pad_breaker_shelf_{r}", (0.15, 0.15, 0.15))   # EPDM pad on the body top, glued to the plate
+            add(a, box(130, b.w + 2 * clr, pad - drop, (xs, ty + wall, fl + body_h)), f"pad_breaker_shelf_{r}", (0.15, 0.15, 0.15))   # foam pad on the body top, glued to the plate
             c = COMPONENTS["breaker_a"]
             at = (bx, by, zs + 6)
             add(a, victron_shape("breaker_a", c.d, c.w, c.h, at, unit_fallback("breaker_a", c.d, c.w, c.h, at)), f"power_breaker_shelf_{r}", GOLD)
