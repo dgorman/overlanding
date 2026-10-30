@@ -18,7 +18,8 @@ Outer size: **635 × 487 × 282 mm (25.0 × 19.2 × 11.1 in)**. Loaded weight ab
 | Part | Use | Cut |
 |---|---|---|
 | 8 corner cubes | the box's corners | none |
-| 4 width rails, 436.6 mm | front and back, top and bottom | none |
+| 3 width rails, 436.6 mm | back top and bottom, front top | none |
+| **1 width rail to add, 436.6 mm** | **front bottom** (the IceBox has no rail here: the fridge slides out through the opening) | from a 1 ft length of McMaster **47065T101** (1 in × 1 in four-slot rail, same 10-series profile): cut to 436.6, tap both ends 1/4-20 like the height rails. Or a Goose Gear mod-kit bar if you still have one: it is this exact rail, already tapped |
 | 4 depth rails, 584.2 mm | sides, top and bottom | none |
 | 4 height rails, 508 mm | corners | **cut to 231.2 mm**, one end, re-tap 1/4-20 |
 
@@ -28,7 +29,7 @@ The cut length already allows for the corner cubes: the box is 282 mm (11.1 in) 
 | one side-panel offcut (635 × 277) | the box's **front panel** | cut to 443 × 237, then the port holes |
 | top panel | the lid | none |
 
-Measure an uncut width rail before cutting anything: it should read 436.6 mm. If it does not, the cubes are not 25.4 mm and every number below shifts by the same amount; re-run the model with the real cube size.
+The IceBox 1.3 has **no bottom front width rail** (the fridge slide needs the opening), and the box needs one: the front panel's bottom tongue, tray 1's end wall, the bus shelf's front wall and post 1's sill all tie into it (5 T-nuts). Add one as in the parts table above; it is the fifth rail end you tap. Measure an uncut width rail before cutting anything: it should read 436.6 mm. If it does not, the cubes are not 25.4 mm and every number below shifts by the same amount; re-run the model with the real cube size.
 
 ### 1.2 Printed parts
 

@@ -28,6 +28,12 @@ Items marked **verify** are the right catalogue line but the exact length or typ
 |---|---|---|---|
 | 5 packs of 4 | 6000N501 | https://www.mcmaster.com/6000N501/ | 1/4"-20 drop-in spring-loaded ball nut for 1 in (10-series) rail. 20 needed, 20 bought: none spare. End-feed nuts (47065T142) will not do: the rails are capped by cubes |
 
+## Rail (order 3, needed: the IceBox has no bottom front width rail)
+
+| Qty | Part | Link | What it is |
+|---|---|---|---|
+| 1 ft | 47065T101 | https://www.mcmaster.com/47065T101/ | 1 in × 1 in four-slot T-slotted framing rail (10-series profile, same as the IceBox): cut to 436.6 mm and tap both ends 1/4-20. Skip it if a Goose Gear mod-kit bar is left: that is this rail, already tapped |
+
 ## Tapping
 
 | Qty | Part | Link | What it is |
