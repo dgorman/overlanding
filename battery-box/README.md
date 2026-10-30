@@ -35,7 +35,7 @@ The frame of the **25 in IceBox 1.3** you were given, cut down in height only: *
 
 ### From the second IceBox, not printed
 
-The 8 corner cubes and **11 of the 12 rails** (the 25 in box's depth rails 584.2 and width rails 436.6 **uncut**; only the height rails cut, to 231.2). The IceBox has **no bottom front width rail**, the fridge slides out through that opening, and the box needs one (front panel tongue, tray 1's end wall, the shelf's front wall, post 1's sill): add a 436.6 mm 1 in four-slot rail, tapped both ends, from a 1 ft McMaster 47065T101 or a spare Goose Gear mod-kit bar, the two side panels cut down to 237 tall, the **perforated rear panel cut down** to be the box's back panel, the top panel uncut as the lid, and the **front panel cut from a side-panel offcut** (762 × 277 is left after each side is cut to 237; the front needs 443 × 237) with the ports cut through it. Nothing on the box is printed sheet. The panels are phenolic-faced plywood (confirmed on the donor box, 2026-10-21), modelled at 6 mm; caliper a panel edge before cutting the front, since the slot fit depends on it.
+The 8 corner cubes and **11 of the 12 rails** (the 25 in box's depth rails 584.2 and width rails 436.6 **uncut**; only the height rails cut, to 231.2). The IceBox has **no bottom front width rail**, the fridge slides out through that opening, and the box needs one (front panel tongue, tray 1's end wall, the shelf's front wall, post 1's sill): the bar from a Goose Gear Extrusion Frame Modification Kit x.31 (ordered 2026-10-30: same rail, same finish, pre-tapped), the two side panels cut down to 237 tall, the **perforated rear panel cut down** to be the box's back panel, the top panel uncut as the lid, and the **front panel cut from a side-panel offcut** (762 × 277 is left after each side is cut to 237; the front needs 443 × 237) with the ports cut through it. Nothing on the box is printed sheet. The panels are phenolic-faced plywood (confirmed on the donor box, 2026-10-21), modelled at 6 mm; caliper a panel edge before cutting the front, since the slot fit depends on it.
 
 <a id="rail-cutting"></a>
 ### Cutting and tapping the rails, one shot
@@ -45,7 +45,7 @@ The frame rails come from the second IceBox already end-tapped for the corner-cu
 | Box | Height rails ×4 | Depth rails ×4 | Width rails ×4 |
 |---|---|---|---|
 | **v12s (the build, 25 in donor)** | 508.0 → **231.2** (offcut 276.8) | 584.2 **uncut** | 436.6 uncut |
-| **added bottom front width rail** | | | 436.6 from a 1 ft 47065T101 (or a mod-kit bar), both ends tapped |
+| **added bottom front width rail** | | | a mod-kit x.31 bar, 436.6 as supplied, no cut |
 
 Rail length = outside dimension − 2 × 25.4 (one cube at each end): 282 − 50.8 = 231.2 for the height rails. The stock box checks out the same way: 558.8 − 50.8 = 508.
 
