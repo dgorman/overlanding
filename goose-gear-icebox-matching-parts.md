@@ -1,6 +1,6 @@
 # Building a Matching Box for the Goose Gear IceBox 1.3
 
-> **Outcome (2026-10-20):** none of the 80/20 stock or the modification kits below were used. The matching box is built from the frame, corner cubes and panels of a **second IceBox 1.3 (25 in model)** cut down in height; the kits were returned. The design, cut list and printed parts are in [battery-box/README.md](battery-box/README.md). The notes below stay as the identification research (profile, cubes, T-nuts, panel material).
+> **Outcome (updated 2026-10-30):** The matching electronics box (**`v12s`**) is built from the frame, corner cubes, and panels of a **donor 25 in Goose Gear IceBox 1.3** cut down to `571.5 × 488.1 × 281.7 mm` (`22.5 × 19.2 × 11.1 in`), plus **one bar from a Goose Gear Extrusion Frame Modification Kit x.31** to supply the missing bottom-front width rail (`436.6 mm`). Caliper measurement of the donor frame confirmed the MaxLite™ profile is **metric 25-series (`25.0 × 25.0 mm`, `6.5 mm` slot opening)** with **`25.75 mm` corner cubes** and **`6.0 mm` phenolic-faced plywood panels** captured in the rail centre slots (`1/4-20` 10-series drop-in T-nuts `6000N501` fit the `6.5 mm` slot). See [`battery-box/README.md`](battery-box/README.md) and [`battery-box/MANUAL.md`](battery-box/MANUAL.md). The notes below remain as the initial identification research.
 
 **Vehicle:** Toyota 4Runner
 **Goal:** Build an additional storage box that attaches to the Goose Gear IceBox 1.3 and looks identical — same silver extrusion, black corner cubes, and black textured panels.

@@ -1,69 +1,78 @@
-# Component dimensions and mounting (research, 2026-10-04)
+# Component Dimensions, Mounting & 3D STEP Models
 
-**Status 2026-10-31.** The build is **v12s as built** (see the README and `manual/audit-2026-10-30.md`): the 25 in IceBox 1.3's metric 25-series frame cut to 571.5 × 488 × 281.7 (22.5 × 19.2 × 11.1 in), a MultiPlus 12/1200 on its long side, two SuperPack 60Ah in printed trays bolted to the rails, breaker drop shelves as hold-downs, the Garmin on a full-height hanger panel in the inboard lane, a GX Touch 50 in the back panel. Lid and floor: flat 571.5 × 488 panels to source.
+**Build Status:** Active build is **`v12s`** (see [`README.md`](README.md) and [`MANUAL.md`](MANUAL.md)):
+- **Frame & Panels:** Cut down from a donor **25 in Goose Gear IceBox 1.3** (`571.5 × 488.1 × 281.7 mm` as built; `25.0 mm` metric 25-series rails, `25.75 mm` corner cubes) plus one bar from a Goose Gear Extrusion Frame Modification Kit x.31 for the front-bottom width rail. *(The owner's main fridge IceBox in the truck is the **30 in deep** `762 mm` model.)*
+- **Inverter:** Owner's **MultiPlus 12/800/35-16 120V** (modelled in [`cad/cage.py`](cad/cage.py) to the larger **12/1200** housing envelope so either fits).
+- **Batteries:** Two **Victron SuperPack 12.8V/60Ah** inside `v12s`, plus four more in **`pack2`** on an Anderson SB175 umbilical (`360 Ah` / `180 A` continuous total).
 
-Axis convention: Victron states **h × w × d**. Mounting-hole figures are read from Victron dimension drawings. "Not found" means it is not published, not that it is zero.
+Axis convention: Victron states **h × w × d**. Mounting-hole figures come from manufacturer dimension drawings.
 
-## Victron
+---
 
-| Item | Model / PN | Overall (mm) | Weight | Mounting holes | Orientation | Source |
+## 1. Active `v12s` & `pack2` Components
+
+### Victron Energy
+
+| Item | Model / PN | Overall (mm) | Weight | Mounting Holes | Orientation & Clearance | Source |
 |---|---|---|---|---|---|---|
-| Cerbo GX | BPP900450110 (current "MK2"); MK3 also exists | h 78 × w 154 × d 48 (154 across the ears; body ~143) | ~0.5 kg | 4× Ø4 in corner ears; centres **143 × 58** | Any | [Drawing](https://www.victronenergy.com/upload/documents/Cerbo-GX.PDF) · [Specs](https://www.victronenergy.com/media/pg/Cerbo_GX/en/technical-specifications.html) |
-| GX Touch 50, flush mount | BPP900455150 | 136 × 94 × 12 (face); cable plug behind | ~0.2 kg | flush: opening per Victron's template (modelled 128 × 86), printed trim bezel over the perforations | in the back panel's inboard end, 30 mm to the MultiPlus behind it | [Datasheet](https://www.victronenergy.com/upload/documents/Datasheet-Cerbo-GX-GX-Touch-50-EN.pdf) · to buy |
-| Orion XS 12/12-50A | ORI121217040 | h 137.3 × w 123.1 × d 40 | 0.33 kg | 4× Ø4.3; centres **109.3 × 113.0** | **Vertical, power terminals down**, ≥10 cm clearance, heatsink to 90 °C, IP65 | [Drawing](https://www.victronenergy.com/upload/documents/DimensionDrawing-ORI121217040-Orion-XS-12-12-50A-DC-DC-battery-charger.pdf) · [Install](https://www.victronenergy.com/media/pg/Orion_XS_12-12-50A_DC-DC_battery_charger/en/installation.html) |
-| SmartSolar MPPT 100/30 | SCC110030210 | h 130 × w 186 × d 70 | 1.3 kg | 4 keyholes (Ø8 head / 5 mm slot); centres **176 × 71.5**; 4.8 mm in from sides, 25 mm below top | Vertical, terminals down | [Drawing](https://www.victronenergy.com/upload/documents/BS-SS-MPPT-100-30.pdf) |
-| SmartShunt 500A/50mV | SHU050150050 | 120 long × 52.5 wide base × 34 tall body (54 with studs) | ~0.32 kg | 2× Ø6 base holes at **101 mm** centres; M10 studs at 55 mm | Any; IP21, keep dry | [Drawing](https://www.victronenergy.com/upload/documents/DimensionDrawing-SmartShunt-500A50mV.pdf) |
-| **MultiPlus 12/800/35-16 120V** (owner-confirmed) | PMP121800100 | **360 × 240 × 100**; siblings 12/500 = 311 × 182 × 100 (4.4 kg), 12/1200 = 406 × 250 × 100 (8.2 kg) | 6.4 kg | 2 top + 2 bottom keyholes, centres **220.6 × 243.8**, upper pair 62.8 from top | Keyhole layout implies vertical, cables down; ≥10 cm clearance all round | [Manual](https://www.victronenergy.com/upload/documents/MultiPlus_12V_500-1200VA_120Vac/155314-MultiPlus_500-1200VA_120Vac-pdf-en.pdf) |
-| Lithium SuperPack 12.8V/60Ah | BAT512060705 | 229 × 138 × 213 (L × W × H) | 7.5 kg | Case only, strap down | Upright or on its long side; internal BMS; M6; **30 A cont. / 80 A 10 s discharge, 30 A charge, parallel unlimited** | [Datasheet](https://www.victronenergy.com/upload/documents/Datasheet-12,8V-&-25,6-Lithium-SuperPack-EN.pdf) |
-| Lynx Distributor (alternative bus) | LYN060102000 | 288 × 169 × 78 | 2.2 kg | rear slots 178 × 81 | Any | [Drawing](https://www.victronenergy.com/upload/documents/Lynx-Distributor.pdf) |
+| **MultiPlus 12/800/35-16 120V** *(owner-confirmed; CAD draws the 12/1200 envelope)* | `PMP121800100` | **360 × 240 × 100** *(12/500 = 311 × 182 × 100, 4.4 kg; **12/1200 = 406 × 250 × 100**, 8.2 kg; body 374.6 tall without top bracket)* | 6.4 kg | 2 top + 2 bottom keyholes, centres **220.6 × 243.8**, upper pair 62.8 below top of 374.6 body | Mounted on its long side along the inboard plate, cable end forward; ≥10 cm vent clearance | [Manual](https://www.victronenergy.com/upload/documents/MultiPlus_12V_500-1200VA_120Vac/155314-MultiPlus_500-1200VA_120Vac-pdf-en.pdf) |
+| **Lithium SuperPack 12.8V/60Ah** (×2 in `v12s`, ×4 in `pack2`) | `BAT512060705` | **229 × 138 × 213** (L × W × H; flat body top is **208**, M6 terminal posts add 5 mm) | 7.5 kg | Case only; held in `v12s` by tray walls + foam-padded breaker drop shelf | Upright or on long side; internal BMS; M6 terminals; **30 A cont. / 80 A 10 s discharge, 30 A charge, unlimited parallel** | [Datasheet](https://www.victronenergy.com/upload/documents/Datasheet-12,8V-&-25,6-Lithium-SuperPack-EN.pdf) |
+| **SmartSolar MPPT 100/30** | `SCC110030210` | **h 130 × w 186 × d 70** | 1.3 kg | 4 keyholes (Ø8 head / 5 mm slot); centres **176 × 71.5**; 4.8 mm in from sides, 25 mm below top | Vertical, terminals down (mounted rotated 90° upright on column face of plate) | [Drawing](https://www.victronenergy.com/upload/documents/BS-SS-MPPT-100-30.pdf) |
+| **Orion XS 12/12-50A** | `ORI121217040` | **h 137.3 × w 123.1 × d 40** | 0.33 kg | 4× Ø4.3; centres **109.3 × 113.0** | **Vertical, power terminals down**, ≥10 cm clearance, heatsink to 90 °C, IP65 | [Drawing](https://www.victronenergy.com/upload/documents/DimensionDrawing-ORI121217040-Orion-XS-12-12-50A-DC-DC-battery-charger.pdf) · [Install](https://www.victronenergy.com/media/pg/Orion_XS_12-12-50A_DC-DC_battery_charger/en/installation.html) |
+| **Cerbo GX** | `BPP900450110` (MK2) | **h 78 × w 154 × d 48** (154 across ears; body ~143) | ~0.5 kg | 4× Ø4 in corner ears; centres **143 × 58** | Any (column face of inverter plate) | [Drawing](https://www.victronenergy.com/upload/documents/Cerbo-GX.PDF) · [Specs](https://www.victronenergy.com/media/pg/Cerbo_GX/en/technical-specifications.html) |
+| **GX Touch 50** (flush mount) | `BPP900455150` | **136 × 94 × 12** (face); cable plug behind | ~0.2 kg | Flush cutout per Victron template (modelled **128 × 86**), framed by `print_touch_bezel.stl` (`150 × 108 × 3`) | Let into inboard end of perforated back panel (`30 mm` clearance to MultiPlus behind it) | [Datasheet](https://www.victronenergy.com/upload/documents/Datasheet-Cerbo-GX-GX-Touch-50-EN.pdf) |
+| **SmartShunt 500A/50mV** | `SHU050150050` | **120 long × 52.5 wide base × 34 tall body** (54 with studs) | ~0.32 kg | 2× Ø6 base holes at **101 mm** centres; M10 studs at 55 mm | Mounted on bus shelf floor (`2 × M5` inserts); IP21, keep dry | [Drawing](https://www.victronenergy.com/upload/documents/DimensionDrawing-SmartShunt-500A50mV.pdf) |
 
-**Inverter:** owner confirmed MultiPlus 12/800 (800 W). The photographed LED cluster "inverter / charger / alarm" is shared across the 12/500–12/1200 family; dims above are from the family manual, table on p.22.
+### Distribution, Switching & Protection (Non-Victron)
 
-**Why the batteries are SuperPacks:** Victron's current Lithium Battery Smart range has no 12.8V/60Ah (50, 100, 160, 180, 200, 330 only). The SuperPack line has a 12.8V/60Ah.
-
-## Non-Victron
-
-| Item | Model | Overall | Weight | Mounting | Notes | Source |
+| Item | Model / PN | Overall (mm) | Weight | Mounting Holes | Notes | Source |
 |---|---|---|---|---|---|---|
-| Garmin PowerSwitch | 010-02466-00 | 125 W × 75 D × 32 H mm | ~0.28 kg | supplied mount, 2 screws (spacing not published) | IPX7, ≤85 °C | [Garmin](https://www8.garmin.com/manuals/webhelp/GUID-B958A516-72E8-47CA-8793-6337D398EC08/EN-US/GUID-E9A53DAE-B84A-4E4F-9488-5536604B1779.html) |
-| Blue Sea 2300 Common 150A BusBar, 10-gang w/ cover | 2300 | 155 × 32 × 28 mm | 0.18 kg | not found | 2× 1/4"-20 studs + 10× #8-32 | [Blue Sea](https://www.bluesea.com/products/2300/Common_150A_BusBar_-_10_Gang_with_Cover) |
-| Blue Sea 2127 MaxiBus 250A | 2127 | 149 × 38 × 48.5 mm | 0.36 kg | 2× #10 screws | 4× 5/16" studs; cover 2719 | [Powerwerx](https://powerwerx.com/blue-sea-2127-maxibus-250a-busbar) |
-| **Eaton Bussmann 285150F-121-S** (owner's breakers, 2 off, one per SuperPack; the 60 A 285060F is the same body) | 285-series Hi-Amp surface mount, 150 A, 48 VDC, manual reset / push-to-trip, IP67 | 81.28 × 48.13 mm, 31.5 tall + 6.35 push-to-trip button | 2 × 6.60 mm holes on a 56.64 × 26.67 mm diagonal (1/4-20 or M6) | M6 studs, 5.6 N·m max; any orientation | [Waytek](https://www.waytekwire.com/product/eaton-s-bussmann-series-285060f-121-s-hi-amp) · [Prolec datasheet](https://www.swe-check.com.au/catalog/a64.pdf). STEP from Eaton's CB285F SKU page → save as `cad/step/Bussmann-285.step` (until then the script draws a dimensioned stand-in). Replaces the Blue Sea 7148 (87.4 × 59 × 45.6) chosen 2026-10-07. |
-| Blue Sea 285-series surface breaker | 7180–7189 | 81 × 48 × 31.5 mm | 0.23 kg | 2× 1/4" screws | IP67, 1/4"-28 studs | [ISC](https://inverterservicecenter.com/285-series-surface-mount-circuit-breaker-30-amp-blue-sea-7181) |
-| T-Tocas surface breaker 30–150 A | — | ~74 × 48 × 43 mm | — | 2× Ø6.6 | IP67, 1/4" studs | [Amazon](https://www.amazon.com/Tocas-150A-Circuit-Breaker-Battery/dp/B01F76VJ3I) |
+| **Eaton Bussmann 285-Series Breaker** (×2, one per SuperPack on drop shelf) | `285150F-121-S` (150 A in hand; `285060F` 60 A uses identical housing) | **81.28 × 48.13 × 31.5** (+ 6.35 push-to-trip button) | ~0.23 kg | 2 × Ø6.60 mm holes on a **56.64 × 26.67 mm** diagonal (`M5` inserts + washers in drop shelf) | 48 VDC, manual reset / push-to-trip, IP67, M6 studs (5.6 N·m max), any orientation | [Waytek](https://www.waytekwire.com/product/eaton-s-bussmann-series-285060f-121-s-hi-amp) · [Datasheet](https://www.swe-check.com.au/catalog/a64.pdf) |
+| **Garmin PowerSwitch** | `010-02466-00` | **125 W × 75 D × 32 H** | ~0.28 kg | Supplied bracket, 2 screws (`M4` short inserts in `print_garmin_hanger.stl`) | 6 channels (30 A per channel, 50 A total max), IPX7, ≤85 °C; hangs on inboard rail | [Garmin](https://www8.garmin.com/manuals/webhelp/GUID-B958A516-72E8-47CA-8793-6337D398EC08/EN-US/GUID-E9A53DAE-B84A-4E4F-9488-5536604B1779.html) |
+| **Covered 5-Stud Bus Bars** (×2, `+` and `−`) | Blue Sea `2300`-class | **155 × 32 × 28** (modelled `155 × 35 × 32`) | 0.18 kg | 2× base screws (`M5` inserts in bus shelf floor) | Mounted on bus shelf floor in row nearest inverter plate | [Blue Sea](https://www.bluesea.com/products/2300/Common_150A_BusBar_-_10_Gang_with_Cover) |
+| **Anderson SB175 & SB50 Panel Inlets** | `SB175` (×1 pack2 umbilical), `SB50` (×2 solar/alt) | SB175: **55.6 × 79.4 × 25.5** (mated 133.4)<br>SB50: **36.5 × 48 × 16** (mated 81.3) | — | Panel cutouts in solid front panel (`26 × 56` and `48 × 37`) | Official Anderson STEP models cached in `cad/step/` | Drawings `114131S1` & `111923s1` on `andersonpower.com` |
 
-## Goose Gear
+### Goose Gear Frame & Panels
 
-| Item | What the page says | Source |
+| Item | As-Built Measurements & Specs | Source |
 |---|---|---|
-| IceBox 1.3, 25" deep module: **the donor for the box's frame, cubes and panels** (the owner's main IceBox is the **30" deep** version: 762 mm) | "Fridge slide storage unit": enclosure with full-extension fridge tray (15" W × 20" H × 26" D) and gear storage on top. **External 19-3/16" W × 22" H × 25" D**, ~42 lb, $1,345, MaxLite 6063-T6 frame. Slotted back panel: no name, no slot pitch published. | [Page](https://www.goose-gear.com/products/icebox-1-3-25-deep-module) |
-| Extrusion Frame Modification Kit x.31 | PN 4918-GGR-SH, $139. "Includes both Extrusion Bars and hardware needed." Bar count, lengths and hardware **not stated**. Purpose: add a Seat Delete Module height; fits CampKitchen 2.3 and IceBox 1.3. 8-week build to order. | [Page](https://www.goose-gear.com/products/extrusion-frame-modification-kit-x-31-for-campkitchen-icebox) |
-| MaxLite extrusion | No published cross-section, slot width or 80/20 compatibility. 6063-T6, "26 % lighter". Goose Gear Anchors use roll-in T-nuts for 1/4-20 or M6, consistent with a 10-series-class slot (inference). **Measure a slot.** | [MaxLite](https://www.goose-gear.com/blogs/newsroom/goose-gear-introduces-revolutionary-maxlite-technology-in-explore-series) · [Anchors](https://www.goose-gear.com/products/goose-gear-anchor-kits) |
+| **IceBox 1.3, 25" Deep Module** (donor for `v12s` frame, cubes, and panels) | Original external: **635 × 488.1 × 558.8 mm** (`19-3/16" W × 22" H × 25" D`). Cut down to **`571.5 × 488.1 × 281.7 mm`** (`22.5 × 19.2 × 11.1 in`). Width rails: `436.6 mm` (uncut). Height rails: `508.0 → 230.2 mm`. Depth rails: `584.2 → 520.0 mm`. Panels: `6.0 mm` black phenolic-faced okoume marine plywood captured in rail centre slots (`3.75 mm` tongue depth). | [Goose Gear](https://www.goose-gear.com/products/icebox-1-3-25-deep-module) |
+| **Extrusion Frame Modification Kit x.31** | PN `4918-GGR-SH`, $139 (ordered 2026-10-30). Supplies the **missing bottom front width rail (`436.6 mm`)** in matching anodized MaxLite extrusion, factory end-tapped. | [Goose Gear](https://www.goose-gear.com/products/extrusion-frame-modification-kit-x-31-for-campkitchen-icebox) |
+| **MaxLite™ Extrusion & Corner Cubes** | Measured **metric 25-series (`25.0 × 25.0 mm`)** 6063-T6 extrusion with **`6.5 mm` slot opening** (accepts 10-series / 25-series `1/4-20` drop-in T-nuts `6000N501`). Corner cubes measure **`25.75 mm`** (standing `0.375–0.75 mm` proud of rail faces). | [Audit (`manual/audit-2026-10-30.md`)](manual/audit-2026-10-30.md) |
 
-## Larger inverters (reference only: the MultiPlus-II order was cancelled 2026-10-18; neither fits the 635 box)
+---
 
-| Item | Size (mm) | Weight |
-|---|---|---|
-| MultiPlus-II 12/3000/120-50 120V | 578 × 277 × 148 (h × w × d), 3000 VA / 2400 W, 5500 W peak, 120 A charger | 19 kg |
-| MultiPlus-II 12/4k/160-50 120V | 631 × 277 × 164, 160 A charger | 22 kg |
+## 2. 3D STEP Models (`cad/step/`)
 
-## Victron 3D files (used in the model, `cad/step/`)
+All Victron STEP files come from `https://www.victronenergy.com/upload/documents/`. [`cad/cage.py`](cad/cage.py) filters each STEP file down to its outer housing solids (e.g. stripping the Cerbo's 686 internal PCB parts) and caches fast-loading BREP files in `cad/step/cache/`. The raw STEP files (~147 MB) are gitignored and can be re-downloaded from the filenames below:
 
-All from `https://www.victronenergy.com/upload/documents/`. The model keeps only each file's housing-sized solids (the Cerbo file alone has 686 internal parts) and caches them as BREP in `cad/step/cache/`. The 147 MB of raw STEP is gitignored; re-download with the URLs below.
-
-| Product | File on victronenergy.com |
+| Component | STEP Filename in `cad/step/` |
 |---|---|
-| MultiPlus-II 12/3000/120-50 120V (UL) | `MultiPlus-II-12V-3000VA-120V-(UL).STEP` |
-| Lithium Smart 12.8V 160Ah / 200Ah (shared case) | `LiFePO4-battery-12,8V160Ah-a-&-12,8V200Ah-a-Smart-(stp).STEP` |
-| Lithium Smart 12.8V 100Ah | `LiFePO4_12.8V100Ah_Smart.STEP` |
+| MultiPlus 12/800 / 12/1200 (shared housing family) | `MultiPlus-12-24-48V-800VA-120V-230V-(step).STEP` |
+| Lithium SuperPack 12.8V/60Ah (M6) | `DimensionDrawing-BAT512060705-Lithium-SuperPack-12,8V60Ah-(M6)-3D.STEP` |
 | SmartSolar MPPT 100/30 | `BS-SS-MPPT-100-30-(stp).STEP` |
 | Orion XS 12/12-50A | `DimensionDrawing-ORI121217040-Orion-XS-12-12-50A-DC-DC-battery-charger-3D.STEP` |
 | Cerbo GX | `DimensionDrawing_CerboGX-3D.STEP` |
 | SmartShunt 500A/50mV | `DimensionDrawing-SmartShunt-500A50mV-3D.STEP` |
-| MultiPlus 12/800 (12/24/48V, 120/230V shared housing) | `MultiPlus-12-24-48V-800VA-120V-230V-(step).STEP` |
-| Lithium SuperPack 12.8V/60Ah (M6) | `DimensionDrawing-BAT512060705-Lithium-SuperPack-12,8V60Ah-(M6)-3D.STEP` |
-| VE.Bus BMS V2 (122 × 106 × 23 mm) | `DimensionDrawing-VE.bus-BMS-V2.STP` |
+| Eaton Bussmann 285 Breaker (optional; parametric stand-in built into `cage.py`) | `Bussmann-285.step` |
+| Anderson SB175 & SB50 housings | `ap-web_product-assets_default_step-files_SB-175-Std-02-08-STEP`, `ap-web_product-assets_default_step-files_SB-50-Std-02-08-STEP` |
+| *Legacy / Reference variants (`v6`, `v12`, `v13`):* | `MultiPlus-II-12V-3000VA-120V-(UL).STEP`, `LiFePO4-battery-12,8V160Ah-a-&-12,8V200Ah-a-Smart-(stp).STEP`, `LiFePO4_12.8V100Ah_Smart.STEP`, `DimensionDrawing-VE.bus-BMS-V2.STP` |
 
-## Anderson connector 3D files (used in v9, `cad/step/`)
+---
 
-Official Anderson STEP housings, pulled from the product pages' embedded CDN links (the "3D Models" buttons are login-gated): SB175 `ap-web_product-assets_default_step-files_SB-175-Std-02-08-STEP` (housing 55.6 × 79.4 × 25.5 mm, mated pair 133.4), SB50 `ap-web_product-assets_default_step-files_SB-50-Std-02-08-STEP` (housing 36.5 × 48 × 16 mm, mated pair 81.3). Drawings 114131S1 and 111923s1 on andersonpower.com.
+## 3. Evaluated Alternatives & Cancelled Parts (Reference Only)
+
+<details>
+<summary>Parts researched during earlier iterations but not used in v12s (click to expand)</summary>
+
+| Item | Model / PN | Dimensions (mm) | Weight | Notes |
+|---|---|---|---|---|
+| **MultiPlus-II 12/3000/120-50 120V** | Cancelled 2026-10-18 | 578 × 277 × 148 | 19 kg | Too long for the 571.5 mm (`22.5 in`) `v12s` box; explored in `v12` / `v13` (`762 mm` box) |
+| **MultiPlus-II 12/4k/160-50 120V** | Reference | 631 × 277 × 164 | 22 kg | Does not fit 635 mm or 571.5 mm box |
+| **Victron Lynx Distributor** | `LYN060102000` | 288 × 169 × 78 | 2.2 kg | Alternative M8 bus bar + mega-fuse holder |
+| **Blue Sea 2127 MaxiBus 250A** | `2127` | 149 × 38 × 48.5 | 0.36 kg | 4× 5/16" studs; cover `2719` |
+| **Blue Sea 187-Series Breaker** | `7148` (150 A) | 87.4 × 59 × 45.6 | 0.26 kg | Used in `v9`–`v13` and `pack2`; replaced in `v12s` by the lower-profile Eaton Bussmann 285 (`31.5 mm` body height) |
+| **Blue Sea 285-Series Breaker** | `7180–7189` | 81 × 48 × 31.5 | 0.23 kg | 1/4"-28 studs (Eaton Bussmann `285150F-121-S` is the M6-stud OEM version) |
+| **T-Tocas Surface Breaker** | 30–150 A | ~74 × 48 × 43 | — | 1/4" studs, 2× Ø6.6 mounting holes |
+
+</details>
