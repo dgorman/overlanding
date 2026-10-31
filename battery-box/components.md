@@ -1,6 +1,6 @@
 # Component dimensions and mounting (research, 2026-10-04)
 
-**Status 2026-10-20.** The build is **v12s** (see the README): the frame, cubes, panels and lid come from a second IceBox 1.3, the **25 in deep model** (635 × 487 × 559), not the 30 in one listed below; the inverter is the owner's MultiPlus 12/800 (drawn as the larger 12/1200 envelope); two SuperPack 60Ah in the box and four in pack2. The MultiPlus-II order was cancelled on 2026-10-18, so the "larger inverters" section is reference only.
+**Status 2026-10-31.** The build is **v12s as built** (see the README and `manual/audit-2026-10-30.md`): the 25 in IceBox 1.3's metric 25-series frame cut to 571.5 × 488 × 281.7 (22.5 × 19.2 × 11.1 in), a MultiPlus 12/1200 on its long side, two SuperPack 60Ah in printed trays bolted to the rails, breaker drop shelves as hold-downs, the Garmin on a full-height hanger panel in the inboard lane, a GX Touch 50 in the back panel. Lid and floor: flat 571.5 × 488 panels to source.
 
 Axis convention: Victron states **h × w × d**. Mounting-hole figures are read from Victron dimension drawings. "Not found" means it is not published, not that it is zero.
 

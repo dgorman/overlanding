@@ -20,13 +20,13 @@ Items marked **verify** are the right catalogue line but the exact length or typ
 | (ordered) | 93625A150 | https://www.mcmaster.com/93625A150/ | M4 locknuts: no longer used (the lap bolts were dropped), keep as spares |
 | 1 pack of 50 | 92095A210 | https://www.mcmaster.com/92095A210/ | M5 × 12 button head, 18-8. 18 needed: MPPT, bus bars, inverter keyholes, breakers, shunt |
 | 1 pack of 100 | 93475A240 | https://www.mcmaster.com/93475A240/ | M5 flat washer, 18-8, 5.3 ID × 10 OD: under the inverter keyhole, breaker and shunt screws. 10 needed |
-| 1 pack of 50 | 92210A540 | https://www.mcmaster.com/92210A540/ | 1/4"-20 × 3/4 in flat-head 82° hex-drive, 18-8. 20 needed (the trays' end walls and the shelf's back wall bolt to the rails since 2026-10-25). 92210A542 is the 1 in: too long |
+| 1 pack of 50 | 92210A540 | https://www.mcmaster.com/92210A540/ | 1/4"-20 × 3/4 in flat-head 82° hex-drive, 18-8. **Superseded by order 3**: too long for a countersunk head in a 6 mm wall (bottoms out in the rail). Spares. 92210A542 is the 1 in: too long |
 
 ## T-nuts
 
 | Qty | Part | Link | What it is |
 |---|---|---|---|
-| 5 packs of 4 | 6000N501 | https://www.mcmaster.com/6000N501/ | 1/4"-20 drop-in spring-loaded ball nut for 1 in (10-series) rail. 20 needed, 20 bought: none spare. End-feed nuts (47065T142) will not do: the rails are capped by cubes |
+| 5 packs of 4 | 6000N501 | https://www.mcmaster.com/6000N501/ | 1/4"-20 drop-in spring-loaded ball nut for 1 in (10-series) rail. 24 needed since the Garmin hanger plates (2026-10-31), 20 bought: order one more pack. End-feed nuts (47065T142) will not do: the rails are capped by cubes |
 
 ## Rail (not from McMaster: a Goose Gear Extrusion Frame Modification Kit x.31 was ordered 2026-10-30 for the bottom front width rail, same finish, pre-tapped)
 
