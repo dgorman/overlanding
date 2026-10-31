@@ -45,7 +45,8 @@ Every `print_*.stl` and `plate_*.stl` is exported **already lying in its print o
 | Inverter plate tile | 6 | [00](stl/v12s/print_plate_inverter_tile_00.stl), [01](stl/v12s/print_plate_inverter_tile_01.stl), [10](stl/v12s/print_plate_inverter_tile_10.stl), [11](stl/v12s/print_plate_inverter_tile_11.stl), [20](stl/v12s/print_plate_inverter_tile_20.stl), [21](stl/v12s/print_plate_inverter_tile_21.stl) | flat, as exported. Every tile has one untouched face and prints on it: the lower row carries its lap rabbet and spline pockets on the inverter face, the upper row on the column face. No bridges, no supports | 4 / 30 % | 179 × 140 × 6. First digit = column from the back, second = row from the bottom. Pilot holes for every unit are in them |
 | Plate spline | 8 | [plate_inverter_splines.stl](stl/v12s/plate_inverter_splines.stl), all eight on one bed (two per row at each of the two vertical joints) | flat, as exported | 4 / 100 % | 60 × 18 × 3; glued into their flush pockets, lower row's on the inverter face, upper row's on the column face |
 | Inverter post + clip | 2 + 2 | [plate_inverter_posts.stl](stl/v12s/plate_inverter_posts.stl): both posts and both clips on one bed | pre-laid: posts flat on their solid backs, slot up, at 45° across the bed; clips on their plain face, countersink up; no supports | 5 / 50 % | posts 254 × 24 × 18, clips 40 × 20 × 28. Mirror pairs: 0 at the back rail, 1 at the front; mark them as they come off the bed |
-| Garmin hanger plate | 1 | [hanger](stl/v12s/print_garmin_hanger.stl) | flat, as exported | 4 / 40 % | 130 × 149 × 6: hangs from the top inboard rail's inner slot on two countersunk 1/4-20, the Garmin's bracket on its face (2 short M4 inserts) |
+| Garmin hanger, upper plate | 1 | [hanger](stl/v12s/print_garmin_hanger.stl) | flat, as exported | 4 / 40 % | 130 × 149 × 6: hangs from the top inboard rail's inner slot on two countersunk 1/4-20, the Garmin's bracket on its face (2 short M4 inserts), cable-tie slots above and below the Garmin |
+| Garmin hanger, lower plate | 1 | [hanger lower](stl/v12s/print_garmin_hanger_lower.stl) | flat, as exported | 4 / 40 % | 130 × 127 × 6: stands on the bottom inboard rail's inner slot on two countersunk 1/4-20, 1 mm under the upper plate, three rows of cable-tie slots. The two make a full-height tie-down panel for the wiring in the inboard lane |
 | GX Touch 50 trim bezel | 1 | [bezel](stl/v12s/print_touch_bezel.stl) | flat, as exported | 4 / 100 % | 150 × 108 × 3 frame around the display opening in the back panel; four #6 × 1/2 in wood screws into the ply |
 | **Tool:** rail-end tap guide | 1 | [tap_guide](stl/v12s/print_tool_tap_guide.stl) | pocket up, as exported | 4 / 100 % | 46 × 46 × 32 cap with a 25.3 mm pocket that fits snugly over the 25 mm rail end, with a 6.5 mm bore in line with the rail's centre hole: starts the 1/4-20 tap square and centred. Print this first |
 
@@ -55,8 +56,8 @@ About 2.5 kg of filament, 35 hours. Pictures of each part are in [section 4](#4-
 
 | Item | Qty (buy) | Where it goes |
 |---|---|---|
-| Drop-in (roll-in) 1/4-20 T-nuts, 1 in / 10-series type | **22** (20 bought: order one more pack of 6000N501) | every tie into a rail's inner slot. The frame is metric 25-series; its slot is 6.5 mm like the 10-series, so these fit |
-| 1/4-20 flat-head (countersunk) screws, stainless: **1/2 in** (92210A537) | 18 (50) | trays' outer and end walls, bus shelf end walls, drop-shelf hangers, Garmin hanger: 6 mm walls |
+| Drop-in (roll-in) 1/4-20 T-nuts, 1 in / 10-series type | **24** (20 bought: order one more pack of 6000N501) | every tie into a rail's inner slot. The frame is metric 25-series; its slot is 6.5 mm like the 10-series, so these fit |
+| 1/4-20 flat-head (countersunk) screws, stainless: **1/2 in** (92210A537) | 20 (50) | trays' outer and end walls, bus shelf end walls, drop-shelf hangers, both Garmin hanger plates: 6 mm walls |
 | 1/4-20 × 7/8 in flat head (92210A541) | 2 (25) | post clips |
 | 1/4-20 × 7/8 in button head (92949A541) | 2 (25) | post sills (plain hole, head on the post face) |
 | M4 heat-set inserts, 7.9 mm (94180A353) | 12 (50) | the thick parts: tray inboard walls 6, tray wall tops 4, post tops 2 |
@@ -114,7 +115,7 @@ Everything in this section happens before the box is assembled, where nuts, clam
 
 ### 2.1 Cut and tap the height rails
 
-Follow the README's [cutting and tapping guide](README.md#rail-cutting). Four cuts, 508 → 231.2 mm, one end of each rail only. To tap: slide the printed tap guide cap over the squared rail end, oil the tap, start it through the cap's bore so it is square and centred on the rail's hole, and cut 30 mm deep, backing off every half turn to break the chip. The four 276.8 mm offcuts are your tapping practice; do all four before a real rail. Dry-fit the bare frame and check the diagonals.
+Follow the README's [cutting and tapping guide](README.md#rail-cutting). The four height rails are done (508 → 230.2). The four depth rails: 584.2 → 520.0 mm, one end of each, cut at 520.5 and face down; then tap. Check the donor's cube screws first: M6 means an M6 × 1 tap, 1/4-20 means the SAE tap. To tap: slide the printed tap guide cap over the squared rail end, oil the tap, start it through the cap's bore so it is square and centred on the rail's hole, and cut 30 mm deep, backing off every half turn to break the chip. The four 276.8 mm offcuts are your tapping practice; do all four before a real rail. Dry-fit the bare frame and check the diagonals.
 
 ### 2.2 Cut the panels
 
@@ -185,9 +186,10 @@ Every position below is measured from two reference faces inside the box: **dept
 | Bottom front width rail | 29, 140, 198, 238, 281 from the outboard side | tray 1's end wall (two), bus shelf front wall (two), post 1 sill |
 | Top back width rail | 291 from the outboard side | clip 0 |
 | Top front width rail | 291 from the outboard side | clip 1 |
-| Top inboard depth rail | 342 and 422 from the back | the Garmin hanger plate |
+| Top inboard depth rail | 342 and 422 from the back | the Garmin hanger, upper plate |
+| Bottom inboard depth rail | 342 and 422 from the back | the Garmin hanger, lower plate |
 
-Twenty-two nuts: the twenty you bought plus two for the Garmin hanger, so order one more pack. If you load them from the rail ends before the cubes go on instead of dropping them in, put them in these rails in these counts and slide them to the positions once the frame is up.
+Twenty-four nuts: the twenty you bought plus four for the two Garmin hanger plates, so order one more pack. If you load them from the rail ends before the cubes go on instead of dropping them in, put them in these rails in these counts and slide them to the positions once the frame is up.
 
 ### Step 1: the frame
 
@@ -244,7 +246,7 @@ Lower the sub-assembly into the column, lip against the trays' inboard walls. Th
 ![Step 8](manual/img/08-plate.png)
 ![Step 8 from above](manual/img/08-plate-top.png)
 
-Lower the plate with its units into the two post slots, column face toward the batteries. Its units clear everything on the shelf. The bottom band lands against the bus shelf's inboard wall: six M4 × 10 through that wall into the plate's inserts, from the column side, under the MPPT. Then the two clips: one M4 × 10 down into each post top, one countersunk 1/4-20 into the top width rail's T-nut; the clip's rail bolt sits 10 mm off the plate line so the key passes the plate's edge. Last in this step, the Garmin hanger: two countersunk 1/4-20 through its plate into T-nuts in the top inboard rail's inner slot (at 342 and 422 from the back), the plate's top 3 mm under the lid, in the lane between the MultiPlus and the inboard panel; the Garmin is already on it from the bench, bracket to the plate's face with two M4 × 10.
+Lower the plate with its units into the two post slots, column face toward the batteries. Its units clear everything on the shelf. The bottom band lands against the bus shelf's inboard wall: six M4 × 10 through that wall into the plate's inserts, from the column side, under the MPPT. Then the two clips: one M4 × 10 down into each post top, one countersunk 1/4-20 into the top width rail's T-nut; the clip's rail bolt sits 10 mm off the plate line so the key passes the plate's edge. Last in this step, the Garmin hanger: two countersunk 1/4-20 through its plate into T-nuts in the top inboard rail's inner slot (at 342 and 422 from the back), the plate's top 3 mm under the lid, in the lane between the MultiPlus and the inboard panel; the Garmin is already on it from the bench, bracket to the plate's face with two M4 × 10. Then the lower plate under it: two countersunk 1/4-20 into T-nuts in the bottom inboard rail's inner slot, same positions. The two plates are the tie-down panel for the AC cords and pigtails running along the lane.
 
 ### Step 9: the inverter and the DC leads
 

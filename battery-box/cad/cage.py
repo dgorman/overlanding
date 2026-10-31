@@ -2820,7 +2820,26 @@ def build_v13(a):
         gx, gz = gx0 + (gw - gc.w) / 2, 150.0
         for (u, v) in HOLES["garmin"]:                               # M4 inserts in the plate (short, 94180A351), through pilots
             hp_ = hp_.cut(cq.Workplane("XZ").center(gx + u, gz + v).circle(LAT["insert_hole"] / 2).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
+        # cable-tie slots (4 x 10, in pairs 16 apart) wherever the plate is bare: a row above the Garmin and one below it
+        def tie_slots(plate, zrow, xs_):
+            for sx in xs_:
+                for dx in (-8.0, 8.0):
+                    plate = plate.cut(box(4.0, gt + 2, 10.0, (sx + dx - 2.0, gy - 1, zrow - 5.0)))
+            return plate
+        hp_ = tie_slots(hp_, 243.0, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
+        hp_ = tie_slots(hp_, 138.0, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
         add(a, hp_, "print_garmin_hanger", ORANGE)
+        # the LOWER plate (2026-10-31, user: run it to the bottom rail so wires can be tied to it): the full drop is 277, over the
+        # bed, so a second plate stands on the bottom inboard rail's inner slot (free in the ledger) with its own two countersunk
+        # 1/4-20, a 1 mm gap under the upper plate, and cable-tie slots on a 40 mm grid
+        lz0, lz1 = 2.0, gz0 - 1.0
+        lp_ = box(gw, gt, lz1 - lz0, (gx0, gy, lz0))
+        for hx in (gx0 + 25.0, gx0 + gw - 25.0):
+            lp_ = lp_.cut(cq.Workplane("XZ").center(hx, B / 2).circle(3.4).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
+            lp_ = lp_.cut(countersink("print_garmin_hanger_lower", (hx, gy, B / 2), (0, 1, 0)))
+        for zrow in (40.0, 70.0, 100.0):
+            lp_ = tie_slots(lp_, zrow, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
+        add(a, lp_, "print_garmin_hanger_lower", ORANGE)
         at = (gx, gy - gc.d, gz)
         add(a, victron_shape("garmin", gc.w, gc.d, gc.h, at, unit_fallback("garmin", gc.w, gc.d, gc.h, at)), "garmin_powerswitch_hanger", BLACK)
         g["garmin_hanger_nuts"] = (gx0 + 25.0, gx0 + gw - 25.0)

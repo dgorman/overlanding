@@ -30,6 +30,7 @@ yt = cage.V13["plate_y"] + cage.P["card_t"] / 2 + cage.P["post_w"] / 2
 nuts["bottom back width rail (post 0 sill; tray 0 end wall; bus shelf back wall)"] = sorted([fy(yt - 12), fy(ty + 28), fy(ty + fw - 28), fy(ty + fw + 30), fy(cage.V13["plate_y"] - 40)])
 nuts["bottom front width rail (post 1 sill; tray 1 end wall; bus shelf front wall)"] = sorted([fy(yt - 12), fy(ty + 28), fy(ty + fw - 28), fy(ty + fw + 30), fy(cage.V13["plate_y"] - 40)])
 nuts["top inboard depth rail (Garmin hanger)"] = sorted([fx(cage.out_D - 25.0 - 55.0 - 20.0 - 130.0 + 25.0), fx(cage.out_D - 25.0 - 55.0 - 20.0 - 130.0 + 130.0 - 25.0)])
+nuts["bottom inboard depth rail (Garmin hanger, lower plate)"] = sorted([fx(cage.out_D - 25.0 - 55.0 - 20.0 - 130.0 + 25.0), fx(cage.out_D - 25.0 - 55.0 - 20.0 - 130.0 + 130.0 - 25.0)])
 nuts["top back width rail (clip 0)"] = [fy(yt - 2)]
 nuts["top front width rail (clip 1)"] = [fy(yt - 2)]
 
@@ -77,6 +78,8 @@ for lbl, ys, xs_, rail_y in (("bottom", None, nuts["bottom outboard depth rail (
 for x in nuts["top outboard depth rail (drop-shelf hangers)"]:
     ax.plot(X0 + x, B / 2 + 8, marker="^", color="#b31a1a", ms=6)
     ax.text(X0 + x, -26, f"{x:.0f}", ha="center", fontsize=7, color="#b31a1a")
+for x in nuts["bottom inboard depth rail (Garmin hanger, lower plate)"]:
+    ax.plot(X0 + x, W - B / 2 - 8, marker="v", color="#1a4fb3", ms=6)
 for x in nuts["top inboard depth rail (Garmin hanger)"]:
     ax.plot(X0 + x, W - B / 2 - 8, marker="v", color="#b31a1a", ms=6)
     ax.text(X0 + x, W + 2, f"{x:.0f}", ha="center", fontsize=7, color="#b31a1a")
