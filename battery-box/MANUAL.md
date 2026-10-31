@@ -1,5 +1,8 @@
 # 4Runner Electronics Box: Build Manual (`v12s`)
 
+> [!TIP]
+> **Want the picture-first IKEA version with almost zero reading?** Open **[`IKEA-MANUAL.md`](IKEA-MANUAL.md)** (13 visual step sheets with hardware codes `H1`–`H11` and part codes `P1`–`P10`).
+
 Step-by-step assembly of the **`v12s`** box: the frame of a 25 in Goose Gear IceBox 1.3 cut down to **281.7 mm** tall and **571.5 mm (22.5 in)** deep, holding a MultiPlus 12/800 (modelled to the 12/1200 envelope) and two Victron SuperPack 60Ah batteries, with the charge gear on a printed plate, a full-height Garmin PowerSwitch tie-down hanger in the inboard lane, and an Eaton Bussmann 285 breaker on a hold-down drop shelf over each battery.
 
 Every diagram is rendered directly from the CAD model ([`cad/cage.py`](cad/cage.py), variant `v12s`), so what you see matches the exported STLs. Parts placed in a step are shown in colour; parts already in place are grey. The front of the box (with the ports) is on the right in every isometric view.

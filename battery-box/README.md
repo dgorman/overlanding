@@ -6,7 +6,8 @@
 
 | Resource | Description |
 |---|---|
-| **[Build Manual (`MANUAL.md`)](MANUAL.md)** | **Canonical step-by-step assembly manual**: donor cut list, rail tapping, print list & settings, heat-set insert map, T-nut placement, port cutouts, and wiring |
+| **[IKEA Visual Guide (`IKEA-MANUAL.md`)](IKEA-MANUAL.md)** | **Picture-first IKEA assembly booklet** (`Steps 0–12` with `H1`–`H11` hardware badges, `P1`–`P10` part codes, and `OK / NO` visual checks) |
+| **[Build Manual (`MANUAL.md`)](MANUAL.md)** | **Full step-by-step assembly manual**: donor cut list, rail tapping, print list & settings, heat-set insert map, T-nut placement, port cutouts, and wiring |
 | **[Fastener BOM (`manual/mcmaster-order.md`)](manual/mcmaster-order.md)** | Complete McMaster-Carr fastener/insert BOM, direct product links, Order Pad block, and purchase log |
 | **[Component Specs (`components.md`)](components.md)** | Dimensions, weights, mounting patterns, and 3D STEP model sources for all Victron, Eaton, Garmin, and Goose Gear parts |
 | **[As-Built Audit (`manual/audit-2026-10-30.md`)](manual/audit-2026-10-30.md)** | Metric 25-series frame measurements, rail slot ledger, and pre-assembly verification checks |
