@@ -61,6 +61,22 @@ Items marked **verify** are the right catalogue line but the exact length or typ
 
 Ordered 2026-10-20 (order 1): 94180A353, 94180A361, 92095A190, 93625A150, 92095A210, 92095A226. The M6 screws and the M4 locknuts are spares now.
 
+## Order 3 (placed 2026-10-30): the screw lengths the joints actually need
+
+The 3/4 in flat heads bottom out in the rail: a countersunk head in a 6 mm wall leaves 13 mm sticking out and a drop-in nut has room for 7. Rule: screw length = plastic under the head + 6 to 7 mm.
+
+```
+92210A537,1    1/4"-20 x 1/2 flat head 82 deg, 18-8: trays, shelf end walls, drop-shelf hangers (16)
+92210A541,1    1/4"-20 x 7/8 flat head: post clips (2)
+92949A541,1    1/4"-20 x 7/8 button head: post sills (2)
+92095A189,1    M4 x 8 button head: shelf wall to plate band (6), Cerbo (4), Orion (4)
+92095A199,1    M4 x 35 button head: clip down into the post top (2)
+92095A208,1    M5 x 10 button head: MultiPlus keyholes (4), breakers (4)
+92095A207,1    M5 x 8 button head: MPPT keyholes (4)
+```
+
+The 3/4 in flat heads (92210A540) are spares. The M4 x 10s stay for the shelf lip (6), the drop-shelf foot (4) and the Garmin (2); the M5 x 12s for the bus bars (4) and shunt (2). The T-nuts: the frame is metric 25-series with a 6.5 mm slot, the same opening as the 10-series, so the 6000N501 drop-ins fit.
+
 ## Order 2 (placed 2026-10-20)
 
 ```

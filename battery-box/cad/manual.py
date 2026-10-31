@@ -22,9 +22,9 @@ STEPS = [  # (slug, title, new-part regex, context panels?)
     ("05-batteries", "Step 5: batteries into the trays (before the shelves)",             r"^battery_", False),
     ("06-shelves",   "Step 6: breaker drop shelves over the batteries, then the breakers", r"^(print_breaker_shelf_|power_breaker_shelf_)", False),
     ("07-bus",       "Step 7: the bus shelf with the bus bars and shunt, bolted to both width rails", r"^(print_bus_shelf_|power_busbar_|power_shunt_)", False),
-    ("08-plate",     "Step 8: the inverter plate with its units, then the post clips",    r"^(print_plate_inverter_|victron_mppt_|victron_cerbo_|victron_orion_|garmin_powerswitch_|print_post_clip_)", False),
+    ("08-plate",     "Step 8: the inverter plate with its units, the post clips, and the Garmin hanger on the inboard rail",    r"^(print_plate_inverter_|victron_mppt_|victron_cerbo_|victron_orion_|print_post_clip_|print_garmin_hanger|garmin_powerswitch_hanger)", False),
     ("09-inverter",  "Step 9: hang the MultiPlus on the plate",                           r"^victron_multiplus_", False),
-    ("10-ports-lid", "Step 10: port bodies, pigtails and the lid",                        r"^(socket_|lid_)", True),
+    ("10-ports-lid", "Step 10: port bodies, pigtails and the lid",                        r"^(socket_|lid_|gx_touch|print_touch_bezel)", True),
 ]
 HIDE_ALWAYS = re.compile(r"^icebox_")
 
@@ -103,7 +103,7 @@ if __name__ == "__main__":
             render_set(asm, os.path.join(OUT, f"{slug}-top.png"), title + " (from above)", new_re, placed, 90, -90, panels_ctx)
         placed.append(new_re)
     for name in ("print_tray_battery_0", "print_post_inverter_0", "print_post_clip_0",
-                 "print_breaker_shelf_0", "print_bus_shelf_0", "print_bus_shelf_2", "print_plate_inverter_tile_00", "print_plate_inverter_tile_21",
+                 "print_breaker_shelf_0", "print_bus_shelf_0", "print_bus_shelf_2", "print_garmin_hanger", "print_plate_inverter_tile_00", "print_plate_inverter_tile_21",
                  "print_plate_inverter_spline_"):          # a prefix: the first spline, whatever its z in the name
         name = next(c.name for c in asm.children if c.name.startswith(name))
         render_part(asm, name, os.path.join(OUT, f"part-{name}.png"))

@@ -58,13 +58,13 @@ VARIANTS = {
     # v12s: the 12/1200 and two SuperPack 60Ah in the same interior cut to 620 deep (24.4 in): the charge gear stacks on the plate.
     # No upgrade path (the MultiPlus-II and the 200Ah pair both need the full 762)
     # v12s: the build. The donor IceBox is the 25 in model (635 deep), so the depth rails go in UNCUT; only the height rails are cut
-    "v12s": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=635.0,
+    "v12s": dict(frame_source="icebox", frame_W=488.1, frame_H=281.7, frame_D=571.5, bar=25.0, cube=25.75, shelf_end_len=584.2 / 3, garmin_hanger=True, gx_touch=True,   # AS BUILT 2026-10-30: 25 mm metric rails,
                  batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                  card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
                  perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True, lap_bolts=False, tray_clr=0.5, strap=False, batt_body_h=208.0, shelf_pad=3.0, shelf_drop=2.0),   # front panel = a SOLID offcut of an IceBox side panel   # the IceBox's slot pattern on the back panel; trays without the unused
                                                                                # pads and floor holes; insert pilot holes in the plate under every unit
     # v12s_pack: v12s on the IceBox with pack2 standing on the floor in front of the box's port face, umbilical side toward it
-    "v12s_pack": dict(frame_source="icebox", frame_W=487.4, frame_H=282.0, frame_D=635.0,
+    "v12s_pack": dict(frame_source="icebox", frame_W=488.1, frame_H=281.7, frame_D=571.5, bar=25.0, cube=25.75, shelf_end_len=584.2 / 3, garmin_hanger=True, gx_touch=True,   # 25.75 cubes, height rails 230.2, depth rails 520.0 (22.5 in)
                       batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                       card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
                       perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True, lap_bolts=False, tray_clr=0.5, strap=False, batt_body_h=208.0, shelf_pad=3.0, shelf_drop=2.0, with_pack2=True),
@@ -277,6 +277,7 @@ COMPONENTS = {
     "busbar_px": Comp("power_busbar_pos", 35, 155, 32, "5-stud covered bus bar (+), along the depth"),
     "busbar_nx": Comp("power_busbar_neg", 35, 155, 32, "5-stud covered bus bar (-), along the depth"),
     "garmin_flat": Comp("garmin_powerswitch", 125, 75, 32, "Garmin PowerSwitch lying on the bus deck"),
+    "garmin_flat_x": Comp("garmin_powerswitch", 75, 125, 32, "Garmin PowerSwitch lying flat on the bus shelf, long axis along the depth"),
     "pp45_x":    Comp("socket_pp45", 32, 25, 16, "Anderson Powerpole PP45 block on the deck's front edge, mating +X; Garmin outputs to the socket harness"),
     "pp45_v":    Comp("socket_pp45", 32, 16, 25, "Anderson Powerpole PP45 block, 8 poles = 4 circuits, 10 AWG contacts; Garmin outputs to the front-panel sockets; mating face up"),
 }
@@ -2374,11 +2375,14 @@ def v12_panels(a):
     def slot_panel(along, thick_at, length, height_rails=True):
         # a panel between the bars with 3 mm tongues into the slots: the side tongues (into the corner bars) run the
         # bar height, the top/bottom tongues (into the rails) run between the corner cubes
+        # the corner cubes (C) can be bigger than the rails (B): every tongue runs between the CUBES, not the rails,
+        # so the panel's corners stop where the cube's inner faces are (25.75 cubes on 25 rails, 2026-10-30)
+        e = C - B                                                   # how far a cube stands past the rail faces
         if along == "x":
-            body = box(length, T, out_H - 2 * B, (B, thick_at, B)).union(box(length + 6, T, out_H - 2 * B, (B - 3, thick_at, B)))
-            return body.union(box(length, T, out_H - 2 * B + 6, (B, thick_at, B - 3)))
-        body = box(T, length, out_H - 2 * B, (thick_at, B, B)).union(box(T, length + 6, out_H - 2 * B, (thick_at, B - 3, B)))
-        return body.union(box(T, length, out_H - 2 * B + 6, (thick_at, B, B - 3)))
+            body = box(length, T, out_H - 2 * B, (B, thick_at, B)).union(box(length + 6, T, out_H - 2 * C, (B - 3, thick_at, C)))
+            return body.union(box(length - 2 * e, T, out_H - 2 * B + 6, (C, thick_at, B - 3)))
+        body = box(T, length, out_H - 2 * B, (thick_at, B, B)).union(box(T, length + 6, out_H - 2 * C, (thick_at, B - 3, C)))
+        return body.union(box(T, length - 2 * e, out_H - 2 * B + 6, (thick_at, C, B - 3)))
     back = slot_panel("y", pm, in_W)                                                          # the IceBox's perforated rear panel, cut to height
     slot_w, slot_h, pitch_y, pitch_z = 72.0, 22.0, 92.0, 46.0
     def icebox_slots(panel, x_face, first_row, n_rows, z_shift):
@@ -2395,6 +2399,23 @@ def v12_panels(a):
         return panel
     if P.get("perforated_back"):
         back = icebox_slots(back, pm, 0, 4, 0.0)
+    if P.get("gx_touch", False):
+        # Victron GX Touch 50 FLUSH (136 x 94 x 12, 800x480) let into the BACK panel at its inboard end (user, 2026-10-30): the
+        # panel's inner face is 30 mm from the MultiPlus's back end there, enough for the 12 mm body and a right-angle cable plug.
+        # Cut-out modelled as the body (128 x 86); VERIFY against the flush kit's template before cutting. A printed trim bezel
+        # (150 x 108 x 3, four M4 self-tappers into the ply) covers the slots the opening crosses.
+        tw, th, td = 136.0, 94.0, 12.0
+        cw_, ch_ = 128.0, 86.0
+        yc, zc = out_W - B - 80.0, 160.0                            # bezel edge 5 mm clear of the inboard corner rail
+        back = back.cut(box(T + 2, cw_, ch_, (pm - 1, yc - cw_ / 2, zc - ch_ / 2)))
+        bezel = box(3.0, 150.0, 108.0, (pm - 3.0, yc - 75.0, zc - 54.0)).cut(box(5.0, cw_, ch_, (pm - 4.0, yc - cw_ / 2, zc - ch_ / 2)))
+        for (by, bz) in ((yc - 70, zc - 49), (yc + 70, zc - 49), (yc - 70, zc + 49), (yc + 70, zc + 49)):
+            bezel = bezel.cut(cq.Workplane("YZ").center(by, bz).circle(1.8).extrude(5).translate((pm - 4.0, 0, 0)))
+        add(a, bezel, "print_touch_bezel", ORANGE)
+        body = box(td, cw_, ch_, (pm - 3.0 + 3.0 - 3.0, yc - cw_ / 2, zc - ch_ / 2))                 # 3 mm proud of the bezel face, 9 inside
+        face = box(3.0, tw, th, (pm - 6.0, yc - tw / 2, zc - th / 2))                                 # the glass and its flange, on the bezel
+        add(a, body.translate((-3.0 + 3.0, 0, 0)).union(face), "gx_touch_50", BLACK)
+        add(a, box(15.0, 40.0, 20.0, (pm - 3.0 + td, yc - 20.0, zc - 10.0)), "gx_touch_cable_plug", (0.3, 0.3, 0.3))   # right-angle plug room
     for nm, shp in (("panel_side_outboard_from_icebox", slot_panel("x", pm, in_D)),          # cut down from the IceBox's side panels
                     ("panel_side_inboard_from_icebox", slot_panel("x", out_W - pm - T, in_D)),
                     ("panel_back_perforated_from_icebox", back)):
@@ -2564,10 +2585,15 @@ V13_SHORT = dict(   # the 635 mm box (2026-10-24 layout): ONE ROW of charge gear
     # shunt; the Garmin turned 90 deg on the plate's INVERTER face above the cable window, 59 mm in front of the MultiPlus's cable end and
     # 18 mm behind the socket bodies, so only its feed passes through the window and its outputs run straight to the front-panel ports.
     # (comp, x, z, tag[, side]): side +1 = inverter face, default -1 = column face. Unit heights keep every insert out of the lap (z 137-161).
-    units=(("mppt_up", 50.0, 80.0, "mppt"), ("cerbo", 190.0, 188.0, "cerbo"), ("orion", 354.0, 118.0, "orion"), ("garmin_up", 480.0, 145.0, "garmin", +1),
-           ("breaker_face", 485.0, 110.0, "breaker1"), ("breaker_face", 485.0, 185.0, "breaker2")),   # (breakers: pre-drop-shelf, filtered out)
+    units=(("mppt_up", 50.0, 80.0, "mppt"), ("cerbo", 190.0, 188.0, "cerbo"), ("orion", 354.0, 118.0, "orion"),
+           ("breaker_face", out_D - 150.0, 110.0, "breaker1"), ("breaker_face", out_D - 150.0, 185.0, "breaker2")),   # (breakers: pre-drop-shelf, filtered out)
+    # The window is placed from the FRONT rail (out_D - ...) so it rides with the box depth. At 571.5 deep (2026-10-30) the 63.5 mm
+    # that used to separate the MultiPlus's cable end from the Garmin on the plate's inverter face is gone, so the Garmin LIES FLAT ON
+    # THE BUS SHELF's front plate instead (col below), beside the window, its outputs 60 mm from the front-panel sockets.
     col=[dict(comp="shunt_x", x=195, y=1), dict(comp="busbar_px", x=50, y=62), dict(comp="busbar_nx", x=205, y=62)],
-    window=(490.0, 560.0, 40.0, 110.0),
+    # (shelf units: no printed pilots; mark and drill the shelf floor from the real parts.  The Garmin hangs from the top
+    # inboard rail on its own printed plate, see garmin_hanger in build_v13, 2026-10-30)
+    window=(out_D - 145.0, out_D - 75.0, 40.0, 110.0),
     lip_holes=(((40, 100, 160), (40, 150, 260)), ((40, 100, 140), (40, 120, 200))))
 
 
@@ -2616,6 +2642,8 @@ def build_v13(a):
     for r in range(2):
         tx = txs[r]
         tray = box(fd, fw, lip + fl).cut(box(fd - 2 * wall, pw, lip + fl + 1, (wall, wall, fl)))
+        if P.get("cube", B) > B + 0.05:   # the corner cube stands proud of both rail faces: a 2 mm notch down the tray's outer-end corner clears it
+            tray = tray.cut(box(2.5, 2.5, lip + fl + 2, ((-1.0 if r == 0 else fd - 1.5), -1.0, -1.0)))
         if P.get("strap", True):   # v12s: no strap (the drop shelf is the hold-down), so no groove and no slots through the end walls
             tray = tray.cut(box(fd + 2, 28, 5, (-1, wall + pw / 2 - 14, fl - 2)))                  # lengthwise strap groove, 4 mm of floor under it
         pads = ((-6, 12), (-6, fw - 32), (fd, 12), (fd, fw - 32))
@@ -2724,8 +2752,11 @@ def build_v13(a):
     y0s, y1s = ty + fw, V13["plate_y"]                            # 190.4 .. 305: 114.6 wide
     xs0, xs1 = x_in0, out_D - B                                       # rail face to rail face (2026-10-25; was 46 .. out_D - 32, short of both)
     n_pl = 3; seg = (xs1 - xs0) / n_pl
+    E = P.get("shelf_end_len", seg)                                    # v12s: the two END plates stay 194.7 as already printed for the
+    bounds = [(xs0, xs0 + E), (xs0 + E, xs1 - E), (xs1 - E, xs1)]      # 635 box; the MIDDLE plate alone takes up the depth change
+    assert bounds[1][1] - bounds[1][0] >= 100, "middle bus shelf plate too short for its two sill holes"
     for i in range(n_pl):
-        xa, xb = xs0 + i * seg, xs0 + (i + 1) * seg
+        xa, xb = bounds[i]
         sh = box(xb - xa, y1s - y0s, 6, (xa, y0s, 0))
         sh = sh.union(box(xb - xa, 6, 34, (xa, y0s, 0)))                     # lip against the trays' inboard walls (M4 inserts)
         for r in range(2):
@@ -2760,7 +2791,7 @@ def build_v13(a):
                 sh = sh.cut(box(21, tw + 1.3, 36, (xa - 1, yt - (1.0 if out < 0 else 0.3), -1)))   # notch: wall half + 0.3, 1 mm past the face
             for sx in (([xb + 10] if i < n_pl - 1 else []) + ([xa + 10] if i > 0 else [])) if P.get("lap_bolts", True) else []:
                 sh = sh.cut(cq.Workplane("XZ").center(sx, 26).circle(2.3).extrude(-8).translate((0, yt - (1 if out < 0 else 7 - tw), 0)))   # (not v12s)
-        for xj in (xs0 + seg, xs0 + 2 * seg):   # the trays' lip bolts must stay clear of the laps (hole in only one of the two wall halves)
+        for xj in (bounds[1][0], bounds[2][0]):   # the trays' lip bolts must stay clear of the laps (hole in only one of the two wall halves)
             for r in range(2):
                 for hx in lip_holes[r]:
                     assert not (xj - 6 < g[f"tx{r}"] + hx < xj + 26), f"shelf lip hole at x {g[f'tx{r}'] + hx:.1f} lands in the lap at {xj:.1f}"
@@ -2770,6 +2801,29 @@ def build_v13(a):
         at = (pl["x"], y0s + 6 + pl["y"], 6)
         col = BLUE if c.name.startswith("victron") else GOLD
         add(a, victron_shape(pl["comp"], c.d, c.w, c.h, at, unit_fallback(pl["comp"], c.d, c.w, c.h, at)), c.name + f"_shelf_{int(pl['x'])}", col)
+    # --- Garmin PowerSwitch on a printed HANGER PLATE from the top inboard rail (2026-10-30, user's idea) ------------
+    # The lane between the MultiPlus (101 thick) and the inboard side panel is 76 mm wide, full depth and height, and the
+    # top inboard rail's inner slot is claimed by nothing else.  A 6 mm plate hangs from that slot on two countersunk
+    # 1/4-20 (drop-in nuts), its top 3 mm under the lid, and the Garmin's bracket screws to its face (M4 inserts): 6 + 32 mm
+    # into the lane, 38 left for the AC cords and SB50 pigtails.  Placed behind the front-panel port bodies (which reach
+    # 55 mm in from the panel), 130 mm from the sockets it feeds; its feed comes through the plate's cable window.
+    if P.get("garmin_hanger", False):
+        gw, gt, gz0 = 130.0, 6.0, 130.0                              # plate width (x), thickness, bottom edge
+        gx0 = out_D - 25.0 - 55.0 - 20.0 - gw                        # 20 mm behind the port bodies
+        gy = out_W - B - gt                                          # against the top inboard rail's inner face
+        hz = out_H - B / 2                                           # the rail's inner slot centreline
+        hp_ = box(gw, gt, out_H - 3.0 - gz0, (gx0, gy, gz0))
+        for hx in (gx0 + 25.0, gx0 + gw - 25.0):
+            hp_ = hp_.cut(cq.Workplane("XZ").center(hx, hz).circle(3.4).extrude(-(gt + 2)).translate((0, gy - 1, 0)))     # 1/4-20 into the slot
+            hp_ = hp_.cut(countersink("print_garmin_hanger", (hx, gy, hz), (0, 1, 0)))                                     # head on the inner face
+        gc = COMPONENTS["garmin"]                                    # 125 wide x 32 deep x 75 tall, bracket on the back
+        gx, gz = gx0 + (gw - gc.w) / 2, 150.0
+        for (u, v) in HOLES["garmin"]:                               # M4 inserts in the plate (short, 94180A351), through pilots
+            hp_ = hp_.cut(cq.Workplane("XZ").center(gx + u, gz + v).circle(LAT["insert_hole"] / 2).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
+        add(a, hp_, "print_garmin_hanger", ORANGE)
+        at = (gx, gy - gc.d, gz)
+        add(a, victron_shape("garmin", gc.w, gc.d, gc.h, at, unit_fallback("garmin", gc.w, gc.d, gc.h, at)), "garmin_powerswitch_hanger", BLACK)
+        g["garmin_hanger_nuts"] = (gx0 + 25.0, gx0 + gw - 25.0)
     # --- inverter plate along the depth, in posts against the two width rails ---------------------------------------
     ikey = P.get("inverter_long", "multiplus_ii_long"); inv = COMPONENTS[ikey]
     iz = 2.0 if ikey == "multiplus_ii_long" else 22.0            # the 12/1200's lower keyholes are 14 up, so it stands on 22 mm shims to reach the plate

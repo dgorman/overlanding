@@ -16,6 +16,7 @@ import cage
 COLORS = {  # name prefix -> rgba
     "icebox": (0.45, 0.45, 0.47, 0.55),
     "bar": (0.72, 0.74, 0.76, 1),
+    "gx_touch": (0.06, 0.06, 0.08, 1.0),   # the GX Touch 50 face and plug
     "panel": (0.2, 0.2, 0.2, 0.22),
     "lid": (0.2, 0.2, 0.2, 0.15),
 
@@ -51,7 +52,7 @@ def part_tris(shape, tol=1.5):
     return subdivide(v[np.array(tris)])
 
 
-def collect(asm, hide=(), lift=0.0):
+def collect(asm, hide=(), lift=0.0, opaque=()):
     polys, cols = [], []
     for child in asm.children:
         nm = child.name.replace("print_pack_panel", "panel_pack").replace("print_pack_lid", "lid_pack")   # the printed pack skin hides with the panels
@@ -65,13 +66,16 @@ def collect(asm, hide=(), lift=0.0):
         n /= np.linalg.norm(n, axis=1, keepdims=True) + 1e-9
         shade = 0.55 + 0.45 * np.clip(n @ LIGHT, 0, 1)
         base = np.array(COLORS[key])
+        if key in opaque:
+            base = np.array([base[0], base[1], base[2], 1.0])
         c = np.tile(base, (len(tri), 1)); c[:, :3] *= shade[:, None]
         polys.append(tri); cols.append(c)
     return np.concatenate(polys), np.concatenate(cols)
 
 
-def render(asm, path, elev=28, azim=-55, hide=("lid",), lift=0.0, title=""):
-    tri, col = collect(asm, hide, lift)
+def render(asm, path, elev=28, azim=-55, hide=("lid",), lift=0.0, title="", opaque=()):
+    """opaque: group keys drawn with full alpha in this view (e.g. the panels, to show what is let into them)."""
+    tri, col = collect(asm, hide, lift, opaque)
     fig = plt.figure(figsize=(14, 8), dpi=110)
     ax = fig.add_subplot(111, projection="3d")
     ax.add_collection3d(Poly3DCollection(tri, facecolors=col, edgecolors="none", linewidths=0))
@@ -93,6 +97,7 @@ if __name__ == "__main__":
     d = cage.RENDERS; os.makedirs(d, exist_ok=True)
     render(asm, os.path.join(d, "with-icebox.png"), 22, 35, hide=("lid",),
            title=("487 mm cube from 12 uncut kit bars" if cage.P["frame_source"] == "kit"
+                  else "v12s as built: the 25 in IceBox frame cut to 571.5 x 488 x 281.7 (22.5 in deep), MultiPlus 12/1200 on its long side, two SuperPack 60Ah outboard" if cage.VARIANT.startswith("v12s")
                   else "v13: IceBox footprint, 11.1 in tall: MultiPlus-II 3 kVA on its long side, two Smart 200Ah end to end, 762 x 487 x 282" if cage.P.get("box") == "v13"
                   else "v12: IceBox footprint, 10 in tall, not card based: 2 x 2 batteries, bus shelf, MultiPlus on its side, 762 x 487 x 254" if cage.P["card_plane"] == "v12"
                   else "v9: bus deck on the battery rack, two unpluggable cards, 539 x 345 x 559" if cage.P["card_plane"] == "v9"
@@ -102,7 +107,8 @@ if __name__ == "__main__":
                   else "A second IceBox 1.3 frame as the cage")
                  + ", standing against the IceBox 1.3 slotted back panel")
     render(asm, os.path.join(d, "iso-front.png"), 24, 35, hide=("lid", "panel", "icebox"),
-           title=("Front-inboard iso, panels hidden: MultiPlus-II on its long side along the inboard side, two Smart 200Ah outboard, bus column between" if cage.P.get("box") == "v13"
+           title=("Front-inboard iso, panels hidden: MultiPlus 12/1200 on its long side along the inboard side, two SuperPack 60Ah outboard under their drop shelves, bus shelf with the Garmin between" if cage.VARIANT.startswith("v12s")
+                  else "Front-inboard iso, panels hidden: MultiPlus-II on its long side along the inboard side, two Smart 200Ah outboard, bus column between" if cage.P.get("box") == "v13"
                   else "Front-inboard iso, panels hidden: MultiPlus on its side at the front, bus shelf with the Cerbo flat on its pedestal, batteries behind" if cage.P["card_plane"] == "v12"
                   else "Front-inboard iso, panels hidden: two cards (inverter, charge) and the bus deck on the battery rack" if cage.P["card_plane"] == "v9"
                   else "Front-inboard iso, panels hidden: three cards across (inverter, charge, distribution), battery stacks behind" if cage.P["card_plane"] == "v8"
@@ -111,6 +117,7 @@ if __name__ == "__main__":
                   else "Front-inboard iso, panels hidden: dist card in front, inverter/charger card behind it, batteries at the back"))
     render(asm, os.path.join(d, "iso-back.png"), 24, 215, hide=("lid", "panel", "icebox"),
            title="Back-outboard iso, panels hidden: " + ("three batteries upright, fourth on its long side on the shelf" if cage.P["batt_layout"] == "row3_top1"
+                  else "two SuperPack 60Ah in their trays, breaker drop shelves over them, the inverter plate with the charge gear on its column face" if cage.VARIANT.startswith("v12s")
                   else "two Smart 200Ah end to end outboard, the inverter plate with the charge gear on its column face" if cage.P.get("box") == "v13"
                   else "2 x 2 batteries in one layer, bus shelf beside them, MultiPlus plate in front" if cage.P["card_plane"] == "v12"
                   else "battery rack with the bus deck on top, two cards in front" if cage.P["card_plane"] == "v9"
@@ -120,6 +127,10 @@ if __name__ == "__main__":
     if cage.P["card_plane"] != "v12":   # nothing lifts out of v12
         render(asm, os.path.join(d, "cards-lifted.png"), 24, 35, hide=("lid", "panel", "icebox"), lift=cage.in_H * 0.8, title="All three cards lifted out the top")
     render(asm, os.path.join(d, "front.png"), 0, 0, hide=("lid", "panel", "icebox"), title="Front elevation, panels hidden")
-    render(asm, os.path.join(d, "top.png"), 90, -90, hide=("lid", "icebox"), title=("Top-down, lid off: batteries along the bottom edge, bus column, MultiPlus-II along the top edge, ports at the right" if cage.P.get("box") == "v13"
+    render(asm, os.path.join(d, "top.png"), 90, -90, hide=("lid", "icebox"), title=("Top-down, lid off: batteries and drop shelves along the bottom edge, bus shelf, MultiPlus 12/1200 along the top edge, ports at the right" if cage.VARIANT.startswith("v12s")
+           else "Top-down, lid off: batteries along the bottom edge, bus column, MultiPlus-II along the top edge, ports at the right" if cage.P.get("box") == "v13"
            else "Top-down, lid off: batteries and bus shelf (left), MultiPlus and front panel (right)" if cage.P["card_plane"] == "v12" else "Top-down, lid off: rear layer (left) and cards (right)"))
     render(asm, os.path.join(d, "with-icebox-top.png"), 90, -90, hide=("lid",), title="Top-down with the IceBox")
+    if cage.P.get("gx_touch"):
+        render(asm, os.path.join(d, "back-panel.png"), 12, 180, hide=("icebox",), opaque=("panel", "lid"),
+               title="The back panel from behind, as you see it from the tailgate: the GX Touch 50 flush display in its printed bezel at the inboard end (left), perforations elsewhere")
