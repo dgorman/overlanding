@@ -180,20 +180,20 @@ def bench_01_rails_panels():
     ax4 = fig.add_axes([0.59, 0.04, 0.38, 0.43])
     ax4.set_aspect("equal"); ax4.axis("off")
     ax4.add_patch(Rectangle((0, 0), pw, ph, fc="#495057", ec="#111", lw=2))
-    ax4.text(pw / 2, ph + 24, "④ BACK PANEL (444 × 237 mm) + 2 SIDE PANELS",
-             fontsize=10.5, weight="bold", ha="center", color=DARK)
+    ax4.text(pw / 2, ph + 24, "④ BACK PANEL (444 × 237 mm) + 2 SIDE PANELS + LID (22.5\" BOX)",
+             fontsize=10.2, weight="bold", ha="center", color=DARK)
     ax4.text(pw / 2, ph + 8, "Back panel uses donor perforated rear panel cut to 237 mm tall:",
              fontsize=8.8, ha="center", color="#444")
-    gx_x, gx_z, gx_w, gx_h = 72, 138, 128, 86
+    gx_x, gx_z, gx_w, gx_h = 83, 138, 128, 86
     ax4.add_patch(Rectangle((gx_x - gx_w / 2, gx_z - gx_h / 2), gx_w, gx_h, fc=ORANGE_LT, ec=ORANGE, lw=2))
-    ax4.text(gx_x, gx_z, "GX Touch 50 Cutout\n128 × 86 mm\n(80 mm from inboard rail,\n160 mm up from floor)\n+ print_touch_bezel.stl",
-             ha="center", va="center", fontsize=7.5, weight="bold", color=DARK)
+    ax4.text(gx_x, gx_z, "GX Touch 50 Cutout\n128 × 86 mm\n(83 mm from inboard edge,\n138 mm up from bottom)\n+ print_touch_bezel.stl",
+             ha="center", va="center", fontsize=7.4, weight="bold", color=DARK)
     for vx in range(175, 415, 38):
         for vz in (45, 115, 185):
             ax4.add_patch(Rectangle((vx, vz), 22, 8, fc="#ced4da", ec="none"))
     ax4.text(295, 22, "Factory Ventilation Slots", ha="center", fontsize=8.5, color="white", weight="bold")
-    ax4.text(pw / 2, -26, "Plus cut 2 × Solid Side Panels to 527.5 mm long × 237 mm tall",
-             ha="center", fontsize=9.2, weight="bold", color=BLUE,
+    ax4.text(pw / 2, -28, "2× Side Panels: 527.5 × 237 mm (−64.2 mm / −2.5\" off 591.7 mm)\n1× Lid: 571.5 × 488.1 mm (v12s) or 527.5 × 444.0 mm (v13)",
+             ha="center", fontsize=8.4, weight="bold", color=BLUE,
              bbox=dict(boxstyle="round,pad=0.3", fc=BLUE_LT, ec=BLUE))
     ax4.set_xlim(-25, pw + 25); ax4.set_ylim(-58, ph + 38)
 
@@ -274,14 +274,14 @@ def bench_02_inserts():
     ax3 = fig.add_axes([0.69, 0.05, 0.29, 0.80])
     ax3.set_xlim(0, 180); ax3.set_ylim(-75, 240); ax3.axis("off")
     ax3.text(90, 226, "③ Garmin Hanger & Inverter Posts", ha="center", fontsize=11.5, weight="bold", color=DARK)
-    ax3.text(90, 211, "Drill 4.6 mm printed pilots to 5.6 mm (7/32\") first!", ha="center", fontsize=8.8, weight="bold", color=BLUE)
+    ax3.text(90, 211, "NO DRILLING — Ø5.6 mm holes printed to size!", ha="center", fontsize=8.8, weight="bold", color=BLUE)
 
     ax3.add_patch(Rectangle((25, 78), 130, 115, fc=ORANGE_LT, ec=ORANGE, lw=1.8))
     ax3.text(90, 180, "print_garmin_hanger.stl", ha="center", fontsize=9.5, weight="bold", color=DARK)
     for gx_ in (47.5, 132.5):
         ax3.add_patch(Circle((gx_, 136), 5.2, fc=BLUE, ec="white", lw=1.5))
     callout(ax3, (47.5, 136), (90, 98),
-            "2 × M4 Short (4.7 mm, 94180A351)\n1. Drill pilots to Ø5.6 mm (7/32\")\n2. Press flush from Garmin side",
+            "2 × M4 Short (4.7 mm, 94180A351)\nPre-printed Ø5.6 mm bores\nPress flush from Garmin side",
             color=BLUE, bg=BLUE_LT, ec=BLUE, fs=8.2)
 
     for px, lbl in ((30, "Post 0 (Back)"), (120, "Post 1 (Front)")):
@@ -289,7 +289,7 @@ def bench_02_inserts():
         ax3.add_patch(Circle((px + 15, 51), 5.2, fc=GREEN, ec="white", lw=1.5))
         ax3.text(px + 15, -24, lbl, ha="center", va="center", rotation=90, fontsize=8.5, weight="bold", color=DARK)
     callout(ax3, (45, 51), (90, 24),
-            "1 × M4 Standard (7.9 mm)\ninto TOP END of each post\n(Drill to Ø5.6 mm; v12s only)",
+            "1 × M4 Standard (7.9 mm)\ninto TOP END of each post\n(Pre-printed Ø5.6 mm; v12s only)",
             color=GREEN, bg=GREEN_LT, ec=GREEN, fs=8.0)
 
     path = os.path.join(OUT, "bench-02-inserts-trays-shelves.png")
@@ -301,8 +301,8 @@ def bench_02_inserts():
 # =====================================================================================================================
 def bench_03_plate():
     fig = plt.figure(figsize=(15, 9.5), dpi=120)
-    banner(fig, "BENCH 3", "Inverter Plate Sub-Assembly — Glue 6 Tiles, Set 22 Inserts & Mount Units",
-           "Glue tiles 00..21 + 8 splines flat on the bench, drill the 22 printed Ø4.6 mm pilots, press inserts, and pre-mount units.",
+    banner(fig, "BENCH 3", "Inverter Plate — Glue 6 Tiles, Set 22 Inserts & Mount Units",
+           "Glue tiles 00..21 + 8 splines flat on the bench, press 22 inserts into pre-printed Ø5.6 / Ø6.4 mm bores (NO DRILLING), and mount units.",
            [("14 × M4 Short 4.7mm (Ø5.6mm)", BLUE_LT, BLUE),
             ("8 × M5 6.7mm (Ø6.4mm)", RED_LT, RED),
             ("8 × Splines + CA Glue", ORANGE_LT, DARK)])
@@ -316,7 +316,7 @@ def bench_03_plate():
     ax1.set_aspect("equal"); ax1.axis("off")
     ax1.text(W_pl / 2, H_pl + 44, "① COLUMN FACE (Facing Batteries) — Set 18 Inserts & Mount 3 Units",
              ha="center", fontsize=11.0, weight="bold", color=DARK)
-    ax1.text(W_pl / 2, H_pl + 20, "Drill 14 BLUE holes to Ø5.6 mm (7/32\") → Press M4 Short (4.7 mm)\nDrill 4 RED holes to Ø6.4 mm (1/4\") → Press M5 (6.7 mm)",
+    ax1.text(W_pl / 2, H_pl + 20, "14 BLUE bores pre-printed Ø5.6 mm → Press M4 Short (4.7 mm)\n4 RED bores pre-printed Ø6.4 mm → Press M5 (6.7 mm) — NO DRILLING",
              ha="center", fontsize=8.5, weight="bold", color=BLUE)
 
     ax1.add_patch(Rectangle((0, 0), W_pl, H_pl, fc=ORANGE_LT, ec=ORANGE, lw=2))
@@ -332,8 +332,8 @@ def bench_03_plate():
     ax1.text(W_pl / 2, 128, "24 mm Horizontal Half-Lap Joint (CA Glue)", ha="center", va="center", fontsize=7.8, color="#7a2d08", weight="bold")
 
     # Cable window in tile 20 (front-bottom)
-    wx = (D - B - 18.0 - 4.0 - 70.0) - px0
-    wz = 42.0 - zp
+    wx = (D - 145.0) - px0
+    wz = 40.0 - zp
     ax1.add_patch(FancyBboxPatch((wx, wz), 70, 70, boxstyle="round,pad=0,rounding_size=10", fc="white", ec="#7a2d08", lw=1.5))
     ax1.text(wx + 35, wz + 35, "70×70 Cable\nWindow\n(Front End)", ha="center", va="center", fontsize=7.8, weight="bold", color="#555")
 
@@ -347,9 +347,9 @@ def bench_03_plate():
 
     # Units on column face using exact c.w x c.h envelope on the plate
     units_info = [
-        ("mppt", 50.0, 80.0, "MPPT 100/30\n4 × M5 (6.7 mm)\nDrive 4× M5×8\n(3 mm proud) & hang", RED, RED_LT),
-        ("cerbo", 205.0, 188.0, "Cerbo GX\n4 × M4 Short (4.7 mm)\nMount with 4× M4×8", BLUE, BLUE_LT),
-        ("orion", 390.0, 118.0, "Orion XS 50A\n4 × M4 Short (4.7 mm)\nMount with 4× M4×8", BLUE, BLUE_LT),
+        ("mppt_up", 50.0, 80.0, "MPPT 100/30\n(130 × 186 mm)\n4 × M5 (6.7 mm)\nDrive 4× M5×8\n(3 mm proud) & hang", RED, RED_LT),
+        ("cerbo", 190.0, 188.0, "Cerbo GX\n4 × M4 Short (4.7 mm)\nMount with 4× M4×8", BLUE, BLUE_LT),
+        ("orion", 354.0, 118.0, "Orion XS 50A\n4 × M4 Short (4.7 mm)\nMount with 4× M4×8", BLUE, BLUE_LT),
     ]
     for ukey, x0_box, z0_box, lbl, col, bg in units_info:
         c = cage.COMPONENTS[ukey]
@@ -369,7 +369,7 @@ def bench_03_plate():
     ax2.set_aspect("equal"); ax2.axis("off")
     ax2.text(W_pl / 2, H_pl + 44, "② INVERTER FACE (Facing MultiPlus) — Set 4 × M5 Inserts & Leave Screws Proud",
              ha="center", fontsize=11.0, weight="bold", color=DARK)
-    ax2.text(W_pl / 2, H_pl + 20, "Drill 4 RED keyhole pilots to Ø6.4 mm (1/4\") → Press 4 × M5 (6.7 mm, 94180A361)",
+    ax2.text(W_pl / 2, H_pl + 20, "4 RED keyhole bores pre-printed Ø6.4 mm → Press 4 × M5 (6.7 mm, 94180A361)",
              ha="center", fontsize=8.5, weight="bold", color=RED)
 
     ax2.add_patch(Rectangle((0, 0), W_pl, H_pl, fc=ORANGE_LT, ec=ORANGE, lw=2))
@@ -438,19 +438,19 @@ def bench_04_bus_garmin():
         ax1.add_patch(Rectangle((lx, 102), 20, 8, fc=ORANGE, ec="black", lw=1))
         ax1.text(lx + 10, -14, "20 mm Wall Half-Lap\n(Drop of CA Glue)", ha="center", va="top", fontsize=8, weight="bold", color=ORANGE)
 
-    ax1.add_patch(Rectangle((205, 16), 120, 44, fc=BLUE_LT, ec=BLUE, lw=1.6))
-    ax1.text(265, 38, "SmartShunt 500A\n2 × M5 Inserts + M5×12", ha="center", va="center", fontsize=7.8, weight="bold", color=BLUE)
-    for sx in (217, 313):
+    ax1.add_patch(Rectangle((201, 16), 120, 44, fc=BLUE_LT, ec=BLUE, lw=1.6))
+    ax1.text(261, 38, "SmartShunt 500A\n2 × M5 Inserts + M5×12", ha="center", va="center", fontsize=7.8, weight="bold", color=BLUE)
+    for sx in (213, 309):
         ax1.add_patch(Circle((sx, 38), 5.0, fc=RED, ec="white", lw=1.2))
 
-    for bx, lbl in ((35, "Positive (+) Bus Bar\n2 × M5 Inserts + M5×12"), (345, "Negative (−) Bus Bar\n2 × M5 Inserts + M5×12")):
+    for bx, lbl in ((20, "Positive (+) Bus Bar\n2 × M5 Inserts + M5×12"), (341, "Negative (−) Bus Bar\n2 × M5 Inserts + M5×12")):
         ax1.add_patch(Rectangle((bx, 62), 145, 32, fc=GOLD_LT, ec=GOLD, lw=1.6))
         ax1.text(bx + 72.5, 78, lbl, ha="center", va="center", fontsize=7.8, weight="bold", color=DARK)
         for hx in (bx + 18, bx + 127):
             ax1.add_patch(Circle((hx, 78), 5.0, fc=RED, ec="white", lw=1.2))
 
-    callout(ax1, (217, 38), (260, -52),
-            "Mark the 6 mounting holes using your real SmartShunt & Bus Bars → Drill Ø6.4 mm (1/4\")\n→ Press 6 × M5 (6.7 mm) Inserts → Bolt units down on the bench before Step 7!",
+    callout(ax1, (213, 38), (261, -52),
+            "NO DRILLING — 6 × Ø6.4 mm holes are pre-printed in Plates 0, 1 & 2!\nPress 6 × M5 (6.7 mm) Inserts flush → Bolt SmartShunt & Bus Bars down on the bench!",
             color=RED, bg=RED_LT, ec=RED, fs=8.5)
 
     ax1.set_xlim(-30, 555); ax1.set_ylim(-80, 215)

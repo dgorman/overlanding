@@ -61,7 +61,7 @@ All printable files are in [`stl/v12s/`](stl/v12s/). Every `print_*.stl` and `pl
 | **Battery tray** | 2 | [`print_tray_battery_0.stl`](stl/v12s/print_tray_battery_0.stl), [`print_tray_battery_1.stl`](stl/v12s/print_tray_battery_1.stl) | Flat, floor down (loads wall bolts along layers) | 5 / 40% (100% floor recommended) | `242 × 167 × 36`. Pocket is `0.5 mm` clear per side (snug, no strap groove), outer corner notched `2 mm` for the `25.75 mm` cube. Tray 0 bolts through its back wall; Tray 1 through its front wall |
 | **Breaker drop shelf** | 2 | [`plate_breaker_shelf.stl`](stl/v12s/plate_breaker_shelf.stl) (**print twice**; two do not fit one bed) | Pre-laid on its `130 mm` vertical edge, no supports (full-length ribs keep cross-section uniform) | 4 / 40% gyroid | `130 × 168 × 243` (~400 g, ~9 h each). **Never print flat on the plate** (the leg would be 189 mm of overhang and foot bolts would pull across layers) |
 | **Bus shelf plate** | 3 | [`0`](stl/v12s/print_bus_shelf_0.stl), [`1`](stl/v12s/print_bus_shelf_1.stl), [`2`](stl/v12s/print_bus_shelf_2.stl) | Flat, floor down, no supports (20 mm half-laps are in the vertical walls; floors butt) | 4 / 30% | `215 × 110 × 34` (plate 0), `152 × 110 × 34` (plate 1, middle), `195 × 110 × 34` (plate 2). Plates 0 and 2 carry the end walls that bolt to the width rails |
-| **Inverter plate tile** | 6 | [`00`](stl/v12s/print_plate_inverter_tile_00.stl), [`01`](stl/v12s/print_plate_inverter_tile_01.stl), [`10`](stl/v12s/print_plate_inverter_tile_10.stl), [`11`](stl/v12s/print_plate_inverter_tile_11.stl), [`20`](stl/v12s/print_plate_inverter_tile_20.stl), [`21`](stl/v12s/print_plate_inverter_tile_21.stl) | Flat on each tile's untouched face (lower row has rabbets/pockets on inverter face; upper row on column face). Zero bridges, no supports | 4 / 30% | `168.5 × 140 × 6`. First digit = column from back (`0..2`), second = row from bottom (`0..1`). `4.6 mm` through-pilots for every unit are printed in place |
+| **Inverter plate tile** | 6 | [`00`](stl/v12s/print_plate_inverter_tile_00.stl), [`01`](stl/v12s/print_plate_inverter_tile_01.stl), [`10`](stl/v12s/print_plate_inverter_tile_10.stl), [`11`](stl/v12s/print_plate_inverter_tile_11.stl), [`20`](stl/v12s/print_plate_inverter_tile_20.stl), [`21`](stl/v12s/print_plate_inverter_tile_21.stl) | Flat on each tile's untouched face (lower row has rabbets/pockets on inverter face; upper row on column face). Zero bridges, no supports | 4 / 30% | `168.5 × 140 × 6`. First digit = column from back (`0..2`), second = row from bottom (`0..1`). Exact `Ø 5.6 mm` (M4) and `Ø 6.4 mm` (M5) insert holes are pre-printed in place (no drilling) |
 | **Plate spline** | 8 | [`plate_inverter_splines.stl`](stl/v12s/plate_inverter_splines.stl) (all 8 on one bed) | Flat, as exported | 4 / 100% | `60 × 18 × 3`. Glued with CA into flush pockets across the two vertical column joints (2 per row per joint) |
 | **Inverter post + clip** | 2 + 2 | [`plate_inverter_posts.stl`](stl/v12s/plate_inverter_posts.stl) (both posts + both clips on one bed) | Pre-laid: posts flat on solid backs, slot up, at 45° across bed; clips on plain outer face, countersink up | 5 / 50% | Posts `254 × 24 × 18`, clips `40 × 20 × 27.7`. Mirror pairs (`0` = back rail, `1` = front rail)—mark them as they come off the bed |
 | **Garmin hanger, upper** | 1 | [`print_garmin_hanger.stl`](stl/v12s/print_garmin_hanger.stl) | Flat on plain back, insert pilots up | 4 / 40% | `130 × 149 × 6`. Hangs from top inboard rail's inner slot (`2 × 1/4-20` countersunk); carries Garmin bracket (`2 × M4` short inserts) and two rows of cable-tie slots |
@@ -115,9 +115,9 @@ The MultiPlus covers the inverter side of the `6 mm` plate from `x = 21` to `396
 ### 1.4 Tools
 
 - **Drivers & wrenches:** Hex keys (`2.5`, `3`, `4`, `5 mm`, plus `5/32 in` for the `1/4-20` flat-head screws)
-- **Heat-set inserts:** Soldering iron with M4/M5 insert tips; `5.6 mm` (or `7/32 in`) and `6.4 mm` (or `1/4 in`) drill bits to open the `4.6 mm` printed pilots on the inverter plate tiles
+- **Heat-set inserts (no drilling needed):** Temperature-controlled soldering iron (`220–240 °C` for PETG, `250–260 °C` for ASA) with M4/M5 heat-set tips (or standard conical tip) and a flat metal ruler/steel blade to press inserts dead flush (`0 mm`) while warm. All 46 heat-set insert holes across every printed part are pre-printed to exact size (`Ø 5.6 mm` for `M4`, `Ø 6.4 mm` for `M5`).
 - **Rail cutting & tapping:** Mitre saw with an 80–100T non-ferrous carbide blade (Diablo `D1084L`) or bandsaw; disc sander or mill file; machinist's square and caliper; `1/4-20` HSS spiral-point (gun) tap or the plug tap from a Milwaukee SAE tap set; T-handle tap wrench; tapping fluid (Tap Magic Aluminum or WD-40 Specialist cutting oil); **printed rail-end tap guide** (`print_tool_tap_guide.stl`)
-- **Panel cutting & ports:** Table saw with the same Diablo `D1084L` 80-tooth blade; `22 mm`, `29 mm`, and `60 mm` hole saws (or step drill) for round sockets/inlets; drill + fine jigsaw blade for the rectangular `SB50`, `SB175`, and `GX Touch 50` cutouts
+- **Panel cutting & ports:** Table saw with the same Diablo `D1084L` 80-tooth blade; `22 mm`, `29 mm`, and `60 mm` hole saws for round sockets/inlets; fine jigsaw blade for the rectangular `SB50`, `SB175`, and `GX Touch 50` cutouts
 - **Electrical:** Cable lug crimper, wire strippers, heat gun
 
 ---
@@ -154,74 +154,81 @@ Complete these four visual bench stages (**Bench 1 → Bench 4**) before bolting
 | **Col 3 (`X = 124 mm`)** | **12 V accessory socket (upper)** | `(124, 175)` | `Ø 29 mm` hole saw |
 | **Col 4 (`X = 247 mm`)** | **SB175 umbilical inlet (`pack2`)** | `(247, 88)` | `26 × 56 mm` rectangle |
 
-* **④ Cut the Back Panel (`444 × 237 mm`) & 2 Side Panels (`527.5 × 237 mm`):**
-  * Cut the donor perforated rear panel to `237 mm` tall and jigsaw the **`128 × 86 mm` GX Touch 50 opening** at its inboard end (centre `80 mm` from inboard rail, `160 mm` up).
+* **④ Cut the Back Panel (`444 × 237 mm`), 2 Side Panels (`527.5 × 237 mm`, shortened `2.5 in` / `64.2 mm` from `591.7 mm` for the `22.5 in` box) & Lid (`571.5 × 488.1 mm`):**
+  * Cut the donor perforated rear panel to `237 mm` tall and jigsaw the **`128 × 86 mm` GX Touch 50 opening** at its inboard end (centre `80 mm` from inboard rail / `83 mm` from inboard panel edge, `160 mm` up from box bottom / `138 mm` from bottom panel edge).
+  * Cut the `2 ×` donor solid side panels down `64.2 mm` (`2.5 in`) in length from `591.7 mm` to **`527.5 × 237.0 mm`** (`20.77 × 9.33 in`).
 
 ---
 
-### Bench 2: Set Heat-Set Inserts — Trays, Drop Shelves, Posts & Garmin Hanger
+### Bench 2: Set Heat-Set Inserts — Trays, Drop Shelves, Posts & Garmin Hanger (No Drilling)
 
-> **🔧 Soldering Iron (`220–240 °C` PETG / `250–260 °C` ASA)  |  🔩 `12 × M4 Std 7.9 mm` (`94180A353`)  •  `2 × M4 Short 4.7 mm` (`94180A351`)  •  `4 × M5 6.7 mm` (`94180A361`)**
+> **🔧 Soldering Iron (`220–240 °C` PETG / `250–260 °C` ASA) + Flat Metal Ruler  |  🔩 `12 × M4 Std 7.9 mm` (`94180A353`)  •  `2 × M4 Short 4.7 mm` (`94180A351`)  •  `4 × M5 6.7 mm` (`94180A361`)**
 
 ![Bench 2: Set Heat-Set Inserts — Trays, Drop Shelves, Posts & Garmin Hanger](manual/img/bench-02-inserts-trays-shelves.png)
 
-* **① Battery Trays × 2 (`print_tray_battery_0` & `_1` — identical in `v12s` & `v13`, NO drilling needed):**
+> [!TIP]
+> **How to Install Brass Heat-Set Inserts ("Heat-Serts") with a Soldering Iron (Zero Drilling):**
+> 1. **Set Temperature:** Set your iron to **`220–240 °C`** for **PETG** (or **`250–260 °C`** for **ASA/ABS**).
+> 2. **Tapered End Down (`90°`):** Place the narrow tapered pilot collar of the brass insert into the pre-printed bore (`Ø 5.6 mm` for `M4`, `Ø 6.4 mm` for `M5`). Press straight down (`90°`) with light, steady pressure for `2–3 seconds` until the insert is `~0.5 mm` shy of flush.
+> 3. **Flatten Dead Flush (`0 mm`):** Pull the iron straight out and immediately press a flat metal ruler or steel putty knife against the insert face for `3 seconds` so it cools dead flush (`0 mm`) with the plastic surface.
+
+* **① Battery Trays × 2 (`print_tray_battery_0` & `_1` — identical in `v12s` & `v13`, pre-printed `Ø 5.6 mm` bores):**
   * **Press `2 × M4 Standard (7.9 mm)` straight DOWN** into the top of the `21 mm` inboard wall (`x = 81` & `161 mm`).
   * **Press `3 × M4 Standard (7.9 mm)` HORIZONTALLY** into the outer column face of the `21 mm` wall (`z = 17 mm` up; **Tray 0:** `x = 40, 100, 140 mm`; **Tray 1:** `x = 40, 120, 200 mm`).
   * *Leave the 4 countersunk holes inside the battery pocket empty (those take `1/4"-20` rail screws in Step 4).*
-* **② Breaker Drop Shelves × 2 (`print_breaker_shelf_0` & `_1` — NO drilling needed):**
+* **② Breaker Drop Shelves × 2 (`print_breaker_shelf_0` & `_1` — pre-printed `Ø 6.4 mm` bores):**
   * **Press `2 × M5 (6.7 mm)` straight DOWN** into the two diagonal breaker holes on top of each shelf plate.
   * **Peel and stick the `130 × 140 mm` EPDM foam pad** onto the flat underside of each shelf plate now.
-* **③ Garmin Hanger (`print_garmin_hanger`) & Inverter Posts (`print_post_inverter_0..1`):**
-  * **Garmin Hanger:** Drill the 2 printed `Ø 4.6 mm` pilots to **`Ø 5.6 mm` (`7/32 in`)** and press **`2 × M4 Short (4.7 mm)`** flush from the Garmin side.
-  * **Inverter Posts (`v12s` only):** Drill the top hole in each post to **`Ø 5.6 mm` (`7/32 in`)** and press **`1 × M4 Standard (7.9 mm)`** into the top end.
+* **③ Garmin Hanger (`print_garmin_hanger`) & Inverter Posts (`print_post_inverter_0..1` — pre-printed `Ø 5.6 mm` bores):**
+  * **Garmin Hanger:** Press **`2 × M4 Short (4.7 mm)`** flush into the pre-printed `Ø 5.6 mm` bores from the Garmin side.
+  * **Inverter Posts (`v12s` only):** Press **`1 × M4 Standard (7.9 mm)`** flush into the pre-printed `Ø 5.6 mm` top hole of each post.
 
 ---
 
-### Bench 3: Inverter Plate Sub-Assembly (Glue 6 Tiles, Set 22 Inserts & Mount Units)
+### Bench 3: Inverter Plate Sub-Assembly (Glue 6 Tiles, Set 22 Inserts & Mount Units — No Drilling)
 
-> **🔧 `7/32 in` (`5.6 mm`) & `1/4 in` (`6.4 mm`) Drill Bits + Soldering Iron  |  🔩 `14 × M4 Short 4.7 mm` (`94180A351`)  •  `8 × M5 6.7 mm` (`94180A361`)  •  `8 × Splines` + CA Glue**
+> **🔧 Soldering Iron (`220–240 °C`) + `2.5 mm` & `3 mm` Hex Keys  |  🔩 `14 × M4 Short 4.7 mm` (`94180A351`)  •  `8 × M5 6.7 mm` (`94180A361`)  •  `8 × Splines` + CA Glue**
 
 ![Bench 3: Inverter Plate Sub-Assembly](manual/img/bench-03-subassembly-plate.png)
 
 * **① Join the 6 Tiles (`00..21`) + 8 Splines (`plate_inverter_splines.stl`):**
   * Glue the horizontal half-laps with CA glue, and glue **4 splines** into the flush pockets on the **Column Face** (top row) and **4 splines** on the **Inverter Face** (bottom row).
-* **② Drill Pilots & Press the 22 Brass Inserts:**
+* **② Press the 22 Brass Inserts into Pre-Printed Bores (No Drilling):**
   * **Column Face (`-Y`, facing batteries — 18 inserts):**
-    * Drill **14 BLUE pilots to `Ø 5.6 mm` (`7/32 in`)** → Press **`14 × M4 Short (4.7 mm)`** (`6` along the bottom band, `4` for Cerbo GX, `4` for Orion XS).
-    * Drill **4 RED pilots to `Ø 6.4 mm` (`1/4 in`)** → Press **`4 × M5 (6.7 mm)`** (for MPPT 100/30).
+    * Press **`14 × M4 Short (4.7 mm)`** into the **14 pre-printed `Ø 5.6 mm` BLUE bores** (`6` along the bottom band, `4` for Cerbo GX, `4` for Orion XS).
+    * Press **`4 × M5 (6.7 mm)`** into the **4 pre-printed `Ø 6.4 mm` RED bores** (for MPPT 100/30).
   * **Inverter Face (`+Y`, facing MultiPlus — 4 inserts):**
-    * Flip the plate over, drill the **4 RED keyhole pilots to `Ø 6.4 mm` (`1/4 in`)** → Press **`4 × M5 (6.7 mm)`**.
+    * Flip the plate over and press **`4 × M5 (6.7 mm)`** into the **4 pre-printed `Ø 6.4 mm` RED keyhole bores**.
 * **③ Pre-Mount Units & Keyhole Screws on the Bench:**
   * **On the Inverter Face:** Drive **`4 × M5 × 10` button heads + `10 mm` washers** into the 4 MultiPlus inserts and **leave the heads `3 mm` proud** (the MultiPlus hooks over these in Step 9).
-  * **On the Column Face:** Drive **`4 × M5 × 8` button heads** (`3 mm` proud), hang the **MPPT 100/30** and snug them; bolt down the **Cerbo GX** (`4 × M4 × 8`) and **Orion XS** (`4 × M4 × 8`). *(Leave the 6 bottom-band `M4` inserts empty for Step 8.)*
+  * **On the Column Face:** Drive **`4 × M5 × 8` button heads** (`3 mm` proud), hang the **MPPT 100/30** upright (`130 × 186 mm` at `x = 50 mm`) and snug them; bolt down the **Cerbo GX** (`x = 190 mm`, `4 × M4 × 8`) and **Orion XS** (`x = 354 mm`, `4 × M4 × 8`). *(Leave the 6 bottom-band `M4` inserts empty for Step 8.)*
 
 ---
 
-### Bench 4: Bus Shelf (`Plates 0 + 1 + 2`) & Garmin Hanger Sub-Assemblies
+### Bench 4: Bus Shelf (`Plates 0 + 1 + 2`) & Garmin Hanger Sub-Assemblies (No Drilling)
 
-> **🔧 `1/4 in` (`6.4 mm`) Drill Bit + `2.5 mm` & `3 mm` Hex Keys  |  🔩 `6 × M5 6.7 mm` Inserts (`94180A361`)  •  `6 × M5 × 12` Screws + `2` Washers  •  `2 × M4 × 10` Screws**
+> **🔧 Soldering Iron (`220–240 °C`) + `2.5 mm` & `3 mm` Hex Keys  |  🔩 `6 × M5 6.7 mm` Inserts (`94180A361`)  •  `6 × M5 × 12` Screws + `2` Washers  •  `2 × M4 × 10` Screws**
 
 ![Bench 4: Bus Shelf & Garmin Hanger Sub-Assemblies](manual/img/bench-04-subassembly-bus.png)
 
 * **① Bus Shelf Sub-Assembly (`521.5 × 110 mm` total):**
   * Fit **`print_bus_shelf_0` (`214.7 mm`, back)** + **`print_bus_shelf_1` (`152.0 mm`, shortened middle plate for the `22.5 in` box)** + **`print_bus_shelf_2` (`194.7 mm`, front)** together on the bench and tack the two `20 mm` vertical-wall half-laps with a drop of CA glue.
-  * Place your real **SmartShunt 500A** (outboard row) and **two 5-stud bus bars** (inboard row) on the floor, mark their 6 holes, drill **`Ø 6.4 mm` (`1/4 in`)**, press **`6 × M5 (6.7 mm)` inserts**, and bolt all three units down with **`6 × M5 × 12` button heads** (use `M5` washers on the SmartShunt).
+  * Press **`6 × M5 (6.7 mm)` inserts** flush into the 6 pre-printed `Ø 6.4 mm` floor bores (`2` on Plate 0 for `+` Bus Bar, `2` on Plate 1 for SmartShunt, `2` on Plate 2 for `−` Bus Bar), and bolt the **SmartShunt 500A** and **two 5-stud bus bars** down with **`6 × M5 × 12` button heads** (use `M5` washers on the SmartShunt).
 * **② Garmin Hanger Sub-Assembly (`print_garmin_hanger.stl`):**
   * Bolt the **Garmin PowerSwitch** bracket to the hanger plate with **`2 × M4 × 10` button heads** into the `2 × M4 Short` inserts, then snap the Garmin unit into its bracket.
 
 <details>
-<summary><strong>📋 Click to Expand: Complete Master Heat-Set Insert Reference Table (All 46 Inserts)</strong></summary>
+<summary><strong>📋 Click to Expand: Complete Master Heat-Set Insert Reference Table (All 46 Inserts — Zero Drilling)</strong></summary>
 
-| Printed Part (STL) | Inserts per Part | Insert Type & McMaster P/N | Hole Prep Before Pressing | Press Direction & Exact Hole Locations |
+| Printed Part (STL) | Inserts per Part | Insert Type & McMaster P/N | Pre-Printed Bore | Press Direction & Exact Hole Locations |
 | :--- | :--- | :--- | :--- | :--- |
-| **Battery Tray 0 (back)** (`print_tray_battery_0.stl`) | **5** (`3` side + `2` top) | **`M4` Standard (`7.9 mm`)** `94180A353` | **None** (`Ø 5.6 mm` printed) | **• 3 × Column face (`z = 17 mm`):** `x = 40, 100, 140 mm`.<br>**• 2 × Top of `21 mm` wall (`z = 36 mm`):** `x = 81, 161 mm`. |
-| **Battery Tray 1 (front)** (`print_tray_battery_1.stl`) | **5** (`3` side + `2` top) | **`M4` Standard (`7.9 mm`)** `94180A353` | **None** (`Ø 5.6 mm` printed) | **• 3 × Column face (`z = 17 mm`):** `x = 40, 120, 200 mm`.<br>**• 2 × Top of `21 mm` wall (`z = 36 mm`):** `x = 81, 161 mm`. |
-| **Breaker Drop Shelves (`×2`)** (`print_breaker_shelf_0..1.stl`) | **2 each** (`4` total) | **`M5` (`6.7 mm`)** `94180A361` | **None** (`Ø 6.4 mm` printed) | **• 2 × Top face of shelf plate:** Diagonal holes for Bussmann 285 breaker. |
-| **Inverter Posts (`×2`)** (`print_post_inverter_0..1.stl`) | **`1` each** (`v12s`) | **`M4` Standard (`7.9 mm`)** `94180A353` | **Drill `Ø 4.6 → 5.6 mm`** (`7/32 in`) | **• 1 × Top end face (`z = 254 mm`):** For top post clip (`v12s` only; `0` in `v13`). |
-| **Garmin Hanger Plate** (`print_garmin_hanger.stl`) | **2** | **`M4` Short (`4.7 mm`)** `94180A351` | **Drill `Ø 4.6 → 5.6 mm`** (`7/32 in`) | **• 2 × Garmin face (`-Y`):** `85 mm` apart horizontally. |
-| **Inverter Plate Tiles (`00..21`)** (`print_plate_inverter_tile_*.stl`) | **22 total** (`14 × M4` Short + `8 × M5`) | **`14 × M4` Short** `94180A351`<br>+ **`8 × M5`** `94180A361` | **Drill 14 `M4` to `Ø 5.6 mm`**<br>**Drill 8 `M5` to `Ø 6.4 mm`** | **• Column Face (`18`):** `6 × M4 Short` bottom sill (`z = 28`), `4 × M5` MPPT, `4 × M4 Short` Cerbo, `4 × M4 Short` Orion.<br>**• Inverter Face (`4`):** `4 × M5` MultiPlus keyholes. |
-| **Bus Shelf Plates (`0..2`)** (`print_bus_shelf_0..2.stl`) | **6 total** | **`M5` (`6.7 mm`)** `94180A361` | **Mark & drill `Ø 6.4 mm`** (`1/4 in`) | **• 6 × Floor top (`z = 6 mm`):** `2` for SmartShunt + `4` for the two bus bars. |
+| **Battery Tray 0 (back)** (`print_tray_battery_0.stl`) | **5** (`3` side + `2` top) | **`M4` Standard (`7.9 mm`)** `94180A353` | **`Ø 5.6 mm`** (No drilling) | **• 3 × Column face (`z = 17 mm`):** `x = 40, 100, 140 mm`.<br>**• 2 × Top of `21 mm` wall (`z = 36 mm`):** `x = 81, 161 mm`. |
+| **Battery Tray 1 (front)** (`print_tray_battery_1.stl`) | **5** (`3` side + `2` top) | **`M4` Standard (`7.9 mm`)** `94180A353` | **`Ø 5.6 mm`** (No drilling) | **• 3 × Column face (`z = 17 mm`):** `x = 40, 120, 200 mm`.<br>**• 2 × Top of `21 mm` wall (`z = 36 mm`):** `x = 81, 161 mm`. |
+| **Breaker Drop Shelves (`×2`)** (`print_breaker_shelf_0..1.stl`) | **2 each** (`4` total) | **`M5` (`6.7 mm`)** `94180A361` | **`Ø 6.4 mm`** (No drilling) | **• 2 × Top face of shelf plate:** Diagonal holes for Bussmann 285 breaker. |
+| **Inverter Posts (`×2`)** (`print_post_inverter_0..1.stl`) | **`1` each** (`v12s`) | **`M4` Standard (`7.9 mm`)** `94180A353` | **`Ø 5.6 mm`** (No drilling) | **• 1 × Top end face (`z = 254 mm`):** For top post clip (`v12s` only; `0` in `v13`). |
+| **Garmin Hanger Plate** (`print_garmin_hanger.stl`) | **2** | **`M4` Short (`4.7 mm`)** `94180A351` | **`Ø 5.6 mm`** (No drilling) | **• 2 × Garmin face (`-Y`):** `85 mm` apart horizontally. |
+| **Inverter Plate Tiles (`00..21`)** (`print_plate_inverter_tile_*.stl`) | **22 total** (`14 × M4` Short + `8 × M5`) | **`14 × M4` Short** `94180A351`<br>+ **`8 × M5`** `94180A361` | **`14 × Ø 5.6 mm`**<br>**`8 × Ø 6.4 mm`** (No drilling) | **• Column Face (`18`):** `6 × M4 Short` bottom sill (`z = 28`), `4 × M5` MPPT, `4 × M4 Short` Cerbo, `4 × M4 Short` Orion.<br>**• Inverter Face (`4`):** `4 × M5` MultiPlus keyholes. |
+| **Bus Shelf Plates (`0..2`)** (`print_bus_shelf_0..2.stl`) | **6 total** | **`M5` (`6.7 mm`)** `94180A361` | **`Ø 6.4 mm`** (No drilling) | **• 6 × Floor top (`z = 6 mm`):** `2` on Plate 0 (`+` Bus Bar), `2` on Plate 1 (SmartShunt), `2` on Plate 2 (`−` Bus Bar). |
 
 </details>
 
