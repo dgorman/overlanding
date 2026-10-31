@@ -1419,11 +1419,13 @@ def lattice_card_tiles(L, H, x0, y_plate, z0, prefix, patches=(), solids=()):
                 if u0 < tw and v0 < th and u0 + sw > 0 and v0 + sh > 0:
                     tile = tile.union(box(sw, t, sh, (u0, 0, v0)).intersect(box(tw, t, th)))
             # solid bosses with insert pilot holes where a unit's mounting holes land on this tile
-            for (pu, pv) in patches:
+            for patch in patches:
+                pu, pv = patch[0], patch[1]
+                r_hole = patch[2] if len(patch) > 2 else LAT["insert_hole"] / 2
                 u, v = pu - i * tw, pv - j * th
                 if -LAT["boss_r"] < u < tw + LAT["boss_r"] and -LAT["boss_r"] < v < th + LAT["boss_r"]:
                     boss = cq.Workplane("XZ").center(u, v).circle(LAT["boss_r"]).extrude(-t).intersect(box(tw, t, th))
-                    tile = tile.union(boss).cut(cq.Workplane("XZ").center(u, v).circle(LAT["insert_hole"] / 2).extrude(-t - 2).translate((0, -1, 0)))   # -1..t+1: THROUGH (2026-10-24: +1 left a 1 mm skin on the column face)
+                    tile = tile.union(boss).cut(cq.Workplane("XZ").center(u, v).circle(r_hole).extrude(-t - 2).translate((0, -1, 0)))   # -1..t+1: THROUGH (2026-10-24: +1 left a 1 mm skin on the column face)
             if j < nz - 1:   # a boss near a joint must not refill the half-lap
                 tile = tile.cut(box(tw + 2, cd, lap + 1, (-1, cy, th - lap / 2)))
             if j > 0:
@@ -2338,7 +2340,7 @@ def v12_post(h, mirror=False, buttress=False):
         g = g.union(gus)
         g = g.cut(cq.Workplane("XZ").center(-16.0, B / 2).circle(3.4).extrude(-(P["post_d"] + 2)).translate((0, -1, 0)))         # 2nd sill bolt in gusset
     else:
-        g = g.cut(cq.Workplane("XY").center(P["post_w"] / 2, P["post_d"] / 2).circle(2.3).extrude(12).translate((0, 0, h - 11)))   # clip insert
+        g = g.cut(cq.Workplane("XY").center(P["post_w"] / 2, P["post_d"] / 2).circle(2.8).extrude(12).translate((0, 0, h - 11)))   # clip M4 insert (Ø5.6 mm)
     if mirror:
         g = g.mirror("XZ").translate((0, P["post_d"], 0))
     return g
@@ -2613,8 +2615,8 @@ V13_SHORT = dict(   # the 635 mm box (2026-10-24 layout): ONE ROW of charge gear
     # The window is placed from the FRONT rail (out_D - ...) so it rides with the box depth. At 571.5 deep (2026-10-30) the 63.5 mm
     # that used to separate the MultiPlus's cable end from the Garmin on the plate's inverter face is gone, so the Garmin LIES FLAT ON
     # THE BUS SHELF's front plate instead (col below), beside the window, its outputs 60 mm from the front-panel sockets.
-    col=[dict(comp="shunt_x", x=195, y=1), dict(comp="busbar_px", x=50, y=62), dict(comp="busbar_nx", x=205, y=62)],
-    # (shelf units: no printed pilots; mark and drill the shelf floor from the real parts.  The Garmin hangs from the top
+    col=[dict(comp="shunt_x", x=226, y=1), dict(comp="busbar_px", x=45, y=62), dict(comp="busbar_nx", x=366, y=62)],
+    # (shelf units: Ø6.4 mm M5 heat-set insert bores pre-printed in plates 0, 1, 2.  The Garmin hangs from the top
     # inboard rail on its own printed plate, see garmin_hanger in build_v13, 2026-10-30)
     window=(out_D - 145.0, out_D - 75.0, 40.0, 110.0),
     lip_holes=(((40, 100, 160), (40, 150, 260)), ((40, 100, 140), (40, 120, 200))))
@@ -2826,6 +2828,12 @@ def build_v13(a):
             for r in range(2):
                 for hx in lip_holes[r]:
                     assert not (xj - 6 < g[f"tx{r}"] + hx < xj + 26), f"shelf lip hole at x {g[f'tx{r}'] + hx:.1f} lands in the lap at {xj:.1f}"
+        for pl in (V13_SHORT["col"] if short else V13_COL):   # pre-printed Ø6.4 mm M5 heat-set insert holes in the 6 mm shelf floor
+            hkey = {"shunt_x": "shunt", "busbar_px": "busbar_p", "busbar_nx": "busbar_n"}.get(pl["comp"], pl["comp"])
+            for (hu, hv) in HOLES.get(hkey, ()):
+                hx_s, hy_s = pl["x"] + hu, y0s + 6 + pl["y"] + hv
+                if xa + 6 < hx_s < xb - 6:
+                    sh = sh.cut(cq.Workplane("XY").center(hx_s, hy_s).circle(3.2).extrude(8).translate((0, 0, -1)))
         add(a, sh, f"print_bus_shelf_{i}", ORANGE)
     for pl in (V13_SHORT["col"] if short else V13_COL):
         c = COMPONENTS[pl["comp"]]
@@ -2862,7 +2870,7 @@ def build_v13(a):
                 hp_ = hp_.cut(countersink("print_garmin_hanger", (hx, gy, B / 2), (0, 1, 0)))
             gx, gz = gx0 + (gw - gc.w) / 2, 142.0
             for (u, v) in HOLES["garmin"]:
-                hp_ = hp_.cut(cq.Workplane("XZ").center(gx + u, gz + v).circle(LAT["insert_hole"] / 2).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
+                hp_ = hp_.cut(cq.Workplane("XZ").center(gx + u, gz + v).circle(2.8).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
             for zrow in (40.0, 72.0, 104.0, 130.0, 236.0):
                 hp_ = tie_slots(hp_, zrow, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
             add(a, hp_, "print_garmin_hanger", ORANGE)
@@ -2872,8 +2880,8 @@ def build_v13(a):
                 hp_ = hp_.cut(cq.Workplane("XZ").center(hx, hz).circle(3.4).extrude(-(gt + 2)).translate((0, gy - 1, 0)))     # 1/4-20 into the slot
                 hp_ = hp_.cut(countersink("print_garmin_hanger", (hx, gy, hz), (0, 1, 0)))                                     # head on the inner face
             gx, gz = gx0 + (gw - gc.w) / 2, 150.0
-            for (u, v) in HOLES["garmin"]:                           # M4 inserts in the plate (short, 94180A351), through pilots
-                hp_ = hp_.cut(cq.Workplane("XZ").center(gx + u, gz + v).circle(LAT["insert_hole"] / 2).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
+            for (u, v) in HOLES["garmin"]:                           # M4 inserts in the plate (short, 94180A351), Ø5.6 mm pre-printed bores
+                hp_ = hp_.cut(cq.Workplane("XZ").center(gx + u, gz + v).circle(2.8).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
             hp_ = tie_slots(hp_, 243.0, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
             hp_ = tie_slots(hp_, 138.0, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
             add(a, hp_, "print_garmin_hanger", ORANGE)
@@ -2906,17 +2914,19 @@ def build_v13(a):
             clip = v12_post_clip(mirror=(j == 1), h=out_H - hpost, bolt_z=out_H - hpost - B / 2).rotate((0, 0, 0), (0, 0, 1), -90)
             add(a, clip.translate((xclip, yt, hpost)), f"print_post_clip_{j}", ORANGE)
     ux = V13["inv_x"]
-    patches = [(ux - px0 + u, iz - zp + v) for (u, v) in HOLES[ikey]]
-    patches += [(sx - px0, sz - zp) for (sx, sz) in g.get("sill_holes", ())]   # the 6 short M4 in the bottom band, for the bus shelf wall's bolts
+    r_inv = 3.2 if INSERT.get(ikey) == "M5" else 2.8
+    patches = [(ux - px0 + u, iz - zp + v, r_inv) for (u, v) in HOLES[ikey]]
+    patches += [(sx - px0, sz - zp, 2.8) for (sx, sz) in g.get("sill_holes", ())]   # the 6 short M4 (Ø5.6 mm) in the bottom band, for the bus shelf wall's bolts
     raw_units = V13_SHORT["units"] if short else V13_PLATE_UNITS
     if lid_slot and short:                                                     # lower column units 7 mm so tops sit at z 259 (7.2 mm under lid) and clear the z 127..151 lap
         raw_units = tuple((c_, x_, z_ - 7.0, n_, *s_) for (c_, x_, z_, n_, *s_) in raw_units)
-    if P.get("plate_pilots"):   # pilot holes for the heat-set inserts under every unit on the column face (set from that face)
-        for comp, x0, z0, nm, *_side in raw_units:                             # pilots go through: inserts set from the unit's side
+    if P.get("plate_pilots"):   # pre-printed Ø5.6 mm (M4) and Ø6.4 mm (M5) heat-set insert bores under every unit on the column face
+        for comp, x0, z0, nm, *_side in raw_units:                             # bores go through: inserts set from the unit's side
             if P.get("breaker_shelf") and comp == "breaker_face":
                 continue
             assert comp in HOLES, f"no HOLES pattern for {comp}: the plate would get no pilots under it"
-            patches += [(x0 - px0 + u, z0 - zp + v) for (u, v) in HOLES[comp]]
+            r_u = 3.2 if INSERT.get(comp) == "M5" else 2.8
+            patches += [(x0 - px0 + u, z0 - zp + v, r_u) for (u, v) in HOLES[comp]]
             lap_lo, lap_hi = zp + hp / 2 - LAT["lap"] / 2, zp + hp / 2 + LAT["lap"] / 2         # the two tile rows' half-lap band
             for (u, v) in HOLES[comp]:
                 assert not (lap_lo - 3 < z0 + v < lap_hi + 3), f"{comp} insert at z {z0 + v:.0f} lands in the tiles' lap ({lap_lo:.0f}-{lap_hi:.0f})"
@@ -3431,7 +3441,8 @@ def check_plate_pilots(a):
         solid = solid.fuse(t_)
     x0, y, z0, t = PLATE_PILOTS["x0"], PLATE_PILOTS["y"], PLATE_PILOTS["z0"], P["card_t"]
     blocked = []
-    for (u, v) in PLATE_PILOTS["patches"]:
+    for patch in PLATE_PILOTS["patches"]:
+        u, v = patch[0], patch[1]
         pin = cq.Workplane("XZ").center(x0 + u, z0 + v).circle(1.8).extrude(-(t + 4)).translate((0, y - 2, 0)).val()
         if pin.intersect(solid).Volume() > 1e-6:
             blocked.append((x0 + u, z0 + v))
