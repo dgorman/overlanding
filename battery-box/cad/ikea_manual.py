@@ -161,83 +161,89 @@ def render_3d_hlr(ax, new_re, old_res=(), elev=26, azim=-50, only_names=None, ti
 # =====================================================================================================================
 # IKEA GRAPHIC PRIMITIVES: HARDWARE BAGS, FASTENER LINE-ART ICONS & MONOCHROME WARNING (!) PANELS
 # =====================================================================================================================
-def draw_bag_icon(ax, x, y, w, h, bag_letter, r=0.55):
+def draw_bag_icon(ax, x, y, w, h, bag_letter, r=0.85):
     """Draw a clean IKEA monochrome hardware zip-bag icon with rounded corners labeled 'BAG A', 'BAG B', etc."""
-    ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle=f"round,pad=0,rounding_size={r}", fc="white", ec=INK, lw=1.1))
-    ax.add_patch(FancyBboxPatch((x, y + h * 0.72), w, h * 0.28, boxstyle=f"round,pad=0,rounding_size={r*0.6}", fc=INK, ec=INK, lw=0.5))
-    ax.plot([x + w * 0.16, x + w * 0.84], [y + h * 0.86, y + h * 0.86], color="white", lw=0.9)
-    ax.text(x + w / 2, y + h * 0.36, f"BAG\n{bag_letter}", color=INK, fontsize=6.2, weight="bold",
+    ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle=f"round,pad=0,rounding_size={r}", fc="white", ec=INK, lw=1.15))
+    ax.add_patch(FancyBboxPatch((x + 0.15, y + h * 0.70), w - 0.30, h * 0.26, boxstyle=f"round,pad=0,rounding_size={r*0.55}", fc=INK, ec=INK, lw=0.5))
+    ax.plot([x + w * 0.18, x + w * 0.82], [y + h * 0.83, y + h * 0.83], color="white", lw=0.9)
+    ax.text(x + w / 2, y + h * 0.35, f"BAG\n{bag_letter}", color=INK, fontsize=6.0, weight="bold",
             ha="center", va="center", linespacing=0.92)
 
 
 def draw_fastener_icon(ax, cx, cy, w, h, kind="insert"):
     """Draw a clean 2D technical line-art silhouette of a heat-set insert, T-nut, flat screw, or button screw."""
     if kind == "insert":
-        # Brass knurled cylinder with diagonal knurl ticks
-        ax.add_patch(Rectangle((cx - w * 0.35, cy - h * 0.42), w * 0.70, h * 0.84, fc=BRASS_LT, ec=INK, lw=1.0))
-        ax.add_patch(Rectangle((cx - w * 0.42, cy + h * 0.18), w * 0.84, h * 0.24, fc=BRASS, ec=INK, lw=1.0))
+        # Brass knurled cylinder with rounded edges and diagonal knurl ticks
+        ax.add_patch(FancyBboxPatch((cx - w * 0.35, cy - h * 0.42), w * 0.70, h * 0.84,
+                                    boxstyle="round,pad=0,rounding_size=0.35", fc=BRASS_LT, ec=INK, lw=1.0))
+        ax.add_patch(FancyBboxPatch((cx - w * 0.42, cy + h * 0.16), w * 0.84, h * 0.26,
+                                    boxstyle="round,pad=0,rounding_size=0.30", fc=BRASS, ec=INK, lw=1.0))
         for ky in (-0.22, -0.02):
-            ax.plot([cx - w * 0.32, cx + w * 0.32], [cy + h * ky, cy + h * (ky + 0.12)], color=INK, lw=0.7)
+            ax.plot([cx - w * 0.30, cx + w * 0.30], [cy + h * ky, cy + h * (ky + 0.12)], color=INK, lw=0.7)
     elif kind == "tnut":
         # Roll-in T-nut profile
         pts = [(cx - w * 0.45, cy - h * 0.15), (cx + w * 0.45, cy - h * 0.15),
                (cx + w * 0.45, cy + h * 0.15), (cx + w * 0.22, cy + h * 0.38),
                (cx - w * 0.22, cy + h * 0.38), (cx - w * 0.45, cy + h * 0.15)]
-        ax.add_patch(Polygon(pts, closed=True, fc=CTX_FILL, ec=INK, lw=1.0))
+        ax.add_patch(Polygon(pts, closed=True, fc=CTX_FILL, ec=INK, lw=1.0, joinstyle="round"))
         ax.plot([cx, cx], [cy - h * 0.15, cy + h * 0.38], color=INK, lw=0.8, ls=":")
     elif kind == "flat_screw":
         # 82-deg flat-head countersunk screw
         head = [(cx - w * 0.45, cy + h * 0.42), (cx + w * 0.45, cy + h * 0.42),
                 (cx + w * 0.18, cy + h * 0.12), (cx - w * 0.18, cy + h * 0.12)]
-        ax.add_patch(Polygon(head, closed=True, fc=CTX_FILL, ec=INK, lw=1.0))
-        ax.add_patch(Rectangle((cx - w * 0.18, cy - h * 0.42), w * 0.36, h * 0.54, fc="white", ec=INK, lw=0.9))
+        ax.add_patch(Polygon(head, closed=True, fc=CTX_FILL, ec=INK, lw=1.0, joinstyle="round"))
+        ax.add_patch(FancyBboxPatch((cx - w * 0.18, cy - h * 0.42), w * 0.36, h * 0.54,
+                                    boxstyle="round,pad=0,rounding_size=0.22", fc="white", ec=INK, lw=0.9))
         for ty in (-0.28, -0.12, 0.02):
-            ax.plot([cx - w * 0.18, cx + w * 0.18], [cy + h * ty, cy + h * ty], color=INK, lw=0.6)
+            ax.plot([cx - w * 0.16, cx + w * 0.16], [cy + h * ty, cy + h * ty], color=INK, lw=0.6)
     else:
         # Domed button-head screw
         ax.add_patch(FancyBboxPatch((cx - w * 0.42, cy + h * 0.12), w * 0.84, h * 0.28,
-                                    boxstyle="round,pad=0.02,rounding_size=0.12", fc=CTX_FILL, ec=INK, lw=1.0))
-        ax.add_patch(Rectangle((cx - w * 0.18, cy - h * 0.42), w * 0.36, h * 0.54, fc="white", ec=INK, lw=0.9))
+                                    boxstyle="round,pad=0.02,rounding_size=0.35", fc=CTX_FILL, ec=INK, lw=1.0))
+        ax.add_patch(FancyBboxPatch((cx - w * 0.18, cy - h * 0.42), w * 0.36, h * 0.54,
+                                    boxstyle="round,pad=0,rounding_size=0.22", fc="white", ec=INK, lw=0.9))
         for ty in (-0.28, -0.12, 0.02):
-            ax.plot([cx - w * 0.18, cx + w * 0.18], [cy + h * ty, cy + h * ty], color=INK, lw=0.6)
+            ax.plot([cx - w * 0.16, cx + w * 0.16], [cy + h * ty, cy + h * ty], color=INK, lw=0.6)
 
 
 def ikea_header(fig, step_num, title, tools_str, hw_badges):
-    """Draw a clean, calm IKEA top strip with smooth rounded corners in true 1:1 equal-aspect coordinates."""
+    """Draw a clean, calm IKEA top strip with generously rounded corners in true 1:1 equal-aspect coordinates."""
     ax = fig.add_axes([0.02, 0.85, 0.96, 0.13])
     # 138.5 x 12.0 matches the physical 14.4" x 1.248" aspect ratio (11.54:1) so all rounded corners are true circular arcs
     ax.set_xlim(0, 138.5); ax.set_ylim(0, 12.0); ax.set_aspect("equal"); ax.axis("off")
-    ax.add_patch(FancyBboxPatch((0.3, 0.4), 137.9, 11.2, boxstyle="round,pad=0,rounding_size=1.8", fc="white", ec=INK, lw=1.5))
-    ax.add_patch(FancyBboxPatch((0.3, 0.4), 14.0, 11.2, boxstyle="round,pad=0,rounding_size=1.8", fc=INK, ec=INK))
-    ax.text(7.3, 6.0, str(step_num), color="white", fontsize=26, weight="bold", ha="center", va="center")
+    # Outer header card with generous 3.2-unit corner radius
+    ax.add_patch(FancyBboxPatch((0.3, 0.4), 137.9, 11.2, boxstyle="round,pad=0,rounding_size=3.2", fc="white", ec=INK, lw=1.6))
+    # Inset rounded step-number badge on the left so all 4 of its rounded corners are cleanly visible
+    ax.add_patch(FancyBboxPatch((1.2, 1.1), 13.0, 9.8, boxstyle="round,pad=0,rounding_size=2.6", fc=INK, ec=INK))
+    ax.text(7.7, 6.0, str(step_num), color="white", fontsize=25, weight="bold", ha="center", va="center")
 
     # Row 1: Step Title
     ax.text(16.8, 9.4, title, color=INK, fontsize=13.5, weight="bold", ha="left", va="center")
     # Row 2: Tools
     ax.text(16.8, 6.5, f"Tools:  {tools_str}", color=INK_SUB, fontsize=8.8, weight="normal", ha="left", va="center")
-    ax.plot([14.3, 138.2], [5.0, 5.0], color=BORDER_LT, lw=0.9)
+    ax.plot([16.2, 136.2], [5.0, 5.0], color=BORDER_LT, lw=0.9)
 
-    # Row 3: Rounded hardware pills with drawn bag icon + fastener silhouette
+    # Row 3: Visibly rounded stadium/pill hardware badges with drawn bag icon + fastener silhouette
     x_left = 16.8
     for bag_or_part, code, qty, label, _col, _bg in hw_badges:
         pill_txt = f"{qty}×  {code}"
         sub_txt = f"  ({label})"
-        w_box = max(18.5, (len(pill_txt) + len(sub_txt)) * 0.52 + 9.0)
-        ax.add_patch(FancyBboxPatch((x_left, 0.95), w_box, 3.55, boxstyle="round,pad=0,rounding_size=1.35", fc=BG_SOFT, ec=BORDER_LT, lw=1.0))
+        w_box = max(18.5, (len(pill_txt) + len(sub_txt)) * 0.52 + 9.4)
+        ax.add_patch(FancyBboxPatch((x_left, 0.95), w_box, 3.55, boxstyle="round,pad=0,rounding_size=1.72", fc=BG_SOFT, ec=INK_SUB, lw=1.15))
         if bag_or_part.startswith("BAG"):
             b_let = bag_or_part.split()[-1]
-            draw_bag_icon(ax, x_left + 0.55, 1.12, 3.6, 3.2, b_let, r=0.55)
+            draw_bag_icon(ax, x_left + 0.85, 1.15, 3.6, 3.15, b_let, r=0.85)
             kind = "insert" if b_let == "A" else ("tnut" if code == "B1" else ("flat_screw" if code in ("B2", "B3") else "btn_screw"))
-            draw_fastener_icon(ax, x_left + 5.6, 2.72, 2.3, 2.6, kind=kind)
-            tx = x_left + 7.5
+            draw_fastener_icon(ax, x_left + 5.9, 2.72, 2.3, 2.6, kind=kind)
+            tx = x_left + 7.8
         else:
-            w_code = max(4.2, len(code) * 1.15 + 1.2)
-            ax.add_patch(FancyBboxPatch((x_left + 0.65, 1.35), w_code, 2.75, boxstyle="round,pad=0,rounding_size=0.85", fc=ACT_FILL, ec=INK, lw=0.9))
-            ax.text(x_left + 0.65 + w_code / 2, 2.72, code, color=INK, fontsize=7.5, weight="bold", ha="center", va="center")
-            tx = x_left + w_code + 1.5
+            w_code = max(4.2, len(code) * 1.15 + 1.4)
+            ax.add_patch(FancyBboxPatch((x_left + 0.85, 1.35), w_code, 2.75, boxstyle="round,pad=0,rounding_size=1.15", fc=ACT_FILL, ec=INK, lw=1.0))
+            ax.text(x_left + 0.85 + w_code / 2, 2.72, code, color=INK, fontsize=7.5, weight="bold", ha="center", va="center")
+            tx = x_left + w_code + 1.8
         ax.text(tx, 2.72, f"{qty}×  {code}", color=INK, fontsize=8.8, weight="bold", ha="left", va="center")
         ax.text(tx + len(f"{qty}×  {code}") * 0.66 + 1.0, 2.72, label, color=INK_SUB, fontsize=8.0, weight="normal", ha="left", va="center")
-        x_left += w_box + 1.2
+        x_left += w_box + 1.4
 
 
 def bag_callout(ax, xy_targets, xytext, bag, code, qty, sub="", col=INK, bg="white"):
@@ -251,7 +257,7 @@ def bag_callout(ax, xy_targets, xytext, bag, code, qty, sub="", col=INK, bg="whi
     header = f"{qty}×  {code}  ({bag})"
     body = f"{header}\n{sub}" if sub else header
     ax.text(xytext[0], xytext[1], body, fontsize=8.8, weight="normal", color=INK, ha="center", va="center",
-            linespacing=1.22, bbox=dict(boxstyle="round,pad=0.52,rounding_size=0.85", fc="white", ec=INK, lw=1.1))
+            linespacing=1.22, bbox=dict(boxstyle="round,pad=0.55,rounding_size=0.95", fc="white", ec=INK, lw=1.15))
 
 
 def no_callout(ax, xy_targets, xytext, bad_code="A1", right_note=""):
@@ -266,7 +272,7 @@ def no_callout(ax, xy_targets, xytext, bad_code="A1", right_note=""):
     if right_note:
         txt += f"  ({right_note})"
     ax.text(xytext[0], xytext[1], txt, fontsize=8.6, weight="normal", color=RED_X, ha="center", va="center",
-            bbox=dict(boxstyle="round,pad=0.48,rounding_size=0.85", fc="white", ec=RED_X, lw=1.1))
+            bbox=dict(boxstyle="round,pad=0.52,rounding_size=0.95", fc="white", ec=RED_X, lw=1.15))
 
 
 def draw_warning_triangle(ax, cx, cy, r):
@@ -302,8 +308,8 @@ def ikea_ux_panel(fig, rect, mode, ok_lbl, no_lbl):
     # Use 140 x 32 with set_aspect('equal') so circles, triangles, and rounded corners are true circular arcs!
     ax.set_xlim(0, 140); ax.set_ylim(0, 32); ax.set_aspect("equal"); ax.axis("off")
 
-    # Clean outer monochrome frame with generous 4.2-unit corner radius
-    ax.add_patch(FancyBboxPatch((1.0, 1.0), 138.0, 30.0, boxstyle="round,pad=0,rounding_size=4.2", fc="white", ec=INK, lw=1.4))
+    # Clean outer monochrome frame with generous 5.5-unit corner radius
+    ax.add_patch(FancyBboxPatch((1.0, 1.0), 138.0, 30.0, boxstyle="round,pad=0,rounding_size=5.5", fc="white", ec=INK, lw=1.5))
     ax.plot([24.0, 24.0], [1.5, 30.5], color=BORDER_LT, lw=1.1)
     ax.plot([82.0, 82.0], [3.5, 28.5], color=BORDER_LT, lw=0.9, ls="--")
     draw_warning_triangle(ax, 12.5, 16.0, 7.8)
@@ -402,9 +408,9 @@ def page_00_inventory():
     ax.set_xlim(0, 100); ax.set_ylim(0, 100); ax.axis("off")
 
     # Left half: 4 Hardware Bags (BAG A, BAG B, BAG C, BAG D)
-    ax.add_patch(FancyBboxPatch((0.2, 0.4), 48.1, 97.2, boxstyle="round,pad=0,rounding_size=2.0", fc="white", ec=INK, lw=1.4))
-    ax.add_patch(FancyBboxPatch((0.2, 91.2), 48.1, 6.4, boxstyle="round,pad=0,rounding_size=2.0", fc=INK, ec=INK))
-    ax.text(24.25, 94.4, "HARDWARE BAGS (BAG A  •  BAG B  •  BAG C  •  BAG D)", color="white", fontsize=11.0, weight="bold", ha="center", va="center")
+    ax.add_patch(FancyBboxPatch((0.2, 0.4), 48.1, 97.2, boxstyle="round,pad=0,rounding_size=3.2", fc="white", ec=INK, lw=1.5))
+    ax.add_patch(FancyBboxPatch((1.2, 91.0), 46.1, 5.8, boxstyle="round,pad=0,rounding_size=2.2", fc=INK, ec=INK))
+    ax.text(24.25, 93.9, "HARDWARE BAGS (BAG A  •  BAG B  •  BAG C  •  BAG D)", color="white", fontsize=11.0, weight="bold", ha="center", va="center")
 
     bags = [
         ("A", "BAG A — BRASS HEAT-SET INSERTS (STEPS 2–5, NO DRILLING)", "insert", [
@@ -432,8 +438,8 @@ def page_00_inventory():
     y_cursor = 88.5
     for b_let, b_title, default_kind, items in bags:
         h_group = len(items) * 5.0 + 4.0
-        ax.add_patch(FancyBboxPatch((1.4, y_cursor - h_group + 1.5), 45.7, h_group, boxstyle="round,pad=0.15,rounding_size=1.8", fc=BG_SOFT, ec=BORDER_LT, lw=1.1))
-        draw_bag_icon(ax, 2.5, y_cursor - 5.2, 4.2, 5.6, b_let, r=0.75)
+        ax.add_patch(FancyBboxPatch((1.4, y_cursor - h_group + 1.5), 45.7, h_group, boxstyle="round,pad=0.15,rounding_size=2.4", fc=BG_SOFT, ec=INK_SUB, lw=1.1))
+        draw_bag_icon(ax, 2.5, y_cursor - 5.2, 4.2, 5.6, b_let, r=0.95)
         ax.text(8.0, y_cursor - 1.0, b_title, color=INK, fontsize=8.8, weight="bold", ha="left", va="center")
         y_row = y_cursor - 4.7
         for code, qty, desc in items:
@@ -446,9 +452,9 @@ def page_00_inventory():
         y_cursor -= h_group + 1.5
 
     # Right half: Printed Parts (P1 .. P10) & Frame Parts (F1)
-    ax.add_patch(FancyBboxPatch((51.7, 0.4), 48.1, 97.2, boxstyle="round,pad=0,rounding_size=2.0", fc="white", ec=INK, lw=1.4))
-    ax.add_patch(FancyBboxPatch((51.7, 91.2), 48.1, 6.4, boxstyle="round,pad=0,rounding_size=2.0", fc=INK, ec=INK))
-    ax.text(75.75, 94.4, "3D-PRINTED PARTS (P1 – P10) & 22.5\" FRAME (F1)", color="white", fontsize=11.0, weight="bold", ha="center", va="center")
+    ax.add_patch(FancyBboxPatch((51.7, 0.4), 48.1, 97.2, boxstyle="round,pad=0,rounding_size=3.2", fc="white", ec=INK, lw=1.5))
+    ax.add_patch(FancyBboxPatch((52.7, 91.0), 46.1, 5.8, boxstyle="round,pad=0,rounding_size=2.2", fc=INK, ec=INK))
+    ax.text(75.75, 93.9, "3D-PRINTED PARTS (P1 – P10) & 22.5\" FRAME (F1)", color="white", fontsize=11.0, weight="bold", ha="center", va="center")
 
     parts_list = [
         ("P1", "2×", "Battery Trays (print_tray_battery_0 & _1)", "242 × 167 × 36 mm (Pre-printed Ø5.6 mm A1 bores)"),
@@ -466,8 +472,8 @@ def page_00_inventory():
     for i, (code, qty, name, sub) in enumerate(parts_list):
         y = 85.5 - i * 7.8
         bg = ACT_FILL if code.startswith("P") else BG_SOFT
-        ax.add_patch(FancyBboxPatch((53.0, y - 2.8), 45.5, 6.4, boxstyle="round,pad=0.15,rounding_size=1.5", fc=bg, ec=BORDER_LT, lw=1.0))
-        ax.add_patch(FancyBboxPatch((54.2, y - 1.2), 3.8, 3.4, boxstyle="round,pad=0.08,rounding_size=0.8", fc="white", ec=INK, lw=1.0))
+        ax.add_patch(FancyBboxPatch((53.0, y - 2.8), 45.5, 6.4, boxstyle="round,pad=0.15,rounding_size=2.1", fc=bg, ec=INK_SUB, lw=1.0))
+        ax.add_patch(FancyBboxPatch((54.2, y - 1.2), 3.8, 3.4, boxstyle="round,pad=0.08,rounding_size=1.0", fc="white", ec=INK, lw=1.0))
         ax.text(56.1, y + 0.5, code, color=INK, fontsize=8.4, weight="bold", ha="center", va="center")
         ax.text(59.6, y + 0.5, qty, color=INK, fontsize=10.5, weight="bold", ha="left", va="center")
         ax.text(65.0, y + 1.5, name, color=INK, fontsize=8.8, weight="bold", ha="left", va="center")
@@ -560,7 +566,7 @@ def page_01_rails_panels():
     ax4.plot([90, 90], [17, 55], color=RED_X, lw=1.6)
     ax4.text(71, 36, "2× Side Panels\n527.5 × 237.0 mm\n(20.77\" × 9.33\")\n[−64.2 mm / −2.5\" off 591.7]", ha="center", va="center", fontsize=7.2, weight="bold", color=INK)
     # Bottom summary pill for Lid & 22.5" Panel Schedule
-    ax4.add_patch(FancyBboxPatch((2, 1.5), 95, 13.5, boxstyle="round,pad=0,rounding_size=2.2", fc=BG_SOFT, ec=INK, lw=1.0))
+    ax4.add_patch(FancyBboxPatch((2, 1.5), 95, 13.5, boxstyle="round,pad=0,rounding_size=3.8", fc=BG_SOFT, ec=INK, lw=1.15))
     ax4.text(49.5, 8.2, "1× Top Lid Panel (22.5\" Box):   571.5 × 488.1 mm (22.50\" × 19.22\", v12s flat lid)\n"
                         "or  527.5 × 444.0 mm (20.77\" × 17.48\", v13 slot-captured lid — shortened 2.5\" from 591.7 mm)",
              ha="center", va="center", fontsize=7.4, weight="normal", color=INK, linespacing=1.25)
@@ -616,19 +622,19 @@ def page_02_tray_inserts():
     # Bottom Full-Width: 3-Step Soldering Iron "Heat-Sert" Guide + Flush vs Proud check
     ax_g = fig.add_axes([0.02, 0.03, 0.56, 0.19])
     ax_g.set_xlim(0, 168); ax_g.set_ylim(0, 34); ax_g.set_aspect("equal"); ax_g.axis("off")
-    ax_g.add_patch(FancyBboxPatch((0.8, 1.0), 166.4, 32.0, boxstyle="round,pad=0,rounding_size=3.8", fc=BG_SOFT, ec=INK, lw=1.4))
-    ax_g.add_patch(FancyBboxPatch((0.8, 25.5), 166.4, 7.5, boxstyle="round,pad=0,rounding_size=3.2", fc=INK, ec=INK))
-    ax_g.text(84.0, 29.2, "HOW TO INSTALL BRASS HEAT-SERTS WITH A SOLDERING IRON  (ALL 46 HOLES PRE-PRINTED — NO DRILLING)",
-              color="white", fontsize=8.4, weight="bold", ha="center", va="center")
+    ax_g.add_patch(FancyBboxPatch((0.8, 1.0), 166.4, 32.0, boxstyle="round,pad=0,rounding_size=5.2", fc=BG_SOFT, ec=INK, lw=1.5))
+    ax_g.add_patch(FancyBboxPatch((2.4, 24.8), 163.2, 7.0, boxstyle="round,pad=0,rounding_size=2.8", fc=INK, ec=INK))
+    ax_g.text(84.0, 28.3, "HOW TO INSTALL BRASS HEAT-SERTS WITH A SOLDERING IRON  (ALL 46 HOLES PRE-PRINTED — NO DRILLING)",
+              color="white", fontsize=8.3, weight="bold", ha="center", va="center")
     steps_hs = [
         (4.0,  "1. Set Iron Temp", "220–240°C (PETG)\n250–260°C (ASA/ABS)\nUse conical tip or M4/M5 adapter"),
         (59.0, "2. Tapered End Down (90°)", "Set narrow pilot collar into\npre-printed bore; press straight\ndown 2–3 s until nearly flush"),
-        (115.0, "3. Flatten Dead Flush", "Withdraw iron straight up &\nimmediately press flat with a\nmetal ruler for 3 s to cool"),
+        (114.0, "3. Flatten Dead Flush", "Withdraw iron straight up &\nimmediately press flat with a\nmetal ruler for 3 s to cool"),
     ]
     for sx, stitle, sbody in steps_hs:
-        ax_g.add_patch(FancyBboxPatch((sx, 3.0), 50.5, 20.5, boxstyle="round,pad=0,rounding_size=2.2", fc="white", ec=BORDER_LT, lw=1.0))
-        ax_g.text(sx + 25.25, 19.8, stitle, color=INK, fontsize=8.0, weight="bold", ha="center", va="center")
-        ax_g.text(sx + 25.25, 10.2, sbody, color=INK_SUB, fontsize=7.1, weight="normal", ha="center", va="center", linespacing=1.22)
+        ax_g.add_patch(FancyBboxPatch((sx, 2.8), 50.0, 20.4, boxstyle="round,pad=0,rounding_size=3.6", fc="white", ec=INK_SUB, lw=1.1))
+        ax_g.text(sx + 25.0, 19.6, stitle, color=INK, fontsize=8.0, weight="bold", ha="center", va="center")
+        ax_g.text(sx + 25.0, 10.0, sbody, color=INK_SUB, fontsize=7.1, weight="normal", ha="center", va="center", linespacing=1.22)
 
     ikea_ux_panel(fig, [0.60, 0.03, 0.38, 0.19], "insert_flush", "Flush (0 mm)", "Not proud / tilted")
 
@@ -661,7 +667,7 @@ def page_03_shelf_post_inserts():
         ax1.add_patch(Circle((bx, by), 5.2, fc=BRASS, ec=INK, lw=1.1, zorder=4))
     bag_callout(ax1, pts_p2, (85, 72), "BAG A", "A3", "2", sub="×2 Shelves = 4 (Ø6.4 bore)")
 
-    ax1.add_patch(FancyBboxPatch((14, -36), 142, 38, boxstyle="round,pad=0.2,rounding_size=5.0", fc=BG_SOFT, ec=INK, lw=1.1))
+    ax1.add_patch(FancyBboxPatch((14, -36), 142, 38, boxstyle="round,pad=0.2,rounding_size=12.0", fc=BG_SOFT, ec=INK, lw=1.15))
     ax1.text(85, -17, "Stick EPDM foam pad (×2)\nunderneath shelf plate", color=INK, fontsize=8.5, weight="normal", ha="center", va="center")
 
     ax2 = fig.add_axes([0.70, 0.24, 0.28, 0.58])
@@ -1122,7 +1128,7 @@ def page_12_gx_touch_ports():
     # Bottom-Right: 10 Front Panel Ports Installation + Cable Routing Summary
     ax2 = fig.add_axes([0.47, 0.22, 0.50, 0.22])
     ax2.set_xlim(0, 240); ax2.set_ylim(0, 72); ax2.set_aspect("equal"); ax2.axis("off")
-    ax2.add_patch(FancyBboxPatch((2, 2), 236, 66, boxstyle="round,pad=0,rounding_size=4.0", fc=BG_SOFT, ec=INK, lw=1.2))
+    ax2.add_patch(FancyBboxPatch((2, 2), 236, 66, boxstyle="round,pad=0,rounding_size=10.0", fc=BG_SOFT, ec=INK, lw=1.3))
     ax2.text(120, 58, "2.  Mount 10× Front Panel Ports & Connect Pigtails Before Hanging MultiPlus",
              ha="center", va="center", fontsize=9.2, weight="bold", color=INK)
     port_steps = [
@@ -1131,7 +1137,7 @@ def page_12_gx_touch_ports():
         (164, "12V & USB Sockets (×5)", "3× 12V Cig Ø29 (X=39, 124)\n2× Dual USB-C Ø22 (X=92)\nTighten rear locking rings"),
     ]
     for px, ptitle, pbody in port_steps:
-        ax2.add_patch(FancyBboxPatch((px, 6), 70, 42, boxstyle="round,pad=0,rounding_size=2.5", fc="white", ec=BORDER_LT, lw=0.9))
+        ax2.add_patch(FancyBboxPatch((px, 6), 70, 42, boxstyle="round,pad=0,rounding_size=6.5", fc="white", ec=INK_SUB, lw=1.05))
         ax2.text(px + 35, 40, ptitle, ha="center", va="center", fontsize=7.8, weight="bold", color=INK)
         ax2.text(px + 35, 20, pbody, ha="center", va="center", fontsize=6.9, color=INK_SUB, linespacing=1.2)
 
@@ -1142,19 +1148,19 @@ def page_12_gx_touch_ports():
 
 
 # =====================================================================================================================
-# PAGE 13: HANG MULTIPLUS ON D1 KEYHOLES, CONNECT 4 AWG CABLES & FIT LID
+# PAGE 13: HANG MULTIPLUS ON D1 KEYHOLES & FIT TOP LID (WIRING OUT OF SCOPE)
 # =====================================================================================================================
 def page_13_multiplus_wiring_lid():
     fig = plt.figure(figsize=(15, 9.6), dpi=DPI)
-    ikea_header(fig, "13", "MULTIPLUS KEYHOLES (BAG D • D1), 4 AWG CABLES & LID",
-                "3 mm Hex Key (D1 Keyholes)   |   10 mm / 13 mm Socket   |   Torque Wrench",
+    ikea_header(fig, "13", "HANG MULTIPLUS ON KEYHOLES (BAG D • D1) & FIT TOP LID",
+                "3 mm Hex Key (Snug 4× D1 MultiPlus Keyholes)   |   Note: Electrical wiring is outside the scope of this manual",
                 [("BAG D", "D1", "4", "Snug M5 × 10 Keyholes", INK, BG_SOFT),
                  ("PART", "LID", "1", "Top Lid (571.5 × 488.1 mm)", INK, BG_SOFT)])
 
     ax3d = fig.add_axes([0.01, 0.22, 0.44, 0.60])
     render_3d_hlr(ax3d, r"^(victron_multiplus_)",
                   [r"^(cube_|bar_|print_post_inverter_|print_tray_battery_|battery_|print_breaker_shelf_|power_breaker_shelf_|print_bus_shelf_|print_plate_inverter_|victron_mppt_|victron_cerbo_|victron_orion_|print_garmin_hanger|gx_touch|print_touch_bezel|socket_)"],
-                  elev=26, azim=128, title="Hang MultiPlus on 4× D1 + connect 4 AWG + close lid")
+                  elev=26, azim=128, title="1. Hang MultiPlus on 4× D1 keyholes   /   2. Fit top lid")
 
     ax = fig.add_axes([0.47, 0.22, 0.50, 0.60])
     ax.set_aspect("equal"); ax.axis("off")
@@ -1165,29 +1171,32 @@ def page_13_multiplus_wiring_lid():
             ax.add_patch(Rectangle((b_.xmin, b_.ymin), b_.xlen, b_.ylen, fc=CTX_FILL, ec=CTX_EDGE, lw=0.8))
     mp = bb["victron_multiplus_long"]
     ax.add_patch(Rectangle((mp.xmin, mp.ymin), mp.xlen, mp.ylen, fc=BLUE_FILL, ec=INK, lw=1.3))
+    ax.text((mp.xmin + mp.xmax) / 2 + 55, (mp.ymin + mp.ymax) / 2,
+            "MultiPlus 12/800 or 12/1200\n(Inboard Lane)", ha="center", va="center",
+            fontsize=9.2, weight="bold", color=INK)
 
-    bag_callout(ax, ((mp.xmin + mp.xmax) / 2, mp.ymin + 10), (260, 415), "BAG D", "D1", "4", sub="Hook & tighten")
+    bag_callout(ax, (mp.xmin + 95, mp.ymin + 8), (220, 425), "BAG D", "D1", "4",
+                sub="Hook 4 rear keyholes onto proud D1 screws\n& snug all 4 screws with 3 mm hex key")
 
-    ax.annotate("", xy=(140, 265), xytext=(120, 155), arrowprops=dict(arrowstyle="-|>", lw=2.2, color=RED_X))
-    ax.annotate("", xy=(190, 265), xytext=(400, 155), arrowprops=dict(arrowstyle="-|>", lw=2.2, color=RED_X))
-    ax.annotate("", xy=(265, 225), xytext=(95, 115), arrowprops=dict(arrowstyle="-|>", lw=2.2, color=INK))
-    ax.annotate("", xy=(295, 225), xytext=(375, 115), arrowprops=dict(arrowstyle="-|>", lw=2.2, color=INK))
-    ax.annotate("", xy=(430, 330), xytext=(485, 270), arrowprops=dict(arrowstyle="-|>", lw=2.2, color=RED_X))
-    ax.annotate("", xy=(415, 315), xytext=(465, 270), arrowprops=dict(arrowstyle="-|>", lw=2.2, color=INK))
+    # Clean rounded note card in the lower half of the plan view stating wiring is outside manual scope
+    ax.add_patch(FancyBboxPatch((55, 45), 460, 145, boxstyle="round,pad=0,rounding_size=18.0", fc=BG_SOFT, ec=INK, lw=1.3))
+    ax.text(285, 142, "NOTE — ELECTRICAL WIRING OUTSIDE SCOPE", ha="center", va="center",
+            fontsize=9.4, weight="bold", color=INK)
+    ax.text(285, 92, "Electrical wiring, cable routing, fuse sizing, and terminations\n"
+                     "are outside the scope of this mechanical assembly manual.\n"
+                     "Complete all DC and AC wiring before securing the top lid.",
+            ha="center", va="center", fontsize=8.2, weight="normal", color=INK_SUB, linespacing=1.3)
 
-    ax.text(140, 232, "4 AWG (+)", fontsize=8.4, weight="normal", color=RED_X, ha="center",
-            bbox=dict(boxstyle="round,pad=0.45,rounding_size=0.8", fc="white", ec=RED_X, lw=1.0))
-    ax.text(285, 95, "4 AWG (−)", fontsize=8.4, weight="normal", color=INK, ha="center",
-            bbox=dict(boxstyle="round,pad=0.45,rounding_size=0.8", fc="white", ec=INK, lw=1.0))
     ax.set_xlim(-45, D + 45); ax.set_ylim(-25, W + 25)
 
-    ikea_ux_panel(fig, [0.26, 0.03, 0.48, 0.17], "proud_3mm", "Snug all 4× D1", "Not loose lugs")
+    ikea_ux_panel(fig, [0.26, 0.03, 0.48, 0.17], "proud_3mm", "Snug all 4× D1 keyholes", "Not left loose")
 
     path = os.path.join(OUT, "page-13-multiplus-wiring-lid.png")
     fig.savefig(path, facecolor="white"); plt.close(fig); print("wrote", path)
 
 
 if __name__ == "__main__":
+    import shutil
     page_00_inventory()
     page_01_rails_panels()
     page_02_tray_inserts()
@@ -1202,3 +1211,20 @@ if __name__ == "__main__":
     page_11_plate_clips_garmin()
     page_12_gx_touch_ports()
     page_13_multiplus_wiring_lid()
+    for src, dst in (
+        ("page-00-inventory.png", "step-00-inventory.png"),
+        ("page-01-rails-panels.png", "step-01-rails-panels.png"),
+        ("page-02-tray-inserts.png", "step-02-tray-inserts.png"),
+        ("page-03-shelf-post-inserts.png", "step-03-shelf-post-inserts.png"),
+        ("page-04-plate-subassembly.png", "step-04-plate-subassembly.png"),
+        ("page-05-bus-subassembly.png", "step-05-bus-subassembly.png"),
+        ("page-06-frame-tnuts.png", "step-06-frame-tnuts.png"),
+        ("page-07-posts.png", "step-07-posts.png"),
+        ("page-08-trays.png", "step-08-trays.png"),
+        ("page-09-batteries-shelves.png", "step-09-batteries-shelves.png"),
+        ("page-10-bus-shelf.png", "step-10-bus-shelf.png"),
+        ("page-11-plate-clips-garmin.png", "step-11-plate-clips-garmin.png"),
+        ("page-12-gx-touch-ports.png", "step-12-gx-touch-ports.png"),
+        ("page-13-multiplus-wiring-lid.png", "step-13-multiplus-lid.png"),
+    ):
+        shutil.copy2(os.path.join(OUT, src), os.path.join(OUT, dst))

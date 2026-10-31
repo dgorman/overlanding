@@ -8,7 +8,7 @@
 
 ## Step 0 — Hardware Bags (`BAG A` – `BAG D`) & Parts (`P1` – `P10`)
 
-![Step 0 — Hardware Bags & Parts Checklist](manual/ikea/page-00-inventory.png)
+![Step 0 — Hardware Bags & Parts Checklist](manual/ikea/step-00-inventory.png)
 
 | Bag / Code | Qty | Part / Fastener | McMaster-Carr | Used In |
 | :--- | :---: | :--- | :---: | :--- |
@@ -30,7 +30,7 @@
 
 ## Step 1 — 22.5" (`571.5 mm`) Box: Cut & Tap Rails (`F1`) + Cut 5 Panels
 
-![Step 1 — Cut & Tap Rails + Cut Panels](manual/ikea/page-01-rails-panels.png)
+![Step 1 — Cut & Tap Rails + Cut Panels](manual/ikea/step-01-rails-panels.png)
 
 > **22.5" (`571.5 mm`) Box Cut Schedule (Shortened `2.5"` / `64.2 mm` from `25"` / `635.7 mm` Donor IceBox):**
 > - **12× Aluminum Rails (`F1`, between `25.75 mm` corner cubes):**
@@ -48,7 +48,7 @@
 
 ## Step 2 — Battery Trays (`P1 × 2`): Press `10×` `BAG A • A1` Inserts + Soldering-Iron Guide
 
-![Step 2 — Battery Tray Heat-Set Inserts](manual/ikea/page-02-tray-inserts.png)
+![Step 2 — Battery Tray Heat-Set Inserts](manual/ikea/step-02-tray-inserts.png)
 
 > **🔥 How to Install Brass "Heat-Serts" with a Soldering Iron (All 46 Holes Pre-Printed — NO DRILLING):**
 > 1. **Set Temperature:** Set soldering iron to **`220–240 °C`** for **PETG** (or **`250–260 °C`** for **ASA/ABS**). Use an M4/M5 heat-set tip or standard conical tip.
@@ -63,7 +63,7 @@
 
 ## Step 3 — Drop Shelves (`P2`), Garmin (`P8`) & Posts (`P6`): `BAG A` Inserts (No Drilling)
 
-![Step 3 — Drop Shelves, Garmin & Posts Inserts](manual/ikea/page-03-shelf-post-inserts.png)
+![Step 3 — Drop Shelves, Garmin & Posts Inserts](manual/ikea/step-03-shelf-post-inserts.png)
 
 - **`P2 × 2`:** Press **`[BAG A] A3 × 2`** (`M5`, pre-printed `Ø 6.4 mm` bores) into top of each shelf + stick **EPDM Foam Pad** underneath.
 - **`P8` (Upper Garmin):** Press **`[BAG A] A2 × 2`** (`M4 Short`, pre-printed `Ø 5.6 mm` bores) flush from the Garmin side.
@@ -73,7 +73,7 @@
 
 ## Step 4 — Inverter Plate (`P4 + P5`): Glue, Set `22×` `BAG A` Inserts & Mount Gear
 
-![Step 4 — Inverter Plate Sub-Assembly](manual/ikea/page-04-plate-subassembly.png)
+![Step 4 — Inverter Plate Sub-Assembly](manual/ikea/step-04-plate-subassembly.png)
 
 - **Column Face (No Drilling):** Press **`[BAG A] A2 × 14`** (pre-printed `Ø 5.6 mm`) + **`[BAG A] A3 × 4`** (pre-printed `Ø 6.4 mm`). Mount **MPPT 100/30** upright (`130 × 186 mm` at `X = 50 mm`) with **`[BAG D] D2 × 4`**, **Cerbo GX** (`X = 190 mm`) with **`[BAG C] C2 × 4`**, and **Orion XS** (`X = 354 mm`) with **`[BAG C] C2 × 4`**.
 - **Inverter Face (No Drilling):** Press **`[BAG A] A3 × 4`** (pre-printed `Ø 6.4 mm`) and thread **`[BAG D] D1 × 4`** (`M5 × 10` + washers), leaving heads **`3 mm` proud** for MultiPlus keyholes.
@@ -82,7 +82,7 @@
 
 ## Step 5 — Bus Shelf (`P3 × 3`) & Garmin (`P8`): `BAG A`, `BAG C` & `BAG D` (No Drilling)
 
-![Step 5 — Bus Shelf & Garmin Sub-Assemblies](manual/ikea/page-05-bus-subassembly.png)
+![Step 5 — Bus Shelf & Garmin Sub-Assemblies](manual/ikea/step-05-bus-subassembly.png)
 
 - **`P3` (`0 + 1 + 2`):** Glue half-laps (`P3-1` is **`152 mm`** for the `22.5"` box). Press **`[BAG A] A3 × 6`** into the 6 pre-printed `Ø 6.4 mm` floor bores → bolt down **SmartShunt** and **two Bus Bars** with **`[BAG D] D3 × 6`**.
 - **`P8`:** Bolt Garmin bracket with **`[BAG C] C1 × 2`**.
@@ -91,7 +91,7 @@
 
 ## Step 6 — Bolt Lower Frame (`F1`), Slide Panels & Load `24×` `BAG B • B1` T-Nuts
 
-![Step 6 — Frame & 24x T-Nut Map](manual/ikea/page-06-frame-tnuts.png)
+![Step 6 — Frame & 24x T-Nut Map](manual/ikea/step-06-frame-tnuts.png)
 
 - Pre-load **`[BAG B] B1 × 16`** into bottom rails (Blue) and **`[BAG B] B1 × 8`** into top rails (Red) before locking corners.
 
@@ -99,7 +99,7 @@
 
 ## Step 7 — Inverter Posts (`P6 × 2`): `BAG B • B4`
 
-![Step 7 — Install Inverter Posts](manual/ikea/page-07-posts.png)
+![Step 7 — Install Inverter Posts](manual/ikea/step-07-posts.png)
 
 - Bolt `P6-0` (Back) and `P6-1` (Front) at **`Y = 281 mm`** using **`[BAG B] B4 × 2`** (`1/4"-20 × 7/8"` Button-Head).
 
@@ -107,7 +107,7 @@
 
 ## Step 8 — Battery Trays (`P1 × 2`): `BAG B • B2`
 
-![Step 8 — Bolt Battery Trays](manual/ikea/page-08-trays.png)
+![Step 8 — Bolt Battery Trays](manual/ikea/step-08-trays.png)
 
 - Fasten both trays with **`[BAG B] B2 × 8`** (`4×` outer wall + `4×` end walls). Ensure all 8 heads sit **flush**.
 
@@ -115,7 +115,7 @@
 
 ## Step 9 — Batteries (`1st`) → Drop Shelves (`P2 × 2`): `BAG C`, `BAG B` & `BAG D`
 
-![Step 9 — Drop In Batteries & Clamp Shelves](manual/ikea/page-09-batteries-shelves.png)
+![Step 9 — Drop In Batteries & Clamp Shelves](manual/ikea/step-09-batteries-shelves.png)
 
 1. **Batteries in FIRST** (`2×` SuperPack 60Ah).
 2. **`[BAG C] C1 × 4`** (`M4 × 10`) straight down through shelf feet into tray walls **FIRST**.
@@ -126,7 +126,7 @@
 
 ## Step 10 — Bus Shelf (`P3`) Into Center Bay: `BAG C • C1` & `BAG B • B2`
 
-![Step 10 — Install Bus Shelf](manual/ikea/page-10-bus-shelf.png)
+![Step 10 — Install Bus Shelf](manual/ikea/step-10-bus-shelf.png)
 
 - **`[BAG C] C1 × 6`** (`M4 × 10`) horizontally through Bus Shelf lip into Tray 0 (`3×`) & Tray 1 (`3×`).
 - **`[BAG B] B2 × 4`** (`1/4"-20 × 1/2"`) through Back & Front end walls into Width Rails (`Y = 198, 238 mm`).
@@ -135,7 +135,7 @@
 
 ## Step 11 — Inverter Plate, Post Clips (`P7`) & Garmin (`P8`): `BAG C` & `BAG B`
 
-![Step 11 — Slide In Plate, Lock Clips & Mount Garmin](manual/ikea/page-11-plate-clips-garmin.png)
+![Step 11 — Slide In Plate, Lock Clips & Mount Garmin](manual/ikea/step-11-plate-clips-garmin.png)
 
 - Slide Plate into `P6` Post slots → drive **`[BAG C] C2 × 6`** (`M4 × 8`) through Bus Shelf wall into Plate sill.
 - Lock `P7 × 2` Clips (`v12s`) with **`[BAG C] C3 × 2`** (`M4 × 35`) + **`[BAG B] B3 × 2`** (`1/4"-20 × 7/8"`).
@@ -145,7 +145,7 @@
 
 ## Step 12 — Install GX Touch 50 Display Panel (`P9` Bezel) & 10 Front Panel Ports
 
-![Step 12 — Install GX Touch 50 Display Panel & Front Panel Ports](manual/ikea/page-12-gx-touch-ports.png)
+![Step 12 — Install GX Touch 50 Display Panel & Front Panel Ports](manual/ikea/step-12-gx-touch-ports.png)
 
 - **`P9` GX Touch 50 Trim Bezel (`print_touch_bezel.stl`, `150 × 108 × 3 mm`):** Position `P9` over the `128 × 86 mm` Back Panel cutout (`X = 80 mm` from inboard rail / `83 mm` from inboard panel edge, `Z = 160 mm` from box bottom) to cover the perforated panel slots, and fasten its 4 corners (`140 × 98 mm` centers) with `4× #6 × 1/2"` pan-head wood screws.
 - **GX Touch 50 Display (`136 × 94 × 12 mm`):** Feed the combined HDMI + USB power cable through `P9`, press the display flush into the bezel, and plug HDMI + USB into the **Cerbo GX** on the Inverter Plate before hanging the MultiPlus.
@@ -153,9 +153,11 @@
 
 ---
 
-## Step 13 — Hang MultiPlus (`BAG D • D1`), Connect `4 AWG` Lugs & Fit Lid
+## Step 13 — Hang MultiPlus (`BAG D • D1`) & Fit Top Lid
 
-![Step 13 — Hang MultiPlus, Connect 4 AWG Lugs & Fit Lid](manual/ikea/page-13-multiplus-wiring-lid.png)
+![Step 13 — Hang MultiPlus & Fit Top Lid](manual/ikea/step-13-multiplus-lid.png)
 
-- Hook MultiPlus keyholes onto the `4×` proud **`[BAG D] D1`** screws and tighten from above with a `3 mm` hex key.
-- Connect the `4 AWG` DC cables (`+` through breakers to `+` bus bar; `−` through SmartShunt to `−` bus bar; MultiPlus through the `70 × 70 mm` front window) and secure the `571.5 × 488.1 mm` lid.
+- Hook MultiPlus keyholes onto the `4×` proud **`[BAG D] D1`** screws on the Inverter Plate and tighten from above with a `3 mm` hex key.
+- Secure the `571.5 × 488.1 mm` (`22.50" × 19.22"`) top lid panel (`v12s`) or slide the `527.5 × 444.0 mm` (`20.77" × 17.48"`) lid into the top-rail slots (`v13`).
+
+> **⚡ Note — Electrical Wiring Outside Scope:** Electrical wiring, cable routing, fuse sizing, and terminations are outside the scope of this mechanical assembly manual. Complete all DC and AC wiring before securing the top lid.

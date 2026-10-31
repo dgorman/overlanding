@@ -363,18 +363,16 @@ Work from the top with the lid off. Every fastener is reached from above or alon
 
 ---
 
-### Step 9: Hang MultiPlus Inverter on Keyholes & Connect Heavy 4 AWG DC Leads
+### Step 9: Hang MultiPlus Inverter on Keyholes
 
-> **🔧 `3 mm` Hex Key + Socket/Lug Wrench  |  🔩 `4 AWG` Red (`+`) & Black (`−`) Lugs**
+> **🔧 `3 mm` Hex Key  |  🔩 `4 × M5 × 10` Keyhole Screws (Pre-installed in Bench 3)**
 
 ![Step 9 Visual Guide](manual/img/09-inverter-simple.png)
 
 ![Step 9 3D View](manual/img/09-inverter.png)
 
 * **① Hang & Snug the MultiPlus:** Lower the **MultiPlus** into the inboard lane (cable end toward the front panel), hook its 4 rear keyholes over the 4 proud `M5 × 10` screws on the plate, and snug all 4 screws with a `3 mm` hex key.
-* **② Wire Positive (`+`) `4 AWG` Leads:** Connect each battery's **`+` terminal** to the battery stud of its **Bussmann 285 breaker**, and run `4 AWG` from the breaker's load stud over the shelf lip to the **Positive (`+`) Bus Bar**. Fit the rubber boots.
-* **③ Wire Negative (`−`) `4 AWG` Leads:** Connect each battery's **`−` terminal** (`4 AWG`) to the battery side of the **SmartShunt**.
-* **④ Wire MultiPlus DC Input (`4 AWG`):** Route the MultiPlus `+` and `−` `4 AWG` leads out the front of the inverter and through the **`70 × 70 mm` window** in the front plate tile onto the `+` and `−` bus bars.
+* **⚡ Note — Electrical Wiring Outside Scope:** Electrical wiring, cable routing, fuse sizing, and terminations are outside the scope of the mechanical assembly diagrams. Complete all DC and AC wiring before securing the top lid.
 
 ---
 

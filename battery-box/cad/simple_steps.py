@@ -749,14 +749,14 @@ def step8():
 
 
 # =====================================================================================================================
-# STEP 9: MULTIPLUS INVERTER & HEAVY DC WIRING DIAGRAM
+# STEP 9: MULTIPLUS INVERTER & TOP LID
 # =====================================================================================================================
 def step9():
     fig = plt.figure(figsize=(15, 9.2), dpi=120)
-    banner(fig, "STEP 9", "Hang MultiPlus Inverter on Keyholes & Connect Heavy 4 AWG DC Leads",
-           "Hook the MultiPlus onto the 4 proud M5 keyhole screws on the plate, snug with a 3 mm hex key, and wire the DC bus.",
+    banner(fig, "STEP 9", "Hang MultiPlus Inverter on Keyholes & Fit Top Lid",
+           "Hook the MultiPlus onto the 4 proud M5 keyhole screws on the plate and snug with a 3 mm hex key.",
            [("Tool: 3 mm Hex Key (MultiPlus Keyholes)", GREY_LT, DARK),
-            ("4 AWG Red (+) & Black (−) Lugs", RED_LT, RED)])
+            ("Top Lid Panel (571.5 × 488.1 mm)", BLUE_LT, BLUE)])
 
     ax = fig.add_axes([0.04, 0.06, 0.92, 0.80])
     plan(ax, r"^victron_multiplus_",
@@ -768,22 +768,13 @@ def step9():
             ha="center", va="center", fontsize=9.8, weight="bold", color="white",
             bbox=dict(boxstyle="round,pad=0.35", fc=BLUE, ec="white", lw=1.5))
 
-    ax.annotate("", xy=(140, 265), xytext=(120, 155), arrowprops=dict(arrowstyle="-|>", lw=3.5, color=RED))
-    ax.annotate("", xy=(190, 265), xytext=(400, 155), arrowprops=dict(arrowstyle="-|>", lw=3.5, color=RED))
-    ax.annotate("", xy=(265, 225), xytext=(95, 115), arrowprops=dict(arrowstyle="-|>", lw=3.5, color="#222"))
-    ax.annotate("", xy=(295, 225), xytext=(375, 115), arrowprops=dict(arrowstyle="-|>", lw=3.5, color="#222"))
-    ax.annotate("", xy=(430, 330), xytext=(485, 270), arrowprops=dict(arrowstyle="-|>", lw=3.5, color=RED))
-    ax.annotate("", xy=(415, 315), xytext=(465, 270), arrowprops=dict(arrowstyle="-|>", lw=3.5, color="#222"))
-
-    callout(ax, (140, 265), (135, 235),
-            "② RED 4 AWG (+):\nEach Battery (+) → Bussmann 285 Breaker\n→ Positive (+) Bus Bar",
-            color=RED, bg=RED_LT, ec=RED, fs=8.8)
-    callout(ax, (280, 225), (285, 110),
-            "③ BLACK 4 AWG (−):\nEach Battery (−) → SmartShunt Battery Stud\n→ Negative (−) Bus Bar",
-            color=DARK, bg=GREY_LT, ec=DARK, fs=8.8)
-    callout(ax, (475, 285), (465, 195),
-            "④ MultiPlus 4 AWG (+ & −):\nFrom Bus Bars through 70×70 Front Plate\nWindow into MultiPlus DC Terminals",
-            color=BLUE, bg=BLUE_LT, ec=BLUE, fs=8.8)
+    ax.text(D / 2, 130,
+            "NOTE — ELECTRICAL WIRING OUTSIDE SCOPE\n"
+            "Electrical wiring, cable routing, fuse sizing, and terminations\n"
+            "are outside the scope of this mechanical assembly manual.\n"
+            "Complete all DC and AC wiring before securing the top lid.",
+            ha="center", va="center", fontsize=9.8, weight="bold", color=DARK,
+            bbox=dict(boxstyle="round,pad=0.55,rounding_size=0.4", fc="#fffdf5", ec=DARK, lw=1.6))
 
     path = os.path.join(OUT, "09-inverter-simple.png")
     fig.savefig(path, facecolor="white"); plt.close(fig); print("wrote", path)
