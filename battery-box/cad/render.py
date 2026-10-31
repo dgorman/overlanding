@@ -46,10 +46,16 @@ def subdivide(tri, max_edge=35.0, depth=0):
     return np.concatenate([small, subdivide(kids, max_edge, depth + 1)])
 
 
+_TRIS_CACHE = {}
+
+
 def part_tris(shape, tol=1.5):
-    verts, tris = shape.tessellate(tol, 0.3)
-    v = np.array([(p.x, p.y, p.z) for p in verts])
-    return subdivide(v[np.array(tris)])
+    key = (id(shape), tol)
+    if key not in _TRIS_CACHE:
+        verts, tris = shape.tessellate(tol, 0.3)
+        v = np.array([(p.x, p.y, p.z) for p in verts])
+        _TRIS_CACHE[key] = subdivide(v[np.array(tris)])
+    return _TRIS_CACHE[key]
 
 
 def collect(asm, hide=(), lift=0.0, opaque=()):
@@ -86,7 +92,7 @@ def render(asm, path, elev=28, azim=-55, hide=("lid",), lift=0.0, title="", opaq
     ax.view_init(elev=elev, azim=azim); ax.set_proj_type("ortho")
     ax.set_axis_off(); fig.patch.set_facecolor("white")
     if title:
-        fig.text(0.02, 0.97, title, fontsize=13, va="top", family="sans-serif")
+        fig.text(0.02, 0.97, title, fontsize=11.5, va="top", family="sans-serif", wrap=True)
     fig.tight_layout(pad=0); fig.savefig(path, facecolor="white"); plt.close(fig)
     print("wrote", path)
 
@@ -97,7 +103,8 @@ if __name__ == "__main__":
     d = cage.RENDERS; os.makedirs(d, exist_ok=True)
     render(asm, os.path.join(d, "with-icebox.png"), 22, 35, hide=("lid",),
            title=("487 mm cube from 12 uncut kit bars" if cage.P["frame_source"] == "kit"
-                  else "v12s as built: the 25 in IceBox frame cut to 571.5 x 488 x 281.7 (22.5 in deep), MultiPlus 12/1200 on its long side, two SuperPack 60Ah outboard" if cage.VARIANT.startswith("v12s")
+                  else "v13 slot-captured lid (571.5 x 488.1 x 281.7 mm): top rail slots 100% free for lid; U-bridge breaker shelves, buttressed posts & standing Garmin panel on bottom rails" if cage.P.get("lid_slot")
+                  else "v12s as built (571.5 x 488.1 x 281.7 mm / 22.5 in deep): MultiPlus 12/1200 inboard, two SuperPack 60Ah outboard, stacked on the IceBox 1.3" if cage.VARIANT.startswith("v12s")
                   else "v13: IceBox footprint, 11.1 in tall: MultiPlus-II 3 kVA on its long side, two Smart 200Ah end to end, 762 x 487 x 282" if cage.P.get("box") == "v13"
                   else "v12: IceBox footprint, 10 in tall, not card based: 2 x 2 batteries, bus shelf, MultiPlus on its side, 762 x 487 x 254" if cage.P["card_plane"] == "v12"
                   else "v9: bus deck on the battery rack, two unpluggable cards, 539 x 345 x 559" if cage.P["card_plane"] == "v9"
@@ -105,9 +112,10 @@ if __name__ == "__main__":
                   else "v7: four SuperPack 60Ah in two touching stacks, lengthwise cards in front, 345 mm wide" if cage.P["card_plane"] == "v7"
                   else "v6: side-mount cards front to back" if cage.P["card_plane"] == "xz"
                   else "A second IceBox 1.3 frame as the cage")
-                 + ", standing against the IceBox 1.3 slotted back panel")
+                 + ("" if cage.P.get("stack_on_icebox") else ", standing against the IceBox 1.3 slotted back panel"))
     render(asm, os.path.join(d, "iso-front.png"), 24, 35, hide=("lid", "panel", "icebox"),
-           title=("Front-inboard iso, panels hidden: MultiPlus 12/1200 on its long side along the inboard side, two SuperPack 60Ah outboard under their drop shelves, bus shelf with the Garmin between" if cage.VARIANT.startswith("v12s")
+           title=("Front-inboard iso, panels hidden (v13): top rail slots free for lid; U-bridge breaker shelves on tray walls, buttressed posts & 254 mm standing Garmin panel on bottom rails" if cage.P.get("lid_slot")
+                  else "Front-inboard iso, panels hidden: MultiPlus 12/1200 inboard, full-height Garmin hanger on inboard rails, bus shelf in column, two SuperPack 60Ah under drop shelves" if cage.VARIANT.startswith("v12s")
                   else "Front-inboard iso, panels hidden: MultiPlus-II on its long side along the inboard side, two Smart 200Ah outboard, bus column between" if cage.P.get("box") == "v13"
                   else "Front-inboard iso, panels hidden: MultiPlus on its side at the front, bus shelf with the Cerbo flat on its pedestal, batteries behind" if cage.P["card_plane"] == "v12"
                   else "Front-inboard iso, panels hidden: two cards (inverter, charge) and the bus deck on the battery rack" if cage.P["card_plane"] == "v9"
@@ -117,7 +125,8 @@ if __name__ == "__main__":
                   else "Front-inboard iso, panels hidden: dist card in front, inverter/charger card behind it, batteries at the back"))
     render(asm, os.path.join(d, "iso-back.png"), 24, 215, hide=("lid", "panel", "icebox"),
            title="Back-outboard iso, panels hidden: " + ("three batteries upright, fourth on its long side on the shelf" if cage.P["batt_layout"] == "row3_top1"
-                  else "two SuperPack 60Ah in their trays, breaker drop shelves over them, the inverter plate with the charge gear on its column face" if cage.VARIANT.startswith("v12s")
+                  else "symmetric U-bridge breaker shelves bolted to 14 mm tray walls, lowered inverter plate (z 14..264) in buttressed bottom-rail posts, GX Touch 50 at back" if cage.P.get("lid_slot")
+                  else "two SuperPack 60Ah in trays, breaker drop shelves over them, inverter plate with MPPT/Cerbo/Orion on column face, GX Touch 50 at back" if cage.VARIANT.startswith("v12s")
                   else "two Smart 200Ah end to end outboard, the inverter plate with the charge gear on its column face" if cage.P.get("box") == "v13"
                   else "2 x 2 batteries in one layer, bus shelf beside them, MultiPlus plate in front" if cage.P["card_plane"] == "v12"
                   else "battery rack with the bus deck on top, two cards in front" if cage.P["card_plane"] == "v9"
@@ -126,11 +135,14 @@ if __name__ == "__main__":
                   else ("four Lithium Smart 200Ah in a 2 x 2 printed rack, cards along the inboard wall" if cage.BS["arrange"] == "2x2" else "two Lithium Smart 200Ah end to end in the outboard column, cards along the inboard wall") if cage.P["card_plane"] == "xz" else "two upright stacks of two batteries"))
     if cage.P["card_plane"] != "v12":   # nothing lifts out of v12
         render(asm, os.path.join(d, "cards-lifted.png"), 24, 35, hide=("lid", "panel", "icebox"), lift=cage.in_H * 0.8, title="All three cards lifted out the top")
-    render(asm, os.path.join(d, "front.png"), 0, 0, hide=("lid", "panel", "icebox"), title="Front elevation, panels hidden")
-    render(asm, os.path.join(d, "top.png"), 90, -90, hide=("lid", "icebox"), title=("Top-down, lid off: batteries and drop shelves along the bottom edge, bus shelf, MultiPlus 12/1200 along the top edge, ports at the right" if cage.VARIANT.startswith("v12s")
-           else "Top-down, lid off: batteries along the bottom edge, bus column, MultiPlus-II along the top edge, ports at the right" if cage.P.get("box") == "v13"
-           else "Top-down, lid off: batteries and bus shelf (left), MultiPlus and front panel (right)" if cage.P["card_plane"] == "v12" else "Top-down, lid off: rear layer (left) and cards (right)"))
+    render(asm, os.path.join(d, "front.png"), 0, 0, hide=("lid", "panel", "icebox"),
+           title=("Front elevation, panels hidden (v13): all components <= z 264 mm, clear below the z 266.2..272.2 mm slot-captured lid" if cage.P.get("lid_slot") else "Front elevation, panels hidden"))
+    render(asm, os.path.join(d, "top.png"), 90, -90, hide=("lid", "icebox"),
+           title=("Top-down, lid off (v13): U-bridge breaker shelves on centered-pocket trays, bus shelf in column, MultiPlus 12/1200 + standing Garmin panel inboard" if cage.P.get("lid_slot")
+                  else "Top-down, lid off: batteries and drop shelves along bottom edge, bus shelf in column, MultiPlus 12/1200 + Garmin hanger along top edge, ports at right" if cage.VARIANT.startswith("v12s")
+                  else "Top-down, lid off: batteries along the bottom edge, bus column, MultiPlus-II along the top edge, ports at the right" if cage.P.get("box") == "v13"
+                  else "Top-down, lid off: batteries and bus shelf (left), MultiPlus and front panel (right)" if cage.P["card_plane"] == "v12" else "Top-down, lid off: rear layer (left) and cards (right)"))
     render(asm, os.path.join(d, "with-icebox-top.png"), 90, -90, hide=("lid",), title="Top-down with the IceBox")
     if cage.P.get("gx_touch"):
         render(asm, os.path.join(d, "back-panel.png"), 12, 180, hide=("icebox",), opaque=("panel", "lid"),
-               title="The back panel from behind, as you see it from the tailgate: the GX Touch 50 flush display in its printed bezel at the inboard end (left), perforations elsewhere")
+               title="Back panel (tailgate view): GX Touch 50 flush display in printed bezel at inboard end (left), perforated slots elsewhere")

@@ -131,9 +131,12 @@ def raster(tris):
 
 
 def build_plates(stl_dir, quiet=False):
+    import glob
+    has_clips = os.path.exists(os.path.join(stl_dir, "print_post_clip_0.stl"))
     for name, items in PLATES.items():
+        if name == "plate_inverter_posts" and not has_clips:
+            items = [("print_post_inverter_0.stl", 0, None), ("print_post_inverter_1.stl", 0, None)]
         out, x, parts, y_row, row_h = [], 0.0, [], 0.0, 0.0
-        import glob
         expanded = []
         for fn, rotz, at in items:   # a glob entry stands for every matching file
             expanded += [(os.path.basename(m), rotz, at) for m in sorted(glob.glob(os.path.join(stl_dir, fn)))] if "*" in fn else [(fn, rotz, at)]
