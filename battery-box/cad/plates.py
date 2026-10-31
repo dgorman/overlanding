@@ -79,6 +79,8 @@ ORIENT_RULES = [   # (file-name prefix, orientation); first match wins; anything
     ("print_post_clip", flat),                  # on the plain outer face, countersink up
     ("print_plate_inverter_tile", flat),        # on the plain back: pilot holes and the half-lap rabbets face up
     ("print_plate_inverter_spline", flat),
+    ("print_garmin_hanger", flat),
+    ("print_touch_bezel", flat),              # the 3 mm trim bezel lies flat            # the 6 mm hanger plate lies on its plain back, insert pilots up
     ("print_tool_tap_guide", top_down),         # pocket up (modelled pocket-down)
 ]
 

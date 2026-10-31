@@ -29,6 +29,7 @@ nuts["top outboard depth rail (drop-shelf hangers)"] = sorted(fx(tx + wall + clr
 yt = cage.V13["plate_y"] + cage.P["card_t"] / 2 + cage.P["post_w"] / 2
 nuts["bottom back width rail (post 0 sill; tray 0 end wall; bus shelf back wall)"] = sorted([fy(yt - 12), fy(ty + 28), fy(ty + fw - 28), fy(ty + fw + 30), fy(cage.V13["plate_y"] - 40)])
 nuts["bottom front width rail (post 1 sill; tray 1 end wall; bus shelf front wall)"] = sorted([fy(yt - 12), fy(ty + 28), fy(ty + fw - 28), fy(ty + fw + 30), fy(cage.V13["plate_y"] - 40)])
+nuts["top inboard depth rail (Garmin hanger)"] = sorted([fx(cage.out_D - 25.0 - 55.0 - 20.0 - 130.0 + 25.0), fx(cage.out_D - 25.0 - 55.0 - 20.0 - 130.0 + 130.0 - 25.0)])
 nuts["top back width rail (clip 0)"] = [fy(yt - 2)]
 nuts["top front width rail (clip 1)"] = [fy(yt - 2)]
 
@@ -76,11 +77,14 @@ for lbl, ys, xs_, rail_y in (("bottom", None, nuts["bottom outboard depth rail (
 for x in nuts["top outboard depth rail (drop-shelf hangers)"]:
     ax.plot(X0 + x, B / 2 + 8, marker="^", color="#b31a1a", ms=6)
     ax.text(X0 + x, -26, f"{x:.0f}", ha="center", fontsize=7, color="#b31a1a")
+for x in nuts["top inboard depth rail (Garmin hanger)"]:
+    ax.plot(X0 + x, W - B / 2 - 8, marker="v", color="#b31a1a", ms=6)
+    ax.text(X0 + x, W + 2, f"{x:.0f}", ha="center", fontsize=7, color="#b31a1a")
 for y in nuts["bottom back width rail (post 0 sill; tray 0 end wall; bus shelf back wall)"]:
     ax.plot(B / 2, Y0 + y, marker=">", color="#1a4fb3", ms=6); ax.text(-14, Y0 + y, f"{y:.0f}", ha="right", va="center", fontsize=7, color="#1a4fb3")
 for y in nuts["bottom front width rail (post 1 sill; tray 1 end wall; bus shelf front wall)"]:
     ax.plot(D - B / 2, Y0 + y, marker="<", color="#1a4fb3", ms=6); ax.text(D + 14, Y0 + y, f"{y:.0f}", ha="left", va="center", fontsize=7, color="#1a4fb3")
-ax.text(D / 2, W + 34, "v12s placement, plan view (lid off). Rails grey; blue arrows = drop-in T-nut positions in the BOTTOM rails' inner slots, red = TOP outboard rail.\n"
+ax.text(D / 2, W + 34, "v12s placement, plan view (lid off). Rails grey; blue arrows = drop-in T-nut positions in the BOTTOM rails' inner slots, red = TOP rails (outboard: drop-shelf hangers; inboard: the Garmin hanger).\n"
         "Depth positions are measured from the back rail's inner face, width positions from the outboard rail's inner face (both at 0 on their rail).",
         ha="center", va="bottom", fontsize=8.5)
 ax.text(-8, W / 2, "BACK (against the main IceBox)", rotation=90, ha="right", va="center", fontsize=9, color="#444")

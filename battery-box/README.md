@@ -16,16 +16,16 @@
 
 ## The build: v12s
 
-The frame of the **25 in IceBox 1.3** you were given, cut down in height only: **635 × 487 × 282 mm (25.0 × 19.2 × 11.1 in)**, the IceBox's width, 127 mm shorter than the 30 in IceBox it stands against and 277 mm lower. Not card based: lid off and every unit is in reach. Inside it, your MultiPlus 12/1200-class inverter and two SuperPack 60Ah; four more SuperPacks live in pack2 on an SB175 umbilical. The viewer draws it stacked on the IceBox, rear faces flush, which puts the lid 841 mm (33.1 in) above the plate; where it actually sits in the truck is still yours to decide.
+The frame of the **25 in IceBox 1.3** you were given, cut down in height and depth: **571.5 × 488 × 281.7 mm (22.5 × 19.2 × 11.1 in)** as built (25 mm metric rails, 25.75 mm cubes, height rails at 230.2, depth rails at 520.0), the IceBox's width, 127 mm shorter than the 30 in IceBox it stands against and 277 mm lower. Not card based: lid off and every unit is in reach. Inside it, your MultiPlus 12/1200-class inverter and two SuperPack 60Ah; four more SuperPacks live in pack2 on an SB175 umbilical. The viewer draws it stacked on the IceBox, rear faces flush, which puts the lid 841 mm (33.1 in) above the plate; where it actually sits in the truck is still yours to decide.
 
 | Zone | What is there |
 |---|---|
 | Inboard side, full depth | the **MultiPlus 12/1200 on its long side**, hanging by its four keyholes on a printed plate that runs the depth (6 tiles on half-laps and splines) and stands in two printed posts against the width rails, bolted to the bus shelf's inboard wall; its cable end faces the front |
 | Outboard side | **two SuperPack 60Ah** in single-print trays, one at each end of the zone, each tied to the outboard rail (two countersunk 1/4-20 into its inner slot), to the bus shelf (three M4 from the column side) and to its width rail (the tray's end wall sits on the rail's face: two more countersunk 1/4-20 into its inner slot); 30 mm of lug room over each. Over the middle of each battery a **breaker drop shelf** that is also the **battery hold-down**: a printed plate on a 3 mm foam pad pressed onto the battery, hung from the top outboard rail's inner slot (two countersunk 1/4-20 into drop-in T-nuts) and standing on the tray's 21 mm inboard wall (two M4 into its top), carrying that battery's **Eaton Bussmann 285 150 A breaker** 17 mm under the lid, its positive lead going straight up to it |
 | Column between, 110 wide | the **bus shelf** in three half-lapped plates running to the front rail: the two bus bars and the SmartShunt, nothing tall, so there is room for lugs |
-| Plate's column face | MPPT 100/30 upright, Cerbo GX, Orion XS with the Garmin PowerSwitch above it; a 70 × 70 cable window low in the front tile, level with the bus bars |
+| Plate's column face | MPPT 100/30 upright, Cerbo GX, Orion XS in one row along the top (the Garmin PowerSwitch hangs on a printed plate from the top inboard rail, in the lane beside the MultiPlus); a 70 × 70 cable window low in the front tile, level with the bus bars |
 | Front panel | a **solid offcut of an IceBox side panel** with the ports cut straight through it: two L14-30 (shore in, inverter out), two SB50 inlets (solar, alternator), three 12 V and two USB sockets on the inboard half, and the **SB175 inlet for pack2** in front of the bus column |
-| Back, sides, lid | the IceBox's perforated rear panel cut down (slots and all), its two side panels cut down, its top panel uncut |
+| Back, sides, lid | the IceBox's perforated rear panel cut down (slots and all) with a **GX Touch 50** flush display let into its inboard end behind a printed bezel; its two side panels cut down; the lid a flat panel on top (to source) |
 
 **Electrical.** Two SuperPack 60Ah are 120 Ah and **60 A continuous** (160 A for 10 s), about 700 W of AC; the SuperPacks' own BMSs cut out above that, and the 12/1200's 50 A charger is already under their 60 A charge limit. With pack2 on the umbilical the bank is six SuperPacks: 360 Ah, 180 A continuous, enough for the inverter's full 105 A. Each battery's positive lead goes through its own Bussmann 285 60 A breaker on the drop shelf above it (the SuperPack is 30 A continuous, 80 A for 10 s), then 4 AWG to the bus bars; the umbilical is 2 AWG.
 
@@ -35,7 +35,7 @@ The frame of the **25 in IceBox 1.3** you were given, cut down in height only: *
 
 ### From the second IceBox, not printed
 
-The 8 corner cubes and **11 of the 12 rails** (the 25 in box's depth rails 584.2 and width rails 436.6 **uncut**; only the height rails cut, to 231.2). The IceBox has **no bottom front width rail**, the fridge slides out through that opening, and the box needs one (front panel tongue, tray 1's end wall, the shelf's front wall, post 1's sill): the bar from a Goose Gear Extrusion Frame Modification Kit x.31 (ordered 2026-10-30: same rail, same finish, pre-tapped), the two side panels cut down to 237 tall, the **perforated rear panel cut down** to be the box's back panel, the top panel uncut as the lid, and the **front panel cut from a side-panel offcut** (762 × 277 is left after each side is cut to 237; the front needs 443 × 237) with the ports cut through it. Nothing on the box is printed sheet. The panels are phenolic-faced plywood (confirmed on the donor box, 2026-10-21), modelled at 6 mm; caliper a panel edge before cutting the front, since the slot fit depends on it.
+The 8 corner cubes and **11 of the 12 rails** (the width rails 436.6 **uncut**; the height rails cut to 230.2 and the depth rails to 520.0). The IceBox has **no bottom front width rail**, the fridge slides out through that opening, and the box needs one (front panel tongue, tray 1's end wall, the shelf's front wall, post 1's sill): the bar from a Goose Gear Extrusion Frame Modification Kit x.31 (ordered 2026-10-30: same rail, same finish, pre-tapped), the two side panels cut down to 237 tall, the **perforated rear panel cut down** to be the box's back panel, the top panel uncut as the lid, and the **front panel cut from a side-panel offcut** (762 × 277 is left after each side is cut to 237; the front needs 443 × 237) with the ports cut through it. Nothing on the box is printed sheet. The panels are phenolic-faced plywood (confirmed on the donor box, 2026-10-21), modelled at 6 mm; caliper a panel edge before cutting the front, since the slot fit depends on it.
 
 <a id="rail-cutting"></a>
 ### Cutting and tapping the rails, one shot
@@ -44,15 +44,15 @@ The frame rails come from the second IceBox already end-tapped for the corner-cu
 
 | Box | Height rails ×4 | Depth rails ×4 | Width rails ×4 |
 |---|---|---|---|
-| **v12s (the build, 25 in donor)** | 508.0 → **231.2** (offcut 276.8) | 584.2 **uncut** | 436.6 uncut |
+| **v12s (the build, 25 in donor, as built 2026-10-30)** | 508.0 → **230.2** (done) | 584.2 → **520.0** (22.5 in box) | 436.6 uncut |
 | **added bottom front width rail** | | | a mod-kit x.31 bar, 436.6 as supplied, no cut |
 
-Rail length = outside dimension − 2 × 25.4 (one cube at each end): 282 − 50.8 = 231.2 for the height rails. The stock box checks out the same way: 558.8 − 50.8 = 508.
+Rail length = outside dimension − 2 × 25.75 (one cube at each end; the cubes measure 25.75, the rails 25.0): 281.7 − 51.5 = 230.2 for the height rails, 571.5 − 51.5 = 520.0 for the depth rails.
 
-Those lengths assume 25.4 mm corner cubes with the rails butting the cube faces. **Before cutting anything, measure an uncut width rail**: it should be 436.6. If it is not, the cube is not 25.4 and every cut length shifts by the same amount; tell the model (`C`) and re-read the table.
+The rails are metric 25-series (25 × 25 mm, 6.5 mm slots, M6-sized end bores); the cubes are 25.75. **Before cutting anything, measure an uncut width rail**: it should be 436.6. If it is not, the cube is not 25.4 and every cut length shifts by the same amount; tell the model (`C`) and re-read the table.
 
 1. **Order the cuts if you can.** An 80/20 distributor or a machine shop will cut to ±0.1 mm and end-tap 1/4-20 for a few dollars a rail. That is the only way the first shot is guaranteed. If you cut at home, the rest of this list is how to make it survivable.
-2. **Practice on what you cannot ruin.** The four height-rail offcuts are 276.8 long: tap those ends first. Each 508 height rail also holds a second 231.2 if the first cut is bad. With the 25 in donor there are no depth cuts at all: four cuts, four taps.
+2. **Practice on what you cannot ruin.** The four height-rail offcuts are 276.8 long: tap those ends first. Each 508 height rail also held a second 230.2 if a first cut had gone bad; the depth rails likewise: 584.2 − 520.0 leaves a 64 mm offcut, not a second rail, so cut those at 520.5 and face down. With the box at 22.5 in there are eight cuts and eight taps: four height rails (done) and four depth rails.
 3. **Cut square and slightly long.** Mitre saw with a non-ferrous carbide blade (80 to 100 teeth, blade waxed) or a bandsaw, rail clamped, a stop block so all four are identical, cut at 231.7. Then face the end to length on a disc sander or with a mill file, checking with a square in both directions and a caliper at all four corners. Deburr inside the bore and the slots.
 **Tapping tools to buy** (one size, 1/4-20; not a tap-and-die set, whose carbon-steel plug tap and loose handle are how a bore gets cross-threaded):
 
@@ -68,7 +68,7 @@ Those lengths assume 25.4 mm corner cubes with the rails butting the cube faces.
 4. **Tap, don't drill.** The 10-series bore is 0.20 in, which is the 1/4-20 tap drill, so no drilling; if a caliper shows the bore under 5.0 mm, run a #7 drill (5.1 mm) through first. Use a spiral-point (gun) tap for aluminium, a tap guide block so it starts square, tapping fluid, a quarter turn back every half turn, and chips blown out twice. Tap 30 mm deep, more than the cube bolt needs. A plug tap in a hand chuck without a guide is how threads get cross-cut.
 5. **Dry-fit before the panels.** Bolt the four cut rails into their cubes with no panels, check the diagonals of each face match within 1 mm, then take it apart and build it properly with the panels in the slots.
 
-A 635 box cannot take a 578 mm MultiPlus-II with its cable room, or two 200Ah batteries; that was decided on 2026-10-18 when the II was cancelled.
+A 571.5 box cannot take a 578 mm MultiPlus-II with its cable room, or two 200Ah batteries; that was decided on 2026-10-18 when the II was cancelled.
 
 ### How the units bolt to the inverter plate
 
@@ -80,7 +80,7 @@ The v12s plate tiles carry a pilot hole under every unit. Every unit mounts with
 | MPPT 100/30 upright | 4 keyholes, 71.5 across × 176 up | M5 | M5 × 8 pan head left 3 mm proud (5 in the plate: flush on the inverter side, under the MultiPlus) | column side |
 | Cerbo GX | 4 lugs, 143 × 58 | M4 | M4 × 8 (flush on the inverter side, under the MultiPlus) | column side |
 | Orion XS | 4 lugs, 109.3 × 113 | M4 | M4 × 8 (its back end is under the MultiPlus) | column side |
-| Garmin PowerSwitch, turned 90° | its bracket, 2 screws (spacing to verify) | M4 | M4 × 10 (nothing behind it: the window is below, the column face there is bare) | **inverter side**, above the cable window |
+| Garmin PowerSwitch, on its printed hanger plate | its bracket, 2 screws (spacing to verify) | M4 short inserts in the 6 mm hanger | M4 × 10 | the hanger hangs from the top inboard rail's inner slot (2 countersunk 1/4-20), in the lane beside the MultiPlus |
 | Bussmann 285 × 2 | 2 × 6.6 mm holes on a 56.6 × 26.7 diagonal (series drawing; lower-left to upper-right seen from above with the length to the right) | M5 | M5 × 12 + washer | drop shelf, from above |
 
 **No nuts anywhere on the plate, and nothing proud on the far face.** Every screw threads into an insert in the 6 mm plate, so each one may carry at most 6 mm of thread inside the plate (lug or washer stack + 6). The MultiPlus covers the inverter side from x 46 to 421, two of its keyhole screws land behind the MPPT and the Orion on the column side, and the units' backs stand only 2-3 mm off the plate, so a screw one size too long touches the unit on the other face. The lengths in the table are chosen for that. With the Garmin on the inverter face in front of the MultiPlus, only its feed comes through the window from the bus bars; its outputs run 20-60 mm to the sockets in the front panel.
@@ -102,7 +102,7 @@ One print per battery, mirror-identical, 130 × 168 × 243 mm, about 330 cm³ of
 
 The hanger has no inserts: its two 1/4-20s go through 6.6 mm clearance holes, countersunk on the inner face, into drop-in T-nuts in the rail.
 
-**Hardware per shelf:** 2 × 1/4-20 × 3/4 in flat-head (countersunk) screws + 2 drop-in 10-series T-nuts; 2 × M4 × 10 button heads; 2 × M5 × 12 button heads with M5 washers; the breaker's M6 stud nuts and lock washers come fitted on the 285.
+**Hardware per shelf:** 2 × 1/4-20 × 1/2 in flat-head (countersunk) screws + 2 drop-in 10-series T-nuts; 2 × M4 × 10 button heads; 2 × M5 × 12 button heads with M5 washers; the breaker's M6 stud nuts and lock washers come fitted on the 285.
 
 **Build order** (with the trays bolted in and the batteries already in them: the shelf covers the battery's middle, so the battery cannot go in afterwards):
 
@@ -138,7 +138,7 @@ Then into the box, from the top, in this order. Every fastener below is reached 
 4. **Inverter plate.** Lower it with its units into the two post slots; the units clear everything on the shelf (the MPPT and Orion stand 42 mm over the bus bars, the Cerbo 78 mm over the breakers). Its bottom band lands on the shelf's inboard wall: six M4 through that wall into the plate inserts, from the column side at z 28, under the MPPT. Then the two clips: M4 down into each post top, countersunk 1/4-20 into the top rail's T-nut, with the clip's rail bolt 10 mm off the plate line so the key passes the plate's top edge.
 5. **Inverter.** Hang it on the plate from above on its four keyholes over the M6 pan heads and make up its DC leads through the plate's window to the bus bars, and its AC in/out to the port strip beside it.
 6. **Lugs.** Each battery's positive up to its breaker, breaker to the + bus bar, negatives to the shunt; the inverter's DC leads through the window.
-8. **Panel pigtails** (SB50s, the pack's SB175, Garmin outputs through the window to the sockets), then the **lid**.
+8. **Panel pigtails** (SB50s, the pack's SB175, the Garmin's outputs from the shelf to the sockets), then the **lid**: a flat 571.5 × 488 panel on the top rails, T-nuts in their top-face slots.
 
 
 <a id="v12-printing-notes"></a>
@@ -149,11 +149,13 @@ All parts are in `stl/v12s/`, regenerated by `python cage.py v12s`; the bed chec
 | Part | Size (mm) | On the bed | Material and settings |
 |---|---|---|---|
 | 2 battery trays | 242 × 167 × 36 | flat, floor down, brim | PETG or ASA, 5 walls, 40 % infill minimum (the floors carry 7.5 kg each; 100 % infill on the floor is cheap insurance) |
-| 3 bus shelf plates | 215 × 110 × 34 | flat, brim, no supports (the half-laps are in the walls, the floors butt) | PETG or ASA, 4 walls, 30 % |
-| 6 inverter plate tiles | 189 × 140 × 6 | flat, as exported (each row's rabbets and spline pockets are on one face, so every tile prints on its untouched face), brim | PETG or ASA, 4 walls, 30 %; pilot holes under every unit |
+| 3 bus shelf plates | 215 / 152 / 195 × 110 × 34 | flat, brim, no supports (the half-laps are in the walls, the floors butt) | PETG or ASA, 4 walls, 30 % |
+| 6 inverter plate tiles | 168.5 × 140 × 6 | flat, as exported (each row's rabbets and spline pockets are on one face, so every tile prints on its untouched face), brim | PETG or ASA, 4 walls, 30 %; pilot holes under every unit |
 | 8 plate splines | 60 × 18 × 3 | all on `stl/v12s/plate_inverter_splines.stl` | 100 % |
 | 2 inverter posts | 254 × 24 × 18 | flat on the solid back, slot up (both posts and both clips pre-laid on `stl/v12s/plate_inverter_posts.stl`, the posts at 45° so a brim fits the bed) | PETG or ASA, 5 walls, 50 % (the slot and the sill take the plate's weight) |
-| 2 post clips | 40 × 20 × 28 | on the plain outer face, countersink up (on the posts plate) | same as the posts |
+| 2 post clips | 40 × 20 × 27.7 | on the plain outer face, countersink up (on the posts plate) | same as the posts |
+| 1 Garmin hanger plate | 130 × 149 × 6 | flat, as exported | PETG, 4 walls, 40 %; 2 countersunk 1/4-20 into the top inboard rail, 2 short M4 inserts for the Garmin |
+| 1 GX Touch 50 trim bezel | 150 × 108 × 3 | flat | PETG, 100 %; frames the display opening in the back panel |
 | 2 breaker drop shelves | 130 × 168 × 243 | on its side, the 130 mm edge vertical (pre-oriented in `stl/v12s/plate_breaker_shelf.stl`, print twice; two don't fit one bed), no supports | PETG or ASA, 4 walls, 40 %, 0.2 mm layers; see the sub-assembly section |
 | 2 lid handles | small | as modelled | PETG, 4 walls, 30 % |
 
@@ -699,6 +701,8 @@ Same 487.4 mm width, so the vertical bars line up and the outboard faces are flu
 | 2026-10-25 | **Drop shelf, second fit (user, after the reprint):** holes line up with the 285. (1) Still 2 mm of daylight over the battery: `shelf_drop=2` lowers the plate to 1 mm over the body top (the pad space); the pad in the model is now 1 mm. (2) The two plate holes were printed 8.0 mm for M6 inserts that were never ordered: now 6.4 mm for the M5 94180A361 inserts and M5 × 12 + washer that are in the McMaster order. (3) The 18 mm end gussets became full-length ribs (18 at the hanger, 5 at the lip): on its 130 mm edge the top pair of gussets was 162 mm² hanging in air and strung. Overhang scan 534 → 195 mm² (all that is left is the roofs of horizontal holes). |
 | 2026-10-24 | **Breaker drop shelf fitted to the parts in hand.** (1) The printed shelf stood about 3/8 in off the battery: the SuperPack's 213 mm is to the top of its terminals, and its flat body top is at 208 (measured on the Victron STEP, 5 mm studs), so the plate drops 5 mm and its pad now sits on the body with no gap (`batt_body_h`, `shelf_pad` parameters). (2) The breakers are the **150 A 285150F-121-S** (same 285 body); the shelf's two holes were on the mirrored diagonal and did not fit, now lower-left to upper-right as in the series drawing. Reprint both shelves. |
 | 2026-10-24 | **Plate layout (user):** the Garmin PowerSwitch moves to the plate's **inverter face**, turned 90°, above the cable window (x 480-555, z 145-270): 59 mm in front of the MultiPlus's cable end, 18 mm behind the socket bodies, so only its feed passes through the window and its outputs run straight to the ports instead of a bundle through the window. The MPPT, Cerbo and Orion become **one row** along the top of the column face (tops at 266; the Orion 11 lower so its lugs clear the tile lap), leaving the band over the shelf's bus bars and shunt open for lugs. The plate code now asserts every unit insert clears the tiles' lap band and that every unit has a hole pattern. Screw lengths in the bolting table set so nothing is proud on the far face (no nuts anywhere on the plate). |
+| 2026-10-30 | **GX Touch 50** flush display in the back panel's inboard end (user), 30 mm behind it to the MultiPlus for the body and a right-angle plug; printed trim bezel over the perforations. Opening size to be taken from Victron's flush-kit template. |
+| 2026-10-30 | **As built: 22.5 in deep, metric frame** (user: 2.5 in shorter after the test fit). Model set to the real frame (25 mm rails, 25.75 cubes, height rails 230.2, box 571.5 × 488.1 × 281.7); depth rails to be cut to 520.0. Bus shelf end plates unchanged (already printed), middle plate 132; Garmin moved onto a printed hanger plate from the top inboard rail, the user's idea (no room in front of the MultiPlus's cable end); tray corners notched for the proud cubes; panel tongues stop at the cubes; screw lengths per joint (order 3). Full audit with a slot ledger in `manual/audit-2026-10-30.md`. |
 | 2026-10-30 | **The donor IceBox has no bottom front width rail** (user: the fridge opening). The parts list had assumed all 12 rails. One 436.6 mm 1 in rail must be added (McMaster 47065T101 by the foot, or a Goose Gear mod-kit bar if any remain), tapped both ends: 5 T-nuts and the front panel's bottom tongue live on it. |
 | 2026-10-25 | **Trays snug and strapless** (user): pocket clearance 0.5 mm per side instead of 1 (1 mm per side would be zero and the battery would not drop in), and the strap groove and end-wall slots are gone since the drop shelf is the hold-down. Trays 242 long, no bridges at all now. |
 | 2026-10-25 | **Trays and bus shelf bolt straight to the width rails; brackets gone; countersinks fixed** (user: why not bolt the trays to the rail directly, and why does the shelf stop short of the rail?). Each tray now butts its width rail and takes two countersunk 1/4-20 through its end wall; the bus shelf runs rail face to rail face with two 1/4-20 through each end wall; the four L brackets, their pads and inserts are gone (20 T-nuts, 20 flat heads, 12 long M4 inserts). While doing it: the 'countersinks' on the tray walls, brackets and shelf wall had been 13 mm counterbores placed 0.5 mm off the wall, in the air, so those holes were plain and the flat heads would have stood 4 mm proud against the batteries (the already-printed PLA trays have this: countersink them by hand or reprint). Now real 82° cones, and `--clash` probes every one at its face (16/16). Manual steps renumbered 1-10, placement and T-nut positions regenerated. |

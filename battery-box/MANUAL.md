@@ -1,8 +1,8 @@
 # 4Runner Electronics Box: Build Manual (v12s)
 
-Step-by-step assembly of the v12s box: the frame of a 25 in Goose Gear IceBox 1.3 cut down to 282 mm tall, holding a MultiPlus 12/1200-class inverter and two Victron SuperPack 60Ah, with the charge gear on a printed plate and one Bussmann 285 breaker over each battery. Every diagram is rendered from the CAD model (`cad/cage.py`, variant `v12s`), so what you see is what the STLs produce. Parts placed in a step are shown in colour; parts already in place are grey. The front of the box, with the ports, is on the right in every picture.
+Step-by-step assembly of the v12s box: the frame of a 25 in Goose Gear IceBox 1.3 cut down to 281.7 mm tall and 571.5 mm (22.5 in) deep, holding a MultiPlus 12/1200-class inverter and two Victron SuperPack 60Ah, with the charge gear on a printed plate and one Bussmann 285 breaker over each battery. Every diagram is rendered from the CAD model (`cad/cage.py`, variant `v12s`), so what you see is what the STLs produce. Parts placed in a step are shown in colour; parts already in place are grey. The front of the box, with the ports, is on the right in every picture.
 
-Outer size: **635 × 487 × 282 mm (25.0 × 19.2 × 11.1 in)**. Loaded weight about 42 kg: frame 15, batteries 15, inverter 8, prints and gear 4.
+Outer size: **571.5 × 488 × 281.7 mm (22.5 × 19.2 × 11.1 in)**, as built: 25 mm metric rails, 25.75 mm cubes. Loaded weight about 42 kg: frame 15, batteries 15, inverter 8, prints and gear 4.
 
 **Before you start, read these two rules.** They are why every fastener in this manual is reachable.
 
@@ -20,16 +20,16 @@ Outer size: **635 × 487 × 282 mm (25.0 × 19.2 × 11.1 in)**. Loaded weight ab
 | 8 corner cubes | the box's corners | none |
 | 3 width rails, 436.6 mm | back top and bottom, front top | none |
 | **1 width rail to add, 436.6 mm** | **front bottom** (the IceBox has no rail here: the fridge slides out through the opening) | the bar from a Goose Gear **Extrusion Frame Modification Kit x.31** (CampKitchen/IceBox), ordered 2026-10-30: the same rail in the same finish, already tapped. No cut, no tap. Measure it against a donor width rail when it arrives (436.6) |
-| 4 depth rails, 584.2 mm | sides, top and bottom | none |
-| 4 height rails, 508 mm | corners | **cut to 231.2 mm**, one end, re-tap 1/4-20 |
+| 4 depth rails, 584.2 mm | sides, top and bottom | **cut to 520.0 mm** (20.47 in), one end, re-tap |
+| 4 height rails, 508 mm | corners | **cut to 230.2 mm** (9 1/16 in, done), one end, re-tap |
+| 2 side panels | the box's sides | cut to 237 mm tall and **527.5 mm long** (the depth between the corner rails plus two 3 mm tongues) |
+| perforated rear panel | the box's back | cut to 237 mm tall, slots and all; then the **GX Touch 50 opening** at its inboard end (centre 80 mm from the inboard corner rail, 160 mm up; size from Victron's flush-kit template, modelled 128 × 86) |
+| one side-panel offcut (635 × 322) | the box's **front panel** | cut to 444 × 237, then the port holes |
+| top panel | **not the lid**: it is a slot-captured 591 × 443 panel that would sit 16 mm down inside the frame, on top of the plate. The lid is a flat **571.5 × 488 × 6** panel laid on the top rails (being sourced), held by T-nuts in the top rails' top-face slots | spare |
 
-The cut length already allows for the corner cubes: the box is 282 mm (11.1 in) tall outside, a cube is 25.4 mm, and the rail runs between two cubes, so 282 − 2 × 25.4 = **231.2 mm (9.10 in)**. Check: the stock 558.8 mm (22 in) box uses the same cubes and its height rails are 558.8 − 50.8 = 508, which is what you have. Width and depth rails stay as they are.
-| 2 side panels | the box's sides | cut to 237 mm tall |
-| perforated rear panel | the box's back (against the main IceBox) | cut to 237 mm tall, slots and all |
-| one side-panel offcut (635 × 277) | the box's **front panel** | cut to 443 × 237, then the port holes |
-| top panel | the lid | none |
+The cut lengths allow for the corner cubes: the rails are 25 × 25 mm (metric 25-series) and the cubes 25.75, and a rail runs between two cubes. Height: 281.7 − 2 × 25.75 = **230.2**. Depth: 571.5 − 51.5 = **520.0**. Width rails stay 436.6, which gives a box 488.1 wide.
 
-The IceBox 1.3 has **no bottom front width rail** (the fridge slide needs the opening), and the box needs one: the front panel's bottom tongue, tray 1's end wall, the bus shelf's front wall and post 1's sill all tie into it (5 T-nuts). Add one as in the parts table above; it comes tapped, so the height rails stay the only four ends you tap. Measure an uncut width rail before cutting anything: it should read 436.6 mm. If it does not, the cubes are not 25.4 mm and every number below shifts by the same amount; re-run the model with the real cube size.
+The IceBox 1.3 has **no bottom front width rail** (the fridge slide needs the opening), and the box needs one: the front panel's bottom tongue, tray 1's end wall, the bus shelf's front wall and post 1's sill all tie into it (5 T-nuts). Add one as in the parts table above; it comes tapped, so the height rails stay the only four ends you tap. Measure an uncut width rail before cutting anything: it should read 436.6 mm, and a rail across its width 25.0. If it does not, the cubes are not 25.4 mm and every number below shifts by the same amount; re-run the model with the real cube size.
 
 ### 1.2 Printed parts
 
@@ -45,6 +45,8 @@ Every `print_*.stl` and `plate_*.stl` is exported **already lying in its print o
 | Inverter plate tile | 6 | [00](stl/v12s/print_plate_inverter_tile_00.stl), [01](stl/v12s/print_plate_inverter_tile_01.stl), [10](stl/v12s/print_plate_inverter_tile_10.stl), [11](stl/v12s/print_plate_inverter_tile_11.stl), [20](stl/v12s/print_plate_inverter_tile_20.stl), [21](stl/v12s/print_plate_inverter_tile_21.stl) | flat, as exported. Every tile has one untouched face and prints on it: the lower row carries its lap rabbet and spline pockets on the inverter face, the upper row on the column face. No bridges, no supports | 4 / 30 % | 179 × 140 × 6. First digit = column from the back, second = row from the bottom. Pilot holes for every unit are in them |
 | Plate spline | 8 | [plate_inverter_splines.stl](stl/v12s/plate_inverter_splines.stl), all eight on one bed (two per row at each of the two vertical joints) | flat, as exported | 4 / 100 % | 60 × 18 × 3; glued into their flush pockets, lower row's on the inverter face, upper row's on the column face |
 | Inverter post + clip | 2 + 2 | [plate_inverter_posts.stl](stl/v12s/plate_inverter_posts.stl): both posts and both clips on one bed | pre-laid: posts flat on their solid backs, slot up, at 45° across the bed; clips on their plain face, countersink up; no supports | 5 / 50 % | posts 254 × 24 × 18, clips 40 × 20 × 28. Mirror pairs: 0 at the back rail, 1 at the front; mark them as they come off the bed |
+| Garmin hanger plate | 1 | [hanger](stl/v12s/print_garmin_hanger.stl) | flat, as exported | 4 / 40 % | 130 × 149 × 6: hangs from the top inboard rail's inner slot on two countersunk 1/4-20, the Garmin's bracket on its face (2 short M4 inserts) |
+| GX Touch 50 trim bezel | 1 | [bezel](stl/v12s/print_touch_bezel.stl) | flat, as exported | 4 / 100 % | 150 × 108 × 3 frame around the display opening in the back panel; four #6 × 1/2 in wood screws into the ply |
 | **Tool:** rail-end tap guide | 1 | [tap_guide](stl/v12s/print_tool_tap_guide.stl) | pocket up, as exported | 4 / 100 % | 46 × 46 × 32 cap with a 25.3 mm pocket that fits snugly over the 25 mm rail end, with a 6.5 mm bore in line with the rail's centre hole: starts the 1/4-20 tap square and centred. Print this first |
 
 About 2.5 kg of filament, 35 hours. Pictures of each part are in [section 4](#4-the-printed-parts).
@@ -53,12 +55,19 @@ About 2.5 kg of filament, 35 hours. Pictures of each part are in [section 4](#4-
 
 | Item | Qty (buy) | Where it goes |
 |---|---|---|
-| Drop-in (roll-in) 1/4-20 T-nuts for 1 in 10-series slot | 20 (20, none spare) | every tie into a rail's inner slot |
-| 1/4-20 × 3/4 in flat-head (countersunk) screws, stainless | 20 (50) | with the T-nuts: trays 8 (two per outer wall, two per end wall), post sills 2, clips 2, bus shelf end walls 4, drop-shelf hangers 4 |
+| Drop-in (roll-in) 1/4-20 T-nuts, 1 in / 10-series type | **22** (20 bought: order one more pack of 6000N501) | every tie into a rail's inner slot. The frame is metric 25-series; its slot is 6.5 mm like the 10-series, so these fit |
+| 1/4-20 flat-head (countersunk) screws, stainless: **1/2 in** (92210A537) | 18 (50) | trays' outer and end walls, bus shelf end walls, drop-shelf hangers, Garmin hanger: 6 mm walls |
+| 1/4-20 × 7/8 in flat head (92210A541) | 2 (25) | post clips |
+| 1/4-20 × 7/8 in button head (92949A541) | 2 (25) | post sills (plain hole, head on the post face) |
 | M4 heat-set inserts, 7.9 mm (94180A353) | 12 (50) | the thick parts: tray inboard walls 6, tray wall tops 4, post tops 2 |
-| M4 heat-set inserts, **short** (94180A351, under 6 mm) | 16 (25) | the 6 mm plate: bottom band 6, Cerbo 4, Orion 4, Garmin 2 |
-| M4 × 10 button-head screws | 32 (40) | into those inserts |
-| M5 heat-set inserts, 6.7 mm (94180A361) + M5 × 12 button heads + M5 washers | 20 (50) | MPPT 4, bus bars 4, **inverter keyholes 4** (washer under the head, left 3 mm proud), **breakers 4**, **shunt 2**. M6 inserts are too long for a 6 mm plate, so everything that was M6 is M5 with a washer |
+| M4 heat-set inserts, **short** (94180A351, under 6 mm) | 16 (25) | the 6 mm plate: bottom band 6, Cerbo 4, Orion 4; the Garmin hanger 2 |
+| M4 × 10 button heads (92095A190) | 12 (100) | shelf lip 6, drop-shelf foot 4, Garmin 2 |
+| M4 × 8 button heads (92095A189) | 14 (100) | shelf wall to plate band 6, Cerbo 4, Orion 4 (flush on the inverter face) |
+| M4 × 35 button heads (92095A199) | 2 (25) | clip down through the clip into the post top |
+| M5 heat-set inserts, 6.7 mm (94180A361) + M5 washers | 18 | MPPT 4, bus bars 4, inverter keyholes 4, breakers 4, shunt 2 |
+| M5 × 10 button heads (92095A208) | 8 (50) | inverter keyholes (washer, left 3 mm proud), breakers |
+| M5 × 8 button heads (92095A207) | 4 (50) | MPPT keyholes, left 3 mm proud |
+| M5 × 12 button heads (92095A210) | 6 (50) | bus bars, shunt |
 | CA glue | | the eight splines and the half-laps, which locate only |
 | closed-cell EPDM foam, adhesive-backed, 130 × 140, 1/16 in (1.5 mm), or 3 mm if soft | 2 | glued under each drop shelf's plate: the plate sits 1 mm over the battery body, so the shelf is the battery hold-down |
 
@@ -80,7 +89,7 @@ One order covers every fastener, insert and tapping tool in this manual. Part nu
 | M5 × 12 button-head screw, 18-8 | **92095A210** (verified) | 18 | 50 |
 | M5 flat washer, 18-8, 10 mm OD | **93475A240** (verified) | 10 | 100 |
 | (M6 × 12 button heads 92095A226 were ordered; they are spare: nothing in the box takes M6 any more) | | | |
-| 1/4"-20 × 3/4 in flat-head (82°) hex-drive screw, 18-8 | 92210A540 (confirm it reads 3/4 in; 92210A542 is the 1 in, too long) | 18 | 25 or 50 |
+| 1/4"-20 × 3/4 in flat-head (82°) hex-drive screw, 18-8 | 92210A540: **too long, bottoms out in the rail**; replaced by order 3 (1/2 in, 7/8 in) | spare | 50 |
 | 1/4"-20 **drop-in** T-slot nut for 1 in (10-series) framing | McMaster "T-slotted framing drop-in fastener nut, 1 in, 1/4"-20"; 47065T142 is the **end-feed** economy nut and will not do. The 80/20 equivalent is **#3382** | 18 | 25 |
 | 1/4"-20 HSS spiral-point (gun) tap, plug | "Spiral-point taps, 1/4"-20, high-speed steel" | 1 | |
 | T-handle tap wrench for 1/4 in taps | "T-handle tap wrenches, 1/16 to 1/4 in" | 1 | |
@@ -159,25 +168,26 @@ Every position below is measured from two reference faces inside the box: **dept
 | Part | Depth from the back rail face | Width from the outboard rail face | Height |
 |---|---|---|---|
 | Tray 0 (back) | 0 to 242 (its back wall on the back rail) | 1 to 168 | 0 to 36 |
-| Tray 1 (front) | 342 to 584 (its front wall on the front rail) | 1 to 168 | 0 to 36 |
+| Tray 1 (front) | 280 to 522 (its front wall on the front rail) | 1 to 168 | 0 to 36 |
 | Post 0 / post 1 | against the back rail / against the front rail | 269 to 293 (centre 281) | 0 to 254 |
-| Drop shelf 0 / 1 | 57 to 187 / 398 to 528 (centred on each battery) | 0 to 168 (hanger on the rail, foot on the tray wall) | 36 to 279 |
-| Bus shelf plates 0, 1, 2 | 0 to 215, 195 to 410, 390 to 584 (rail face to rail face; wall laps overlap 20) | 168 to 278 | 0 to 34 |
-| Inverter plate | 8 to 576 (in the post slots) | 278 to 284 | 21 to 277 |
+| Drop shelf 0 / 1 | 56 to 186 / 336 to 466 (centred on each battery) | 0 to 168 (hanger on the rail, foot on the tray wall) | 36 to 279 |
+| Bus shelf plates 0, 1, 2 | 0 to 215, 195 to 347, 327 to 522 (rail face to rail face; the end plates are the ones already printed, the middle one is the short one) | 168 to 278 | 0 to 34 |
+| Inverter plate | 8 to 514 (in the post slots) | 278 to 284 | 21 to 277 |
 | MultiPlus | 21 to 395 on the plate's inboard face | 286 to 387 | 22 to 271 |
 
-**Where the T-nuts go.** Slide each drop-in nut to the position below, measured along the rail from the same reference faces, then the bolt finds it. The bottom rails' inner slot is at 12.7 mm above the floor, the top rails' at 269.
+**Where the T-nuts go.** Slide each drop-in nut to the position below, measured along the rail from the same reference faces, then the bolt finds it. The bottom rails' inner slot is at 12.5 mm above the floor, the top rails' at 269.
 
 | Rail | Positions along the rail | For |
 |---|---|---|
-| Bottom outboard depth rail | 70, 172, 412, 514 from the back | the trays' outer-wall 1/4-20s (two per tray) |
-| Top outboard depth rail | 81, 161, 423, 503 from the back | the drop-shelf hangers (two per shelf) |
+| Bottom outboard depth rail | 70, 172, 350, 452 from the back | the trays' outer-wall 1/4-20s (two per tray) |
+| Top outboard depth rail | 81, 161, 360, 440 from the back | the drop-shelf hangers (two per shelf) |
 | Bottom back width rail | 29, 140, 198, 238, 281 from the outboard side | tray 0's end wall (two), bus shelf back wall (two), post 0 sill |
 | Bottom front width rail | 29, 140, 198, 238, 281 from the outboard side | tray 1's end wall (two), bus shelf front wall (two), post 1 sill |
 | Top back width rail | 291 from the outboard side | clip 0 |
 | Top front width rail | 291 from the outboard side | clip 1 |
+| Top inboard depth rail | 342 and 422 from the back | the Garmin hanger plate |
 
-Twenty nuts, every one you bought. If you load them from the rail ends before the cubes go on instead of dropping them in, put them in these rails in these counts and slide them to the positions once the frame is up.
+Twenty-two nuts: the twenty you bought plus two for the Garmin hanger, so order one more pack. If you load them from the rail ends before the cubes go on instead of dropping them in, put them in these rails in these counts and slide them to the positions once the frame is up.
 
 ### Step 1: the frame
 
@@ -207,7 +217,7 @@ Stand post 0 against the back width rail and post 1 against the front width rail
 ![Step 4](manual/img/04-trays.png)
 ![Step 4 from above](manual/img/04-trays-top.png)
 
-Empty trays, each bolted straight to two rails. Drop tray 0 into the outboard zone and push it back until its back wall sits on the back width rail's inner face and its outer wall on the outboard rail. From inside the empty pocket: two countersunk 1/4-20 through the back wall into the back rail's T-nuts (at 29 and 140 across), two through the outer wall into the outboard rail's T-nuts (at 70 and 172 along). Heads flush in their countersinks, so the battery can sit against the walls. Tray 1 the same at the front: front wall on the front rail (nuts at 29 and 140), outer wall on the outboard rail (412 and 514).
+Empty trays, each bolted straight to two rails. Drop tray 0 into the outboard zone and push it back until its back wall sits on the back width rail's inner face and its outer wall on the outboard rail. From inside the empty pocket: two countersunk 1/4-20 through the back wall into the back rail's T-nuts (at 29 and 140 across), two through the outer wall into the outboard rail's T-nuts (at 70 and 172 along). Heads flush in their countersinks, so the battery can sit against the walls. Tray 1 the same at the front: front wall on the front rail (nuts at 29 and 140), outer wall on the outboard rail (350 and 452).
 
 ### Step 5: the batteries
 
@@ -234,7 +244,7 @@ Lower the sub-assembly into the column, lip against the trays' inboard walls. Th
 ![Step 8](manual/img/08-plate.png)
 ![Step 8 from above](manual/img/08-plate-top.png)
 
-Lower the plate with its units into the two post slots, column face toward the batteries. Its units clear everything on the shelf. The bottom band lands against the bus shelf's inboard wall: six M4 × 10 through that wall into the plate's inserts, from the column side, under the MPPT. Then the two clips: one M4 × 10 down into each post top, one countersunk 1/4-20 into the top width rail's T-nut; the clip's rail bolt sits 10 mm off the plate line so the key passes the plate's edge.
+Lower the plate with its units into the two post slots, column face toward the batteries. Its units clear everything on the shelf. The bottom band lands against the bus shelf's inboard wall: six M4 × 10 through that wall into the plate's inserts, from the column side, under the MPPT. Then the two clips: one M4 × 10 down into each post top, one countersunk 1/4-20 into the top width rail's T-nut; the clip's rail bolt sits 10 mm off the plate line so the key passes the plate's edge. Last in this step, the Garmin hanger: two countersunk 1/4-20 through its plate into T-nuts in the top inboard rail's inner slot (at 342 and 422 from the back), the plate's top 3 mm under the lid, in the lane between the MultiPlus and the inboard panel; the Garmin is already on it from the bench, bracket to the plate's face with two M4 × 10.
 
 ### Step 9: the inverter and the DC leads
 
@@ -246,7 +256,7 @@ Hang the MultiPlus on its four keyholes over the proud M5 heads and washers, cab
 
 ![Step 10](manual/img/10-ports-lid.png)
 
-Port bodies into the front panel from inside, SB50 pigtails to the MPPT and Orion, Garmin outputs through the plate window to the sockets, the SB175 to the bus bars. The IceBox top panel goes on as the lid; with 17 mm between the lid and the truck roof, use flush pulls, not standing handles.
+The GX Touch 50 goes into its opening in the back panel from outside with its gasket, the printed bezel over it, its cable to the Cerbo's display port. Port bodies into the front panel from inside, SB50 pigtails to the MPPT and Orion, the Garmin on its hanger fed from the + bus bar through the plate window, its outputs straight to the sockets, the SB175 to the bus bars. The lid is the flat 571.5 × 488 panel laid on the top rails and screwed down into drop-in T-nuts in their top-face slots, with flush pulls: there is 17 mm between it and the truck roof.
 
 ### Wiring
 
