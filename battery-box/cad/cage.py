@@ -279,7 +279,8 @@ COMPONENTS = {
     "sb175_v":   Comp("socket_sb175", 56, 26, 79, "Anderson SB175 standing on a card's rear face, mating face up"),
     "sb175_h":   Comp("socket_sb175", 79, 26, 56, "Anderson SB175 lying on a lengthwise card's face above the MultiPlus, mating forward (+X)"),
     "sb50_v":    Comp("socket_sb50", 37, 16, 48, "Anderson SB50 standing on a card face, mating face up"),
-    "shunt_x":   Comp("power_shunt", 54, 120, 46, "SmartShunt turned 90 deg on the deck"),
+    "shunt_x":   Comp("power_shunt", 46, 120, 35, "SmartShunt 500A lying on the shelf, studs up and toward the trays. Housing-only envelope: the cached STEP body drops the "
+                                                 "studs (46.5 tall with them) and the 6.4 mm side connector (52.5 deep with it); the mounting slots are on the stud line, 12.5 from the stud edge"),
     "shunt_up":  Comp("power_shunt", 54, 46, 120, "SmartShunt standing on end on a card"),
     "shunt_y":   Comp("power_shunt", 120, 54, 46, "SmartShunt on the deck, long axis across the box"),
     "busbar_px": Comp("power_busbar_pos", 35, 155, 32, "5-stud covered bus bar (+), along the depth"),
@@ -513,7 +514,8 @@ HOUSING = {"sb175": 79.4, "sb50": 48.0, "pp45": 24.6}   # housing length along t
 _STEP_CACHE = {}
 # extra rotation (axis, degrees) applied after the extents match, for units
 # the matcher lands upside down or backwards; checked in the renders
-STEP_FLIP = {"mppt": ("x", 180)}   # 180 about the card axis: fins to the card, terminals down
+STEP_FLIP = {"mppt": ("x", 180),   # 180 about the card axis: fins to the card, terminals down
+             "shunt_x": ("x", 180)}   # base plate down, studs up and toward -y (the trays); the extents match put it base-up, studs inboard (2026-11-01)
 
 
 def load_victron(key):
@@ -1331,7 +1333,10 @@ HOLES = {
     "cerbo_flat":       [(5.5, 10), (148.5, 10), (5.5, 68), (148.5, 68)],                 # (x, y) on the deck
     "orion":            [(6.9, 12), (116.2, 12), (6.9, 125), (116.2, 125)],               # 109.3 x 113, 4 x M4
     "mppt":             [(5, 33.5), (181, 33.5), (5, 105), (181, 105)],                   # keyholes 176 x 71.5
-    "shunt":            [(9.5, 27), (110.5, 27)],                                         # 2 x M6 at 101
+    "shunt":            [(9.5, 27), (110.5, 27)],                                         # 2 x M6 at 101 (pattern assumed centred: see shunt_x)
+    "shunt_x":          [(9.5, 12.5), (110.5, 12.5)],   # on the shelf: the two 6 x 9.8 slots sit ON THE STUD LINE, 12.5 mm from the stud-side edge of the
+                                                        # 46 mm housing (33.6 from the housing edge), not centred (STEP, 2026-11-01: the shunt printed to the
+                                                        # centred pattern sat 15.5 mm off the shelf lip, which is where the user's "11 mm closer" came from)
     "multiplus_1200_up": [(14.2, 68.0), (234.8, 68.0), (14.2, 311.8), (234.8, 311.8)],    # keyholes 220.6 x 243.8, upper pair 62.8 below the body top, M6
     "multiplus_1200":   [(99.4, 14.7), (343.2, 14.7), (99.4, 235.3), (343.2, 235.3)],
     "busbar_n":         [(11.5, 16), (143.5, 16)],  # 5-stud M8 covered bar: mounting ears 132 mm on centre (owner-measured 2026-10-31; was 131 'verify')
@@ -1345,7 +1350,7 @@ HOLES = {
     "garmin_up":        [(37, 20), (37, 105)],      # the same bracket turned 90 deg (verify)
     "bms":              [(10, 10), (112, 10), (10, 96), (112, 96)],   # verify
 }
-INSERT = {"mppt": "M5", "orion": "M4", "cerbo": "M4", "cerbo_up": "M4", "cerbo_flat": "M4", "shunt": "M6", "busbar_n": "M5", "busbar_p": "M5",
+INSERT = {"mppt": "M5", "orion": "M4", "cerbo": "M4", "cerbo_up": "M4", "cerbo_flat": "M4", "shunt": "M6", "shunt_x": "M5", "busbar_n": "M5", "busbar_p": "M5",
           "breaker_a": "M6", "breaker_b": "M6", "garmin": "M4", "bms": "M4"}
 HOLES["garmin_up"] = [(37, 20), (37, 105)]
 HOLES["multiplus_1200_side"] = [(68.0, 14.2), (311.8, 14.2), (68.0, 234.8), (311.8, 234.8)]   # the upright pattern turned on its side
@@ -1365,7 +1370,7 @@ FASTENER = {   # how each unit attaches to a printed card
     "orion":  "4 x M4 x 10 into M4 heat-set inserts",
     "cerbo":  "4 x M4 x 8 into M4 heat-set inserts", "cerbo_up": "4 x M4 x 8 into M4 heat-set inserts",
     "cerbo_flat": "4 x M4 x 8 down through the lugs into M4 heat-set inserts in the pedestal bosses",
-    "shunt":  "2 x M6 x 12 into M6 heat-set inserts",
+    "shunt":  "2 x M6 x 12 into M6 heat-set inserts", "shunt_x": "2 x M5 x 12 + washer into M5 heat-set inserts in the shelf floor",
     "busbar_n": "2 x M5 x 10 into inserts", "busbar_p": "2 x M5 x 10 into inserts",
     "breaker_a": "2 x M6 x 12 into inserts", "breaker_b": "2 x M6 x 12 into inserts",
     "garmin": "2 x M4 x 10 into inserts through its bracket", "garmin_up": "2 x M4 x 10 into inserts through its bracket", "bms": "4 x M4 x 8 into inserts",
@@ -2616,7 +2621,11 @@ V13_SHORT = dict(   # the 635 mm box (2026-10-24 layout): ONE ROW of charge gear
     # The window is placed from the FRONT rail (out_D - ...) so it rides with the box depth. At 571.5 deep (2026-10-30) the 63.5 mm
     # that used to separate the MultiPlus's cable end from the Garmin on the plate's inverter face is gone, so the Garmin LIES FLAT ON
     # THE BUS SHELF's front plate instead (col below), beside the window, its outputs 60 mm from the front-panel sockets.
-    col=[dict(comp="shunt_x", x=226, y=1), dict(comp="busbar_px", x=45, y=62), dict(comp="busbar_nx", x=366, y=62)],
+    # 2026-11-01: ALL THREE on the TRAY side of the shelf, one stud line 17 mm from the lip's inner face (the bars 1 mm off the lip, ears 16 in;
+    # the shunt's stud edge 4.5 off it, slots 12.5 in), so the (+) bar, shunt and (-) bar read as one straight bus and the inboard 57 mm band
+    # under the plate's cable window is empty: the inverter, Orion and Garmin leads coming through the window land on bare shelf, not on a bus bar.
+    # (Before: the bars sat in the inboard row under the window with the shunt alone on the tray side.)
+    col=[dict(comp="shunt_x", x=226, y=4.5), dict(comp="busbar_px", x=45, y=1), dict(comp="busbar_nx", x=366, y=1)],
     # (shelf units: Ø6.4 mm M5 heat-set insert bores pre-printed in plates 0, 1, 2.  The Garmin hangs from the top
     # inboard rail on its own printed plate, see garmin_hanger in build_v13, 2026-10-30)
     window=(out_D - 145.0, out_D - 75.0, 40.0, 110.0),
@@ -2878,7 +2887,7 @@ def build_v13(a):
                 for hx in lip_holes[r]:
                     assert not (xj - 6 < g[f"tx{r}"] + hx < xj + 26), f"shelf lip hole at x {g[f'tx{r}'] + hx:.1f} lands in the lap at {xj:.1f}"
         for pl in (V13_SHORT["col"] if short else V13_COL):   # pre-printed Ø6.4 mm M5 heat-set insert holes in the 6 mm shelf floor
-            hkey = {"shunt_x": "shunt", "busbar_px": "busbar_p", "busbar_nx": "busbar_n"}.get(pl["comp"], pl["comp"])
+            hkey = {"busbar_px": "busbar_p", "busbar_nx": "busbar_n"}.get(pl["comp"], pl["comp"])   # (shunt_x has its own, off-centre pattern)
             for (hu, hv) in HOLES.get(hkey, ()):
                 hx_s, hy_s = pl["x"] + hu, y0s + 6 + pl["y"] + hv
                 if xa + 6 < hx_s < xb - 6:
@@ -2985,7 +2994,7 @@ def build_v13(a):
             lap_lo, lap_hi = zp + hp / 2 - LAT["lap"] / 2, zp + hp / 2 + LAT["lap"] / 2         # the two tile rows' half-lap band
             for (u, v) in HOLES[comp]:
                 assert not (lap_lo - 3 < z0 + v < lap_hi + 3), f"{comp} insert at z {z0 + v:.0f} lands in the tiles' lap ({lap_lo:.0f}-{lap_hi:.0f})"
-    V13["window"] = V13_SHORT["window"] if short else (645.0, 712.0, 40.0, 118.0)    # x0, x1, z0, z1: low cable window in the plate's front tile, where the bus is
+    V13["window"] = V13_SHORT["window"] if short else (645.0, 712.0, 40.0, 118.0)    # x0, x1, z0, z1: low cable window in the plate's front tile, over the shelf's empty inboard band
     wx0, wx1, wz0, wz1 = V13["window"]
     window = cq.Workplane("XZ").center((wx0 + wx1) / 2, (wz0 + wz1) / 2).rect(wx1 - wx0, wz1 - wz0).extrude(-(P["card_t"] + 2)).edges("|Y").fillet(8).translate((0, yp - 1, 0))
     PLATE_PILOTS.update(x0=px0, y=yp, z0=zp, patches=list(patches))   # for check_plate_pilots (--clash)

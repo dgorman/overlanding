@@ -438,20 +438,27 @@ def bench_04_bus_garmin():
         ax1.add_patch(Rectangle((lx, 102), 20, 8, fc=ORANGE, ec="black", lw=1))
         ax1.text(lx + 10, -14, "20 mm Wall Half-Lap\n(Drop of CA Glue)", ha="center", va="top", fontsize=8, weight="bold", color=ORANGE)
 
-    ax1.add_patch(Rectangle((201, 16), 120, 44, fc=BLUE_LT, ec=BLUE, lw=1.6))
-    ax1.text(261, 38, "SmartShunt 500A\n2 × M5 Inserts + M5×12", ha="center", va="center", fontsize=7.8, weight="bold", color=BLUE)
-    for sx in (213, 309):
-        ax1.add_patch(Circle((sx, 38), 5.0, fc=RED, ec="white", lw=1.2))
+    # 2026-11-01: all three on the TRAY side (y 0 = the lip's outer face), one stud line 23 mm in: bars 1 mm off the lip with
+    # their ears 16 in, the shunt's stud edge 4.5 off it with its slots 12.5 in.  The inboard band under the window stays empty.
+    ax1.add_patch(Rectangle((201, 10.5), 120, 46, fc=BLUE_LT, ec=BLUE, lw=1.6))
+    ax1.text(261, 42, "SmartShunt 500A (studs to the trays)\n2 × M5 Inserts + M5×12 + washer", ha="center", va="center", fontsize=7.4, weight="bold", color=BLUE)
+    for sx in (210.5, 311.5):
+        ax1.add_patch(Circle((sx, 23), 5.0, fc=RED, ec="white", lw=1.2))
 
     for bx, lbl in ((20, "Positive (+) Bus Bar\n2 × M5 Inserts + M5×12"), (341, "Negative (−) Bus Bar\n2 × M5 Inserts + M5×12")):
-        ax1.add_patch(Rectangle((bx, 62), 145, 32, fc=GOLD_LT, ec=GOLD, lw=1.6))
-        ax1.text(bx + 72.5, 78, lbl, ha="center", va="center", fontsize=7.8, weight="bold", color=DARK)
-        for hx in (bx + 18, bx + 127):
-            ax1.add_patch(Circle((hx, 78), 5.0, fc=RED, ec="white", lw=1.2))
+        ax1.add_patch(Rectangle((bx, 7), 155, 35, fc=GOLD_LT, ec=GOLD, lw=1.6))
+        ax1.text(bx + 77.5, 24.5, lbl, ha="center", va="center", fontsize=7.8, weight="bold", color=DARK)
+        for hx in (bx + 11.5, bx + 143.5):
+            ax1.add_patch(Circle((hx, 23), 5.0, fc=RED, ec="white", lw=1.2))
+    ax1.plot([-8, 530], [23, 23], color=RED, lw=0.8, ls="--", zorder=0)
+    ax1.text(538, 23, "stud line:\n23 mm from the\ntray-side edge", ha="left", va="center", fontsize=7.2, color=RED, weight="bold")
+    ax1.text(261, 80, "inboard band under the plate's cable window: EMPTY (inverter, Orion and Garmin leads land here)",
+             ha="center", va="center", fontsize=7.6, color="#777", style="italic")
 
-    callout(ax1, (213, 38), (261, -52),
-            "NO DRILLING — 6 × Ø6.4 mm holes are pre-printed in Plates 0, 1 & 2!\nPress 6 × M5 (6.7 mm) Inserts flush → Bolt SmartShunt & Bus Bars down on the bench!",
-            color=RED, bg=RED_LT, ec=RED, fs=8.5)
+    callout(ax1, (210.5, 23), (261, -52),
+            "Plates printed from 2026-11-01: 6 × Ø6.4 mm bores pre-printed on the stud line → press 6 × M5 (6.7 mm) inserts, bolt down on the bench.\n"
+            "Plates 0 / 2 printed earlier: their bores sit on the OLD inboard row (61 mm too far in) → drill Ø6.4 at the same x, 23 mm from the tray-side edge. Reprint plate 1.",
+            color=RED, bg=RED_LT, ec=RED, fs=8.0)
 
     ax1.set_xlim(-30, 555); ax1.set_ylim(-80, 215)
 
