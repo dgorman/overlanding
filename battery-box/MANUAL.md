@@ -52,7 +52,7 @@ Every diagram is rendered directly from the CAD model ([`cad/cage.py`](cad/cage.
 
 All printable files are in [`stl/v12s/`](stl/v12s/). Every `print_*.stl` and `plate_*.stl` is exported **already lying in its print orientation** at the bed origin (`cad/plates.py` rules) and verified to fit inside a `256 × 256 × 256 mm` Bambu P1P/P1S bed: load, slice, and print without rotating.
 
-- **Material:** **PETG or ASA** for all structural parts—never PLA (a closed vehicle in summer exceeds PLA's creep temperature, and the trays hang under continuous bolt/insert load).
+- **Material:** **PETG or ASA** for all structural parts—never PLA for the final build (a closed vehicle in summer exceeds PLA's creep temperature, and the trays hang under continuous bolt/insert load). PLA is fine for the **fit-and-finish test prints**: set the inserts at `190–210 °C` and recover them from the test parts with the iron before the PETG run (see Bench 2).
 - **Nozzle & Slicer Preset:** **0.4 mm nozzle, 0.20 mm layer height**, brim on every part. (A 0.6 mm nozzle at 0.30 mm is also fine for the trays and shelves.)
 - **Total filament & time:** ~2.5 kg, ~35 hours. Visual renders of individual parts are in [Section 4](#4-the-printed-parts).
 
@@ -119,7 +119,7 @@ The MultiPlus covers the inverter side of the `6 mm` plate from `x = 21` to `396
 ### 1.4 Tools
 
 - **Drivers & wrenches:** Hex keys (`2.5`, `3`, `4`, `5 mm`, plus `5/32 in` for the `1/4-20` flat-head screws)
-- **Heat-set inserts (no drilling needed):** Temperature-controlled soldering iron (`220–240 °C` for PETG, `250–260 °C` for ASA) with M4/M5 heat-set tips (or standard conical tip) and a flat metal ruler/steel blade to press inserts dead flush (`0 mm`) while warm. All 46 heat-set insert holes across every printed part are pre-printed to exact size (`Ø 5.6 mm` for `M4`, `Ø 6.4 mm` for `M5`).
+- **Heat-set inserts (no drilling needed):** Temperature-controlled soldering iron (`190–210 °C` for PLA test prints, `220–240 °C` for PETG, `250–260 °C` for ASA) with M4/M5 heat-set tips (or standard conical tip) and a flat metal ruler/steel blade to press inserts dead flush (`0 mm`) while warm. All 46 heat-set insert holes across every printed part are pre-printed to exact size (`Ø 5.6 mm` for `M4`, `Ø 6.4 mm` for `M5`).
 - **Rail cutting & tapping:** Mitre saw with an 80–100T non-ferrous carbide blade (Diablo `D1084L`) or bandsaw; disc sander or mill file; machinist's square and caliper; `1/4-20` HSS spiral-point (gun) tap or the plug tap from a Milwaukee SAE tap set; T-handle tap wrench; tapping fluid (Tap Magic Aluminum or WD-40 Specialist cutting oil); **printed rail-end tap guide** (`print_tool_tap_guide.stl`)
 - **Panel cutting & ports:** Table saw with the same Diablo `D1084L` 80-tooth blade; `22 mm`, `29 mm`, and `60 mm` hole saws for round sockets/inlets; fine jigsaw blade for the rectangular `SB50`, `SB175`, and `GX Touch 50` cutouts
 - **Electrical:** Cable lug crimper, wire strippers, heat gun
@@ -166,13 +166,14 @@ Complete these four visual bench stages (**Bench 1 → Bench 4**) before bolting
 
 ### Bench 2: Set Heat-Set Inserts — Trays, Drop Shelves, Posts & Garmin Hanger (No Drilling)
 
-> **🔧 Soldering Iron (`220–240 °C` PETG / `250–260 °C` ASA) + Flat Metal Ruler  |  🔩 `12 × M4 Std 7.9 mm` (`94180A353`)  •  `2 × M4 Short 4.7 mm` (`94180A351`)  •  `4 × M5 6.7 mm` (`94180A361`)**
+> **🔧 Soldering Iron (`190–210 °C` PLA / `220–240 °C` PETG / `250–260 °C` ASA) + Flat Metal Ruler  |  🔩 `12 × M4 Std 7.9 mm` (`94180A353`)  •  `2 × M4 Short 4.7 mm` (`94180A351`)  •  `4 × M5 6.7 mm` (`94180A361`)**
 
 ![Bench 2: Set Heat-Set Inserts — Trays, Drop Shelves, Posts & Garmin Hanger](manual/img/bench-02-inserts-trays-shelves.png)
 
 > [!TIP]
 > **How to Install Brass Heat-Set Inserts ("Heat-Serts") with a Soldering Iron (Zero Drilling):**
-> 1. **Set Temperature:** Set your iron to **`220–240 °C`** for **PETG** (or **`250–260 °C`** for **ASA/ABS**).
+> 1. **Set Temperature:** Set your iron to **`190–210 °C`** for **PLA** (test prints), **`220–240 °C`** for **PETG** (or **`250–260 °C`** for **ASA/ABS**). PLA flows fast, so `1–2 s` of pressure is plenty and the walls around a bore soften sooner: go in slower and let the insert's own weight plus the iron do the work.
+> * **Recovering inserts from PLA test parts:** set the iron tip in the insert for `2 s` and lift it straight out with pliers while the plastic is soft; wipe the threads and reuse it in the PETG part. Count on a few per part being too scarred to reuse.
 > 2. **Tapered End Down (`90°`):** Place the narrow tapered pilot collar of the brass insert into the pre-printed bore (`Ø 5.6 mm` for `M4`, `Ø 6.4 mm` for `M5`). Press straight down (`90°`) with light, steady pressure for `2–3 seconds` until the insert is `~0.5 mm` shy of flush.
 > 3. **Flatten Dead Flush (`0 mm`):** Pull the iron straight out and immediately press a flat metal ruler or steel putty knife against the insert face for `3 seconds` so it cools dead flush (`0 mm`) with the plastic surface.
 

@@ -398,7 +398,7 @@ def ikea_ux_panel(fig, rect, mode, ok_lbl, no_lbl):
 def page_00_inventory():
     fig = plt.figure(figsize=(15, 9.6), dpi=DPI)
     ikea_header(fig, "0", "HARDWARE BAGS (A – D) & PARTS CHECKLIST",
-                "Hex Keys: 2.5, 3, 4, 5 mm + 5/32\"   |   Soldering Iron (220–240°C)   |   NO DRILLING (all 46 insert holes pre-printed)",
+                "Hex Keys: 2.5, 3, 4, 5 mm + 5/32\"   |   Soldering Iron (190–210°C PLA / 220–240°C PETG / 250–260°C ASA)   |   NO DRILLING (all 46 insert holes pre-printed)",
                 [("BAG A", "A1–A3", "46", "Brass Inserts", INK, BG_SOFT),
                  ("BAG B", "B1–B4", "48", "1/4\"-20 Rail HW", INK, BG_SOFT),
                  ("BAG C", "C1–C3", "28", "M4 Screws", INK, BG_SOFT),
@@ -581,7 +581,7 @@ def page_01_rails_panels():
 def page_02_tray_inserts():
     fig = plt.figure(figsize=(15, 9.6), dpi=DPI)
     ikea_header(fig, "2", "BATTERY TRAYS (P1 × 2) — PRESS 10× A1 INSERTS (NO DRILLING)",
-                "Soldering Iron (220–240°C PETG / 250–260°C ASA)   |   Flat Metal Ruler   |   NO DRILLING",
+                "Soldering Iron (190–210°C PLA / 220–240°C PETG / 250–260°C ASA)   |   Flat Metal Ruler   |   NO DRILLING",
                 [("PART", "P1", "2", "Battery Trays", INK, BG_SOFT),
                  ("BAG A", "A1", "10", "M4 Standard 7.9 mm (Ø5.6 bore)", INK, BG_SOFT)])
 
@@ -627,7 +627,7 @@ def page_02_tray_inserts():
     ax_g.text(84.0, 28.3, "HOW TO INSTALL BRASS HEAT-SERTS WITH A SOLDERING IRON  (ALL 46 HOLES PRE-PRINTED — NO DRILLING)",
               color="white", fontsize=8.3, weight="bold", ha="center", va="center")
     steps_hs = [
-        (4.0,  "1. Set Iron Temp", "220–240°C (PETG)\n250–260°C (ASA/ABS)\nUse conical tip or M4/M5 adapter"),
+        (4.0,  "1. Set Iron Temp", "190–210°C PLA (test fits)  ·  220–240°C PETG\n250–260°C ASA/ABS  ·  conical tip or M4/M5 adapter\nPLA: 1–2 s only; reheat to reclaim inserts"),
         (59.0, "2. Tapered End Down (90°)", "Set narrow pilot collar into\npre-printed bore; press straight\ndown 2–3 s until nearly flush"),
         (114.0, "3. Flatten Dead Flush", "Withdraw iron straight up &\nimmediately press flat with a\nmetal ruler for 3 s to cool"),
     ]
@@ -648,7 +648,7 @@ def page_02_tray_inserts():
 def page_03_shelf_post_inserts():
     fig = plt.figure(figsize=(15, 9.6), dpi=DPI)
     ikea_header(fig, "3", "DROP SHELVES (P2), GARMIN (P8) & POSTS (P6) — BAG A (NO DRILLING)",
-                "Soldering Iron (220–240°C)   |   All Ø5.6 & Ø6.4 mm holes pre-printed — No drilling",
+                "Soldering Iron (190–210°C PLA / 220–240°C PETG)   |   All Ø5.6 & Ø6.4 mm holes pre-printed — No drilling",
                 [("BAG A", "A3", "4", "M5 6.7 mm (P2)", INK, BG_SOFT),
                  ("BAG A", "A2", "2", "M4 Short 4.7 mm (P8)", INK, BG_SOFT),
                  ("BAG A", "A1", "2", "M4 Std 7.9 mm (P6)", INK, BG_SOFT)])
@@ -697,7 +697,7 @@ def page_03_shelf_post_inserts():
 def page_04_plate_subassembly():
     fig = plt.figure(figsize=(15, 9.6), dpi=DPI)
     ikea_header(fig, "4", "INVERTER PLATE (P4 + P5) — BAG A, BAG C & BAG D (NO DRILLING)",
-                "CA Glue   |   Soldering Iron (220–240°C)   |   2.5 mm & 3 mm Hex Keys   |   NO DRILLING",
+                "CA Glue   |   Soldering Iron (190–210°C PLA / 220–240°C PETG)   |   2.5 mm & 3 mm Hex Keys   |   NO DRILLING",
                 [("BAG A", "A2", "14", "M4 Short (Ø5.6 bore)", INK, BG_SOFT),
                  ("BAG A", "A3", "8", "M5 6.7 mm (Ø6.4 bore)", INK, BG_SOFT),
                  ("BAG C", "C2", "8", "M4 × 8 (Cerbo/Orion)", INK, BG_SOFT),
@@ -770,7 +770,7 @@ def page_04_plate_subassembly():
 def page_05_bus_subassembly():
     fig = plt.figure(figsize=(15, 9.6), dpi=DPI)
     ikea_header(fig, "5", "BUS SHELF (P3 × 3) & GARMIN (P8) — BAG A, BAG C & BAG D (NO DRILLING)",
-                "CA Glue   |   Soldering Iron (220–240°C)   |   2.5 mm & 3 mm Hex Keys   |   NO DRILLING",
+                "CA Glue   |   Soldering Iron (190–210°C PLA / 220–240°C PETG)   |   2.5 mm & 3 mm Hex Keys   |   NO DRILLING",
                 [("PART", "P3", "3", "Plates 0, 1 (152mm), 2", INK, BG_SOFT),
                  ("BAG A", "A3", "6", "M5 6.7 mm (Ø6.4 bore)", INK, BG_SOFT),
                  ("BAG D", "D3", "6", "M5 × 12 + 2 Washers", INK, BG_SOFT),
