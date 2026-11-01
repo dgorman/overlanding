@@ -283,6 +283,7 @@ COMPONENTS = {
     "shunt_up":  Comp("power_shunt", 54, 46, 120, "SmartShunt standing on end on a card"),
     "shunt_y":   Comp("power_shunt", 120, 54, 46, "SmartShunt on the deck, long axis across the box"),
     "busbar_px": Comp("power_busbar_pos", 35, 155, 32, "5-stud covered bus bar (+), along the depth"),
+    "gnd_bus":   Comp("power_busbar_gnd", 77, 25, 47, "Blue Sea 2701 DualBus 100 A (2 x 5 #8-32, 76.5 x 46.5 base) on the lower Garmin hanger plate: the common negative for the Garmin's port circuits"),
     "busbar_nx": Comp("power_busbar_neg", 35, 155, 32, "5-stud covered bus bar (-), along the depth"),
     "garmin_flat": Comp("garmin_powerswitch", 125, 75, 32, "Garmin PowerSwitch lying on the bus deck"),
     "garmin_flat_x": Comp("garmin_powerswitch", 75, 125, 32, "Garmin PowerSwitch lying flat on the bus shelf, long axis along the depth"),
@@ -1333,8 +1334,8 @@ HOLES = {
     "shunt":            [(9.5, 27), (110.5, 27)],                                         # 2 x M6 at 101
     "multiplus_1200_up": [(14.2, 68.0), (234.8, 68.0), (14.2, 311.8), (234.8, 311.8)],    # keyholes 220.6 x 243.8, upper pair 62.8 below the body top, M6
     "multiplus_1200":   [(99.4, 14.7), (343.2, 14.7), (99.4, 235.3), (343.2, 235.3)],
-    "busbar_n":         [(12, 16), (143, 16)],      # verify
-    "busbar_p":         [(12, 16), (143, 16)],      # verify
+    "busbar_n":         [(11.5, 16), (143.5, 16)],  # 5-stud M8 covered bar: mounting ears 132 mm on centre (owner-measured 2026-10-31; was 131 'verify')
+    "busbar_p":         [(11.5, 16), (143.5, 16)],  # same bar in red; both ears take an M5 into the shelf-floor insert
     "breaker_a":        [(12.32, 10.73), (68.96, 37.40)],   # Bussmann 285: two 6.6 mm holes on a 56.64 x 26.67 diagonal (x along the 81.28 length).
                                                             # Seen from above with the length to the right the diagonal runs lower-left to upper-right
                                                             # (series drawing, top view: hole top-left / bottom-right with the length vertical). The
@@ -2896,6 +2897,12 @@ def build_v13(a):
             for zrow in (40.0, 70.0, 100.0):
                 lp_ = tie_slots(lp_, zrow, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
             add(a, lp_, "print_garmin_hanger_lower", ORANGE)
+            # Garmin port-circuit GROUND BUS (2026-10-31, user's idea): the owner's Blue Sea 2701 DualBus (two 5 x #8-32 buses, bridged)
+            # on the lower plate's inner face between the tie-slot rows, so every front-port negative lands beside the Garmin that
+            # feeds it. Stand-in body only: its two #10 mounting holes are drilled through the plate from the part (as the Garmin's were).
+            gb = COMPONENTS["gnd_bus"]
+            gb_at = (gx0 + (gw - gb.w) / 2, gy - gb.d, 46.0)         # z 46..93: clear of the tie-slot rows at 40 and 100
+            add(a, box(gb.w, gb.d, gb.h, gb_at).edges("|Y").fillet(3), "power_busbar_gnd_hanger", GOLD)
         at = (gx, gy - gc.d, gz)
         add(a, victron_shape("garmin", gc.w, gc.d, gc.h, at, unit_fallback("garmin", gc.w, gc.d, gc.h, at)), "garmin_powerswitch_hanger", BLACK)
         g["garmin_hanger_nuts"] = (gx0 + 25.0, gx0 + gw - 25.0)
