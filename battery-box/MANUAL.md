@@ -67,6 +67,7 @@ All printable files are in [`stl/v12s/`](stl/v12s/). Every `print_*.stl` and `pl
 | **Garmin hanger, upper** | 1 | [`print_garmin_hanger.stl`](stl/v12s/print_garmin_hanger.stl) | Flat on plain back, insert pilots up | 4 / 40% | `130 × 149 × 6`. Hangs from top inboard rail's inner slot (`2 × 1/4-20` countersunk); carries Garmin bracket (`2 × M4` short inserts) and two rows of cable-tie slots |
 | **Garmin hanger, lower** | 1 | [`print_garmin_hanger_lower.stl`](stl/v12s/print_garmin_hanger_lower.stl) | Flat on plain back | 4 / 40% | `130 × 127 × 6`. Stands on bottom inboard rail's inner slot (`2 × 1/4-20` countersunk), `1 mm` below upper plate, with three rows of cable-tie slots |
 | **GX Touch 50 bezel** | 1 | [`print_touch_bezel.stl`](stl/v12s/print_touch_bezel.stl) | Flat, as exported | 4 / 100% | `150 × 108 × 3`. Trim frame over the rear-panel display cutout; mounts with four `#6 × 1/2 in` wood screws into the plywood |
+| **IceBox stack strap** | 4 | [`plate_stack_straps.stl`](stl/v12s/plate_stack_straps.stl) (all four on one bed; singles `print_stack_strap_out_0..1.stl`, `print_stack_strap_in_0..1.stl`; outline [`print_stack_strap.dxf`](stl/v12s/print_stack_strap.dxf) if you would rather have them cut from `4 mm` aluminium) | Flat, as exported | 4 / 100% | `60 × 46 × 4`. Ties the box's bottom depth rail to the IceBox's top depth rail across the seam (rail on rail): two `Ø 6.8 mm` holes on the IceBox rail's slot line, two `6.8 × 9.2 mm` vertical slots on the box rail's, rows `25.75 mm` apart (the slots take up the cube-on-cube seam gap). Two per side, `70 mm` in from each corner cube, clear of the IceBox's own Goose Gear corner gussets |
 | **Tool: rail-end tap guide** | 1 | [`print_tool_tap_guide.stl`](stl/v12s/print_tool_tap_guide.stl) | Pocket up, as exported | 4 / 100% | `46 × 46 × 32` cap with a `25.3 mm` square pocket (14 mm deep) that slips over a `25 mm` rail end and a `6.5 mm` centre bore to start the `1/4-20` tap square. **Print this first** |
 
 ---
@@ -80,6 +81,9 @@ For direct McMaster-Carr links, pack quantities, and a copy-paste Order Pad bloc
 | Item | McMaster PN | Qty Used (Pack) | Where It Goes |
 |---|---|---|---|
 | **1/4"-20 drop-in T-nuts** (10-series / 25-series `6.5 mm` slot) | `6000N501` (or 80/20 `#3382`) | **24** (6 packs of 4) | Every tie into a rail's inner slot (trays 8, bus shelf 4, drop shelves 4, posts 2, clips 2, Garmin hanger plates 4). *(Add extra for lid hold-downs if bolting lid to top slots)* |
+| **1/4"-20 drop-in T-nuts, IceBox stack straps** | `6000N501` | **8** (2 packs of 4) | The rails' **outer** slots: 2 in each bottom depth rail of the box, 2 in each top depth rail of the IceBox under it (dropped in after the box is stood on the IceBox) |
+| **1/4"-20 × 1/2 in button-head**, 18-8 SS | `92949A537` | **8** (25) | IceBox stack straps into the rail T-nuts (`4 mm` plate + washer under the head leaves `~7 mm` for the nut, per the screw-length rule) |
+| **1/4 in flat washers**, 18-8 SS | `92141A029` *(verify)* | **8** (100) | Under the stack-strap button heads |
 | **1/4"-20 × 1/2 in flat-head** (82° countersunk), 18-8 SS | `92210A537` | **20** (50) | All `6 mm` walls into rail T-nuts: tray outer & end walls (8), bus shelf end walls (4), drop-shelf hangers (4), Garmin upper & lower hanger plates (4) |
 | **1/4"-20 × 7/8 in flat-head** (82° countersunk), 18-8 SS | `92210A541` | **2** (25) | Post clips into top width rails (2) |
 | **1/4"-20 × 7/8 in button-head**, 18-8 SS | `92949A541` | **2** (25) | Post sills into bottom width rails (2, plain hole, head on post's inner face) |
@@ -390,6 +394,19 @@ Work from the top with the lid off. Every fastener is reached from above or alon
 * **② Mount the 10 Front-Panel Ports & Zip-Tie Harnesses:** Install the two `L14-30`, two `SB50`, `SB175`, three `12V`, and two `USB` sockets into the front panel, complete the branch connections below, and zip-tie harnesses to the 5 rows of slots on the Garmin hanger wall.
 * **③ Install the Lid:** Secure the top lid panel (`571.5 × 488 × 6 mm` on top of the rails in `v12s`, or slid into the `z = 266.2..272.2 mm` top-rail slots in `v13`).
 
+### Step 11: Strap the Box to the IceBox
+
+> **🔧 5/32 in Hex Key  |  🔩 `8 × 1/4-20 × 1/2 in` Button Heads + `8` Washers + `8` Drop-In T-Nuts  |  🖨️ `4 × print_stack_strap` (`plate_stack_straps.stl`)**
+
+![Stack strap](manual/img/part-print_stack_strap_out_0.png)
+
+The box stands **rail on rail** on the IceBox (both frames are the same MaxLite `25 mm` rail, panels in the centre slots, so every outer rail face is bare), with its port face flush with the IceBox's back panel. The tie is a flat `60 × 46 × 4 mm` strap across the seam on the **outer face** of each bottom depth rail, like the Goose Gear corner gusset but straight: two button heads into the box's bottom depth rail, two into the IceBox's top depth rail directly under it. Nothing reaches round a corner and nothing has to clear a cube.
+
+* **① Place the box:** Stand the box on the IceBox with the two back faces flush. The box is `190 mm` shorter than the `30 in` IceBox, so its front bottom width rail hangs over the IceBox lid; the straps go on the two **side** faces.
+* **② Drop in the T-nuts:** Four `1/4-20` drop-in T-nuts per side: two in the box's bottom depth rail **outer** slot and two in the IceBox's top depth rail outer slot directly under them. Strap centres are **`125.75 mm`** (`~5 in`) in from the box's **front** face and from its **back** face: that leaves `70 mm` between the strap and the corner cube, past the IceBox's own corner gusset.
+* **③ Bolt the straps:** The two **round** holes are the lower pair and go on the IceBox rail: fit those first and snug them. The two **slotted** holes are the upper pair and go on the box rail: the `2.4 mm` of float absorbs the cube-on-cube seam gap (`0.75 – 1.5 mm`, so the slot pitch runs `25.75 – 26.5 mm`). Tighten all four, washer under every head.
+* **If a side is blind** against the truck wall, the same strap works on the **back** face (the box's back bottom width rail stands on the IceBox's back top width rail, below the port panel); the model only places the four side straps.
+
 ### Wiring Schedule
 
 | Circuit / Run | Wire Gauge | Overcurrent Protection | Routing Notes |
@@ -418,6 +435,7 @@ Work from the top with the lid off. Every fastener is reached from above or alon
 | ![Bus shelf 0](manual/img/part-print_bus_shelf_0.png) | ![Bus shelf 2](manual/img/part-print_bus_shelf_2.png) |
 | ![Inverter plate tile 00](manual/img/part-print_plate_inverter_tile_00.png) | ![Inverter plate tile 21](manual/img/part-print_plate_inverter_tile_21.png) |
 | ![Garmin hanger](manual/img/part-print_garmin_hanger.png) | ![Plate spline](manual/img/part-print_plate_inverter_spline_v1_59.png) |
+| ![IceBox stack strap](manual/img/part-print_stack_strap_out_0.png) | |
 
 ---
 
