@@ -29,6 +29,8 @@ Two ways to order:
 | 1 pack of 50 | `92210A537` | https://www.mcmaster.com/92210A537/ | **20** | **1/4"-20 × 1/2 in flat-head (82° countersunk)**: tray outer & end walls (`8`), bus shelf end walls (`4`), drop-shelf hangers (`4`), Garmin upper & lower hanger plates (`4`) |
 | 1 pack of 25 | `92210A541` | https://www.mcmaster.com/92210A541/ | **2** | **1/4"-20 × 7/8 in flat-head (82° countersunk)**: post clips (`2`) into top width rails |
 | 1 pack of 25 | `92949A541` | https://www.mcmaster.com/92949A541/ | **2** | **1/4"-20 × 7/8 in button-head**: post sills (`2`, plain hole) into bottom width rails |
+| 1 pack of 25 | `92949A537` | https://www.mcmaster.com/92949A537/ | **8** | **1/4"-20 × 1/2 in button-head**: IceBox stack straps (`8`, `4 mm` plate + washer) into outer-slot T-nuts |
+| 1 pack of 100 | `92141A029` *(verify)* | https://www.mcmaster.com/92141A029/ | **8** | **1/4 in flat washer, 18-8**: under the stack-strap button heads (`8`) |
 | 1 pack of 100 | `92095A190` | https://www.mcmaster.com/92095A190/ | **12** | **M4 × 10 button-head**: bus shelf lip to trays (`6`), drop-shelf feet to tray wall tops (`4`), Garmin bracket to upper hanger (`2`) |
 | 1 pack of 100 | `92095A189` | https://www.mcmaster.com/92095A189/ | **14** | **M4 × 8 button-head**: bus shelf inboard wall to inverter plate bottom band (`6`), Cerbo GX (`4`), Orion XS (`4`) |
 | 1 pack of 25 | `92095A199` | https://www.mcmaster.com/92095A199/ | **2** | **M4 × 35 button-head**: down through each post clip into the post top insert (`2`) |
@@ -41,7 +43,7 @@ Two ways to order:
 
 | Packs to Buy | McMaster PN | Link | Needed | Where It Goes |
 |---|---|---|---|---|
-| 6 packs of 4 (24 nuts) | `6000N501` | https://www.mcmaster.com/6000N501/ | **24** | **1/4"-20 drop-in spring-loaded ball T-nut** for 1 in (10-series) / metric 25-series (`6.5 mm` slot) rail. *(End-feed nuts like `47065T142` cannot be added once corner cubes cap the rails; 80/20 equivalent is `#3382`.)* |
+| 8 packs of 4 (32 nuts) | `6000N501` | https://www.mcmaster.com/6000N501/ | **32** (`24` inner-slot ties + `8` for the IceBox stack straps in the outer slots) | **1/4"-20 drop-in spring-loaded ball T-nut** for 1 in (10-series) / metric 25-series (`6.5 mm` slot) rail. *(End-feed nuts like `47065T142` cannot be added once corner cubes cap the rails; 80/20 equivalent is `#3382`.)* |
 | 1 bottle | `74765A63` | https://www.mcmaster.com/74765A63/ | **1** | **Loctite 401 instant adhesive (`0.1 oz`)**: for the 8 inverter-plate splines and tacking the half-laps |
 
 ---
@@ -64,7 +66,9 @@ Paste into McMaster's Order Pad to order the entire active BOM at once:
 92095A207,1
 92095A210,1
 93475A240,1
-6000N501,6
+92949A537,1
+92141A029,1
+6000N501,8
 74765A63,1
 ```
 
@@ -82,7 +86,8 @@ Paste into McMaster's Order Pad to order the entire active BOM at once:
 <summary>Orders 1–3 already placed (click to expand)</summary>
 
 ### Still to Order
-- **`6000N501,1`** (1 more pack of 4 drop-in T-nuts): 5 packs (`20` nuts) were bought in Order 2; the two Garmin hanger plates (`2026-10-31`) brought the total from `20` to **`24`**.
+- **`6000N501,3`** (3 more packs of 4 drop-in T-nuts): 5 packs (`20` nuts) were bought in Order 2; the two Garmin hanger plates (`2026-10-31`) brought the total from `20` to `24`, and the four IceBox stack straps (`2026-10-31`, outer slots) to **`32`**.
+- **`92949A537,1`** (`1/4"-20 × 1/2 in` button heads, pack of 25) and **`92141A029,1`** (`1/4 in` 18-8 flat washers, pack of 100, PN to verify): the IceBox stack straps (`8` each).
 
 ### Order 1 (Placed 2026-10-20)
 ```text
@@ -99,7 +104,7 @@ Paste into McMaster's Order Pad to order the entire active BOM at once:
 94180A351,1    M4 short heat-set inserts, 4.7 mm, pack of 100 (active: 16 used)
 93475A240,1    M5 flat washers, 5.3 ID x 10 OD, pack of 100 (active: 10 used)
 74765A63,1     Loctite 401 instant adhesive, 0.1 oz (active)
-6000N501,5     1/4"-20 drop-in T-nuts, 5 packs of 4 = 20 nuts (active: need 1 more pack for 24)
+6000N501,5     1/4"-20 drop-in T-nuts, 5 packs of 4 = 20 nuts (active: need 3 more packs for 32: 24 inner-slot ties + 8 IceBox stack straps)
 92210A540,1    1/4"-20 x 3/4 flat-head 82 deg, pack of 50 (SPARE: too long for 6 mm walls, bottoms out in rail; replaced by Order 3)
 ```
 

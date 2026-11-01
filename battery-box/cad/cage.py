@@ -2637,6 +2637,54 @@ def countersink(part, face_pt, axis):
     return cq.Workplane("XY").add(cq.Solid.makeCone(7.0, 3.4, 4.1, pnt, ax))
 
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Stack strap: ties the box to the IceBox it rides on (user, 2026-10-31, after the Goose Gear corner gusset in the photo:
+# a 4 mm plate with button heads into the rails' outer slots).  The box stands RAIL ON RAIL on the IceBox (both frames
+# are MaxLite 25 mm metric rail, 6.5 mm slot, 1/4-20 drop-in T-nuts; the panels sit in the rails' centre slots, so every
+# outer rail face is bare), so the tie is a flat strap across the seam: two bolts into the box's bottom depth rail, two
+# into the IceBox's top depth rail directly under it.  Nothing reaches round a corner, nothing meets a cube.
+# ----------------------------------------------------------------------------------------------------------------------
+STRAP = dict(
+    t=4.0,            # plate thickness (user: 4 mm, like the Goose Gear gusset)
+    w=60.0, h=46.0,   # along the rail x up the two rails: the 46 stays inside the two 25 mm rail faces (50) by 2 mm each way
+    pitch_x=30.0,     # the two bolts along each rail
+    pitch_z=25.75,    # slot centreline to slot centreline: 12.5 from each rail's face + the 0.375 each cube stands proud (cube on cube)
+    hole=6.8,         # 1/4-20 clearance
+    slot=2.4,         # the upper pair are vertical slots: the cubes stand 0.375 - 0.75 proud, so the seam gap is 0.75 - 1.5 and the pitch 25.75 - 26.5
+    r=10.0,           # corner radius
+    clear_cube=70.0,  # strap edge to the nearest corner cube along the rail: past the Goose Gear gusset on the IceBox's top corner (~65)
+)
+_DXF_DONE = set()
+
+
+def stack_strap():
+    """The strap lying flat in XY (x along the rail, y up the rails with the seam at y 0, thickness z 0..t), as it prints.
+    rotate((1,0,0), 90) stands it on a rail face with the seam at z 0 and the plate at y -t..0 (the outboard face)."""
+    s = STRAP; w, h, t = s["w"], s["h"], s["t"]
+    pl = box(w, h, t, (-w / 2, -h / 2, 0)).edges("|Z").fillet(s["r"])
+    for sx in (-s["pitch_x"] / 2, s["pitch_x"] / 2):
+        pl = pl.cut(cq.Workplane("XY").center(sx, -s["pitch_z"] / 2).circle(s["hole"] / 2).extrude(t + 2).translate((0, 0, -1)))          # IceBox rail: round
+        pl = pl.cut(cq.Workplane("XY").center(sx, s["pitch_z"] / 2).slot2D(s["hole"] + s["slot"], s["hole"], 90).extrude(t + 2).translate((0, 0, -1)))   # box rail: 2.4 mm of float
+    return pl
+
+
+def add_stack_straps(a):
+    """Four straps, two per side of the box (outboard y 0, inboard y out_W), one near each end of the bottom depth rails, each
+    clear_cube past the corner cube so it misses the IceBox's own Goose Gear gussets.  Also writes the outline as a DXF next
+    to the STLs for anyone who would rather have it cut from 4 mm aluminium."""
+    s = STRAP
+    xs = (C + s["clear_cube"] + s["w"] / 2, out_D - C - s["clear_cube"] - s["w"] / 2)
+    flat = stack_strap()
+    up = flat.rotate((0, 0, 0), (1, 0, 0), 90)                     # plate at y -t..0, seam at z 0
+    for i, x in enumerate(xs):
+        add(a, up.translate((x, 0, 0)), f"print_stack_strap_out_{i}", ORANGE)
+        add(a, up.translate((x, out_W + s["t"], 0)), f"print_stack_strap_in_{i}", ORANGE)
+    if VARIANT not in _DXF_DONE:
+        _DXF_DONE.add(VARIANT); os.makedirs(STL, exist_ok=True)
+        cq.exporters.exportDXF(flat.faces("<Z"), os.path.join(STL, "print_stack_strap.dxf"))
+
+
 def build_v13(a):
     """v12 grown one inch (282 tall) for a 1500 W AC load, MultiPlus-II 12/3000/120-50 as asked.  The II is 578 x 277 x 148
     and does not fit the v12 box any way up, so it lies on its LONG SIDE along the inboard side of the box: back on a
@@ -2965,6 +3013,8 @@ def build_v13(a):
     # --- panels, ports, lid ------------------------------------------------------------------------------------------
     xf = v12_panels(a)
     g["xf"] = xf
+    if P["stack_on_icebox"]:   # the four 4 mm straps that tie the box's bottom depth rails to the IceBox's top depth rails
+        add_stack_straps(a)
     BS["_g12"] = g
     return g
 

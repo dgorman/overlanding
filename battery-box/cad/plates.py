@@ -80,7 +80,8 @@ ORIENT_RULES = [   # (file-name prefix, orientation); first match wins; anything
     ("print_plate_inverter_tile", flat),        # on the plain back: pilot holes and the half-lap rabbets face up
     ("print_plate_inverter_spline", flat),
     ("print_garmin_hanger", flat),
-    ("print_touch_bezel", flat),              # the 3 mm trim bezel lies flat            # the 6 mm hanger plate lies on its plain back, insert pilots up
+    ("print_touch_bezel", flat),
+    ("print_stack_strap", flat),              # the 4 mm strap lies flat, holes vertical              # the 3 mm trim bezel lies flat            # the 6 mm hanger plate lies on its plain back, insert pilots up
     ("print_tool_tap_guide", top_down),         # pocket up (modelled pocket-down)
 ]
 
@@ -109,6 +110,7 @@ def rot_z(tris, deg):
 PLATES = {   # plate name: list of (file, rotation about Z, (x, y) of the bounding box corner or None = next in a row)
     "plate_breaker_shelf": [("print_breaker_shelf_0.stl", 0, None)],   # one shelf (print it twice: two do not fit a bed)
     "plate_inverter_splines": [("print_plate_inverter_spline_*.stl", 0, None)],   # all the plate's splines in a row
+    "plate_stack_straps": [("print_stack_strap_*.stl", 0, None)],   # the four IceBox stack straps on one bed
     "plate_inverter_posts": [("print_post_inverter_0.stl", 45, (6, 32)), ("print_post_inverter_1.stl", 45, (32, 6)),   # 254 posts at
                              ("print_post_clip_0.stl", 0, (6, 210)), ("print_post_clip_1.stl", 0, (205, 6))],        # 45 deg, clips in the corners
 }
