@@ -217,10 +217,11 @@ Complete these four visual bench stages (**Bench 1 → Bench 4**) before bolting
 
 * **① Bus Shelf Sub-Assembly (`521.5 × 110 mm` total):**
   * Fit **`print_bus_shelf_0` (`214.7 mm`, back)** + **`print_bus_shelf_1` (`152.0 mm`, shortened middle plate for the `22.5 in` box)** + **`print_bus_shelf_2` (`194.7 mm`, front)** together on the bench and tack the two `20 mm` vertical-wall half-laps with a drop of CA glue.
-  * **Plates printed before 2026-10-31 have no bus bar bores** (the end plates were kept as printed in the 22.5 in redo, and the bar's ears are 132 mm apart, not the 131 modelled then). Drill them `Ø 6.4 mm` through the floor, measuring from the plate-side wall's **outer** face (the wall against the inverter plate) **26 mm** in, at:
+  * **Layout (2026-11-01): all three units sit in ONE ROW along the TRAY side of the shelf**, on a single stud line **`23 mm`** from the shelf's tray-side outer edge (`17 mm` from the lip's inner face): the `+` bar on Plate 0, the SmartShunt on Plate 1 and the `−` bar on Plate 2, so the bus reads straight along the box and the inboard band under the inverter plate's cable window is **empty**, where the MultiPlus, Orion and Garmin leads land. The bars stand `1 mm` off the lip; the SmartShunt goes down **studs toward the batteries** (its two slots are on the stud line, `12.5 mm` from the stud edge, not centred), `4.5 mm` off the lip.
+  * **Plates printed before 2026-11-01 have their bores on the old inboard row** (`26 mm` from the plate-side wall's outer face, `61 mm` too far in; plates older than 2026-10-31 have no bar bores at all). Plate 1 gets reprinted. For Plates 0 and 2, drill `Ø 6.4 mm` through the floor at the **same positions along the plate**, measured **`23 mm` in from the tray-side outer edge** (the lip's outer face):
     * **Plate 0 (`+` bar, back):** `31.5` and `163.5 mm` from the plate's back end.
     * **Plate 2 (`−` bar, front):** `37` and `169 mm` from the plate's front end.
-    * Then confirm with the bar itself before pressing the inserts: set it on the floor against the wall with its studs toward the batteries and check both ears sit over the bores.
+    * Then confirm with the bar itself before pressing the inserts: set it on the floor `1 mm` off the lip with its studs up and check both ears sit over the bores. The old bores stay as harmless holes.
   * Press **`6 × M5 (6.7 mm)` inserts** flush into the 6 pre-printed `Ø 6.4 mm` floor bores (`2` on Plate 0 for `+` Bus Bar, `2` on Plate 1 for SmartShunt, `2` on Plate 2 for `−` Bus Bar), and bolt the **SmartShunt 500A** and **two 5-stud bus bars** down with **`6 × M5 × 12` button heads** (use `M5` washers on the SmartShunt).
 * **② Garmin Hanger Sub-Assembly (`print_garmin_hanger.stl`):**
   * Bolt the **Garmin PowerSwitch** bracket to the hanger plate with **`2 × M4 × 10` button heads** into the `2 × M4 Short` inserts, then snap the Garmin unit into its bracket.
@@ -236,7 +237,7 @@ Complete these four visual bench stages (**Bench 1 → Bench 4**) before bolting
 | **Inverter Posts (`×2`)** (`print_post_inverter_0..1.stl`) | **`1` each** (`v12s`) | **`M4` Standard (`7.9 mm`)** `94180A353` | **`Ø 5.6 mm`** (No drilling) | **• 1 × Top end face (`z = 254 mm`):** For top post clip (`v12s` only; `0` in `v13`). |
 | **Garmin Hanger Plate** (`print_garmin_hanger.stl`) | **2** | **`M4` Short (`4.7 mm`)** `94180A351` | **`Ø 5.6 mm`** (No drilling) | **• 2 × Garmin face (`-Y`):** `85 mm` apart horizontally. |
 | **Inverter Plate Tiles (`00..21`)** (`print_plate_inverter_tile_*.stl`) | **22 total** (`14 × M4` Short + `8 × M5`) | **`14 × M4` Short** `94180A351`<br>+ **`8 × M5`** `94180A361` | **`14 × Ø 5.6 mm`**<br>**`8 × Ø 6.4 mm`** (No drilling) | **• Column Face (`18`):** `6 × M4 Short` bottom sill (`z = 28`), `4 × M5` MPPT, `4 × M4 Short` Cerbo, `4 × M4 Short` Orion.<br>**• Inverter Face (`4`):** `4 × M5` MultiPlus keyholes. |
-| **Bus Shelf Plates (`0..2`)** (`print_bus_shelf_0..2.stl`) | **6 total** | **`M5` (`6.7 mm`)** `94180A361` | **`Ø 6.4 mm`** (No drilling on plates printed from 2026-10-31; earlier end plates: drill per Step 7) | **• 6 × Floor top (`z = 6 mm`):** `2` on Plate 0 (`+` Bus Bar), `2` on Plate 1 (SmartShunt), `2` on Plate 2 (`−` Bus Bar). |
+| **Bus Shelf Plates (`0..2`)** (`print_bus_shelf_0..2.stl`) | **6 total** | **`M5` (`6.7 mm`)** `94180A361` | **`Ø 6.4 mm`** (No drilling on plates printed from 2026-11-01; earlier Plates 0 / 2: drill per Bench 4; earlier Plate 1: reprint) | **• 6 × Floor top (`z = 6 mm`), all on one line `23 mm` from the tray-side edge:** `2` on Plate 0 (`+` Bus Bar), `2` on Plate 1 (SmartShunt), `2` on Plate 2 (`−` Bus Bar). |
 
 </details>
 
@@ -412,7 +413,7 @@ The box stands **rail on rail** on the IceBox (both frames are the same MaxLite 
 | Circuit / Run | Wire Gauge | Overcurrent Protection | Routing Notes |
 |---|---|---|---|
 | **Battery `+` → Bussmann 285 → `+` bus bar** (×2) | `4 AWG` | Eaton Bussmann 285 (`285150F` 150 A in hand / `285060F` 60 A same body) | Short vertical lead to drop shelf, then over shelf lip to bus column |
-| **Battery `−` → SmartShunt → `−` bus bar** (×2) | `4 AWG` | — | Along tray wall into center column |
+| **Battery `−` → SmartShunt → `−` bus bar** (×2) | `4 AWG` | — | Along tray wall into center column; shunt studs face the trays, in line with both bars |
 | **Bus bars → MultiPlus DC input** | `4 AWG` (`< 1 m`) | Protected by battery breakers | Through `70 × 70 mm` low window in front plate tile |
 | **Bus bars → Orion XS output** | `6 AWG` | `60 A` fuse | Up column face of plate to Orion terminals |
 | **Alternator (`SB50` inlet) → Orion XS input** | `6 AWG` | `60 A` fuse at starter battery | From front panel through plate window to Orion |
