@@ -251,7 +251,7 @@ def bench_02_inserts():
     ax2 = fig.add_axes([0.38, 0.05, 0.30, 0.80])
     ax2.set_xlim(-20, 190); ax2.set_ylim(-75, 240); ax2.axis("off")
     ax2.text(85, 226, "② Breaker Drop Shelves × 2", ha="center", fontsize=11.5, weight="bold", color=DARK)
-    ax2.text(85, 211, "print_breaker_shelf_0 & _1 — NO DRILLING (Ø6.4 mm printed)",
+    ax2.text(85, 211, "print_breaker_shelf_0 & _1 — NO DRILLING (Ø6.7 mm printed)",
              ha="center", fontsize=8.8, weight="bold", color=RED)
 
     ax2.add_patch(Rectangle((20, 25), 130, 168, fc=ORANGE_LT, ec=ORANGE, lw=1.8))
@@ -302,9 +302,9 @@ def bench_02_inserts():
 def bench_03_plate():
     fig = plt.figure(figsize=(15, 9.5), dpi=120)
     banner(fig, "BENCH 3", "Inverter Plate — Glue 6 Tiles, Set 22 Inserts & Mount Units",
-           "Glue tiles 00..21 + 8 splines flat on the bench, press 22 inserts into pre-printed Ø5.6 / Ø6.4 mm bores (NO DRILLING), and mount units.",
+           "Glue tiles 00..21 + 8 splines flat on the bench, press 22 inserts into pre-printed Ø5.6 / Ø6.7 mm bores (NO DRILLING), and mount units.",
            [("14 × M4 Short 4.7mm (Ø5.6mm)", BLUE_LT, BLUE),
-            ("8 × M5 6.7mm (Ø6.4mm)", RED_LT, RED),
+            ("8 × M5 6.7mm (Ø6.7mm)", RED_LT, RED),
             ("8 × Splines + CA Glue", ORANGE_LT, DARK)])
 
     W_pl, H_pl = 505.5, 256.0
@@ -316,7 +316,7 @@ def bench_03_plate():
     ax1.set_aspect("equal"); ax1.axis("off")
     ax1.text(W_pl / 2, H_pl + 44, "① COLUMN FACE (Facing Batteries) — Set 18 Inserts & Mount 3 Units",
              ha="center", fontsize=11.0, weight="bold", color=DARK)
-    ax1.text(W_pl / 2, H_pl + 20, "14 BLUE bores pre-printed Ø5.6 mm → Press M4 Short (4.7 mm)\n4 RED bores pre-printed Ø6.4 mm → Press M5 (6.7 mm) — NO DRILLING",
+    ax1.text(W_pl / 2, H_pl + 20, "14 BLUE bores pre-printed Ø5.6 mm → Press M4 Short (4.7 mm)\n4 RED bores pre-printed Ø6.7 mm → Press M5 (6.7 mm) — NO DRILLING",
              ha="center", fontsize=8.5, weight="bold", color=BLUE)
 
     ax1.add_patch(Rectangle((0, 0), W_pl, H_pl, fc=ORANGE_LT, ec=ORANGE, lw=2))
@@ -369,7 +369,7 @@ def bench_03_plate():
     ax2.set_aspect("equal"); ax2.axis("off")
     ax2.text(W_pl / 2, H_pl + 44, "② INVERTER FACE (Facing MultiPlus) — Set 4 × M5 Inserts & Leave Screws Proud",
              ha="center", fontsize=11.0, weight="bold", color=DARK)
-    ax2.text(W_pl / 2, H_pl + 20, "4 RED keyhole bores pre-printed Ø6.4 mm → Press 4 × M5 (6.7 mm, 94180A361)",
+    ax2.text(W_pl / 2, H_pl + 20, "4 RED keyhole bores pre-printed Ø6.7 mm → Press 4 × M5 (6.7 mm, 94180A361)",
              ha="center", fontsize=8.5, weight="bold", color=RED)
 
     ax2.add_patch(Rectangle((0, 0), W_pl, H_pl, fc=ORANGE_LT, ec=ORANGE, lw=2))
@@ -456,8 +456,8 @@ def bench_04_bus_garmin():
              ha="center", va="center", fontsize=7.6, color="#777", style="italic")
 
     callout(ax1, (210.5, 23), (261, -52),
-            "Plates printed from 2026-11-01: 6 × Ø6.4 mm bores pre-printed on the stud line → press 6 × M5 (6.7 mm) inserts, bolt down on the bench.\n"
-            "Plates 0 / 2 printed earlier: their bores sit on the OLD inboard row (61 mm too far in) → drill Ø6.4 at the same x, 23 mm from the tray-side edge. Reprint plate 1.",
+            "6 × Ø6.7 mm bores pre-printed on the stud line through the 9 mm floor → press 6 × M5 (6.7 mm) inserts FLUSH, bolt down on the bench.\n"
+            "Plates printed before 2026-11-01 (6 mm floor, bores on the old inboard row): superseded, reprint all three.",
             color=RED, bg=RED_LT, ec=RED, fs=8.0)
 
     ax1.set_xlim(-30, 555); ax1.set_ylim(-80, 215)

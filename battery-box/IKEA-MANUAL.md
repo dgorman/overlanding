@@ -1,7 +1,7 @@
 # IKEA-Style Visual Assembly Guide (`v12s` / `v13` — 22.5" × 19.2" × 11.1")
 
 > **Visual-First Build Guide:** Hardware is grouped into **4 Hardware Bags (`BAG A` – `BAG D`)** and **10 Printed Part Codes (`P1` – `P10`)**. Follow the 14 sheets in order (`0` → `13`).
-> **Zero Drilling on 3D Prints:** All 46 heat-set insert holes are pre-printed to exact size (`Ø 5.6 mm` for `M4` `A1`/`A2`, `Ø 6.4 mm` for `M5` `A3`).
+> **Zero Drilling on 3D Prints:** All 46 heat-set insert holes are pre-printed to exact size (`Ø 5.6 mm` for `M4` `A1`/`A2`, `Ø 6.7 mm` for `M5` `A3`).
 > *(For full engineering tables and wire-cut schedules, see [`MANUAL.md`](MANUAL.md).)*
 
 ---
@@ -14,7 +14,7 @@
 | :--- | :---: | :--- | :---: | :--- |
 | **`BAG A` • `A1`** | **12×** | M4 × 0.7 Standard Heat-Set Insert (`7.9 mm`, `Ø 5.6 mm` bore) | `94180A353` | Step 2 (`10×`), Step 3 (`2×`) |
 | **`BAG A` • `A2`** | **16×** | M4 × 0.7 Short Heat-Set Insert (`4.7 mm`, `Ø 5.6 mm` bore) | `94180A351` | Step 3 (`2×`), Step 4 (`14×`) |
-| **`BAG A` • `A3`** | **18×** | M5 × 0.8 Heat-Set Insert (`6.7 mm`, `Ø 6.4 mm` bore) | `94180A361` | Step 3 (`4×`), Step 4 (`8×`), Step 5 (`6×`) |
+| **`BAG A` • `A3`** | **18×** | M5 × 0.8 Heat-Set Insert (`6.7 mm`, `Ø 6.7 mm` bore) | `94180A361` | Step 3 (`4×`), Step 4 (`8×`), Step 5 (`6×`) |
 | **`BAG B` • `B1`** | **24×** | `1/4"-20` Drop-In T-Nut | `6000N501` | Step 6 (`16×` bottom, `8×` top) |
 | **`BAG B` • `B2`** | **20×** | `1/4"-20 × 1/2"` Flat-Head Socket Screw | `92210A537` | Steps 8 (`8×`), 9 (`4×`), 10 (`4×`), 11 (`4×`) |
 | **`BAG B` • `B3`** | **2×** | `1/4"-20 × 7/8"` Flat-Head Socket Screw | `92210A541` | Step 11 (`P7` Post Clips → Top Rail) |
@@ -52,7 +52,7 @@
 
 > **🔥 How to Install Brass "Heat-Serts" with a Soldering Iron (All 46 Holes Pre-Printed — NO DRILLING):**
 > 1. **Set Temperature:** Set soldering iron to **`190–210 °C`** for **PLA** (the fit-and-finish test prints), **`220–240 °C`** for **PETG** (or **`250–260 °C`** for **ASA/ABS**). Use an M4/M5 heat-set tip or standard conical tip. PLA flows fast: `1–2 s` of pressure is enough, and the inserts come back out of a PLA test part with the same iron (heat `2 s`, lift with pliers) for reuse in the PETG parts.
-> 2. **Tapered Pilot End Down (`90°`):** Set the insert's narrow tapered pilot collar into the pre-printed bore (`Ø 5.6 mm` for `M4`, `Ø 6.4 mm` for `M5`). Press straight down (`90°`) with gentle, steady pressure for `2–3 seconds` until the insert is `~0.5 mm` above flush.
+> 2. **Tapered Pilot End Down (`90°`):** Set the insert's narrow tapered pilot collar into the pre-printed bore (`Ø 5.6 mm` for `M4`, `Ø 6.7 mm` for `M5`). Press straight down (`90°`) with gentle, steady pressure for `2–3 seconds` until the insert is `~0.5 mm` above flush.
 > 3. **Flatten Dead Flush (`0 mm`):** Withdraw the iron straight up and immediately press a flat metal ruler or steel blade across the insert for `3 seconds` while the plastic cools so it sits **100% flush (`0 mm`)** with zero proud rim.
 
 - **`[BAG A] A1 × 2` (per tray):** Press straight down into top of `21 mm` wall (`X = 81, 161 mm`).
@@ -65,7 +65,7 @@
 
 ![Step 3 — Drop Shelves, Garmin & Posts Inserts](manual/ikea/step-03-shelf-post-inserts.png)
 
-- **`P2 × 2`:** Press **`[BAG A] A3 × 2`** (`M5`, pre-printed `Ø 6.4 mm` bores) into top of each shelf + stick **EPDM Foam Pad** underneath.
+- **`P2 × 2`:** Press **`[BAG A] A3 × 2`** (`M5`, pre-printed `Ø 6.7 mm` bores) into top of each shelf + stick **EPDM Foam Pad** underneath.
 - **`P8` (Upper Garmin):** Press **`[BAG A] A2 × 2`** (`M4 Short`, pre-printed `Ø 5.6 mm` bores) flush from the Garmin side.
 - **`P6 × 2` (Posts):** Press **`[BAG A] A1 × 1`** (`M4 Std`, pre-printed `Ø 5.6 mm` top bore) into the top end of each post.
 
@@ -75,8 +75,8 @@
 
 ![Step 4 — Inverter Plate Sub-Assembly](manual/ikea/step-04-plate-subassembly.png)
 
-- **Column Face (No Drilling):** Press **`[BAG A] A2 × 14`** (pre-printed `Ø 5.6 mm`) + **`[BAG A] A3 × 4`** (pre-printed `Ø 6.4 mm`). Mount **MPPT 100/30** upright (`130 × 186 mm` at `X = 50 mm`) with **`[BAG D] D2 × 4`**, **Cerbo GX** (`X = 190 mm`) with **`[BAG C] C2 × 4`**, and **Orion XS** (`X = 354 mm`) with **`[BAG C] C2 × 4`**.
-- **Inverter Face (No Drilling):** Press **`[BAG A] A3 × 4`** (pre-printed `Ø 6.4 mm`) and thread **`[BAG D] D1 × 4`** (`M5 × 10` + washers), leaving heads **`3 mm` proud** for MultiPlus keyholes.
+- **Column Face (No Drilling):** Press **`[BAG A] A2 × 14`** (pre-printed `Ø 5.6 mm`) + **`[BAG A] A3 × 4`** (pre-printed `Ø 6.7 mm`). Mount **MPPT 100/30** upright (`130 × 186 mm` at `X = 50 mm`) with **`[BAG D] D2 × 4`**, **Cerbo GX** (`X = 190 mm`) with **`[BAG C] C2 × 4`**, and **Orion XS** (`X = 354 mm`) with **`[BAG C] C2 × 4`**.
+- **Inverter Face (No Drilling):** Press **`[BAG A] A3 × 4`** (pre-printed `Ø 6.7 mm`) and thread **`[BAG D] D1 × 4`** (`M5 × 10` + washers), leaving heads **`3 mm` proud** for MultiPlus keyholes.
 
 ---
 
@@ -84,7 +84,7 @@
 
 ![Step 5 — Bus Shelf & Garmin Sub-Assemblies](manual/ikea/step-05-bus-subassembly.png)
 
-- **`P3` (`0 + 1 + 2`):** Glue half-laps (`P3-1` is **`152 mm`** for the `22.5"` box). Press **`[BAG A] A3 × 6`** into the 6 pre-printed `Ø 6.4 mm` floor bores → bolt down **SmartShunt** and **two Bus Bars** with **`[BAG D] D3 × 6`**.
+- **`P3` (`0 + 1 + 2`):** Glue half-laps (`P3-1` is **`152 mm`** for the `22.5"` box). Press **`[BAG A] A3 × 6`** into the 6 pre-printed `Ø 6.7 mm` floor bores → bolt down **SmartShunt** and **two Bus Bars** with **`[BAG D] D3 × 6`**.
 - **`P8`:** Bolt Garmin bracket with **`[BAG C] C1 × 2`**.
 
 ---
