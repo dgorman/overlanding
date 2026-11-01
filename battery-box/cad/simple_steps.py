@@ -456,7 +456,7 @@ def bench_04_bus_garmin():
              ha="center", va="center", fontsize=7.6, color="#777", style="italic")
 
     callout(ax1, (210.5, 23), (261, -52),
-            "6 × Ø6.7 mm bores pre-printed on the stud line through the 9 mm floor → press 6 × M5 (6.7 mm) inserts FLUSH, bolt down on the bench.\n"
+            "6 × blind Ø6.7 × 9.5 mm bores pre-printed on the stud line in the 11 mm floor → press 6 × M5 (6.7 mm) inserts FLUSH, bolt down on the bench.\n"
             "Plates printed before 2026-11-01 (6 mm floor, bores on the old inboard row): superseded, reprint all three.",
             color=RED, bg=RED_LT, ec=RED, fs=8.0)
 

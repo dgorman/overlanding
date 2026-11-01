@@ -1352,7 +1352,9 @@ HOLES = {
 }
 M5_BORE_R = 3.35   # Ø6.7 mm modelled for the M5 insert's Ø6.4 mm hole: FDM holes print ~0.3 under, and the Ø6.4 nominal came out too tight
                    # for the 94180A361 while an M4 insert dropped in (2026-11-01).  The 6.7 mm insert also outruns a 6 mm plate, so every M5
-                   # site is 9 mm thick (bus shelf floor, breaker drop shelf plate) or, in the 6 mm inverter plate, relieved on the far face.
+                   # site is an 11 mm deck (bus shelf floor, breaker drop shelf plate) or, in the 6 mm inverter plate, relieved on the far face.
+M5_BLIND = 9.5     # the deck bores are BLIND (owner: no melt out the back, like the trays' M4 bores): 6.7 mm insert + 2.8 mm of melt room,
+M5_DECK = 11.0     # 1.5 mm of skin under the bore.  M5 x 12 through a bar ear (>= 2.5 mm) stops inside the bore.
 INSERT = {"mppt": "M5", "orion": "M4", "cerbo": "M4", "cerbo_up": "M4", "cerbo_flat": "M4", "shunt": "M6", "shunt_x": "M5", "busbar_n": "M5", "busbar_p": "M5",
           "breaker_a": "M6", "breaker_b": "M6", "garmin": "M4", "bms": "M4"}
 HOLES["garmin_up"] = [(37, 20), (37, 105)]
@@ -2801,8 +2803,8 @@ def build_v13(a):
         at = (tx + wall + clr, ty + wall + clr, fl)
         add(a, victron_shape(bkey, b.d, b.w, b.h, at, box(b.d, b.w, b.h, at).edges("|Z").fillet(6)), f"battery_{r}", BATT)
         g[f"tx{r}"] = tx
-    if P.get("breaker_shelf"):   # one drop shelf per battery, doubling as its HOLD-DOWN: a 9 mm plate (6 until 2026-11-01: the 6.7 mm M5 inserts
-                                 # poked through; thickened on TOP so the pad side and the legs are unchanged) on a 3 mm closed-cell pad pressed onto the
+    if P.get("breaker_shelf"):   # one drop shelf per battery, doubling as its HOLD-DOWN: an 11 mm plate (6 until 2026-11-01: the 6.7 mm M5 inserts
+                                 # poked through; thickened on TOP so the pad side and the legs are unchanged; blind bores) on a 3 mm closed-cell pad pressed onto the
         body_h = P.get("batt_body_h", b.h); pad = P.get("shelf_pad", 3.0)   # SuperPack 60Ah: 213 overall is to the TOP OF THE TERMINALS; the flat body
         drop = P.get("shelf_drop", 0.0)                           # top is at 208 (Victron STEP: 5 mm studs), so the pad sits on the body with no gap
         zs = fl + body_h + pad - drop                             # (2026-10-24: the printed shelf stood ~3/8 in off the battery at 213 + 3; 2026-10-25:
@@ -2814,37 +2816,37 @@ def build_v13(a):
             wt = lip + fl                                         # wall top, z 36
             if P.get("lid_slot"):   # v13: uses the exact v12s battery tray; outboard leg stands down on the 6 mm outboard tray wall (y 26..32, z 36..239)
                                     # while the inboard leg + 15 mm foot bolts into the same 2 x M4 inserts in the 21 mm inboard tray wall (top rail slot 100% free)
-                sh = box(130, yw + 6 - ty, 9, (xs, ty, zs))                                                       # plate from outboard leg to inboard leg (y 26..178)
+                sh = box(130, yw + 6 - ty, M5_DECK, (xs, ty, zs))                                                 # plate from outboard leg to inboard leg (y 26..178)
                 sh = sh.union(box(130, 6, zs + 24 - wt, (xs, ty, wt)))                                            # outboard leg down onto the 6 mm outboard tray wall + 18 mm lip
                 sh = sh.union(box(130, 6, zs + 24 - wt, (xs, yw, wt)))                                            # inboard leg down onto the 21 mm inboard tray wall + 18 mm lip
                 sh = sh.union(box(130, 15, 6, (xs, yw + 6, wt)))                                                  # inboard foot over the 21 mm wall top: 2 x M4 down into it
                 for (gy, dy, rs) in ((ty + 6, 1, 18), (yw, -1, 5)):                                               # full-length 18 mm and 5 mm corner ribs above the plate
-                    rib = cq.Workplane("YZ").polyline([(gy, zs + 9), (gy + rs * dy, zs + 9), (gy, zs + 9 + rs)]).close().extrude(130).translate((xs, 0, 0))
+                    rib = cq.Workplane("YZ").polyline([(gy, zs + M5_DECK), (gy + rs * dy, zs + M5_DECK), (gy, zs + M5_DECK + rs)]).close().extrude(130).translate((xs, 0, 0))
                     sh = sh.union(rib)
                 for hx in (25, 105):
                     sh = sh.cut(cq.Workplane("XY").center(xs + hx, yw + 13).circle(2.3).extrude(8).translate((0, 0, wt - 1)))        # 2 x M4 down through the inboard foot
             else:
-                sh = box(130, yw + 6 - y_in0, 9, (xs, y_in0, zs))                                                # plate from the rail face to the leg
+                sh = box(130, yw + 6 - y_in0, M5_DECK, (xs, y_in0, zs))                                          # plate from the rail face to the leg
                 sh = sh.union(box(130, 6, out_H - 3 - zs, (xs, y_in0, zs)))                                      # hanger up the top rail's inner face
                 sh = sh.union(box(130, 6, zs + 24 - wt, (xs, yw, wt)))                                            # leg down onto the wall top, 24 up past the plate as a lip
                 sh = sh.union(box(130, 15, 6, (xs, yw + 6, wt)))                                                  # foot over the wall top: 2 x M4 down into it
                 for (gy, dy, rs) in ((y_in0 + 6, 1, 18), (yw, -1, 5)):                                           # full-length ribs above the plate along the hanger (18)
-                    rib = cq.Workplane("YZ").polyline([(gy, zs + 9), (gy + rs * dy, zs + 9), (gy, zs + 9 + rs)]).close().extrude(130).translate((xs, 0, 0))
+                    rib = cq.Workplane("YZ").polyline([(gy, zs + M5_DECK), (gy + rs * dy, zs + M5_DECK), (gy, zs + M5_DECK + rs)]).close().extrude(130).translate((xs, 0, 0))
                     sh = sh.union(rib)
                 for hx in (25, 105):
                     sh = sh.cut(cq.Workplane("XZ").center(xs + hx, hz).circle(3.4).extrude(-8).translate((0, y_in0 - 1, 0)))          # 1/4-20 into the rail slot
                     sh = sh.cut(countersink(f"print_breaker_shelf_{r}", (xs + hx, y_in0 + 6, hz), (0, -1, 0)))                      # countersink on the inner face
                     sh = sh.cut(cq.Workplane("XY").center(xs + hx, yw + 13).circle(2.3).extrude(8).translate((0, 0, wt - 1)))        # M4 down through the foot
             bx, by = xs + 24, y_in0 + 92                           # breaker inboard of the hanger bolts (key path over the empty plate), 7 mm off the lip
-            for (u, v) in HOLES["breaker_a"]:                      # its two 6.6 mm holes: M5 inserts (McMaster 94180A361, Ø6.7 modelled) in the 9 mm plate,
-                sh = sh.cut(cq.Workplane("XY").center(bx + u, by + v).circle(M5_BORE_R).extrude(11).translate((0, 0, zs - 1)))   # M5 x 12 + washer from above
+            for (u, v) in HOLES["breaker_a"]:                      # its two 6.6 mm holes: M5 inserts (McMaster 94180A361, Ø6.7 modelled) in the 11 mm plate,
+                sh = sh.cut(cq.Workplane("XY").center(bx + u, by + v).circle(M5_BORE_R).extrude(M5_BLIND + 1).translate((0, 0, zs + M5_DECK - M5_BLIND)))   # BLIND, from the top
             assert by + COMPONENTS["breaker_a"].w + 2 <= yw, "breaker flange runs into the lip rib"
             if not P.get("lid_slot"):
-                assert zs + 9 + 18 < hz - 7, "hanger rib under the 1/4-20 countersink"
+                assert zs + M5_DECK + 18 < hz - 7, "hanger rib under the 1/4-20 countersink"
             add(a, sh, f"print_breaker_shelf_{r}", ORANGE)
             add(a, box(130, b.w + 2 * clr, pad - drop, (xs, ty + wall, fl + body_h)), f"pad_breaker_shelf_{r}", (0.15, 0.15, 0.15))   # foam pad on the body top, glued to the plate
             c = COMPONENTS["breaker_a"]
-            at = (bx, by, zs + 9)
+            at = (bx, by, zs + M5_DECK)
             add(a, victron_shape("breaker_a", c.d, c.w, c.h, at, unit_fallback("breaker_a", c.d, c.w, c.h, at)), f"power_breaker_shelf_{r}", GOLD)
             g[f"shelf_leg_{r}"] = (xs, yw)
     # --- bus shelf in the column between the trays and the inverter plate -----------------------------------------
@@ -2856,8 +2858,8 @@ def build_v13(a):
     assert bounds[1][1] - bounds[1][0] >= 100, "middle bus shelf plate too short for its two sill holes"
     for i in range(n_pl):
         xa, xb = bounds[i]
-        sh = box(xb - xa, y1s - y0s, 9, (xa, y0s, 0))                        # 9 mm floor (6 until 2026-11-01: the 6.7 mm M5 inserts and the bar
-        sh = sh.union(box(xb - xa, 6, 34, (xa, y0s, 0)))                     # screws' tips came out the bottom); lip against the trays' inboard walls (M4 inserts)
+        sh = box(xb - xa, y1s - y0s, M5_DECK, (xa, y0s, 0))                  # 11 mm floor (6 until 2026-11-01: the 6.7 mm M5 inserts and the bar screws'
+        sh = sh.union(box(xb - xa, 6, 34, (xa, y0s, 0)))                     # tips came out the bottom; now blind bores); lip against the trays' inboard walls (M4 inserts)
         for r in range(2):
             for hx in lip_holes[r]:
                 hxa = g[f"tx{r}"] + hx
@@ -2894,16 +2896,16 @@ def build_v13(a):
             for r in range(2):
                 for hx in lip_holes[r]:
                     assert not (xj - 6 < g[f"tx{r}"] + hx < xj + 26), f"shelf lip hole at x {g[f'tx{r}'] + hx:.1f} lands in the lap at {xj:.1f}"
-        for pl in (V13_SHORT["col"] if short else V13_COL):   # pre-printed Ø6.7 mm M5 heat-set insert bores through the 9 mm shelf floor
+        for pl in (V13_SHORT["col"] if short else V13_COL):   # pre-printed Ø6.7 x 9.5 BLIND M5 heat-set insert bores in the 11 mm shelf floor
             hkey = {"busbar_px": "busbar_p", "busbar_nx": "busbar_n"}.get(pl["comp"], pl["comp"])   # (shunt_x has its own, off-centre pattern)
             for (hu, hv) in HOLES.get(hkey, ()):
                 hx_s, hy_s = pl["x"] + hu, y0s + 6 + pl["y"] + hv
                 if xa + 6 < hx_s < xb - 6:
-                    sh = sh.cut(cq.Workplane("XY").center(hx_s, hy_s).circle(M5_BORE_R).extrude(11).translate((0, 0, -1)))
+                    sh = sh.cut(cq.Workplane("XY").center(hx_s, hy_s).circle(M5_BORE_R).extrude(M5_BLIND + 1).translate((0, 0, M5_DECK - M5_BLIND)))
         add(a, sh, f"print_bus_shelf_{i}", ORANGE)
     for pl in (V13_SHORT["col"] if short else V13_COL):
         c = COMPONENTS[pl["comp"]]
-        at = (pl["x"], y0s + 6 + pl["y"], 9)
+        at = (pl["x"], y0s + 6 + pl["y"], M5_DECK)
         col = BLUE if c.name.startswith("victron") else GOLD
         add(a, victron_shape(pl["comp"], c.d, c.w, c.h, at, unit_fallback(pl["comp"], c.d, c.w, c.h, at)), c.name + f"_shelf_{int(pl['x'])}", col)
     # --- Garmin PowerSwitch on a printed HANGER PLATE from the top inboard rail (2026-10-30, user's idea) ------------
