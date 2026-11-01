@@ -607,11 +607,14 @@ def page_02_tray_inserts():
     bag_callout(ax, top_pts, (68, 114), "BAG A", "A1", "2", sub="Top wall (×2 Trays = 4)")
 
     # (2) 3x A1 horizontally into outer column face
-    side_pts = [(40, 15 + fw + 3), (100, 15 + fw + 3), (140, 15 + fw + 3), (200, 15 + fw + 3)]
+    # Tray 0 is drawn (bores at x 40 / 100 / 140); Tray 1 has the same three in the same wall at x 40 / 120 / 200
+    # (each lands where the bus shelf lip has no part over it).  2026-11-01: was four squares and two leaders.
+    side_pts = [(40, 15 + fw + 3), (100, 15 + fw + 3), (140, 15 + fw + 3)]
     for hx, hy in side_pts:
         ax.add_patch(Rectangle((hx - 4.0, hy - 4.5), 8, 6, fc=BRASS, ec=INK, lw=1.0, zorder=4))
-    bag_callout(ax, [(100, 15 + fw + 3), (140, 15 + fw + 3)], (175, 114),
-                "BAG A", "A1", "3", sub="Side wall (×2 Trays = 6)")
+    bag_callout(ax, side_pts, (175, 114), "BAG A", "A1", "3", sub="Side wall (×2 Trays = 6)")
+    ax.text(fd / 2, 15 + fw + 24, "Tray 0 (drawn): x = 40 · 100 · 140 mm      Tray 1: x = 40 · 120 · 200 mm, same wall, same 3 inserts",
+            ha="center", va="center", fontsize=7.4, color=INK_SUB)
 
     # (3) 4x Countersunk B2 holes — NO A1 INSERTS!
     csink_pts = [(70, 18), (172, 18), (3, 44), (3, 155)]
