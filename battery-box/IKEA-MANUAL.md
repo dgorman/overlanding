@@ -51,7 +51,7 @@
 ![Step 2 — Battery Tray Heat-Set Inserts](manual/ikea/step-02-tray-inserts.png)
 
 > **🔥 How to Install Brass "Heat-Serts" with a Soldering Iron (All 46 Holes Pre-Printed — NO DRILLING):**
-> 1. **Set Temperature:** Set soldering iron to **`220–240 °C`** for **PETG** (or **`250–260 °C`** for **ASA/ABS**). Use an M4/M5 heat-set tip or standard conical tip.
+> 1. **Set Temperature:** Set soldering iron to **`190–210 °C`** for **PLA** (the fit-and-finish test prints), **`220–240 °C`** for **PETG** (or **`250–260 °C`** for **ASA/ABS**). Use an M4/M5 heat-set tip or standard conical tip. PLA flows fast: `1–2 s` of pressure is enough, and the inserts come back out of a PLA test part with the same iron (heat `2 s`, lift with pliers) for reuse in the PETG parts.
 > 2. **Tapered Pilot End Down (`90°`):** Set the insert's narrow tapered pilot collar into the pre-printed bore (`Ø 5.6 mm` for `M4`, `Ø 6.4 mm` for `M5`). Press straight down (`90°`) with gentle, steady pressure for `2–3 seconds` until the insert is `~0.5 mm` above flush.
 > 3. **Flatten Dead Flush (`0 mm`):** Withdraw the iron straight up and immediately press a flat metal ruler or steel blade across the insert for `3 seconds` while the plastic cools so it sits **100% flush (`0 mm`)** with zero proud rim.
 
