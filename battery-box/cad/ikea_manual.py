@@ -789,16 +789,21 @@ def page_05_bus_subassembly():
     ax1.text((b0 + b1) / 2, 124, "P3-1 (152 mm — 22.5\" box)", ha="center", fontsize=9.0, weight="bold", color=INK)
     ax1.text((b1 + b2) / 2, 124, "P3-2 (195 mm)", ha="center", fontsize=9.0, weight="normal", color=INK)
 
-    ax1.add_patch(Rectangle((201, 16), 120, 44, fc="white", ec=INK, lw=1.2))
-    ax1.text(261, 38, "SmartShunt", ha="center", va="center", fontsize=8.4, weight="normal", color=INK)
-    sh_pts = [(213, 38), (309, 38)]
+    # 2026-11-01 layout: all three on the TRAY side (y 0 = the lip's outer face) on one stud line 23 mm in; the bars 1 mm off the
+    # lip (ears 16 in), the shunt's stud edge 4.5 off it (slots 12.5 in, on its stud line).  The inboard band stays empty.
+    ax1.add_patch(Rectangle((201, 10.5), 120, 46, fc="white", ec=INK, lw=1.2))
+    ax1.text(261, 42, "SmartShunt (studs to the trays)", ha="center", va="center", fontsize=7.6, weight="normal", color=INK)
+    sh_pts = [(210.5, 23), (311.5, 23)]
     for sx, sy in sh_pts:
         ax1.add_patch(Circle((sx, sy), 4.8, fc=BRASS, ec=INK, lw=1.0, zorder=4))
     for bx, lbl in ((20, "+ Bus Bar"), (341, "− Bus Bar")):
-        ax1.add_patch(Rectangle((bx, 62), 145, 32, fc="white", ec=INK, lw=1.2))
-        ax1.text(bx + 72.5, 78, lbl, ha="center", va="center", fontsize=8.4, weight="normal", color=INK)
-        for hx in (bx + 18, bx + 127):
-            ax1.add_patch(Circle((hx, 78), 4.8, fc=BRASS, ec=INK, lw=1.0, zorder=4))
+        ax1.add_patch(Rectangle((bx, 7), 155, 35, fc="white", ec=INK, lw=1.2))
+        ax1.text(bx + 77.5, 24.5, lbl, ha="center", va="center", fontsize=8.4, weight="normal", color=INK)
+        for hx in (bx + 11.5, bx + 143.5):
+            ax1.add_patch(Circle((hx, 23), 4.8, fc=BRASS, ec=INK, lw=1.0, zorder=4))
+    ax1.plot([-8, 530], [23, 23], color=INK_SUB, lw=0.7, ls="--", zorder=0.5)   # behind the part outlines
+    ax1.text(534, 23, "stud line\n23 mm", ha="left", va="center", fontsize=7.0, color=INK_SUB)
+    ax1.text(261, 82, "inboard band under the plate's cable window: empty", ha="center", va="center", fontsize=7.4, color=INK_SUB, style="italic")
     bag_callout(ax1, sh_pts, (261, -36), "BAG A", "A3", "6", sub="+ 6× D3 (BAG D) — Pre-printed Ø6.7 mm bores")
     ax1.set_xlim(-25, 550); ax1.set_ylim(-65, 155)
 
