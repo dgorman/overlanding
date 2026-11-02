@@ -14,9 +14,9 @@ Two ways to order:
 
 | Packs to Buy | McMaster PN | Link | Needed | Where It Goes |
 |---|---|---|---|---|
-| 1 pack of 50 | `94180A353` | https://www.mcmaster.com/94180A353/ | **12** | **M4 × 0.7 standard (`7.9 mm` long)** for thick printed parts: tray inboard wall faces (`6`), tray wall tops (`4`), inverter post tops (`2`) |
-| 1 pack of 100 | `94180A351` | https://www.mcmaster.com/94180A351/ | **16** | **M4 × 0.7 short (`4.7 mm` long)** for `6 mm` plates: inverter plate bottom band (`6`), Cerbo GX (`4`), Orion XS (`4`), Garmin upper hanger plate (`2`) |
-| 1 pack of 25 | `94180A361` | https://www.mcmaster.com/94180A361/ | **18** | **M5 × 0.8 (`6.7 mm` long)**: MultiPlus keyholes (`4`), MPPT keyholes (`4`), Bussmann 285 breakers (`4`), bus bars (`4`), SmartShunt (`2`) |
+| 1 pack of 50 | `94180A353` | https://www.mcmaster.com/94180A353/ | **12** | **M4 × 0.7 standard (`7.9 mm` long; hole `Ø 5.05–5.28` drill #8, bores printed `Ø 5.6`)** for thick printed parts: tray inboard wall faces (`6`), tray wall tops (`4`), inverter post tops (`2`) |
+| 1 pack of 100 | `94180A351` | https://www.mcmaster.com/94180A351/ | **16** | **M4 × 0.7 short (`4.7 mm` long; hole `Ø 5.61–5.74` drill #2, bores printed `Ø 6.0`)** for `6 mm` plates: inverter plate bottom band (`6`), Cerbo GX (`4`), Orion XS (`4`), Garmin upper hanger plate (`2`) |
+| 1 pack of 25 | `94180A361` | https://www.mcmaster.com/94180A361/ | **18** | **M5 × 0.8 (`6.7 mm` long, tapered: body `Ø 7.82`, hole `Ø 7.7` drill N + `8°` top taper; bores printed `Ø 8.0` with the taper)**: MultiPlus keyholes (`4`), MPPT keyholes (`4`), Bussmann 285 breakers (`4`), bus bars (`4`), SmartShunt (`2`) |
 
 ### Screws & Washers (18-8 Stainless Steel)
 
