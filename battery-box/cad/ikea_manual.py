@@ -415,8 +415,8 @@ def page_00_inventory():
     bags = [
         ("A", "BAG A — BRASS HEAT-SET INSERTS (STEPS 2–5, NO DRILLING)", "insert", [
             ("A1", "12×", "M4 Standard Insert, 7.9 mm (94180A353) — Ø5.6 mm bore"),
-            ("A2", "16×", "M4 Short Insert, 4.7 mm (94180A351) — Ø5.6 mm bore"),
-            ("A3", "18×", "M5 Insert, 6.7 mm (94180A361) — Ø6.7 mm bore"),
+            ("A2", "16×", "M4 Short Insert, 4.7 mm (94180A351) — Ø6.0 mm bore"),
+            ("A3", "18×", "M5 Tapered Insert, 6.7 mm (94180A361) — Ø8.0 mm bore"),
         ]),
         ("B", "BAG B — 1/4\"-20 RAIL FASTENERS (STEPS 6–11)", "tnut", [
             ("B1", "24×", "1/4\"-20 Drop-In T-Nut (6000N501)"),
@@ -459,12 +459,12 @@ def page_00_inventory():
     parts_list = [
         ("P1", "2×", "Battery Trays (print_tray_battery_0 & _1)", "242 × 167 × 36 mm (Pre-printed Ø5.6 mm A1 bores)"),
         ("P2", "2×", "Breaker Drop Shelves (print_breaker_shelf_0 & _1)", "130 × 168 × 243 mm + 2× EPDM Foam Pads"),
-        ("P3", "3×", "Bus Shelf Plates (0: 215mm, 1: 152mm, 2: 195mm)", "Pre-printed Ø6.7 mm A3 bores; Plate 1 = 152 mm (22.5\" box)"),
-        ("P4", "6×", "Inverter Plate Tiles (00, 01, 10, 11, 20, 21)", "168.5 × 140 × 6 mm (Pre-printed Ø5.6 & Ø6.7 mm bores)"),
+        ("P3", "3×", "Bus Shelf Plates (0: 215mm, 1: 152mm, 2: 195mm)", "Pre-printed Ø8.0 mm A3 bores; Plate 1 = 152 mm (22.5\" box)"),
+        ("P4", "6×", "Inverter Plate Tiles (00, 01, 10, 11, 20, 21)", "168.5 × 140 × 6 mm (Pre-printed Ø6.0 & Ø8.0 mm bores)"),
         ("P5", "8×", "Inverter Plate Splines (plate_inverter_splines)", "60 × 18 × 3 mm (Glued across tile joints)"),
         ("P6", "2×", "Inverter Posts (print_post_inverter_0 & _1)", "254 × 24 × 18 mm (Pre-printed Ø5.6 mm top A1 bore)"),
         ("P7", "2×", "Inverter Post Clips (print_post_clip_0 & _1)", "40 × 20 × 28 mm (v12s only)"),
-        ("P8", "2×", "Garmin Hanger Upper & Lower Plates", "130 × 149 mm (Pre-printed Ø5.6 mm A2 bores) + 130 × 127 mm"),
+        ("P8", "2×", "Garmin Hanger Upper & Lower Plates", "130 × 149 mm (Pre-printed Ø6.0 mm A2 bores) + 130 × 127 mm"),
         ("P9", "1×", "GX Touch 50 Trim Bezel (print_touch_bezel)", "150 × 108 × 3 mm (Rear panel display frame, Step 12)"),
         ("P10", "1×", "25 mm Rail-End Tap Guide (print_tool_tap_guide)", "46 × 46 × 32 mm cap — Print first for Step 1"),
         ("F1", "12×", "Rails (4× 436.6, 4× 520.0, 4× 230.2) + 5× Panels", "22.5\" Box: 2× Sides (527.5×237), Front/Back (444×237), Lid"),
@@ -651,7 +651,7 @@ def page_02_tray_inserts():
 def page_03_shelf_post_inserts():
     fig = plt.figure(figsize=(15, 9.6), dpi=DPI)
     ikea_header(fig, "3", "DROP SHELVES (P2), GARMIN (P8) & POSTS (P6) — BAG A (NO DRILLING)",
-                "Soldering Iron (190–210°C PLA / 220–240°C PETG)   |   All Ø5.6 & Ø6.7 mm holes pre-printed — No drilling",
+                "Soldering Iron (190–210°C PLA / 220–240°C PETG)   |   All Ø5.6 / Ø6.0 / Ø8.0 mm holes pre-printed — No drilling",
                 [("BAG A", "A3", "4", "M5 6.7 mm (P2)", INK, BG_SOFT),
                  ("BAG A", "A2", "2", "M4 Short 4.7 mm (P8)", INK, BG_SOFT),
                  ("BAG A", "A1", "2", "M4 Std 7.9 mm (P6)", INK, BG_SOFT)])
@@ -668,7 +668,7 @@ def page_03_shelf_post_inserts():
     pts_p2 = [(53, 125), (110, 152)]
     for bx, by in pts_p2:
         ax1.add_patch(Circle((bx, by), 5.2, fc=BRASS, ec=INK, lw=1.1, zorder=4))
-    bag_callout(ax1, pts_p2, (85, 72), "BAG A", "A3", "2", sub="×2 Shelves = 4 (Ø6.7 bore)")
+    bag_callout(ax1, pts_p2, (85, 72), "BAG A", "A3", "2", sub="×2 Shelves = 4 (Ø8.0 bore)")
 
     ax1.add_patch(FancyBboxPatch((14, -36), 142, 38, boxstyle="round,pad=0.2,rounding_size=12.0", fc=BG_SOFT, ec=INK, lw=1.15))
     ax1.text(85, -17, "Stick EPDM foam pad (×2)\nunderneath shelf plate", color=INK, fontsize=8.5, weight="normal", ha="center", va="center")
@@ -680,7 +680,7 @@ def page_03_shelf_post_inserts():
     pts_p8 = [(47.5, 138), (132.5, 138)]
     for gx_, gy_ in pts_p8:
         ax2.add_patch(Circle((gx_, gy_), 5.0, fc=BRASS, ec=INK, lw=1.1, zorder=4))
-    bag_callout(ax2, pts_p8, (90, 102), "BAG A", "A2", "2", sub="Pre-printed Ø5.6 bore")
+    bag_callout(ax2, pts_p8, (90, 102), "BAG A", "A2", "2", sub="Pre-printed Ø6.0 bore")
 
     for px, lbl in ((30, "P6: Post 0"), (120, "P6: Post 1")):
         ax2.add_patch(Rectangle((px, -42), 30, 100, fc=CTX_FILL, ec=INK, lw=1.3))
@@ -701,8 +701,8 @@ def page_04_plate_subassembly():
     fig = plt.figure(figsize=(15, 9.6), dpi=DPI)
     ikea_header(fig, "4", "INVERTER PLATE (P4 + P5) — BAG A, BAG C & BAG D (NO DRILLING)",
                 "CA Glue   |   Soldering Iron (190–210°C PLA / 220–240°C PETG)   |   2.5 mm & 3 mm Hex Keys   |   NO DRILLING",
-                [("BAG A", "A2", "14", "M4 Short (Ø5.6 bore)", INK, BG_SOFT),
-                 ("BAG A", "A3", "8", "M5 6.7 mm (Ø6.7 bore)", INK, BG_SOFT),
+                [("BAG A", "A2", "14", "M4 Short (Ø6.0 bore)", INK, BG_SOFT),
+                 ("BAG A", "A3", "8", "M5 6.7 mm (Ø8.0 bore)", INK, BG_SOFT),
                  ("BAG C", "C2", "8", "M4 × 8 (Cerbo/Orion)", INK, BG_SOFT),
                  ("BAG D", "D1+D2", "8", "4× D1 + 4× D2", INK, BG_SOFT)])
 
@@ -712,7 +712,7 @@ def page_04_plate_subassembly():
     # Left: Column Face
     ax1 = fig.add_axes([0.02, 0.22, 0.47, 0.62])
     ax1.set_aspect("equal"); ax1.axis("off")
-    ax1.text(W_pl / 2, H_pl + 22, "1.  Column Face — 14× A2 (Ø5.6) + 4× A3 (Ø6.7)  [Pre-printed]", ha="center", fontsize=9.8, weight="bold", color=INK)
+    ax1.text(W_pl / 2, H_pl + 22, "1.  Column Face — 14× A2 (Ø6.0) + 4× A3 (Ø8.0)  [Pre-printed]", ha="center", fontsize=9.8, weight="bold", color=INK)
     ax1.add_patch(Rectangle((0, 0), W_pl, H_pl, fc=CTX_FILL, ec=INK, lw=1.5))
     for cx in (168.5, 337.0):
         ax1.plot([cx, cx], [0, H_pl], color=CTX_EDGE, lw=0.9, ls="--")
@@ -775,7 +775,7 @@ def page_05_bus_subassembly():
     ikea_header(fig, "5", "BUS SHELF (P3 × 3) & GARMIN (P8) — BAG A, BAG C & BAG D (NO DRILLING)",
                 "CA Glue   |   Soldering Iron (190–210°C PLA / 220–240°C PETG)   |   2.5 mm & 3 mm Hex Keys   |   NO DRILLING",
                 [("PART", "P3", "3", "Plates 0, 1 (152mm), 2", INK, BG_SOFT),
-                 ("BAG A", "A3", "6", "M5 6.7 mm (Ø6.7 bore)", INK, BG_SOFT),
+                 ("BAG A", "A3", "6", "M5 6.7 mm (Ø8.0 bore)", INK, BG_SOFT),
                  ("BAG D", "D3", "6", "M5 × 12 + 2 Washers", INK, BG_SOFT),
                  ("BAG C", "C1", "2", "M4 × 10 (Garmin)", INK, BG_SOFT)])
 
@@ -804,7 +804,7 @@ def page_05_bus_subassembly():
     ax1.plot([-8, 530], [23, 23], color=INK_SUB, lw=0.7, ls="--", zorder=0.5)   # behind the part outlines
     ax1.text(534, 23, "stud line\n23 mm", ha="left", va="center", fontsize=7.0, color=INK_SUB)
     ax1.text(261, 82, "inboard band under the plate's cable window: empty", ha="center", va="center", fontsize=7.4, color=INK_SUB, style="italic")
-    bag_callout(ax1, sh_pts, (261, -36), "BAG A", "A3", "6", sub="+ 6× D3 (BAG D) — Pre-printed Ø6.7 mm bores")
+    bag_callout(ax1, sh_pts, (261, -36), "BAG A", "A3", "6", sub="+ 6× D3 (BAG D) — Pre-printed Ø8.0 mm bores")
     ax1.set_xlim(-25, 550); ax1.set_ylim(-65, 155)
 
     ax2 = fig.add_axes([0.67, 0.23, 0.30, 0.60])
@@ -818,7 +818,7 @@ def page_05_bus_subassembly():
     bag_callout(ax2, g_pts, (80, -18), "BAG C", "C1", "2")
     ax2.set_xlim(-10, 170); ax2.set_ylim(-45, 185)
 
-    ikea_ux_panel(fig, [0.26, 0.03, 0.48, 0.17], "insert_flush", "Flush in Ø6.7 mm bores", "Not proud / tilted")
+    ikea_ux_panel(fig, [0.26, 0.03, 0.48, 0.17], "insert_flush", "Flush in Ø8.0 mm bores", "Not proud / tilted")
 
     path = os.path.join(OUT, "page-05-bus-subassembly.png")
     fig.savefig(path, facecolor="white"); plt.close(fig); print("wrote", path)

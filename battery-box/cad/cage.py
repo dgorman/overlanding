@@ -28,6 +28,7 @@ tagged "verify" have not been measured on the real part yet.
 from __future__ import annotations
 
 import base64
+import math
 import json
 import os
 import struct
@@ -1350,11 +1351,27 @@ HOLES = {
     "garmin_up":        [(37, 20), (37, 105)],      # the same bracket turned 90 deg (verify)
     "bms":              [(10, 10), (112, 10), (10, 96), (112, 96)],   # verify
 }
-M5_BORE_R = 3.35   # Ø6.7 mm modelled for the M5 insert's Ø6.4 mm hole: FDM holes print ~0.3 under, and the Ø6.4 nominal came out too tight
-                   # for the 94180A361 while an M4 insert dropped in (2026-11-01).  The 6.7 mm insert also outruns a 6 mm plate, so every M5
-                   # site is an 11 mm deck (bus shelf floor, breaker drop shelf plate) or, in the 6 mm inverter plate, relieved on the far face.
+M5_HOLE = 7.7      # McMaster 94180A361 is a TAPERED heat-set insert (knurled body Ø7.82, flange Ø8.33, 6.73 long): drill N (Ø7.67), "for max
+                   # hole dia 0.303" (Ø7.70), top half of the hole tapered 8°, min material 7.5 mm.  The Ø6.4 the first prints used is the hole of
+                   # McMaster's STRAIGHT M5 insert (94459A774), not this part: Ø6.4 and Ø6.7 models both printed too tight (the tapered end entered,
+                   # the body stopped) while an M4 dropped in (2026-11-01).  The 6.7 mm insert also outruns a 6 mm plate, so every M5 site is an
+                   # 11 mm deck (bus shelf floor, breaker drop shelf plate) or, in the 6 mm inverter plate, relieved on the far face.
+FDM_HOLE = 0.3     # FDM holes print about this much under the model (a Ø5.6 model took the std M4, whose max hole is Ø5.28)
+M5_BORE_R = (M5_HOLE + FDM_HOLE) / 2       # Ø8.0 modelled
+M5_TAPER = 3.4     # the top half of every M5 bore opens at 8° (mouth Ø8.95 modelled) as McMaster specifies, so the Ø8.33 flange seats flush in
+M5_TAPER_TAN = math.tan(math.radians(8.0))   # the cone instead of ploughing a bead up around the mouth
+M4S_BORE_R = 3.0   # short M4 94180A351 (Garmin hanger, inverter plate tiles): drill #2 (Ø5.61), max hole 0.226" (Ø5.74) -> Ø6.0 modelled.
+                   # Std M4 94180A353 (trays, posts): drill #8 (Ø5.05), max hole 0.208" (Ø5.28) -> the Ø5.6 bores (r 2.8), bench-confirmed.
 M5_BLIND = 9.5     # the deck bores are BLIND (owner: no melt out the back, like the trays' M4 bores): 6.7 mm insert + 2.8 mm of melt room,
 M5_DECK = 11.0     # 1.5 mm of skin under the bore.  M5 x 12 through a bar ear (>= 2.5 mm) stops inside the bore.
+
+
+def m5_bore(cx, cy, z_top, depth):
+    """A vertical M5 insert bore cut from a top face at z_top: straight Ø8.0 x depth (blind), the top M5_TAPER of it opening at 8° to the face."""
+    s = cq.Workplane("XY").center(cx, cy).circle(M5_BORE_R).extrude(depth + 1).translate((0, 0, z_top - depth))
+    h = M5_TAPER + 1.0
+    cone = cq.Solid.makeCone(M5_BORE_R, M5_BORE_R + h * M5_TAPER_TAN, h, cq.Vector(cx, cy, z_top - M5_TAPER), cq.Vector(0, 0, 1))
+    return s.union(cq.Workplane("XY").add(cone))
 INSERT = {"mppt": "M5", "orion": "M4", "cerbo": "M4", "cerbo_up": "M4", "cerbo_flat": "M4", "shunt": "M6", "shunt_x": "M5", "busbar_n": "M5", "busbar_p": "M5",
           "breaker_a": "M6", "breaker_b": "M6", "garmin": "M4", "bms": "M4"}
 HOLES["garmin_up"] = [(37, 20), (37, 105)]
@@ -1437,10 +1454,13 @@ def lattice_card_tiles(L, H, x0, y_plate, z0, prefix, patches=(), solids=()):
                 u, v = pu - i * tw, pv - j * th
                 if -LAT["boss_r"] < u < tw + LAT["boss_r"] and -LAT["boss_r"] < v < th + LAT["boss_r"]:
                     boss = cq.Workplane("XZ").center(u, v).circle(LAT["boss_r"]).extrude(-t).intersect(box(tw, t, th))
-                    tile = tile.union(boss).cut(cq.Workplane("XZ").center(u, v).circle(r_hole).extrude(-t - 2).translate((0, -1, 0)))   # -1..t+1: THROUGH (2026-10-24: +1 left a 1 mm skin on the colum
-                    if r_hole > 3.0:   # M5: the 6.7 mm insert outruns the 6 mm tile, so the FAR face gets a Ø8.6 x 1.3 relief and the insert, pressed flush on
+                    tile = tile.union(boss).cut(cq.Workplane("XZ").center(u, v).circle(r_hole).extrude(-t - 2).translate((0, -1, 0)))   # -1..t+1: THROUGH (2026-10-24: +1 left a 1 mm skin on the column face)
+                    if r_hole > 3.5:   # M5: the 6.7 mm insert outruns the 6 mm tile, so the FAR face gets a Ø9.0 x 1.3 relief and the insert, pressed flush on
                         yr = -1.0 if side > 0 else t - LAT["relief"]   # the unit's side, ends 0.6 mm inside it instead of 0.7 proud (2026-11-01).  A pocket, so it
-                        tile = tile.cut(cq.Workplane("XZ").center(u, v).circle(4.3).extrude(-(LAT["relief"] + 1)).translate((0, yr, 0)))   # prints on either facen face)
+                        tile = tile.cut(cq.Workplane("XZ").center(u, v).circle(4.5).extrude(-(LAT["relief"] + 1)).translate((0, yr, 0)))   # prints on either face
+                        h = M5_TAPER + 1.0                              # and the mouth on the unit's face opens at 8° for the flange (McMaster's tapered hole)
+                        pnt, d = (cq.Vector(u, t - M5_TAPER, v), cq.Vector(0, 1, 0)) if side > 0 else (cq.Vector(u, M5_TAPER, v), cq.Vector(0, -1, 0))
+                        tile = tile.cut(cq.Workplane("XY").add(cq.Solid.makeCone(M5_BORE_R, M5_BORE_R + h * M5_TAPER_TAN, h, pnt, d)))
             if j < nz - 1:   # a boss near a joint must not refill the half-lap
                 tile = tile.cut(box(tw + 2, cd, lap + 1, (-1, cy, th - lap / 2)))
             if j > 0:
@@ -2635,7 +2655,7 @@ V13_SHORT = dict(   # the 635 mm box (2026-10-24 layout): ONE ROW of charge gear
     # under the plate's cable window is empty: the inverter, Orion and Garmin leads coming through the window land on bare shelf, not on a bus bar.
     # (Before: the bars sat in the inboard row under the window with the shunt alone on the tray side.)
     col=[dict(comp="shunt_x", x=226, y=4.5), dict(comp="busbar_px", x=45, y=1), dict(comp="busbar_nx", x=366, y=1)],
-    # (shelf units: Ø6.7 mm M5 heat-set insert bores pre-printed in plates 0, 1, 2.  The Garmin hangs from the top
+    # (shelf units: Ø8.0 mm M5 heat-set insert bores pre-printed in plates 0, 1, 2.  The Garmin hangs from the top
     # inboard rail on its own printed plate, see garmin_hanger in build_v13, 2026-10-30)
     window=(out_D - 145.0, out_D - 75.0, 40.0, 110.0),
     lip_holes=(((40, 100, 160), (40, 150, 260)), ((40, 100, 140), (40, 120, 200))))
@@ -2838,8 +2858,8 @@ def build_v13(a):
                     sh = sh.cut(countersink(f"print_breaker_shelf_{r}", (xs + hx, y_in0 + 6, hz), (0, -1, 0)))                      # countersink on the inner face
                     sh = sh.cut(cq.Workplane("XY").center(xs + hx, yw + 13).circle(2.3).extrude(8).translate((0, 0, wt - 1)))        # M4 down through the foot
             bx, by = xs + 24, y_in0 + 92                           # breaker inboard of the hanger bolts (key path over the empty plate), 7 mm off the lip
-            for (u, v) in HOLES["breaker_a"]:                      # its two 6.6 mm holes: M5 inserts (McMaster 94180A361, Ø6.7 modelled) in the 11 mm plate,
-                sh = sh.cut(cq.Workplane("XY").center(bx + u, by + v).circle(M5_BORE_R).extrude(M5_BLIND + 1).translate((0, 0, zs + M5_DECK - M5_BLIND)))   # BLIND, from the top
+            for (u, v) in HOLES["breaker_a"]:                      # its two 6.6 mm holes: M5 inserts (McMaster 94180A361, Ø8.0 modelled, tapered mouth) in the 11 mm plate,
+                sh = sh.cut(m5_bore(bx + u, by + v, zs + M5_DECK, M5_BLIND))   # BLIND from the top, 8° tapered mouth
             assert by + COMPONENTS["breaker_a"].w + 2 <= yw, "breaker flange runs into the lip rib"
             if not P.get("lid_slot"):
                 assert zs + M5_DECK + 18 < hz - 7, "hanger rib under the 1/4-20 countersink"
@@ -2896,12 +2916,12 @@ def build_v13(a):
             for r in range(2):
                 for hx in lip_holes[r]:
                     assert not (xj - 6 < g[f"tx{r}"] + hx < xj + 26), f"shelf lip hole at x {g[f'tx{r}'] + hx:.1f} lands in the lap at {xj:.1f}"
-        for pl in (V13_SHORT["col"] if short else V13_COL):   # pre-printed Ø6.7 x 9.5 BLIND M5 heat-set insert bores in the 11 mm shelf floor
+        for pl in (V13_SHORT["col"] if short else V13_COL):   # pre-printed Ø8.0 x 9.5 BLIND (8° tapered mouth) M5 heat-set insert bores in the 11 mm shelf floor
             hkey = {"busbar_px": "busbar_p", "busbar_nx": "busbar_n"}.get(pl["comp"], pl["comp"])   # (shunt_x has its own, off-centre pattern)
             for (hu, hv) in HOLES.get(hkey, ()):
                 hx_s, hy_s = pl["x"] + hu, y0s + 6 + pl["y"] + hv
                 if xa + 6 < hx_s < xb - 6:
-                    sh = sh.cut(cq.Workplane("XY").center(hx_s, hy_s).circle(M5_BORE_R).extrude(M5_BLIND + 1).translate((0, 0, M5_DECK - M5_BLIND)))
+                    sh = sh.cut(m5_bore(hx_s, hy_s, M5_DECK, M5_BLIND))   # BLIND from the top, 8° tapered mouth
         add(a, sh, f"print_bus_shelf_{i}", ORANGE)
     for pl in (V13_SHORT["col"] if short else V13_COL):
         c = COMPONENTS[pl["comp"]]
@@ -2937,8 +2957,8 @@ def build_v13(a):
                 hp_ = hp_.cut(cq.Workplane("XZ").center(hx, B / 2).circle(3.4).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
                 hp_ = hp_.cut(countersink("print_garmin_hanger", (hx, gy, B / 2), (0, 1, 0)))
             gx, gz = gx0 + (gw - gc.w) / 2, 142.0
-            for (u, v) in HOLES["garmin"]:
-                hp_ = hp_.cut(cq.Workplane("XZ").center(gx + u, gz + v).circle(2.8).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
+            for (u, v) in HOLES["garmin"]:                           # short M4 94180A351: Ø6.0 modelled
+                hp_ = hp_.cut(cq.Workplane("XZ").center(gx + u, gz + v).circle(M4S_BORE_R).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
             for zrow in (40.0, 72.0, 104.0, 130.0, 236.0):
                 hp_ = tie_slots(hp_, zrow, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
             add(a, hp_, "print_garmin_hanger", ORANGE)
@@ -2948,8 +2968,8 @@ def build_v13(a):
                 hp_ = hp_.cut(cq.Workplane("XZ").center(hx, hz).circle(3.4).extrude(-(gt + 2)).translate((0, gy - 1, 0)))     # 1/4-20 into the slot
                 hp_ = hp_.cut(countersink("print_garmin_hanger", (hx, gy, hz), (0, 1, 0)))                                     # head on the inner face
             gx, gz = gx0 + (gw - gc.w) / 2, 150.0
-            for (u, v) in HOLES["garmin"]:                           # M4 inserts in the plate (short, 94180A351), Ø5.6 mm pre-printed bores
-                hp_ = hp_.cut(cq.Workplane("XZ").center(gx + u, gz + v).circle(2.8).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
+            for (u, v) in HOLES["garmin"]:                           # M4 inserts in the plate (short, 94180A351), Ø6.0 mm pre-printed bores
+                hp_ = hp_.cut(cq.Workplane("XZ").center(gx + u, gz + v).circle(M4S_BORE_R).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
             hp_ = tie_slots(hp_, 243.0, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
             hp_ = tie_slots(hp_, 138.0, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
             add(a, hp_, "print_garmin_hanger", ORANGE)
@@ -2988,18 +3008,18 @@ def build_v13(a):
             clip = v12_post_clip(mirror=(j == 1), h=out_H - hpost, bolt_z=out_H - hpost - B / 2).rotate((0, 0, 0), (0, 0, 1), -90)
             add(a, clip.translate((xclip, yt, hpost)), f"print_post_clip_{j}", ORANGE)
     ux = V13["inv_x"]
-    r_inv = M5_BORE_R if INSERT.get(ikey) == "M5" else 2.8
+    r_inv = M5_BORE_R if INSERT.get(ikey) == "M5" else M4S_BORE_R
     patches = [(ux - px0 + u, iz - zp + v, r_inv, +1) for (u, v) in HOLES[ikey]]      # +1: the inverter sits on the +Y face
-    patches += [(sx - px0, sz - zp, 2.8) for (sx, sz) in g.get("sill_holes", ())]   # the 6 short M4 (Ø5.6 mm) in the bottom band, for the bus shelf wall's bolts
+    patches += [(sx - px0, sz - zp, M4S_BORE_R) for (sx, sz) in g.get("sill_holes", ())]   # the 6 short M4 (Ø6.0 mm) in the bottom band, for the bus shelf wall's bolts
     raw_units = V13_SHORT["units"] if short else V13_PLATE_UNITS
     if lid_slot and short:                                                     # lower column units 7 mm so tops sit at z 259 (7.2 mm under lid) and clear the z 127..151 lap
         raw_units = tuple((c_, x_, z_ - 7.0, n_, *s_) for (c_, x_, z_, n_, *s_) in raw_units)
-    if P.get("plate_pilots"):   # pre-printed Ø5.6 mm (M4) and Ø6.7 mm (M5) heat-set insert bores under every unit on the column face
+    if P.get("plate_pilots"):   # pre-printed Ø6.0 mm (short M4) and Ø8.0 mm (M5, tapered mouth) heat-set insert bores under every unit on the column face
         for comp, x0, z0, nm, *_side in raw_units:                             # bores go through: inserts set from the unit's side
             if P.get("breaker_shelf") and comp == "breaker_face":
                 continue
             assert comp in HOLES, f"no HOLES pattern for {comp}: the plate would get no pilots under it"
-            r_u = M5_BORE_R if INSERT.get(comp) == "M5" else 2.8
+            r_u = M5_BORE_R if INSERT.get(comp) == "M5" else M4S_BORE_R
             patches += [(x0 - px0 + u, z0 - zp + v, r_u, (_side[0] if _side else -1)) for (u, v) in HOLES[comp]]
             lap_lo, lap_hi = zp + hp / 2 - LAT["lap"] / 2, zp + hp / 2 + LAT["lap"] / 2         # the two tile rows' half-lap band
             for (u, v) in HOLES[comp]:
