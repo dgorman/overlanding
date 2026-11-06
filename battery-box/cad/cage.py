@@ -71,6 +71,14 @@ VARIANTS = {
                       perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True, lap_bolts=False, tray_clr=0.5, strap=False, batt_body_h=208.0, shelf_pad=3.0, shelf_drop=2.0, with_pack2=True),
     # pack2: the stacked add-on pack for v12s: 2 x 2 SuperPack 60Ah (two pairs, one above the other) in an all-printed cage,
     # bus bars + one breaker on a top shelf, SB175 umbilical inlet in its back panel.  Standalone model (frame_* = the pack's envelope)
+    # v12s printed on the H2D (350 x 320 bed): the SAME box, only the inverter plate splits into two 253 x 256 tiles (one vertical
+    # joint, 2 splines, no laps) instead of six.  Every other part is identical to v12s; print those from stl/v12s/.
+    "v12s_h2d": dict(frame_source="icebox", frame_W=488.1, frame_H=281.7, frame_D=571.5, bar=25.0, cube=25.75, shelf_end_len=584.2 / 3, garmin_hanger=True, gx_touch=True, tile_max=340.0, bed=(350.0, 320.0, 325.0),   # AS BUILT 2026-10-30: 25 mm metric rails,
+                 batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
+                 card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
+                 perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True, lap_bolts=False, tray_clr=0.5, strap=False, batt_body_h=208.0, shelf_pad=3.0, shelf_drop=2.0),   # front panel = a SOLID offcut of an IceBox side panel   # the IceBox's slot pattern on the back panel; trays without the unused
+                                                                               # pads and floor holes; insert pilot holes in the plate under every unit
+    # v12s_pack: v12s on the IceBox with pack2 standing on the floor in front of the box's port face, umbilical side toward it
     "pack2": dict(frame_source="icebox", frame_W=314.0, frame_H=572.0, frame_D=325.0, show_icebox=False,
                   batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="pack2", col_on_plate=True,
                   card_style="solid"),
@@ -1405,7 +1413,8 @@ def lattice_card_tiles(L, H, x0, y_plate, z0, prefix, patches=(), solids=()):
     12 mm border, 8 mm ribs on a 45 mm pitch, 6 mm thick so the edges ride
     in the same post slots as a sheet.  Tiles join with 3 mm printed splines
     glued across the ribs on the back (+Y) face.  Yields (name, shape)."""
-    nx = int(-(-L // LAT["tile_max"])); nz = int(-(-H // LAT["tile_max"]))
+    tmax = P.get("tile_max", LAT["tile_max"])                    # v12s_h2d: 340 (H2D bed 350 x 320) -> the plate is two 253 x 256 tiles
+    nx = int(-(-L // tmax)); nz = int(-(-H // tmax))
     tw, th = L / nx, H / nz
     t, rib, b = LAT["t"], LAT["rib"], LAT["border"]
     tiles = []
@@ -3023,8 +3032,9 @@ def build_v13(a):
             r_u = M5_BORE_R if INSERT.get(comp) == "M5" else M4S_BORE_R
             patches += [(x0 - px0 + u, z0 - zp + v, r_u, (_side[0] if _side else -1)) for (u, v) in HOLES[comp]]
             lap_lo, lap_hi = zp + hp / 2 - LAT["lap"] / 2, zp + hp / 2 + LAT["lap"] / 2         # the two tile rows' half-lap band
-            for (u, v) in HOLES[comp]:
-                assert not (lap_lo - 3 < z0 + v < lap_hi + 3), f"{comp} insert at z {z0 + v:.0f} lands in the tiles' lap ({lap_lo:.0f}-{lap_hi:.0f})"
+            if hp > P.get("tile_max", LAT["tile_max"]):                                            # (no lap row on the H2D's two-tile plate)
+                for (u, v) in HOLES[comp]:
+                    assert not (lap_lo - 3 < z0 + v < lap_hi + 3), f"{comp} insert at z {z0 + v:.0f} lands in the tiles' lap ({lap_lo:.0f}-{lap_hi:.0f})"
     V13["window"] = V13_SHORT["window"] if short else (645.0, 712.0, 40.0, 118.0)    # x0, x1, z0, z1: low cable window in the plate's front tile, over the shelf's empty inboard band
     wx0, wx1, wz0, wz1 = V13["window"]
     window = cq.Workplane("XZ").center((wx0 + wx1) / 2, (wz0 + wz1) / 2).rect(wx1 - wx0, wz1 - wz0).extrude(-(P["card_t"] + 2)).edges("|Y").fillet(8).translate((0, yp - 1, 0))
@@ -3558,7 +3568,8 @@ def export(a: cq.Assembly):
     if P["card_plane"] in ("xz", "v7", "v8", "v9", "v12"):
         with open(os.path.join(VIEWER, f"dims-{VARIANT}.json"), "w") as f:
             json.dump({"xz": dims_bookshelf, "v7": dims_v7, "v8": dims_v8, "v9": dims_v9, "v12": dims_v13 if P.get("box") == "v13" else dims_v12}[P["card_plane"]](), f)
-    print("== Printed parts (P1P/P1S bed 256 x 256 x 256) ==")
+    bed = P.get("bed", (256.0, 256.0, 256.0))
+    print(f"== Printed parts (bed {bed[0]:.0f} x {bed[1]:.0f} x {bed[2]:.0f}) ==")
     seen = {}
     for child in a.children:
         if child.name.startswith("print_"):
@@ -3569,7 +3580,7 @@ def export(a: cq.Assembly):
             key = child.name.split("_")[1]
             seen.setdefault((key, dims), 0); seen[(key, dims)] += 1
     for (key, dims), n in seen.items():
-        flag = "" if dims[0] <= 256 and dims[1] <= 256 and dims[2] <= 256 else "  <-- exceeds bed"
+        flag = "" if dims[0] <= bed[0] and dims[1] <= bed[1] and dims[2] <= bed[2] else "  <-- exceeds bed"
         print(f"  {n:2d} x {key:10s} {dims[0]:6.1f} x {dims[1]:6.1f} x {dims[2]:6.1f} tall{flag}")
     if any(c.name.startswith("print_") for c in a.children):
         try:

@@ -84,6 +84,7 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python cage.py v12s --clash
 .venv/bin/python cage.py pack2 --clash
 .venv/bin/python cage.py v12s_pack
+.venv/bin/python cage.py v12s_h2d        # the same box with the inverter plate split for the H2D's 350 x 320 bed (2 tiles): stl/v12s_h2d/
 
 # Rebuild multi-part print plates (stl/v12s/plate_*.stl) and shop tools (print_tool_tap_guide.stl):
 .venv/bin/python plates.py v12s
