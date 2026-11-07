@@ -3,6 +3,7 @@
 #              Battery & Electronics Box (v12s / v12s_h2d for Bambu Lab H2D & P1P).
 
 import os
+import sys
 import traceback
 import adsk.core
 import adsk.fusion
@@ -1636,8 +1637,28 @@ def build_electrical_components(
     ):
         gb_dx, gb_dy, gb_dz = COMP_SPECS["gnd_bus_2701"]["dims"]
         gbx, gby, gbz = COMP_SPECS["gnd_bus_2701"]["pos"]
-        gbus = add_box_feature(comp, gbx, gby, gbz, gb_dx, gb_dy, gb_dz, body_name="bluesea_2701_ground_bus")
-        fillet_parallel_edges(comp, gbus, "y", COMP_FILLET_R)
+        base_t = 9.0
+        gbus = add_box_feature(
+            comp, gbx, gby + gb_dy - base_t, gbz, gb_dx, base_t, gb_dz, body_name="bluesea_2701_ground_bus"
+        )
+        fillet_parallel_edges(comp, gbus, "y", 4.0)
+        # Raised end mounting ears + center insulating barrier
+        for ex0 in (gbx, gbx + gb_dx - 19.3):
+            add_box_feature(
+                comp, ex0, gby + gb_dy - 17.0, gbz + gb_dz / 2.0 - 9.0,
+                19.3, 17.0, 18.0,
+                adsk.fusion.FeatureOperations.JoinFeatureOperation, gbus,
+            )
+        add_box_feature(
+            comp, gbx + 17.5, gby, gbz + gb_dz / 2.0 - 2.5,
+            gb_dx - 35.0, gb_dy, 5.0,
+            adsk.fusion.FeatureOperations.JoinFeatureOperation, gbus,
+        )
+        # 2x Ø5.0 mm mounting holes + Ø9.5 mm counterbores at 57.20 mm centers
+        gb_thru = [(gbx + u, gby, gbz + v, 2.5) for (u, v) in COMP_SPECS["gnd_bus_2701"]["holes_xz"]]
+        gb_cb = [(gbx + u, gby + gb_dy - 17.0, gbz + v, 4.75) for (u, v) in COMP_SPECS["gnd_bus_2701"]["holes_xz"]]
+        cut_cylinders_on_plane(comp, gbus, "y", gby - 0.5, gb_dy + 1.0, gb_thru)
+        cut_cylinders_on_plane(comp, gbus, "y", gby + gb_dy - 17.5, 9.0, gb_cb)
         apply_color(app, design, gbus, *COL_POWER_GOLD)
 
     # 6. Rear Panel GX Touch 50 Display + Right-Angle Cable Plug Clearance Envelope (flush on printed back panel)
@@ -1795,3 +1816,6 @@ def run(context: dict) -> None:
     except Exception:
         if ui:
             ui.messageBox(f"Script execution failed:\n{traceback.format_exc()}", "Fusion Script Error")
+    finally:
+        # Evict module from Fusion's persistent sys.modules cache so subsequent runs always reload from disk
+        sys.modules.pop(__name__, None)
