@@ -2,4 +2,6 @@
 out/
 __pycache__/
 step/*.step
+step/*.stp
 step/cache/
+BatteryBox_v12s/step_models/*.step

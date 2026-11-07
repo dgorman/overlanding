@@ -42,8 +42,12 @@ import plates   # print orientation + print plates for the exported STLs
 # Variants:  python cage.py cube     (v4: 487 mm cube from 12 uncut kit bars)
 #            python cage.py icebox   (v5: a second IceBox 1.3 frame, gutted)
 # ----------------------------------------------------------------------------
-VARIANT = next((a for a in sys.argv[1:] if not a.startswith("-")), os.environ.get("CAGE_VARIANT", "cube"))
+VARIANT = next((a for a in sys.argv[1:] if not a.startswith("-")), os.environ.get("CAGE_VARIANT", "master"))
 VARIANTS = {
+    "master": dict(frame_source="icebox", frame_W=488.1, frame_H=281.7, frame_D=571.5, bar=25.0, cube=25.75, shelf_end_len=584.2 / 3, garmin_hanger=True, gx_touch=True, tile_max=340.0, bed=(350.0, 320.0, 325.0),
+                   batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
+                   card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
+                   perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", printed_ends=True, breaker_shelf=True, lap_bolts=False, tray_clr=0.5, strap=False, batt_body_h=208.0, shelf_pad=3.0, shelf_drop=2.0),
     "cube":   dict(frame_source="kit", frame_W=None, frame_H=None, frame_D=None,
                    batt_layout="row3_top1", dist_forward=False, inverter="multiplus"),
     "icebox": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
@@ -76,7 +80,7 @@ VARIANTS = {
     "v12s_h2d": dict(frame_source="icebox", frame_W=488.1, frame_H=281.7, frame_D=571.5, bar=25.0, cube=25.75, shelf_end_len=584.2 / 3, garmin_hanger=True, gx_touch=True, tile_max=340.0, bed=(350.0, 320.0, 325.0),   # AS BUILT 2026-10-30: 25 mm metric rails,
                  batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                  card_style="solid", box="v13", batt="battery", inverter_long="multiplus_1200_long", stack_on_icebox=True,
-                 perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", breaker_shelf=True, lap_bolts=False, tray_clr=0.5, strap=False, batt_body_h=208.0, shelf_pad=3.0, shelf_drop=2.0),   # front panel = a SOLID offcut of an IceBox side panel   # the IceBox's slot pattern on the back panel; trays without the unused
+                 perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", printed_ends=True, breaker_shelf=True, lap_bolts=False, tray_clr=0.5, strap=False, batt_body_h=208.0, shelf_pad=3.0, shelf_drop=2.0),   # front panel = a SOLID offcut of an IceBox side panel   # the IceBox's slot pattern on the back panel; trays without the unused
                                                                                # pads and floor holes; insert pilot holes in the plate under every unit
     # v12s_pack: v12s on the IceBox with pack2 standing on the floor in front of the box's port face, umbilical side toward it
     "pack2": dict(frame_source="icebox", frame_W=314.0, frame_H=572.0, frame_D=325.0, show_icebox=False,
@@ -470,11 +474,11 @@ if P["card_plane"] == "v12":   # v12 and v13 share one front panel: the port str
     FRONT_PORTS = [("l14_30_in", 423, 65), ("l14_30_out", 423, 135), ("socket", 423, 190, 29),            # (v13's batteries run the outboard
                    ("sb50_solar", 370, 60), ("sb50_alt", 370, 116), ("socket", 370, 160, 22), ("socket", 370, 193, 22),   # side to the front; its plate's
                    ("socket", 338, 150, 29), ("socket", 338, 190, 29)]                                                   # front post ends at y 315)
-if P.get("icebox_front") in ("bezel", "side"):   # v12s port strip: the same nine ports with 5 mm more between the SB50s and the socket columns
-    FRONT_PORTS = [("l14_30_in", 423, 72), ("l14_30_out", 423, 142), ("socket", 423, 197, 29),
+if P.get("icebox_front") in ("bezel", "side"):   # v12s / master port strip: 1 x 12V socket, 2 x USB sockets, solar, SB50 alt, 2 x L14-30, SB50 pack
+    FRONT_PORTS = [("l14_30_in", 423, 72), ("l14_30_out", 423, 142),
                    ("sb50_solar", 370, 62), ("sb50_alt", 370, 118), ("socket", 370, 162, 22), ("socket", 370, 195, 22),
-                   ("socket", 338, 157, 29), ("socket", 338, 197, 29),
-                   ("sb175_pack", 215, 110)]   # umbilical inlet for the add-on pack, in front of the bus column, clear of the breakers on the plate
+                   ("socket", 338, 157, 29),
+                   ("sb50_pack", 215, 110)]   # SB50 umbilical inlet for the add-on pack, in front of the bus column, clear of the breakers on the plate
 INLET_BODY = {"l14": (60.0, 55.0), "sb50": (48.0, 37.0, 48.0), "sb175": (79.0, 56.0, 26.0)}   # (dia, depth) or (depth, w, h)
 N_BATT = 4
 post_h = in_H                                          # floor panel top to the underside of the top rails
@@ -2448,41 +2452,58 @@ def v12_panels(a):
         return body.union(box(T, length - 2 * e, out_H - 2 * B + 6, (thick_at, C, B - 3)))
     back = slot_panel("y", pm, in_W)                                                          # the IceBox's perforated rear panel, cut to height
     slot_w, slot_h, pitch_y, pitch_z = 72.0, 22.0, 92.0, 46.0
-    def icebox_slots(panel, x_face, first_row, n_rows, z_shift):
-        # the IceBox back panel's slot rows are at z = B + 60 + r * 46 (r = 0..7) with the odd rows staggered half a pitch;
+    printed_ends = bool(P.get("printed_ends"))
+    def icebox_slots(panel, x_face, first_row, n_rows, z_shift, y_limit=None):
+        # the IceBox back panel's slot rows are at z = B + 60 + r * pitch_z (r = 0..7) with the odd rows staggered half a pitch;
         # the box's back panel is its bottom 237 mm (rows 0-3), the front panel the offcut above it (rows 4-7, shifted down)
+        lim = (out_W - B - 30) if y_limit is None else y_limit
         for r in range(first_row, first_row + n_rows):
             z = B + 60 + r * pitch_z - z_shift
             if z < B + 4 or z + slot_h > out_H - B - 4:
                 continue
             y = B + 40 + ((pitch_y / 2) if r % 2 else 0)
-            while y + slot_w < out_W - B - 30:
+            while y + slot_w < lim:
                 panel = panel.cut(cq.Workplane("YZ").center(y + slot_w / 2, z + slot_h / 2).slot2D(slot_w, slot_h).extrude(T + 8).translate((x_face - 4, 0, 0)))
                 y += pitch_y
         return panel
     if P.get("perforated_back"):
-        back = icebox_slots(back, pm, 0, 4, 0.0)
+        back = icebox_slots(back, pm, 0, 4, 0.0, y_limit=(270.0 if printed_ends else None))
     if P.get("gx_touch", False):
         # Victron GX Touch 50 FLUSH (136 x 94 x 12, 800x480) let into the BACK panel at its inboard end (user, 2026-10-30): the
         # panel's inner face is 30 mm from the MultiPlus's back end there, enough for the 12 mm body and a right-angle cable plug.
-        # Cut-out modelled as the body (128 x 86); VERIFY against the flush kit's template before cutting. A printed trim bezel
-        # (150 x 108 x 3, four M4 self-tappers into the ply) covers the slots the opening crosses.
+        # Cut-out modelled as the body (128 x 86); VERIFY against the flush kit's template before cutting.
         tw, th, td = 136.0, 94.0, 12.0
         cw_, ch_ = 128.0, 86.0
         yc, zc = out_W - B - 80.0, 160.0                            # bezel edge 5 mm clear of the inboard corner rail
         back = back.cut(box(T + 2, cw_, ch_, (pm - 1, yc - cw_ / 2, zc - ch_ / 2)))
-        bezel = box(3.0, 150.0, 108.0, (pm - 3.0, yc - 75.0, zc - 54.0)).cut(box(5.0, cw_, ch_, (pm - 4.0, yc - cw_ / 2, zc - ch_ / 2)))
-        for (by, bz) in ((yc - 70, zc - 49), (yc + 70, zc - 49), (yc - 70, zc + 49), (yc + 70, zc + 49)):
-            bezel = bezel.cut(cq.Workplane("YZ").center(by, bz).circle(1.8).extrude(5).translate((pm - 4.0, 0, 0)))
-        add(a, bezel, "print_touch_bezel", ORANGE)
-        body = box(td, cw_, ch_, (pm - 3.0 + 3.0 - 3.0, yc - cw_ / 2, zc - ch_ / 2))                 # 3 mm proud of the bezel face, 9 inside
-        face = box(3.0, tw, th, (pm - 6.0, yc - tw / 2, zc - th / 2))                                 # the glass and its flange, on the bezel
-        add(a, body.translate((-3.0 + 3.0, 0, 0)).union(face), "gx_touch_50", BLACK)
-        add(a, box(15.0, 40.0, 20.0, (pm - 3.0 + td, yc - 20.0, zc - 10.0)), "gx_touch_cable_plug", (0.3, 0.3, 0.3))   # right-angle plug room
+        if not printed_ends:
+            bezel = box(3.0, 150.0, 108.0, (pm - 3.0, yc - 75.0, zc - 54.0)).cut(box(5.0, cw_, ch_, (pm - 4.0, yc - cw_ / 2, zc - ch_ / 2)))
+            for (by, bz) in ((yc - 70, zc - 49), (yc + 70, zc - 49), (yc - 70, zc + 49), (yc + 70, zc + 49)):
+                bezel = bezel.cut(cq.Workplane("YZ").center(by, bz).circle(1.8).extrude(5).translate((pm - 4.0, 0, 0)))
+            add(a, bezel, "print_touch_bezel", ORANGE)
+            body = box(td, cw_, ch_, (pm, yc - cw_ / 2, zc - ch_ / 2))
+            face = box(3.0, tw, th, (pm - 6.0, yc - tw / 2, zc - th / 2))
+            add(a, body.union(face), "gx_touch_50", BLACK)
+            add(a, box(15.0, 40.0, 20.0, (pm - 3.0 + td, yc - 20.0, zc - 10.0)), "gx_touch_cable_plug", (0.3, 0.3, 0.3))
+        else:
+            body = box(td, cw_, ch_, (pm, yc - cw_ / 2, zc - ch_ / 2))
+            face = box(3.0, tw, th, (pm - 3.0, yc - tw / 2, zc - th / 2))
+            add(a, body.union(face), "gx_touch_50", BLACK)
+            add(a, box(15.0, 40.0, 20.0, (pm + td, yc - 20.0, zc - 10.0)), "gx_touch_cable_plug", (0.3, 0.3, 0.3))
     for nm, shp in (("panel_side_outboard_from_icebox", slot_panel("x", pm, in_D)),          # cut down from the IceBox's side panels
-                    ("panel_side_inboard_from_icebox", slot_panel("x", out_W - pm - T, in_D)),
-                    ("panel_back_perforated_from_icebox", back)):
+                    ("panel_side_inboard_from_icebox", slot_panel("x", out_W - pm - T, in_D))):
         add(a, shp, nm, PANEL)
+    ymid_end, lw_end, big_end = 290.0, 20.0, out_H + 40.0           # H2D 2-tile end-panel split at Y = 280..300 mm (278 x 238 and 186 x 238)
+    if printed_ends:
+        b_out = back.intersect(box(40, ymid_end + lw_end / 2 + 20, big_end, (pm - 20, -20, -20))).cut(box(T - 3.0 + 1, lw_end, big_end, (pm + 3.0, ymid_end - lw_end / 2, -20)))
+        b_in = back.intersect(box(40, out_W, big_end, (pm - 20, ymid_end - lw_end / 2, -20))).cut(box(3.0 + 1, lw_end, big_end, (pm - 1, ymid_end - lw_end / 2, -20)))
+        for zb in (60, 140, 220):
+            bolt_b = cq.Workplane("YZ").center(ymid_end, zb).circle(2.3).extrude(T + 2).translate((pm - 1, 0, 0))
+            b_out, b_in = b_out.cut(bolt_b), b_in.cut(bolt_b)
+        add(a, b_out, "print_panel_back_outboard", ORANGE)
+        add(a, b_in, "print_panel_back_inboard_gx", ORANGE)
+    else:
+        add(a, back, "panel_back_perforated_from_icebox", PANEL)
     front = slot_panel("y", out_D - pm - T, in_W)
     xf = out_D - pm - T                                            # the front panel's inner face
     if P.get("icebox_front") == "bezel":   # the slotted rear-panel offcut (IceBox rows 4-7) with a 139 x 210 opening for a printed port bezel behind it
@@ -2502,20 +2523,40 @@ def v12_panels(a):
         if kind == "socket":
             r = port[3] / 2
             tgt = tgt.cut(cq.Workplane("YZ").center(y, z).circle(r).extrude(T + 2).translate((xf_ports - 1, 0, 0)))
-            add(a, cq.Workplane("YZ").center(y, z).circle(r + 3).extrude(-40).translate((xf_ports, 0, 0)), f"socket_{int(y)}_{int(z)}", (0.3, 0.3, 0.3))
+            flange = cq.Workplane("YZ").center(y, z).circle(r + 2.5).extrude(2.5).translate((xf_ports + T, 0, 0))
+            barrel = cq.Workplane("YZ").center(y, z).circle(r - 0.2).extrude(-(28 + T)).translate((xf_ports + T, 0, 0))
+            nut = cq.Workplane("YZ").center(y, z).polygon(6, 2 * (r + 2.0)).extrude(-6).translate((xf_ports, 0, 0))
+            tabs = box(12, 10, 14, (xf_ports - 40, y - 5, z - 7))
+            add(a, flange.union(barrel).union(nut).union(tabs), f"socket_{int(y)}_{int(z)}", (0.3, 0.3, 0.3))
         elif kind.startswith("l14"):
             tgt = tgt.cut(cq.Workplane("YZ").center(y, z).circle(30).extrude(T + 2).translate((xf_ports - 1, 0, 0)))
-            add(a, cq.Workplane("YZ").center(y, z).circle(30).extrude(-55).translate((xf_ports, 0, 0)), f"socket_{kind}", (0.3, 0.3, 0.3))
+            flange = cq.Workplane("YZ").center(y, z).circle(31.5).extrude(3.5).translate((xf_ports + T, 0, 0))
+            can = cq.Workplane("YZ").center(y, z).circle(26).extrude(-42).translate((xf_ports, 0, 0))
+            boot = cq.Workplane("YZ").center(y, z).circle(18).extrude(-13).translate((xf_ports - 42, 0, 0))
+            add(a, flange.union(can).union(boot), f"socket_{kind}", (0.3, 0.3, 0.3))
         else:
-            w_, h_, d_ = PORT_FACE["sb175" if kind.startswith("sb175") else "sb50"]
+            is_175 = kind.startswith("sb175")
+            w_, h_, d_ = PORT_FACE["sb175" if is_175 else "sb50"]
             tgt = tgt.cut(box(T + 2, w_, h_, (xf_ports - 1, y - w_ / 2, z - h_ / 2)))
-            add(a, box(d_, w_, h_, (xf_ports - d_, y - w_ / 2, z - h_ / 2)), f"socket_{kind}", (0.3, 0.3, 0.3))
+            if is_175:
+                at_p = (xf_ports - d_, y - w_ / 2, z - h_ / 2)
+                fb = box(d_, w_, h_, at_p)
+                add(a, victron_shape("sb175_h", d_, w_, h_, at_p, fb), f"socket_{kind}", (0.3, 0.3, 0.3))
+            else:
+                sh_w, sh_h = 36.5, 16.0
+                at_p = (xf_ports - d_, y - sh_w / 2, z - sh_h / 2)
+                fb = box(d_, sh_w, sh_h, at_p)
+                sh_body = victron_shape("sb50_x", d_, sh_w, sh_h, at_p, fb)
+                bezel_p = box(2.5, w_, h_, (xf_ports + T, y - w_ / 2, z - h_ / 2)).cut(
+                    box(4.5, sh_w - 1, sh_h - 1, (xf_ports + T - 1, y - (sh_w - 1) / 2, z - (sh_h - 1) / 2))
+                )
+                add(a, sh_body.union(bezel_p), f"socket_{kind}", (0.3, 0.3, 0.3))
         if bezel is not None: bezel = tgt
         else: front = tgt
-    # the front panel is PRINTED (the ports are cut in it): two tiles on a vertical 20 mm half-lap at mid-width, the outboard
+    # the front panel is PRINTED (the ports are cut in it): two tiles on a vertical 20 mm half-lap, the outboard
     # tile keeping the outer half of the thickness across the lap, 3 x M4 through the lap (nuts on the bench); it slides into
     # the rails' slots like the sheet panels
-    if bezel is not None or P.get("icebox_front") == "side":
+    if not printed_ends and (bezel is not None or P.get("icebox_front") == "side"):
         if bezel is not None:
             add(a, front, "panel_front_slotted_from_icebox", PANEL)
             add(a, bezel, "print_port_bezel", ORANGE)
@@ -2525,15 +2566,12 @@ def v12_panels(a):
             lz0 = out_H - B / 2 - T / 2
             lid = box(in_D + 6, out_W - 2 * C, T, (B - 3, C, lz0)).union(box(out_D - 2 * C, in_W + 6, T, (C, B - 3, lz0)))
             add(a, lid, "lid_from_icebox_top", PANEL)
-            for y in (out_W * 0.3, out_W * 0.7):
-                add(a, lid_handle().translate((out_D / 2 - 6, y - 30, lz0 + T)), f"lid_handle_{int(y)}", BLACK)
         else:
             add(a, box(out_D, out_W, T, (0, 0, out_H)), "lid_from_icebox_top", PANEL)
-            for y in (out_W * 0.3, out_W * 0.7):
-                add(a, lid_handle().translate((out_D / 2 - 6, y - 30, out_H + T)), f"lid_handle_{int(y)}", BLACK)
         return xf
-    ymid, lw = B + in_W / 2, 20.0
-    big = out_H + 40
+    ymid = ymid_end if printed_ends else (B + in_W / 2)
+    lw = lw_end
+    big = big_end
     outb = front.intersect(box(40, ymid + lw / 2 + 20, big, (xf - 20, -20, -20))).cut(box(3.0 + 1, lw, big, (xf - 1, ymid - lw / 2, -20)))
     inb = front.intersect(box(40, out_W, big, (xf - 20, ymid - lw / 2, -20))).cut(box(T - 3.0 + 1, lw, big, (xf + 3.0, ymid - lw / 2, -20)))
     for zb in (60, 140, 220):
@@ -2542,8 +2580,6 @@ def v12_panels(a):
     add(a, outb, "print_panel_front_outboard", ORANGE)
     add(a, inb, "print_panel_front_inboard_ports", ORANGE)
     add(a, box(out_D, out_W, T, (0, 0, out_H)), "lid_from_icebox_top", PANEL)                    # the IceBox's top panel, uncut
-    for y in (out_W * 0.3, out_W * 0.7):
-        add(a, lid_handle().translate((out_D / 2 - 6, y - 30, out_H + T)), f"lid_handle_{int(y)}", BLACK)
     return xf
 
 
@@ -2654,8 +2690,10 @@ V13_SHORT = dict(   # the 635 mm box (2026-10-24 layout): ONE ROW of charge gear
     # (266; the Orion 11 lower so its lugs clear the tile lap), the band under them open for the lugs and cables to the shelf's bus bars and
     # shunt; the Garmin turned 90 deg on the plate's INVERTER face above the cable window, 59 mm in front of the MultiPlus's cable end and
     # 18 mm behind the socket bodies, so only its feed passes through the window and its outputs run straight to the front-panel ports.
-    # (comp, x, z, tag[, side]): side +1 = inverter face, default -1 = column face. Unit heights keep every insert out of the lap (z 137-161).
-    units=(("mppt_up", 50.0, 80.0, "mppt"), ("cerbo", 190.0, 188.0, "cerbo"), ("orion", 354.0, 118.0, "orion"),
+    # (comp, x, z, tag[, side]): side +1 = inverter face, default -1 = column face.
+    # Top mounting holes of all three units (MPPT 62+181=243, Cerbo 175+68=243, Orion 118+125=243) share the Z = 243.0 mm vector,
+    # keeping all unit tops (248..255 mm) 26.7..33.7 mm clear below the lid and all bottom holes clear of the z 137..161 lap.
+    units=(("mppt_up", 50.0, 62.0, "mppt"), ("cerbo", 190.0, 175.0, "cerbo"), ("orion", 354.0, 118.0, "orion"),
            ("breaker_face", out_D - 150.0, 110.0, "breaker1"), ("breaker_face", out_D - 150.0, 185.0, "breaker2")),   # (breakers: pre-drop-shelf, filtered out)
     # The window is placed from the FRONT rail (out_D - ...) so it rides with the box depth. At 571.5 deep (2026-10-30) the 63.5 mm
     # that used to separate the MultiPlus's cable end from the Garmin on the plate's inverter face is gone, so the Garmin LIES FLAT ON
@@ -2676,10 +2714,10 @@ V13_SHORT = dict(   # the 635 mm box (2026-10-24 layout): ONE ROW of charge gear
 COUNTERSINKS = []   # (part name, face point, unit axis INTO the part): every conical countersink, for check_countersinks (--clash)
 
 
-def head_relief(face_pt, axis_in, r=7.0, depth=5.0):
+def head_relief(face_pt, axis_in, r=7.0, depth=10.0):
     """Clearance for a flat head whose axis runs close to a floor: a cylinder about the bolt axis, from the wall's face OUT into
-    the space in front of it, so the head's lower edge cannot stand on the floor (2026-11-06: a shelf end-wall bolt hung up on
-    the 11 mm floor, whose top is only 1.5 mm below the axis; the trays' floors are 0.15 mm below the head's edge)."""
+    the space in front of it, so the head's lower edge cannot stand on the floor and the screw can angle into the bore (2026-11-07:
+    doubled from 5.0 mm to 10.0 mm so 1/4-20 x 1/2 in flat-head screws have plenty of length to angle into the bus shelf end walls)."""
     ax = cq.Vector(*axis_in).normalized()
     return cq.Workplane("XY").add(cq.Solid.makeCylinder(r, depth, cq.Vector(*face_pt) + ax * 0.01, ax * -1.0))
 
@@ -2704,7 +2742,7 @@ def countersink(part, face_pt, axis):
 # into the IceBox's top depth rail directly under it.  Nothing reaches round a corner, nothing meets a cube.
 # ----------------------------------------------------------------------------------------------------------------------
 STRAP = dict(
-    t=4.0,            # plate thickness (user: 4 mm, like the Goose Gear gusset)
+    t=6.0,            # plate thickness: 6 mm so 1/4-20 x 1/2 in flat-head countersinks (3.6 mm deep) leave a 2.4 mm shoulder
     w=60.0, h=46.0,   # along the rail x up the two rails: the 46 stays inside the two 25 mm rail faces (50) by 2 mm each way
     pitch_x=30.0,     # the two bolts along each rail
     pitch_z=25.75,    # slot centreline to slot centreline: 12.5 from each rail's face + the 0.375 each cube stands proud (cube on cube)
@@ -2717,27 +2755,47 @@ _DXF_DONE = set()
 
 
 def stack_strap():
-    """The strap lying flat in XY (x along the rail, y up the rails with the seam at y 0, thickness z 0..t), as it prints.
-    rotate((1,0,0), 90) stands it on a rail face with the seam at z 0 and the plate at y -t..0 (the outboard face)."""
+    """The strap lying flat in XY (x along the rail, y up the rails with the seam at y 0, thickness z 0..t), as it prints
+    with the plain back at z = 0 on the bed and 82-deg 1/4-20 countersinks on the +Z face (z = t).
+    rotate((1,0,0), 90) stands it on the outboard rail face with the seam at z 0 and the plate at y -t..0."""
     s = STRAP; w, h, t = s["w"], s["h"], s["t"]
     pl = box(w, h, t, (-w / 2, -h / 2, 0)).edges("|Z").fillet(s["r"])
     for sx in (-s["pitch_x"] / 2, s["pitch_x"] / 2):
-        pl = pl.cut(cq.Workplane("XY").center(sx, -s["pitch_z"] / 2).circle(s["hole"] / 2).extrude(t + 2).translate((0, 0, -1)))          # IceBox rail: round
-        pl = pl.cut(cq.Workplane("XY").center(sx, s["pitch_z"] / 2).slot2D(s["hole"] + s["slot"], s["hole"], 90).extrude(t + 2).translate((0, 0, -1)))   # box rail: 2.4 mm of float
+        # Lower row (IceBox top depth rail): round Ø6.8 through-hole + 82° conical countersink on +Z face
+        pl = pl.cut(cq.Workplane("XY").center(sx, -s["pitch_z"] / 2).circle(s["hole"] / 2).extrude(t + 2).translate((0, 0, -1)))
+        csk_lo = cq.Workplane("XY").add(cq.Solid.makeCone(7.0, 3.4, 4.1, cq.Vector(sx, -s["pitch_z"] / 2, t + 0.5), cq.Vector(0, 0, -1)))
+        pl = pl.cut(csk_lo)
+        # Upper row (box bottom depth rail): 2.4 mm vertical slot + 82° slotted countersink on +Z face
+        pl = pl.cut(cq.Workplane("XY").center(sx, s["pitch_z"] / 2).slot2D(s["hole"] + s["slot"], s["hole"], 90).extrude(t + 2).translate((0, 0, -1)))
+        csk_hi = (
+            cq.Workplane("XY", origin=(sx, s["pitch_z"] / 2, t + 0.5))
+            .slot2D(2 * 7.0 + s["slot"], 2 * 7.0, 90)
+            .workplane(offset=-4.1)
+            .slot2D(2 * 3.4 + s["slot"], 2 * 3.4, 90)
+            .loft(combine=True)
+        )
+        pl = pl.cut(csk_hi)
     return pl
 
 
 def add_stack_straps(a):
     """Four straps, two per side of the box (outboard y 0, inboard y out_W), one near each end of the bottom depth rails, each
     clear_cube past the corner cube so it misses the IceBox's own Goose Gear gussets.  Also writes the outline as a DXF next
-    to the STLs for anyone who would rather have it cut from 4 mm aluminium."""
-    s = STRAP
+    to the STLs for anyone who would rather have it cut from aluminium."""
+    s = STRAP; t = s["t"]
     xs = (C + s["clear_cube"] + s["w"] / 2, out_D - C - s["clear_cube"] - s["w"] / 2)
     flat = stack_strap()
-    up = flat.rotate((0, 0, 0), (1, 0, 0), 90)                     # plate at y -t..0, seam at z 0
+    up_out = flat.rotate((0, 0, 0), (1, 0, 0), 90)                  # plate at y -t..0, countersinks on outer -Y face (y = -t)
+    up_in = up_out.rotate((0, 0, 0), (0, 0, 1), 180)                # plate at y 0..+t, countersinks on outer +Y face (y = out_W + t)
     for i, x in enumerate(xs):
-        add(a, up.translate((x, 0, 0)), f"print_stack_strap_out_{i}", ORANGE)
-        add(a, up.translate((x, out_W + s["t"], 0)), f"print_stack_strap_in_{i}", ORANGE)
+        nm_out = f"print_stack_strap_out_{i}"
+        nm_in = f"print_stack_strap_in_{i}"
+        add(a, up_out.translate((x, 0, 0)), nm_out, ORANGE)
+        add(a, up_in.translate((x, out_W, 0)), nm_in, ORANGE)
+        for sx in (-s["pitch_x"] / 2, s["pitch_x"] / 2):
+            for sz in (-s["pitch_z"] / 2, s["pitch_z"] / 2):
+                COUNTERSINKS.append((nm_out, (x + sx, -t, sz), (0, 1, 0)))
+                COUNTERSINKS.append((nm_in, (x + sx, out_W + t, sz), (0, -1, 0)))
     if VARIANT not in _DXF_DONE:
         _DXF_DONE.add(VARIANT); os.makedirs(STL, exist_ok=True)
         cq.exporters.exportDXF(flat.faces("<Z"), os.path.join(STL, "print_stack_strap.dxf"))
@@ -2869,11 +2927,10 @@ def build_v13(a):
                     sh = sh.cut(cq.Workplane("XY").center(xs + hx, yw + 13).circle(2.3).extrude(8).translate((0, 0, wt - 1)))        # 2 x M4 down through the inboard foot
             else:
                 # The hanger (2026-11-06, user: a clean flat front, no step, no holes): 13 mm thick at the rail band so the 3/4 in
-                # flat heads leave 6 mm into the drop-in nut, and a 2 mm RELIEF on the BACK below the rail (the front stays flush).
-                # The side panel sits 9.5 mm behind the rail face; with the relief the channel behind the hanger is 11.5 mm, snug
-                # on the battery's 4 AWG lead plus an adhesive 1 in zip-tie mount on the hanger's back (user, 2026-11-06: relief 4 mm,
-                # channel 13.5; no tabs). The front face, the plate height, the leg and the foot are unchanged.
-                hb, rel = 13.0, 4.0                                                                               # band thickness, back relief
+                # flat heads leave 6 mm into the drop-in nut, and a 7.5 mm RELIEF on the BACK below the rail (the front stays flush,
+                # and the back at Y = 32.5 mm is dead flush with the SuperPack 60Ah battery's outboard face!).
+                # The side panel sits 9.5 mm behind the rail face; with the 7.5 mm relief the wire channel behind the hanger is 17.0 mm.
+                hb, rel = 13.0, 7.5                                                                               # band thickness, back relief (flush with battery at Y = 32.5 mm)
                 yf = y_in0 + hb                                                                                   # the hanger's front face
                 sh = box(130, yw + 6 - (y_in0 + rel), M5_DECK, (xs, y_in0 + rel, zs))                            # plate from the relieved back to the leg
                 sh = sh.union(box(130, hb - rel, (out_H - B) - zs, (xs, y_in0 + rel, zs)))                       # lower hanger, back relieved 2 mm

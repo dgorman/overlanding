@@ -79,6 +79,7 @@ ORIENT_RULES = [   # (file-name prefix, orientation); first match wins; anything
     ("print_post_clip", flat),                  # on the plain outer face, countersink up
     ("print_plate_inverter_tile", flat),        # on the plain back: pilot holes and the half-lap rabbets face up
     ("print_plate_inverter_spline", flat),
+    ("print_panel_", flat),                     # 2-tile printed end panels lie flat on the bed, half-lap rabbet facing up
     ("print_garmin_hanger", flat),
     ("print_touch_bezel", flat),
     ("print_stack_strap", flat),              # the 4 mm strap lies flat, holes vertical              # the 3 mm trim bezel lies flat            # the 6 mm hanger plate lies on its plain back, insert pilots up
@@ -142,6 +143,8 @@ def build_plates(stl_dir, quiet=False):
         expanded = []
         for fn, rotz, at in items:   # a glob entry stands for every matching file
             expanded += [(os.path.basename(m), rotz, at) for m in sorted(glob.glob(os.path.join(stl_dir, fn)))] if "*" in fn else [(fn, rotz, at)]
+        if not expanded:
+            continue
         for fn, rotz, at in expanded:
             tris = read(os.path.join(stl_dir, fn))                       # already oriented by reorient_file
             if rotz:
@@ -161,8 +164,13 @@ def build_plates(stl_dir, quiet=False):
             assert not (r1 & r2), f"{name}: {f1} overlaps {f2} on the bed"
         write(os.path.join(stl_dir, name + ".stl"), out)
         print(f"wrote {name}.stl")
+        if name == "plate_stack_straps":
+            for fn, _, _ in expanded:
+                p_single = os.path.join(stl_dir, fn)
+                if os.path.exists(p_single):
+                    os.remove(p_single)
 
 
 if __name__ == "__main__":
-    variant = sys.argv[1] if len(sys.argv) > 1 else "v12s"
+    variant = sys.argv[1] if len(sys.argv) > 1 else "master"
     build_plates(os.path.join(HERE, "..", "stl", variant))

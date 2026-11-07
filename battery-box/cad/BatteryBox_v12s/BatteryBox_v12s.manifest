@@ -1,0 +1,10 @@
+{
+	"autodeskProduct": "Fusion",
+	"type": "script",
+	"author": "Dan Gorman",
+	"description": {
+		"": "4Runner Overlanding Battery Box v12s / v12s_h2d Parametric Generator"
+	},
+	"supportedOS": "windows|mac",
+	"editEnabled": true
+}
