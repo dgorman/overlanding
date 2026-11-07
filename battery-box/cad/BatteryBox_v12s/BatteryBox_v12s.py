@@ -166,7 +166,7 @@ TIE_SLOT_H_Z: float = 10.0
 TIE_SLOT_PAIR_SPAN_X: float = 16.0                        # Slots at -8.0 and +8.0 mm from center
 TIE_SLOT_CENTERS_DX: tuple[float, float, float] = (30.0, 65.0, 100.0)
 TIE_SLOT_ROWS_UPPER_Z: tuple[float, float] = (138.0, 243.0)
-TIE_SLOT_ROWS_LOWER_Z: tuple[float, float, float] = (40.0, 70.0, 100.0)
+TIE_SLOT_ROWS_LOWER_Z: tuple[float, float] = (40.0, 100.0)
 
 # IceBox Stack Straps (x4 across bottom depth rail seam, 6.0 mm thick for 1/4"-20 x 1/2" countersinks)
 STRAP_W_X: float = 60.0
@@ -229,8 +229,10 @@ COMP_SPECS: dict[str, dict] = {
         "insert": "M4",
     },
     "gnd_bus_2701": {
-        "dims": (77.0, 25.0, 47.0),
-        "pos": (GARMIN_HANGER_X0 + (GARMIN_HANGER_LEN_X - 77.0) / 2.0, GARMIN_HANGER_Y0 - 25.0, 46.0),
+        "dims": (76.5, 25.0, 46.5),
+        "pos": (GARMIN_HANGER_X0 + (GARMIN_HANGER_LEN_X - 76.5) / 2.0, GARMIN_HANGER_Y0 - 25.0, 70.0 - 46.5 / 2.0),
+        "holes_xz": [(9.65, 23.25), (66.85, 23.25)],  # 57.20 mm (2.252") centers along longitudinal centerline
+        "insert": "M4",
     },
 }
 
@@ -238,7 +240,6 @@ COMP_SPECS: dict[str, dict] = {
 FRONT_PANEL_PORTS: list[tuple[str, str, float, float, tuple[float, ...], float]] = [
     ("l14_30_shore_in", "circle", 423.0, 72.0, (60.0,), 55.0),
     ("l14_30_inv_out", "circle", 423.0, 142.0, (60.0,), 55.0),
-    ("sb50_solar_in", "rect", 370.0, 62.0, (37.0, 48.0), 48.0),
     ("sb50_alt_in", "rect", 370.0, 118.0, (37.0, 48.0), 48.0),
     ("socket_usb_low", "circle", 370.0, 162.0, (22.0,), 40.0),
     ("socket_usb_high", "circle", 370.0, 195.0, (22.0,), 40.0),
@@ -1116,16 +1117,16 @@ def build_battery_zone_outboard(
         yw = DROP_SHELF_LEG_Y0  # 172.0 mm
         wt = fl + lip  # 36.0 mm
         hb = DROP_SHELF_HANGER_BAND_Y  # 13.0 mm
-        rel = DROP_SHELF_WIRE_RELIEF_Y  # 4.0 mm
+        rel = DROP_SHELF_WIRE_RELIEF_Y  # 7.5 mm (Y = 32.5 mm, flush with battery)
         yf_hanger = INNER_Y0 + hb  # 38.0 mm
 
-        # Deck plate (Y = 29..178, Z = 215..226)
+        # Deck plate (Y = 32.5..178, Z = 215..226)
         shelf_body = add_box_feature(
             comp, xs, INNER_Y0 + rel, zs,
             DROP_SHELF_LEN_X, (yw + DROP_SHELF_LEG_THICK) - (INNER_Y0 + rel), M5_DECK_THICK,
             body_name=s_name,
         )
-        # Lower hanger with 4 mm back relief for 13.5 mm 4 AWG wire channel (Y = 29..38, Z = 215..256.7)
+        # Lower hanger with 7.5 mm back relief (flush with battery) for 17.0 mm 4 AWG wire channel (Y = 32.5..38, Z = 215..256.7)
         add_box_feature(
             comp, xs, INNER_Y0 + rel, zs,
             DROP_SHELF_LEN_X, yf_hanger - (INNER_Y0 + rel), (BOX_HEIGHT_Z - RAIL_PROFILE) - zs,
@@ -1512,13 +1513,19 @@ def build_inboard_garmin_lane(
     cut_zip_tie_slot_rows(u_hanger, TIE_SLOT_ROWS_UPPER_Z)
     apply_color(app, design, u_hanger, *COL_PRINT_ORANGE)
 
-    # 2. Lower Garmin Wire-Management Hanger Plate (Z = 2.0 .. 129.0 mm)
+    # 2. Lower Garmin Wire-Management & Blue Sea 2701 Hanger Plate (Z = 2.0 .. 129.0 mm)
     l_hanger = add_box_feature(
         comp, gx0, gy, GARMIN_LOWER_Z0, gw, gt, GARMIN_LOWER_Z1 - GARMIN_LOWER_Z0,
         body_name="print_garmin_hanger_lower",
     )
     l_rail_bolts = [(gx0 + dx, gy, RAIL_PROFILE / 2.0) for dx in GARMIN_RAIL_BOLT_DX]
     cut_countersink_14_20(comp, l_hanger, "y", gy, +1.0, l_rail_bolts, gt)
+    gb_spec = COMP_SPECS["gnd_bus_2701"]
+    gb_x0, _gb_y0, gb_z0 = gb_spec["pos"]
+    gb_m4_bores = [
+        (gb_x0 + u, gy, gb_z0 + v, M4_INSERT_BORE_DIA / 2.0) for (u, v) in gb_spec["holes_xz"]
+    ]
+    cut_cylinders_on_plane(comp, l_hanger, "y", gy - 0.5, gt + 1.0, gb_m4_bores)
     cut_zip_tie_slot_rows(l_hanger, TIE_SLOT_ROWS_LOWER_Z)
     apply_color(app, design, l_hanger, *COL_PRINT_ORANGE)
 
@@ -1624,11 +1631,14 @@ def build_electrical_components(
     fillet_parallel_edges(comp, garmin, "y", COMP_FILLET_R)
     apply_color(app, design, garmin, *COL_CUBE_BLACK)
 
-    gb_dx, gb_dy, gb_dz = COMP_SPECS["gnd_bus_2701"]["dims"]
-    gbx, gby, gbz = COMP_SPECS["gnd_bus_2701"]["pos"]
-    gbus = add_box_feature(comp, gbx, gby, gbz, gb_dx, gb_dy, gb_dz, body_name="bluesea_2701_ground_bus")
-    fillet_parallel_edges(comp, gbus, "y", COMP_FILLET_R)
-    apply_color(app, design, gbus, *COL_POWER_GOLD)
+    if not import_positioned_step(
+        app, design, comp, "bluesea_2701_ground_bus.step", "bluesea_2701_ground_bus", COL_POWER_GOLD
+    ):
+        gb_dx, gb_dy, gb_dz = COMP_SPECS["gnd_bus_2701"]["dims"]
+        gbx, gby, gbz = COMP_SPECS["gnd_bus_2701"]["pos"]
+        gbus = add_box_feature(comp, gbx, gby, gbz, gb_dx, gb_dy, gb_dz, body_name="bluesea_2701_ground_bus")
+        fillet_parallel_edges(comp, gbus, "y", COMP_FILLET_R)
+        apply_color(app, design, gbus, *COL_POWER_GOLD)
 
     # 6. Rear Panel GX Touch 50 Display + Right-Angle Cable Plug Clearance Envelope (flush on printed back panel)
     pm = PANEL_OUTER_OFFSET
@@ -1671,7 +1681,6 @@ def build_electrical_components(
     step_port_map = {
         "sb50_pack2_umbilical": "anderson_sb50_pack2.step",
         "sb50_alt_in": "anderson_sb50_alt.step",
-        "sb50_solar_in": "anderson_sb50_solar.step",
     }
     for pname, pkind, py, pz, psize, pdepth in FRONT_PANEL_PORTS:
         if pname in step_port_map and import_positioned_step(
@@ -1774,13 +1783,13 @@ def run(context: dict) -> None:
 
         tile_desc = "2-tile H2D (252.8 x 256 mm)" if PRINTER_PRESET == "H2D" else "6-tile P1P (168.5 x 140 mm)"
         ui.messageBox(
-            f"4Runner Battery Box (v12s / {PRINTER_PRESET}) generated successfully!\n\n"
+            f"4Runner Battery Box (master / {PRINTER_PRESET}) generated successfully!\n\n"
             f"• Envelope: {BOX_DEPTH_X} × {BOX_WIDTH_Y} × {BOX_HEIGHT_Z} mm (+ {LID_THICK} mm lid)\n"
-            f"• Inverter Plate: {tile_desc}\n"
-            f"• All 46 heat-set insert bores, 24 rail T-nut countersinks, 10 front ports,\n"
-            f"  70×70 mm cable pass-through window, 4 AWG drop-shelf wire channels,\n"
-            f"  and 57 mm bus-shelf wire trough are modeled to exact spec.",
-            "v12s / v12s_h2d Assembly Complete",
+            f"• Inverter Plate: {tile_desc} in 1-piece full-height slotted posts\n"
+            f"• All heat-set insert bores (incl. Blue Sea 2701 M4s), rail T-nut countersinks,\n"
+            f"  7 front ports (2× L14-30, 2× SB50, 3× round sockets), 70×70 mm cable window,\n"
+            f"  17 mm 4 AWG drop-shelf wire channels, and 57 mm bus-shelf wire trough modeled.",
+            "master / v12s_h2d Assembly Complete",
         )
 
     except Exception:

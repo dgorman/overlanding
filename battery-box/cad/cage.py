@@ -297,7 +297,7 @@ COMPONENTS = {
     "shunt_up":  Comp("power_shunt", 54, 46, 120, "SmartShunt standing on end on a card"),
     "shunt_y":   Comp("power_shunt", 120, 54, 46, "SmartShunt on the deck, long axis across the box"),
     "busbar_px": Comp("power_busbar_pos", 35, 155, 32, "5-stud covered bus bar (+), along the depth"),
-    "gnd_bus":   Comp("power_busbar_gnd", 77, 25, 47, "Blue Sea 2701 DualBus 100 A (2 x 5 #8-32, 76.5 x 46.5 base) on the lower Garmin hanger plate: the common negative for the Garmin's port circuits"),
+    "gnd_bus":   Comp("power_busbar_gnd", 76.5, 25.0, 46.5, "Blue Sea 2701 DualBus 100 A (2 x 5 #8-32, 76.50 x 46.48 base, 2 holes at 57.20 mm c-c) on the lower Garmin hanger plate"),
     "busbar_nx": Comp("power_busbar_neg", 35, 155, 32, "5-stud covered bus bar (-), along the depth"),
     "garmin_flat": Comp("garmin_powerswitch", 125, 75, 32, "Garmin PowerSwitch lying on the bus deck"),
     "garmin_flat_x": Comp("garmin_powerswitch", 75, 125, 32, "Garmin PowerSwitch lying flat on the bus shelf, long axis along the depth"),
@@ -474,9 +474,9 @@ if P["card_plane"] == "v12":   # v12 and v13 share one front panel: the port str
     FRONT_PORTS = [("l14_30_in", 423, 65), ("l14_30_out", 423, 135), ("socket", 423, 190, 29),            # (v13's batteries run the outboard
                    ("sb50_solar", 370, 60), ("sb50_alt", 370, 116), ("socket", 370, 160, 22), ("socket", 370, 193, 22),   # side to the front; its plate's
                    ("socket", 338, 150, 29), ("socket", 338, 190, 29)]                                                   # front post ends at y 315)
-if P.get("icebox_front") in ("bezel", "side"):   # v12s / master port strip: 1 x 12V socket, 2 x USB sockets, solar, SB50 alt, 2 x L14-30, SB50 pack
+if P.get("icebox_front") in ("bezel", "side"):   # v12s / master port strip: 1 x 12V socket, 2 x round sockets (USB + solar Powerpole), SB50 alt, 2 x L14-30, SB50 pack
     FRONT_PORTS = [("l14_30_in", 423, 72), ("l14_30_out", 423, 142),
-                   ("sb50_solar", 370, 62), ("sb50_alt", 370, 118), ("socket", 370, 162, 22), ("socket", 370, 195, 22),
+                   ("sb50_alt", 370, 118), ("socket", 370, 162, 22), ("socket", 370, 195, 22),
                    ("socket", 338, 157, 29),
                    ("sb50_pack", 215, 110)]   # SB50 umbilical inlet for the add-on pack, in front of the bus column, clear of the breakers on the plate
 INLET_BODY = {"l14": (60.0, 55.0), "sb50": (48.0, 37.0, 48.0), "sb175": (79.0, 56.0, 26.0)}   # (dia, depth) or (depth, w, h)
@@ -589,7 +589,49 @@ def breaker_shape(dx, dy, dz, at):
     return shp.union(button).union(lever)
 
 
+def gnd_bus_shape(dx, dy, dz, at):
+    """Blue Sea 2701 DualBus 100A 5-Circuit BusBar (76.50 x 46.48 x 25.0 mm, standing on edge on the lower Garmin hanger at +Y):
+    molded base flange with 2 x Ø5.0 mm recessed mounting holes at 57.20 mm (2.252 in) centers along the horizontal centerline,
+    central insulating barrier + 6 separator teeth, two 5-circuit bus strips, and 10 x #8-32 terminal screws facing -Y."""
+    x0, y0, z0 = at
+    zc = z0 + dz / 2.0
+    # 1. Base plate against hanger face (y = y0 + dy - 9.0 .. y0 + dy)
+    base = box(dx, 9.0, dz, (x0, y0 + dy - 9.0, z0)).edges("|Y").fillet(4.0)
+    # 2. Raised end mounting ears (12.25 mm wide each end, y = y0 + dy - 13.5 .. y0 + dy, z = zc - 11 .. zc + 11)
+    for ex in (x0, x0 + dx - 12.25):
+        ear = box(12.25, 13.5, 22.0, (ex, y0 + dy - 13.5, zc - 11.0)).edges("|Y").fillet(3.0)
+        base = base.union(ear)
+    # 3. Center insulating barrier between the two bus strips (52 mm long, full dy = 25 mm deep, 5.5 mm tall)
+    barrier = box(52.0, dy, 5.5, (x0 + 12.25, y0, zc - 2.75)).edges("|Z").fillet(1.5)
+    shp = base.union(barrier)
+    # 4. 6 vertical wire-separator ribs between the 5 circuit screws on top & bottom
+    for i in range(6):
+        rx = x0 + 13.5 + i * 9.5 - 1.0
+        rib = box(2.0, dy - 3.0, dz - 4.0, (rx, y0 + 3.0, z0 + 2.0))
+        shp = shp.union(rib)
+    # 5. Upper and lower tin-plated bus bars (52.0 mm long x 7.0 mm deep x 11.0 mm tall)
+    for bz in (zc + 3.25, zc - 14.25):
+        bar_strip = box(52.0, 7.0, 11.0, (x0 + 12.25, y0 + 5.0, bz))
+        shp = shp.union(bar_strip)
+    # 6. 10 x #8-32 pan-head terminal screws (5 per bus strip at 9.5 mm pitch)
+    for sz in (zc + 8.75, zc - 8.75):
+        for i in range(5):
+            sx = x0 + 13.5 + 4.75 + i * 9.5
+            washer = cq.Workplane("XZ").center(sx, sz).circle(4.0).extrude(-2.0).translate((0, y0 + 5.0, 0))
+            head = cq.Workplane("XZ").center(sx, sz).circle(3.5).extrude(-5.0).translate((0, y0 + 5.0, 0))
+            slot = box(1.2, 2.0, 5.5, (sx - 0.6, y0 - 0.5, sz - 2.75))
+            shp = shp.union(washer).union(head).cut(slot)
+    # 7. Cut the 2 x Ø5.0 mm (#10 / M4) mounting holes + Ø9.5 mm counterbored wells at 57.20 mm centers (u = 9.65, 66.85; v = 23.25)
+    for u in (9.65, dx - 9.65):
+        thru = cq.Workplane("XZ").center(x0 + u, zc).circle(2.5).extrude(-(dy + 2.0)).translate((0, y0 + dy + 1.0, 0))
+        well = cq.Workplane("XZ").center(x0 + u, zc).circle(4.75).extrude(-10.0).translate((0, y0 + dy - 5.0, 0))
+        shp = shp.cut(thru).cut(well)
+    return shp
+
+
 def unit_fallback(key, dx, dy, dz, at, axis="|Z", face=False):
+    if key == "gnd_bus":
+        return gnd_bus_shape(dx, dy, dz, at)
     if key.startswith("breaker") and face:   # on a vertical plate at +y: build it flat (studs up), turn the studs toward -y
         shp = breaker_shape(dx, dz, dy, (0, 0, 0)).rotate((0, 0, 0), (1, 0, 0), 90)
         bb = shp.val().BoundingBox()
@@ -1361,6 +1403,7 @@ HOLES = {
     "breaker_b":        [(24, 8), (24, 66)],        # verify
     "garmin":           [(20, 37), (105, 37)],      # verify (Garmin bracket, 2 screws)
     "garmin_up":        [(37, 20), (37, 105)],      # the same bracket turned 90 deg (verify)
+    "gnd_bus":          [(9.65, 23.25), (66.85, 23.25)],  # Blue Sea 2701 DualBus 100A: 57.20 mm (2.252 in) c-c along centerline of 76.50 x 46.50 base
     "bms":              [(10, 10), (112, 10), (10, 96), (112, 96)],   # verify
 }
 M5_HOLE = 7.7      # McMaster 94180A361 is a TAPERED heat-set insert (knurled body Ø7.82, flange Ø8.33, 6.73 long): drill N (Ø7.67), "for max
@@ -3081,15 +3124,15 @@ def build_v13(a):
             for hx in (gx0 + 25.0, gx0 + gw - 25.0):
                 lp_ = lp_.cut(cq.Workplane("XZ").center(hx, B / 2).circle(3.4).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
                 lp_ = lp_.cut(countersink("print_garmin_hanger_lower", (hx, gy, B / 2), (0, 1, 0)))
-            for zrow in (40.0, 70.0, 100.0):
+            for zrow in (40.0, 100.0):                                # top & bottom tie-slot rows only (middle 70 mm row removed for Blue Sea 2701)
                 lp_ = tie_slots(lp_, zrow, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
-            add(a, lp_, "print_garmin_hanger_lower", ORANGE)
-            # Garmin port-circuit GROUND BUS (2026-10-31, user's idea): the owner's Blue Sea 2701 DualBus (two 5 x #8-32 buses, bridged)
-            # on the lower plate's inner face between the tie-slot rows, so every front-port negative lands beside the Garmin that
-            # feeds it. Stand-in body only: its two #10 mounting holes are drilled through the plate from the part (as the Garmin's were).
+            # Garmin port-circuit GROUND BUS: Blue Sea 2701 DualBus 100A (76.50 x 46.48 x 25.0 mm, 2 x M4 short inserts at 57.20 mm centers)
             gb = COMPONENTS["gnd_bus"]
-            gb_at = (gx0 + (gw - gb.w) / 2, gy - gb.d, 46.0)         # z 46..93: clear of the tie-slot rows at 40 and 100
-            add(a, box(gb.w, gb.d, gb.h, gb_at).edges("|Y").fillet(3), "power_busbar_gnd_hanger", GOLD)
+            gb_at = (gx0 + (gw - gb.w) / 2, gy - gb.d, 70.0 - gb.h / 2)   # z 46.75..93.25 (centred at z = 70.0 mm between the 40 and 100 tie-slot rows)
+            for (u, v) in HOLES["gnd_bus"]:                               # 2 x short M4 inserts (94180A351, Ø5.6 mm pre-printed bores)
+                lp_ = lp_.cut(cq.Workplane("XZ").center(gb_at[0] + u, gb_at[2] + v).circle(M4S_BORE_R).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
+            add(a, lp_, "print_garmin_hanger_lower", ORANGE)
+            add(a, gnd_bus_shape(gb.w, gb.d, gb.h, gb_at), "power_busbar_gnd_hanger", GOLD)
         at = (gx, gy - gc.d, gz)
         add(a, victron_shape("garmin", gc.w, gc.d, gc.h, at, unit_fallback("garmin", gc.w, gc.d, gc.h, at)), "garmin_powerswitch_hanger", BLACK)
         g["garmin_hanger_nuts"] = (gx0 + 25.0, gx0 + gw - 25.0)
