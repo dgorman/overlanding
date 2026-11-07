@@ -2676,6 +2676,14 @@ V13_SHORT = dict(   # the 635 mm box (2026-10-24 layout): ONE ROW of charge gear
 COUNTERSINKS = []   # (part name, face point, unit axis INTO the part): every conical countersink, for check_countersinks (--clash)
 
 
+def head_relief(face_pt, axis_in, r=7.0, depth=5.0):
+    """Clearance for a flat head whose axis runs close to a floor: a cylinder about the bolt axis, from the wall's face OUT into
+    the space in front of it, so the head's lower edge cannot stand on the floor (2026-11-06: a shelf end-wall bolt hung up on
+    the 11 mm floor, whose top is only 1.5 mm below the axis; the trays' floors are 0.15 mm below the head's edge)."""
+    ax = cq.Vector(*axis_in).normalized()
+    return cq.Workplane("XY").add(cq.Solid.makeCylinder(r, depth, cq.Vector(*face_pt) + ax * 0.01, ax * -1.0))
+
+
 def countersink(part, face_pt, axis):
     """An 82-degree countersink for a 1/4-20 flat head (13.2 mm at the face, 3.6 mm deep to the 6.8 mm hole), starting
     0.5 mm outside the face so the cut is through.  Registers itself so --clash can probe that it really opens the face.
@@ -2785,11 +2793,13 @@ def build_v13(a):
         for sx in (70, fd - 70):   # outboard wall: two countersunk 1/4-20 into the outboard rail's inner slot, heads flush inside
             tray = tray.cut(cq.Workplane("XZ").center(sx, B / 2).circle(3.4).extrude(-(wall + 2)).translate((0, -1, 0)))
             tray = tray.cut(countersink(f"print_tray_battery_{r}", (tx + sx, ty + wall, B / 2), (0, -1, 0)).translate((-tx, -ty, 0)))
+            tray = tray.cut(head_relief((sx, wall, B / 2), (0, -1, 0)))                                   # head clearance over the floor
         if direct:                 # end wall on the width rail: two countersunk 1/4-20 into its inner slot, heads flush inside the pocket
             xw = wall if r == 0 else fd - wall                                   # the wall's inner face
             for sy in (28, fw - 28):                                             # clear of the strap channel (62..90) and the side walls
                 tray = tray.cut(cq.Workplane("YZ").center(sy, B / 2).circle(3.4).extrude(wall + 2).translate(((-1 if r == 0 else fd - wall - 1), 0, 0)))
                 tray = tray.cut(countersink(f"print_tray_battery_{r}", (tx + xw, ty + sy, B / 2), ((-1, 0, 0) if r == 0 else (1, 0, 0))).translate((-tx, -ty, 0)))
+                tray = tray.cut(head_relief((xw, sy, B / 2), ((-1, 0, 0) if r == 0 else (1, 0, 0))))
         for hx in lip_holes[r]:   # inboard wall: 3 x M4 heat-set inserts in its outer face; the shelf's lip bolts to them from the column
             tray = tray.cut(cq.Workplane("XZ").center(hx, 17).circle(2.8).extrude(-8).translate((0, fw - 7, 0)))         # side (heads reachable from above)
         # the tray is 345 long, so it prints as two halves joined on a 20 mm half-lap at mid-length: the back half keeps the
@@ -2903,6 +2913,7 @@ def build_v13(a):
             for yc in (y0s + 30, y1s - 40):
                 sh = sh.cut(cq.Workplane("YZ").center(yc, B / 2).circle(3.4).extrude(8).translate((xw0 - 1, 0, 0)))
                 sh = sh.cut(countersink(f"print_bus_shelf_{i}", (xw0 + 6 if i == 0 else xw0, yc, B / 2), ((-1, 0, 0) if i == 0 else (1, 0, 0))))
+                sh = sh.cut(head_relief((xw0 + 6 if i == 0 else xw0, yc, B / 2), ((-1, 0, 0) if i == 0 else (1, 0, 0))))   # head clearance over the 11 mm floor
         sh = sh.union(box(xb - xa, V13["col_wall"], 34, (xa, y1s - V13["col_wall"], 0)))   # inboard wall = the inverter plate's sill: 2 x M4 through it into
         if i == n_pl - 1:
             sh = sh.cut(box(P["post_d"] + 4, 14, 40, (out_D - B - P["post_d"] - 2, y1s - 10, -1)))   # corner notched around the plate's front post
@@ -3538,6 +3549,19 @@ def check_countersinks(a):
     print(f"== Countersinks: {len(COUNTERSINKS)} registered, {bad} not cut ==")
 
 
+def check_head_clearance(a):
+    """A 12.7 mm x 3.6 mm flat-head envelope standing out of every registered countersink's face must meet no material of its
+    part: catches a head whose edge would land on a floor (2026-11-06, the shelf end wall)."""
+    parts = {c.name: c.obj.val() for c in a.children}
+    bad = 0
+    for (part, pt, axis) in COUNTERSINKS:
+        ax = cq.Vector(*axis).normalized()
+        head = cq.Solid.makeCylinder(6.35, 3.6, cq.Vector(*pt), ax * -1.0)
+        if part in parts and head.intersect(parts[part]).Volume() > 1e-3:
+            bad += 1; print(f"  HEAD BLOCKED on {part} at {tuple(round(v, 1) for v in pt)}")
+    print(f"== Head clearance: {len(COUNTERSINKS)} checked, {bad} blocked ==")
+
+
 def check_plate_pilots(a):
     """Push a 3.6 mm pin along Y through every pilot the plate was asked for and report any that is blocked (a pilot
     that a tile cut missed, or a skin left on one face).  Added 2026-10-25 after the six bottom-band pilots for the bus
@@ -3788,6 +3812,7 @@ if __name__ == "__main__":
     if "--clash" in sys.argv:
         check_plate_pilots(asm)
         check_countersinks(asm)
+        check_head_clearance(asm)
         clash_report(asm)
     export(asm)
     print("wrote", os.path.abspath(os.path.join(VIEWER, f"cage-{VARIANT}.json")))
