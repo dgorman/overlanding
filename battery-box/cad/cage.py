@@ -629,9 +629,49 @@ def gnd_bus_shape(dx, dy, dz, at):
     return shp
 
 
+def garmin_shape(dx, dy, dz, at):
+    """Garmin PowerSwitch (010-02447-00 / 010-02466-00, 125.0 x 32.0 x 75.0 mm, mounted on print_garmin_hanger at +Y):
+    From Garmin Installation Instructions: 125.0 mm overall width across the two integrated side mounting ears,
+    75.0 mm height, 32.0 mm depth; 2 x Ø6.30 mm mounting holes spaced 4-7/16 in (113.0 mm) center-to-center
+    along the horizontal centerline (u = 6.0, 119.0; v = 37.5) in 9.0 mm thick side ears; stepped weather-resistant
+    upper cover with front latch tab, raised center badge boss, +12V 4 AWG stud shroud, and 6 bottom wire exit channels."""
+    x0, y0, z0 = at
+    xc, zc = x0 + dx / 2.0, z0 + dz / 2.0
+    # 1. Integrated side mounting ears (125.0 mm span, 9.0 mm thick against +Y hanger face, 26.0 mm tall at mid-height)
+    ears = box(dx, 9.0, 26.0, (x0, y0 + dy - 9.0, zc - 13.0)).edges("|Y").fillet(6.0)
+    # Gusset shoulders tapering from the ears into the central body
+    ear_sh = box(dx - 8.0, 12.0, 36.0, (x0 + 4.0, y0 + dy - 12.0, zc - 18.0)).edges("|Y").fillet(5.0)
+    # 2. Central base chassis (101.0 mm wide x 15.0 mm deep x 75.0 mm tall)
+    base = box(dx - 24.0, 15.0, dz, (x0 + 12.0, y0 + dy - 15.0, z0)).edges("|Y").fillet(6.0)
+    # 3. Removable upper cover (101.0 mm wide x 16.0 mm deep x 73.0 mm tall, leaving a 1.0 mm seam groove at y0 + dy - 15.0)
+    seam_neck = box(dx - 26.0, 3.0, dz - 4.0, (x0 + 13.0, y0 + dy - 16.5, z0 + 2.0)).edges("|Y").fillet(5.0)
+    cover = box(dx - 24.0, dy - 17.5, dz - 2.0, (x0 + 12.0, y0 + 2.0, z0 + 1.0)).edges("|Y").fillet(6.0)
+    # 4. Raised front badge boss (-Y face) + top cover release latch + status LED / pairing button bosses
+    boss = box(dx - 46.0, 2.5, dz - 24.0, (x0 + 23.0, y0, z0 + 12.0)).edges("|Y").fillet(4.0)
+    latch = box(22.0, 14.0, 4.0, (xc - 11.0, y0 + 3.0, z0 + dz - 2.0)).edges("|Z").fillet(1.5)
+    # +12V heavy cable side shroud on the left-bottom corner
+    shroud = box(16.0, 16.0, 22.0, (x0 + 10.0, y0 + 8.0, z0)).edges("|Z").fillet(3.0)
+    shp = ears.union(ear_sh).union(base).union(seam_neck).union(cover).union(boss).union(latch).union(shroud)
+    # 5. Cut the 2 x Ø6.30 mm mounting holes + Ø11.5 mm washer flats at 113.0 mm (4-7/16 in) centers (u = 6.0, 119.0; v = 37.5)
+    for u in (6.0, dx - 6.0):
+        thru = cq.Workplane("XZ").center(x0 + u, zc).circle(3.15).extrude(-(dy + 2.0)).translate((0, y0 + dy + 1.0, 0))
+        spot = cq.Workplane("XZ").center(x0 + u, zc).circle(5.75).extrude(-20.0).translate((0, y0 + dy - 9.0, 0))
+        shp = shp.cut(thru).cut(spot)
+    # 6. Cut 6 bottom wire-routing exit arches (for the 6 x 30A accessory outputs) + 1 large 4 AWG +12V input arch
+    in_arch = cq.Workplane("XY").center(x0 + 18.0, y0 + dy - 8.0).circle(4.5).extrude(14.0).translate((0, 0, z0 - 1.0))
+    shp = shp.cut(in_arch)
+    for i in range(6):
+        wx = x0 + 33.0 + i * 12.0
+        w_arch = cq.Workplane("XY").center(wx, y0 + dy - 7.0).circle(2.6).extrude(10.0).translate((0, 0, z0 - 1.0))
+        shp = shp.cut(w_arch)
+    return shp
+
+
 def unit_fallback(key, dx, dy, dz, at, axis="|Z", face=False):
     if key == "gnd_bus":
         return gnd_bus_shape(dx, dy, dz, at)
+    if key == "garmin":
+        return garmin_shape(dx, dy, dz, at)
     if key.startswith("breaker") and face:   # on a vertical plate at +y: build it flat (studs up), turn the studs toward -y
         shp = breaker_shape(dx, dz, dy, (0, 0, 0)).rotate((0, 0, 0), (1, 0, 0), 90)
         bb = shp.val().BoundingBox()
@@ -1401,8 +1441,8 @@ HOLES = {
                                                             # (series drawing, top view: hole top-left / bottom-right with the length vertical). The
                                                             # earlier (37.40, 10.73) order was the MIRROR and did not fit the printed shelf (2026-10-24).
     "breaker_b":        [(24, 8), (24, 66)],        # verify
-    "garmin":           [(20, 37), (105, 37)],      # verify (Garmin bracket, 2 screws)
-    "garmin_up":        [(37, 20), (37, 105)],      # the same bracket turned 90 deg (verify)
+    "garmin":           [(6.0, 37.5), (119.0, 37.5)],   # Garmin PowerSwitch manual: 4-7/16 in (113.0 mm) c-c along centerline of 125.0 x 75.0 mm body
+    "garmin_up":        [(37.5, 6.0), (37.5, 119.0)],   # turned 90 deg (113.0 mm c-c)
     "gnd_bus":          [(9.65, 23.25), (66.85, 23.25)],  # Blue Sea 2701 DualBus 100A: 57.20 mm (2.252 in) c-c along centerline of 76.50 x 46.50 base
     "bms":              [(10, 10), (112, 10), (10, 96), (112, 96)],   # verify
 }
@@ -2426,18 +2466,21 @@ def v12_post(h=254.0, mirror=False, buttress=False, one_piece_top=False, part_na
     g = g.cut(box(gw, P["slot_depth"] + 1, h, ((P["post_w"] - gw) / 2, P["post_d"] - P["slot_depth"], 30)))
     g = g.cut(cq.Workplane("XZ").center(P["post_w"] / 2, B / 2).circle(3.4).extrude(-(P["post_d"] + 2)).translate((0, -1, 0)))   # sill bolt
     if one_piece_top:
-        # Local x = 0 is the inboard (+Y = 318) side after rotating -90 deg about Z and translating to yt = 318.
-        # Add a 12 mm integral top rail ear at local x = -12..0, z = h - 24.7..h (Z = 254..278.7) + 12 mm gusset below (Z = 242..254)
+        # Symmetrical 12 mm integral top rail ears on BOTH sides of the post (local x = -12..0 and post_w..post_w+12,
+        # z = 254..278.7) + 12 mm 45-deg gussets below (Z = 242..254), each with an 82-deg countersunk 1/4-20 rail screw.
         ear_h = h - 254.0
-        g = g.union(box(12.0, P["post_d"], ear_h, (-12.0, 0, 254.0)))
-        gus_top = cq.Workplane("XZ").polyline([(0.0, 242.0), (-12.0, 254.0), (0.0, 254.0)]).close().extrude(-P["post_d"])
-        g = g.union(gus_top)
         tz = out_H - B / 2
-        g = g.cut(cq.Workplane("XZ").center(-2.0, tz).circle(3.4).extrude(-(P["post_d"] + 2)).translate((0, -1, 0)))
-        # 82-deg countersinks on the inner (+y = post_d) face for both bottom sill bolt and top ear bolt
+        g = g.union(box(12.0, P["post_d"], ear_h, (-12.0, 0, 254.0)))
+        g = g.union(box(12.0, P["post_d"], ear_h, (P["post_w"], 0, 254.0)))
+        gus_in = cq.Workplane("XZ").polyline([(0.0, 242.0), (-12.0, 254.0), (0.0, 254.0)]).close().extrude(-P["post_d"])
+        gus_out = cq.Workplane("XZ").polyline([(P["post_w"], 242.0), (P["post_w"] + 12.0, 254.0), (P["post_w"], 254.0)]).close().extrude(-P["post_d"])
+        g = g.union(gus_in).union(gus_out)
         csk_bot = cq.Workplane("XY").add(cq.Solid.makeCone(7.0, 3.4, 4.1, cq.Vector(P["post_w"] / 2, P["post_d"] + 0.5, B / 2), cq.Vector(0, -1, 0)))
-        csk_top = cq.Workplane("XY").add(cq.Solid.makeCone(7.0, 3.4, 4.1, cq.Vector(-2.0, P["post_d"] + 0.5, tz), cq.Vector(0, -1, 0)))
-        g = g.cut(csk_bot).cut(csk_top)
+        g = g.cut(csk_bot)
+        for tx_loc in (-2.0, P["post_w"] + 2.0):
+            g = g.cut(cq.Workplane("XZ").center(tx_loc, tz).circle(3.4).extrude(-(P["post_d"] + 2)).translate((0, -1, 0)))
+            csk_top = cq.Workplane("XY").add(cq.Solid.makeCone(7.0, 3.4, 4.1, cq.Vector(tx_loc, P["post_d"] + 0.5, tz), cq.Vector(0, -1, 0)))
+            g = g.cut(csk_top)
     elif buttress:
         g = g.union(box(30.0, P["post_d"], B, (-30.0, 0, 0)))
         gus = cq.Workplane("XZ").polyline([(-30.0, B), (0.0, B), (0.0, 110.0)]).close().extrude(-P["post_d"])
@@ -3155,6 +3198,7 @@ def build_v13(a):
             ax_in = (-1, 0, 0) if j == 0 else (1, 0, 0)
             COUNTERSINKS.append((p_nm, (x_face, yt - P["post_w"] / 2, B / 2), ax_in))
             COUNTERSINKS.append((p_nm, (x_face, yt + 2.0, out_H - B / 2), ax_in))
+            COUNTERSINKS.append((p_nm, (x_face, yt - P["post_w"] - 2.0, out_H - B / 2), ax_in))
         elif not lid_slot:
             clip = v12_post_clip(mirror=(j == 1), h=out_H - hpost, bolt_z=out_H - hpost - B / 2).rotate((0, 0, 0), (0, 0, 1), -90)
             add(a, clip.translate((xclip, yt, hpost)), f"print_post_clip_{j}", ORANGE)

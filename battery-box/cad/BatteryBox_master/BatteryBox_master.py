@@ -17,7 +17,12 @@ import adsk.fusion
 #   "P1P" -> Bambu Lab P1P/P1S (256 x 256 x 256 mm bed): Inverter plate splits into 6 tiles (168.5 x 140 mm) + 8 splines with 24 mm half-laps.
 PRINTER_PRESET: str = "H2D"
 USE_REAL_VICTRON_STEPS: bool = True
-STEP_MODELS_DIR: str = os.path.join(os.path.dirname(os.path.abspath(__file__)), "step_models")
+_LOCAL_STEPS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "step_models")
+STEP_MODELS_DIR: str = (
+    _LOCAL_STEPS
+    if os.path.isdir(_LOCAL_STEPS)
+    else "/Users/dgorman/Dev/overlanding/battery-box/cad/BatteryBox_v12s/step_models"
+)
 
 BED_H2D: tuple[float, float, float] = (350.0, 320.0, 325.0)
 BED_P1P: tuple[float, float, float] = (256.0, 256.0, 256.0)
@@ -226,7 +231,7 @@ COMP_SPECS: dict[str, dict] = {
     "garmin_ps": {
         "dims": (125.0, 32.0, 75.0),
         "pos": (GARMIN_HANGER_X0 + 2.5, GARMIN_HANGER_Y0 - 32.0, 150.0),
-        "holes_xz": [(20.0, 37.0), (105.0, 37.0)],
+        "holes_xz": [(6.0, 37.5), (119.0, 37.5)],   # Garmin PowerSwitch manual: 4-7/16 in (113.0 mm) c-c along centerline
         "insert": "M4",
     },
     "gnd_bus_2701": {
@@ -1317,26 +1322,28 @@ def build_inverter_plate_assembly(
         p_name = f"print_post_inverter_{j}"
         post = add_box_feature(comp, xpost, post_y0, 0.0, POST_D_X, POST_W_Y, POST_H_Z, body_name=p_name)
 
-        # Integral 12 mm top rail mounting ear on inboard (+Y) side (Y = 318..330, Z = 254..278.7 mm)
-        add_box_feature(
-            comp, xpost, post_y1, 254.0,
-            POST_D_X, 12.0, POST_H_Z - 254.0,
-            adsk.fusion.FeatureOperations.JoinFeatureOperation, post,
-        )
-        # 12 mm triangular gusset under top ear (Y = 318..330, Z = 242..254 mm)
-        g_plane = create_offset_plane(comp, "x", xpost)
-        g_sketch = comp.sketches.add(g_plane)
-        g_lines = g_sketch.sketchCurves.sketchLines
-        gp1 = sketch_world_point(g_sketch, xpost, post_y1, 242.0)
-        gp2 = sketch_world_point(g_sketch, xpost, post_y1 + 12.0, 254.0)
-        gp3 = sketch_world_point(g_sketch, xpost, post_y1, 254.0)
-        g_lines.addByTwoPoints(gp1, gp2)
-        g_lines.addByTwoPoints(gp2, gp3)
-        g_lines.addByTwoPoints(gp3, gp1)
-        extrude_all_profiles(
-            comp, g_sketch, "x", POST_D_X,
-            adsk.fusion.FeatureOperations.JoinFeatureOperation, post,
-        )
+        # Symmetrical 12 mm top rail mounting ears on both (-Y) and (+Y) sides (Z = 254..278.7 mm)
+        for ear_y0 in (post_y0 - 12.0, post_y1):
+            add_box_feature(
+                comp, xpost, ear_y0, 254.0,
+                POST_D_X, 12.0, POST_H_Z - 254.0,
+                adsk.fusion.FeatureOperations.JoinFeatureOperation, post,
+            )
+        # Symmetrical 12 mm triangular gussets under both top ears (Z = 242..254 mm)
+        for gy_base, gy_tip in ((post_y0, post_y0 - 12.0), (post_y1, post_y1 + 12.0)):
+            g_plane = create_offset_plane(comp, "x", xpost)
+            g_sketch = comp.sketches.add(g_plane)
+            g_lines = g_sketch.sketchCurves.sketchLines
+            gp1 = sketch_world_point(g_sketch, xpost, gy_base, 242.0)
+            gp2 = sketch_world_point(g_sketch, xpost, gy_tip, 254.0)
+            gp3 = sketch_world_point(g_sketch, xpost, gy_base, 254.0)
+            g_lines.addByTwoPoints(gp1, gp2)
+            g_lines.addByTwoPoints(gp2, gp3)
+            g_lines.addByTwoPoints(gp3, gp1)
+            extrude_all_profiles(
+                comp, g_sketch, "x", POST_D_X,
+                adsk.fusion.FeatureOperations.JoinFeatureOperation, post,
+            )
 
         # Continuous open-top plate slot (Z = 30.0 .. 278.7 mm)
         slot_x0 = (xpost + POST_D_X - POST_SLOT_DEPTH_X) if j == 0 else (xpost - 0.5)
@@ -1346,13 +1353,14 @@ def build_inverter_plate_assembly(
             adsk.fusion.FeatureOperations.CutFeatureOperation, post,
         )
 
-        # Bottom sill (Z = 12.5 mm, Y = 306.0 mm) & Top ear (Z = 269.2 mm, Y = 320.0 mm) 82-deg countersunk 1/4"-20 rail holes
+        # Bottom sill (Z = 12.5 mm) & Symmetrical Top Ears (Z = 269.2 mm, Y = post_y0 - 2.0 & post_y1 + 2.0) 82-deg countersunk 1/4"-20 rail holes
         p_face_x = (xpost + POST_D_X) if j == 0 else xpost
         p_in_sign = -1.0 if j == 0 else 1.0
         cut_countersink_14_20(
             comp, post, "x", p_face_x, p_in_sign,
             [
                 (p_face_x, post_y0 + POST_W_Y / 2.0, RAIL_PROFILE / 2.0),
+                (p_face_x, post_y0 - 2.0, BOX_HEIGHT_Z - RAIL_PROFILE / 2.0),
                 (p_face_x, post_y1 + 2.0, BOX_HEIGHT_Z - RAIL_PROFILE / 2.0),
             ],
             POST_D_X,
@@ -1626,11 +1634,39 @@ def build_electrical_components(
             apply_color(app, design, ubody, *COL_VICTRON_BLUE)
 
     # 5. Inboard Lane Units: Garmin PowerSwitch & Blue Sea 2701 Ground Bus
-    g_dx, g_dy, g_dz = COMP_SPECS["garmin_ps"]["dims"]
-    gx, gy, gz = COMP_SPECS["garmin_ps"]["pos"]
-    garmin = add_box_feature(comp, gx, gy, gz, g_dx, g_dy, g_dz, body_name="garmin_powerswitch")
-    fillet_parallel_edges(comp, garmin, "y", COMP_FILLET_R)
-    apply_color(app, design, garmin, *COL_CUBE_BLACK)
+    if not import_positioned_step(
+        app, design, comp, "garmin_powerswitch.step", "garmin_powerswitch", COL_CUBE_BLACK
+    ):
+        g_dx, g_dy, g_dz = COMP_SPECS["garmin_ps"]["dims"]
+        gx, gy, gz = COMP_SPECS["garmin_ps"]["pos"]
+        gzc = gz + g_dz / 2.0
+        # Integrated side mounting ears (125.0 mm span, 9.0 mm thick against hanger face, 26.0 mm tall)
+        garmin = add_box_feature(
+            comp, gx, gy + g_dy - 9.0, gzc - 13.0, g_dx, 9.0, 26.0, body_name="garmin_powerswitch"
+        )
+        fillet_parallel_edges(comp, garmin, "y", 5.0)
+        # Central base chassis (101.0 mm wide x 15.0 mm deep x 75.0 mm tall)
+        add_box_feature(
+            comp, gx + 12.0, gy + g_dy - 15.0, gz, g_dx - 24.0, 15.0, g_dz,
+            adsk.fusion.FeatureOperations.JoinFeatureOperation, garmin,
+        )
+        # Stepped removable upper cover + raised front badge boss + top latch
+        add_box_feature(
+            comp, gx + 12.0, gy + 2.0, gz + 1.0, g_dx - 24.0, g_dy - 17.0, g_dz - 2.0,
+            adsk.fusion.FeatureOperations.JoinFeatureOperation, garmin,
+        )
+        add_box_feature(
+            comp, gx + 23.0, gy, gz + 12.0, g_dx - 46.0, 2.5, g_dz - 24.0,
+            adsk.fusion.FeatureOperations.JoinFeatureOperation, garmin,
+        )
+        add_box_feature(
+            comp, gx + g_dx / 2.0 - 11.0, gy + 3.0, gz + g_dz - 2.0, 22.0, 14.0, 4.0,
+            adsk.fusion.FeatureOperations.JoinFeatureOperation, garmin,
+        )
+        # 2x Ø6.30 mm mounting holes at 113.0 mm (4-7/16 in) centers
+        g_thru = [(gx + u, gy, gz + v, 3.15) for (u, v) in COMP_SPECS["garmin_ps"]["holes_xz"]]
+        cut_cylinders_on_plane(comp, garmin, "y", gy - 0.5, g_dy + 1.0, g_thru)
+        apply_color(app, design, garmin, *COL_CUBE_BLACK)
 
     if not import_positioned_step(
         app, design, comp, "bluesea_2701_ground_bus.step", "bluesea_2701_ground_bus", COL_POWER_GOLD
@@ -1765,22 +1801,91 @@ def build_electrical_components(
 # 4. MAIN ENTRY POINT FOR AUTODESK FUSION
 # ==============================================================================
 
+def is_hybrid_design(design: adsk.fusion.Design | None) -> bool:
+    """Return True if `design` allows creating child sub-assembly components (Hybrid Design mode)."""
+    if design is None:
+        return False
+    try:
+        occ = design.rootComponent.occurrences.addNewComponent(adsk.core.Matrix3D.create())
+        occ.deleteMe()
+        return True
+    except Exception:
+        return False
+
+
+def clear_hybrid_design(design: adsk.fusion.Design) -> None:
+    """Wipe any previous build from an open Hybrid Design tab so it can be cleanly rebuilt in place."""
+    root = design.rootComponent
+    if root.bRepBodies.count == 0 and root.occurrences.count == 0:
+        return
+    try:
+        tl = design.timeline
+        for idx in range(tl.count - 1, -1, -1):
+            try:
+                tl.item(idx).deleteMe()
+            except Exception:
+                pass
+    except Exception:
+        pass
+    try:
+        design.designType = adsk.fusion.DesignTypes.DirectDesignType
+    except Exception:
+        pass
+    for coll in (root.occurrences, root.bRepBodies, root.sketches, root.constructionPlanes):
+        while coll.count > 0:
+            try:
+                coll.item(0).deleteMe()
+            except Exception:
+                break
+    try:
+        design.designType = adsk.fusion.DesignTypes.ParametricDesignType
+    except Exception:
+        pass
+
+
 def run(context: dict) -> None:
     ui = None
     try:
         app = adsk.core.Application.get()
         ui = app.userInterface
 
-        # Use the active empty design if one is already open, otherwise create a new one
+        # Ensure we build inside a Hybrid Design tab (never a single-part 'Part Design' tab,
+        # which in Fusion 2026 blocks component folders and STEP model imports!)
+        active_doc = app.activeDocument
         design = adsk.fusion.Design.cast(app.activeProduct)
-        if (
-            design is None
-            or design.rootComponent.bRepBodies.count > 0
-            or design.rootComponent.occurrences.count > 0
-        ):
-            doc = app.documents.add(adsk.core.DocumentTypes.FusionDesignDocumentType)
-            doc.name = f"4Runner_Battery_Box_v12s_{PRINTER_PRESET}"
-            design = adsk.fusion.Design.cast(app.activeProduct)
+        if not is_hybrid_design(design):
+            part_doc_to_close = active_doc
+            found_hybrid = False
+            for idx in range(app.documents.count):
+                cand_doc = app.documents.item(idx)
+                if cand_doc == part_doc_to_close:
+                    continue
+                cand_doc.activate()
+                cand_design = adsk.fusion.Design.cast(app.activeProduct)
+                if is_hybrid_design(cand_design):
+                    design = cand_design
+                    found_hybrid = True
+                    try:
+                        if part_doc_to_close is not None:
+                            part_doc_to_close.close(False)
+                    except Exception:
+                        pass
+                    break
+            if not found_hybrid:
+                if ui:
+                    ui.messageBox(
+                        "The current tab is set to 'Part Design' (single-part mode), which blocks "
+                        "component folders and STEP models (Victron / Anderson).\n\n"
+                        "Quick Fix:\n"
+                        "1. Click the '+' button in the top tab bar to open a new tab.\n"
+                        "2. Select 'Hybrid Design' (3rd box on the top row) and click 'Create New'.\n"
+                        "3. Run the script again!",
+                        "Please Use a Hybrid Design Tab",
+                    )
+                return
+
+        # Clear any existing model in the Hybrid Design tab so we rebuild cleanly in place
+        clear_hybrid_design(design)
         design.designType = adsk.fusion.DesignTypes.ParametricDesignType
 
         # Set document display units to millimeters
