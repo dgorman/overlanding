@@ -2371,19 +2371,31 @@ def build_pack(a, ox):
 V12 = dict(end_gap=15.0, row_gap=2.0, plate_gap=10.0, standoff=2.0)
 
 
-def v12_post(h, mirror=False, buttress=False):
-    """Single-piece guide post for the fixed MultiPlus plate: 24 (X) x 18 (Y), standing on the plate against the depth
-    rail's inner face.  The rails' top and bottom slots hold the box's panels, so the post ties in through the rails'
-    INNER slots only: a horizontal 1/4-20 through its solid sill at z 12.7 (T-nut in the bottom rail), and a printed clip
-    on its top that bolts into the top rail's inner slot the same way and screws down into the post (M4 insert).
-    When buttress=True (v13 slot-captured lid), the post has no top clip; instead a 30 mm inboard base extension + 110 mm
-    tall triangular gusset along the bottom width rail adds a second 1/4-20 sill bolt 28 mm inboard of the first.
-    Card slot on the +Y face from z 30 (above the sill bolt).  254 tall: one print."""
+def v12_post(h=254.0, mirror=False, buttress=False, one_piece_top=False, part_name=None):
+    """Single-piece post against a width rail: post_w (24) along the rail, post_d (18) off it, one 1/4-20 through a solid sill at
+    z = B/2 into the bottom rail's inner slot.  When one_piece_top=True (H2D master build, h = out_H - 3 = 278.7 mm), an integral
+    12 mm top mounting ear + 12 mm gusset on the inboard side takes a countersunk 1/4-20 into the top width rail (z = out_H - B/2)
+    while leaving the 7.2 mm card slot open all the way through the top (no separate print_post_clip needed).
+    When buttress=True (v13, no top clip), a 30 mm wide x 110 mm tall triangular gusset along the bottom width rail adds a second
+    1/4-20 sill bolt 28 mm inboard of the first."""
     gw = P["card_t"] + 2 * P["card_clear"]
     g = box(P["post_w"], P["post_d"], h)
     g = g.cut(box(gw, P["slot_depth"] + 1, h, ((P["post_w"] - gw) / 2, P["post_d"] - P["slot_depth"], 30)))
     g = g.cut(cq.Workplane("XZ").center(P["post_w"] / 2, B / 2).circle(3.4).extrude(-(P["post_d"] + 2)).translate((0, -1, 0)))   # sill bolt
-    if buttress:
+    if one_piece_top:
+        # Local x = 0 is the inboard (+Y = 318) side after rotating -90 deg about Z and translating to yt = 318.
+        # Add a 12 mm integral top rail ear at local x = -12..0, z = h - 24.7..h (Z = 254..278.7) + 12 mm gusset below (Z = 242..254)
+        ear_h = h - 254.0
+        g = g.union(box(12.0, P["post_d"], ear_h, (-12.0, 0, 254.0)))
+        gus_top = cq.Workplane("XZ").polyline([(0.0, 242.0), (-12.0, 254.0), (0.0, 254.0)]).close().extrude(-P["post_d"])
+        g = g.union(gus_top)
+        tz = out_H - B / 2
+        g = g.cut(cq.Workplane("XZ").center(-2.0, tz).circle(3.4).extrude(-(P["post_d"] + 2)).translate((0, -1, 0)))
+        # 82-deg countersinks on the inner (+y = post_d) face for both bottom sill bolt and top ear bolt
+        csk_bot = cq.Workplane("XY").add(cq.Solid.makeCone(7.0, 3.4, 4.1, cq.Vector(P["post_w"] / 2, P["post_d"] + 0.5, B / 2), cq.Vector(0, -1, 0)))
+        csk_top = cq.Workplane("XY").add(cq.Solid.makeCone(7.0, 3.4, 4.1, cq.Vector(-2.0, P["post_d"] + 0.5, tz), cq.Vector(0, -1, 0)))
+        g = g.cut(csk_bot).cut(csk_top)
+    elif buttress:
         g = g.union(box(30.0, P["post_d"], B, (-30.0, 0, 0)))
         gus = cq.Workplane("XZ").polyline([(-30.0, B), (0.0, B), (0.0, 110.0)]).close().extrude(-P["post_d"])
         g = g.union(gus)
@@ -3083,16 +3095,24 @@ def build_v13(a):
         g["garmin_hanger_nuts"] = (gx0 + 25.0, gx0 + gw - 25.0)
     # --- inverter plate along the depth, in posts against the two width rails ---------------------------------------
     lid_slot = bool(P.get("lid_slot"))
+    one_piece_posts = bool(P.get("printed_ends")) and not lid_slot
     ikey = P.get("inverter_long", "multiplus_ii_long"); inv = COMPONENTS[ikey]
     iz = 2.0 if ikey == "multiplus_ii_long" else (15.0 if lid_slot else 22.0)   # v13 (lid_slot): z 15..264 (2.2 mm below the z 266.2 lid underside)
-    yp = V13["plate_y"]; hpost = min(out_H - B, 254.0)            # posts print in one piece (254)
+    yp = V13["plate_y"]
+    hpost = (out_H - 3.0) if one_piece_posts else min(out_H - B, 254.0)         # H2D master: one-piece 278.7 mm posts (no clips); P1P: 254 mm + top clips
     px0, px1 = x_in0 + P["post_d"] - P["slot_depth"], out_D - B - P["post_d"] + P["slot_depth"]   # plate ends inside the post slots
     zp = 14.0 if lid_slot else 21.0
     hp = 250.0 if lid_slot else min(256.0, out_H - 2 - zp)        # v13 (lid_slot): z 14..264 (2.2 mm below the slot-captured lid)
     yt = yp + P["card_t"] / 2 + P["post_w"] / 2                   # the v12 post turned 90 deg: its slot (centred on the post) takes the plate
     for j, (xpost, xclip) in enumerate(((x_in0, x_in0), (out_D - B - P["post_d"], out_D - B - 20))):
-        add(a, v12_post(hpost, mirror=(j == 1), buttress=lid_slot).rotate((0, 0, 0), (0, 0, 1), -90).translate((xpost, yt, 0)), f"print_post_inverter_{j}", ORANGE)
-        if not lid_slot:
+        p_nm = f"print_post_inverter_{j}"
+        add(a, v12_post(hpost, mirror=(j == 1), buttress=lid_slot, one_piece_top=one_piece_posts, part_name=p_nm).rotate((0, 0, 0), (0, 0, 1), -90).translate((xpost, yt, 0)), p_nm, ORANGE)
+        if one_piece_posts:
+            x_face = (xpost + P["post_d"]) if j == 0 else xpost
+            ax_in = (-1, 0, 0) if j == 0 else (1, 0, 0)
+            COUNTERSINKS.append((p_nm, (x_face, yt - P["post_w"] / 2, B / 2), ax_in))
+            COUNTERSINKS.append((p_nm, (x_face, yt + 2.0, out_H - B / 2), ax_in))
+        elif not lid_slot:
             clip = v12_post_clip(mirror=(j == 1), h=out_H - hpost, bolt_z=out_H - hpost - B / 2).rotate((0, 0, 0), (0, 0, 1), -90)
             add(a, clip.translate((xclip, yt, hpost)), f"print_post_clip_{j}", ORANGE)
     ux = V13["inv_x"]
@@ -3122,8 +3142,8 @@ def build_v13(a):
             shp = shp.cut(window)
         shp = shp.cut(box(12, P["card_t"] + 2, 30 - zp + 1, (px0 - 1, yp - 1, zp - 1)))              # bottom corners clear the posts' solid sills
         shp = shp.cut(box(12, P["card_t"] + 2, 30 - zp + 1, (px1 - 11, yp - 1, zp - 1)))
-        if not lid_slot:
-            shp = shp.cut(box(14, P["card_t"] + 2, 40, (px0 - 1, yp - 1, hpost - 0.6)))              # top corners clear the post clips
+        if not lid_slot and not one_piece_posts:
+            shp = shp.cut(box(14, P["card_t"] + 2, 40, (px0 - 1, yp - 1, hpost - 0.6)))              # top corners clear the post clips (legacy P1P only)
             shp = shp.cut(box(14, P["card_t"] + 2, 40, (px1 - 13, yp - 1, hpost - 0.6)))
         add(a, shp, nm, ORANGE if "spline" in nm else DARK)
     at = (ux, yp + P["card_t"] + V13["standoff"], iz)

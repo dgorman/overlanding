@@ -129,14 +129,14 @@ BUSBAR_Y0: float = BUS_SHELF_Y0 + BUS_SHELF_OUT_LIP_T + 1.0       # 200.0 mm
 SMARTSHUNT_X0: float = 226.0
 SMARTSHUNT_Y0: float = BUS_SHELF_Y0 + BUS_SHELF_OUT_LIP_T + 4.5   # 203.5 mm
 
-# Inverter Mounting Plate, Slotted Guide Posts & Top Clips
+# Inverter Mounting Plate & One-Piece Full-Height Slotted Guide Posts (H2D)
 INVERTER_PLATE_Y0: float = 303.0
 INVERTER_PLATE_THICK: float = 6.0
 INVERTER_PLATE_CLEAR: float = 0.6
 POST_W_Y: float = 24.0              # Post width along Y (294.0 .. 318.0 mm, centered on plate at Y=306.0)
 POST_D_X: float = 18.0              # Post depth along X against back/front width rails
-POST_H_Z: float = 254.0             # Single-piece post height (254.0 mm); top clip spans 254.0 .. 281.7 mm
-POST_SLOT_DEPTH_X: float = 10.0     # 10.0 mm deep slot capturing plate ends
+POST_H_Z: float = BOX_HEIGHT_Z - 3.0  # One-piece full-height H2D post (278.7 mm, 3 mm below lid; no separate clip needed!)
+POST_SLOT_DEPTH_X: float = 10.0     # 10.0 mm deep continuous open-top slot capturing plate ends (Z = 30 .. 278.7 mm)
 POST_SLOT_Z0: float = 30.0          # Solid sill below Z = 30.0 mm for 1/4"-20 rail bolt at Z = 12.5 mm
 INVERTER_PLATE_X0: float = INNER_X0 + POST_D_X - POST_SLOT_DEPTH_X  # 33.0 mm
 INVERTER_PLATE_X1: float = INNER_X1 - POST_D_X + POST_SLOT_DEPTH_X  # 538.5 mm (length = 505.5 mm)
@@ -1305,50 +1305,58 @@ def build_inverter_plate_assembly(
     px0, px1 = INVERTER_PLATE_X0, INVERTER_PLATE_X1  # 33.0 .. 538.5 mm (L = 505.5 mm)
     zp, hp = INVERTER_PLATE_Z0, INVERTER_PLATE_H     # 21.0 .. 277.0 mm (H = 256.0 mm)
 
-    # 1. 2x Slotted Inverter Posts (24 Y x 18 X x 254 Z) + 2x Top Post Clips (Z = 254..281.7 mm)
-    post_y0 = yp + pt / 2.0 - POST_W_Y / 2.0  # 294.0 mm
+    # 1. 2x One-Piece Full-Height Slotted Inverter Posts (Z = 0 .. 278.7 mm, continuous open-top slot + integral top rail ear)
+    post_y0 = yp + pt / 2.0 - POST_W_Y / 2.0  # 294.0 mm (spans Y = 294.0 .. 318.0 mm)
+    post_y1 = post_y0 + POST_W_Y              # 318.0 mm
     slot_w_y = pt + 2.0 * INVERTER_PLATE_CLEAR  # 7.2 mm
     slot_y0 = post_y0 + (POST_W_Y - slot_w_y) / 2.0
-    clip_h = BOX_HEIGHT_Z - POST_H_Z  # 27.7 mm
 
     for j, xpost in enumerate((INNER_X0, INNER_X1 - POST_D_X)):
         p_name = f"print_post_inverter_{j}"
         post = add_box_feature(comp, xpost, post_y0, 0.0, POST_D_X, POST_W_Y, POST_H_Z, body_name=p_name)
 
+        # Integral 12 mm top rail mounting ear on inboard (+Y) side (Y = 318..330, Z = 254..278.7 mm)
+        add_box_feature(
+            comp, xpost, post_y1, 254.0,
+            POST_D_X, 12.0, POST_H_Z - 254.0,
+            adsk.fusion.FeatureOperations.JoinFeatureOperation, post,
+        )
+        # 12 mm triangular gusset under top ear (Y = 318..330, Z = 242..254 mm)
+        g_plane = create_offset_plane(comp, "x", xpost)
+        g_sketch = comp.sketches.add(g_plane)
+        g_lines = g_sketch.sketchCurves.sketchLines
+        gp1 = sketch_world_point(g_sketch, xpost, post_y1, 242.0)
+        gp2 = sketch_world_point(g_sketch, xpost, post_y1 + 12.0, 254.0)
+        gp3 = sketch_world_point(g_sketch, xpost, post_y1, 254.0)
+        g_lines.addByTwoPoints(gp1, gp2)
+        g_lines.addByTwoPoints(gp2, gp3)
+        g_lines.addByTwoPoints(gp3, gp1)
+        extrude_all_profiles(
+            comp, g_sketch, "x", POST_D_X,
+            adsk.fusion.FeatureOperations.JoinFeatureOperation, post,
+        )
+
+        # Continuous open-top plate slot (Z = 30.0 .. 278.7 mm)
         slot_x0 = (xpost + POST_D_X - POST_SLOT_DEPTH_X) if j == 0 else (xpost - 0.5)
         add_box_feature(
             comp, slot_x0, slot_y0, POST_SLOT_Z0,
             POST_SLOT_DEPTH_X + 0.5, slot_w_y, POST_H_Z - POST_SLOT_Z0 + 1.0,
             adsk.fusion.FeatureOperations.CutFeatureOperation, post,
         )
-        cut_cylinders_on_plane(
-            comp, post, "x", xpost - 0.5, POST_D_X + 1.0,
-            [(xpost, post_y0 + POST_W_Y / 2.0, RAIL_PROFILE / 2.0, UNC_25_CLEAR_DIA / 2.0)],
-        )
-        cut_cylinders_on_plane(
-            comp, post, "z", POST_H_Z + 0.5, -12.5,
-            [(xpost + POST_D_X / 2.0, post_y0 + POST_W_Y / 2.0, POST_H_Z, M4_INSERT_BORE_DIA / 2.0)],
+
+        # Bottom sill (Z = 12.5 mm, Y = 306.0 mm) & Top ear (Z = 269.2 mm, Y = 320.0 mm) 82-deg countersunk 1/4"-20 rail holes
+        p_face_x = (xpost + POST_D_X) if j == 0 else xpost
+        p_in_sign = -1.0 if j == 0 else 1.0
+        cut_countersink_14_20(
+            comp, post, "x", p_face_x, p_in_sign,
+            [
+                (p_face_x, post_y0 + POST_W_Y / 2.0, RAIL_PROFILE / 2.0),
+                (p_face_x, post_y1 + 2.0, BOX_HEIGHT_Z - RAIL_PROFILE / 2.0),
+            ],
+            POST_D_X,
+            with_floor_head_relief=False,
         )
         apply_color(app, design, post, *COL_PRINT_ORANGE)
-
-        # Top Post Clip (print_post_clip_0..1)
-        c_name = f"print_post_clip_{j}"
-        xclip = INNER_X0 if j == 0 else INNER_X1 - 20.0
-        clip = add_box_feature(
-            comp, xclip, post_y0 - 8.0, POST_H_Z,
-            20.0, POST_W_Y + 16.0, clip_h, body_name=c_name,
-        )
-        cut_cylinders_on_plane(
-            comp, clip, "z", POST_H_Z - 0.5, clip_h + 1.0,
-            [(xpost + POST_D_X / 2.0, post_y0 + POST_W_Y / 2.0, POST_H_Z, M4_CLEAR_DIA / 2.0)],
-        )
-        c_face_x = xclip + 20.0 if j == 0 else xclip
-        c_in_sign = -1.0 if j == 0 else 1.0
-        cut_countersink_14_20(
-            comp, clip, "x", c_face_x, c_in_sign,
-            [(c_face_x, post_y0 + POST_W_Y / 2.0 + 10.0, BOX_HEIGHT_Z - RAIL_PROFILE / 2.0)], 20.0,
-        )
-        apply_color(app, design, clip, *COL_PRINT_ORANGE)
 
     # 2. Collect all 22 Pre-Printed Heat-Set Insert Bores on the Inverter Plate
     plate_bores: list[tuple[float, float, float, int]] = []
@@ -1421,16 +1429,6 @@ def build_inverter_plate_assembly(
             if i == nx - 1 and j == 0:
                 add_box_feature(
                     comp, px1 - 12.0, yp - 0.5, zp - 0.5, 12.5, pt + 1.0, POST_SLOT_Z0 - zp + 0.5,
-                    adsk.fusion.FeatureOperations.CutFeatureOperation, tile,
-                )
-            if i == 0 and j == nz - 1:
-                add_box_feature(
-                    comp, px0 - 0.5, yp - 0.5, POST_H_Z - 0.6, 14.5, pt + 1.0, 30.0,
-                    adsk.fusion.FeatureOperations.CutFeatureOperation, tile,
-                )
-            if i == nx - 1 and j == nz - 1:
-                add_box_feature(
-                    comp, px1 - 14.0, yp - 0.5, POST_H_Z - 0.6, 14.5, pt + 1.0, 30.0,
                     adsk.fusion.FeatureOperations.CutFeatureOperation, tile,
                 )
 

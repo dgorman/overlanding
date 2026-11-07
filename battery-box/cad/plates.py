@@ -136,6 +136,7 @@ def raster(tris):
 def build_plates(stl_dir, quiet=False):
     import glob
     has_clips = os.path.exists(os.path.join(stl_dir, "print_post_clip_0.stl"))
+    bed_x, bed_y = (256.0, 256.0) if has_clips else (350.0, 320.0)
     for name, items in PLATES.items():
         if name == "plate_inverter_posts" and not has_clips:
             items = [("print_post_inverter_0.stl", 0, None), ("print_post_inverter_1.stl", 0, None)]
@@ -151,14 +152,14 @@ def build_plates(stl_dir, quiet=False):
                 tris = normalise(rot_z(tris, rotz))
             w = max(v[0] for t in tris for v in t); d = max(v[1] for t in tris for v in t); h = max(v[2] for t in tris for v in t)
             if at is None:                       # next in a row, wrapping to a new row when the bed is full
-                if x + w > BED:
+                if x + w > bed_x:
                     x, y_row, row_h = 0.0, y_row + row_h + GAP, 0.0
                 at = (x, y_row); x += w + GAP; row_h = max(row_h, d)
             tris = [[(v[0] + at[0], v[1] + at[1], v[2]) for v in t] for t in tris]
             parts.append((fn, tris)); out += tris
             if not quiet:
                 print(f"  {fn}: {w:.0f} x {d:.0f} footprint, {h:.0f} tall, at ({at[0]:.0f}, {at[1]:.0f})")
-        assert max(v[0] for t in out for v in t) <= BED and max(v[1] for t in out for v in t) <= BED, f"{name} exceeds the bed"
+        assert max(v[0] for t in out for v in t) <= bed_x and max(v[1] for t in out for v in t) <= bed_y, f"{name} exceeds the bed"
         foot = [(fn, raster(tr)) for fn, tr in parts]
         for (f1, r1), (f2, r2) in itertools.combinations(foot, 2):
             assert not (r1 & r2), f"{name}: {f1} overlaps {f2} on the bed"
