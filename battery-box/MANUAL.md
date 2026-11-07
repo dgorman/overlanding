@@ -59,7 +59,7 @@ All printable files are in [`stl/v12s/`](stl/v12s/). Every `print_*.stl` and `pl
 | Part | Qty | File(s) | Bed Orientation | Walls / Infill | Dimensions (mm) & Notes |
 |---|---|---|---|---|---|
 | **Battery tray** | 2 | [`print_tray_battery_0.stl`](stl/v12s/print_tray_battery_0.stl), [`print_tray_battery_1.stl`](stl/v12s/print_tray_battery_1.stl) | Flat, floor down (loads wall bolts along layers) | 5 / 40% (100% floor recommended) | `242 × 167 × 36`. Pocket is `0.5 mm` clear per side (snug, no strap groove), outer corner notched `2 mm` for the `25.75 mm` cube. Tray 0 bolts through its back wall; Tray 1 through its front wall |
-| **Breaker drop shelf** | 2 | [`plate_breaker_shelf.stl`](stl/v12s/plate_breaker_shelf.stl) (**print twice**; two do not fit one bed) | Pre-laid on its `130 mm` vertical edge, no supports (full-length ribs keep cross-section uniform) | 4 / 40% gyroid | `130 × 168 × 243` (~400 g, ~9 h each). **Never print flat on the plate** (the leg would be 189 mm of overhang and foot bolts would pull across layers) The hanger jogs 2 mm inboard below the rail: the battery's 4 AWG leads run in the 11.5 mm channel between its back and the side panel, lashed through the two zip-tie slot pairs |
+| **Breaker drop shelf** | 2 | [`plate_breaker_shelf.stl`](stl/v12s/plate_breaker_shelf.stl) (**print twice**; two do not fit one bed) | Pre-laid on its `130 mm` vertical edge, no supports (full-length ribs keep cross-section uniform) | 4 / 40% gyroid | `130 × 168 × 243` (~400 g, ~9 h each). **Never print flat on the plate** (the leg would be 189 mm of overhang and foot bolts would pull across layers) The hanger is 13 mm thick with a flat front; a 2 mm relief on its back below the rail makes an 11.5 mm channel against the side panel for the battery's 4 AWG lead, closed underneath by two tabs, so the lead slides in from either end and is captured |
 | **Bus shelf plate** | 3 | [`0`](stl/v12s/print_bus_shelf_0.stl), [`1`](stl/v12s/print_bus_shelf_1.stl), [`2`](stl/v12s/print_bus_shelf_2.stl) | Flat, floor down, no supports (20 mm half-laps are in the vertical walls; floors butt) | 4 / 30% | `215 × 110 × 34` (plate 0), `152 × 110 × 34` (plate 1, middle), `195 × 110 × 34` (plate 2). Plates 0 and 2 carry the end walls that bolt to the width rails |
 | **Inverter plate tile** | 6 | [`00`](stl/v12s/print_plate_inverter_tile_00.stl), [`01`](stl/v12s/print_plate_inverter_tile_01.stl), [`10`](stl/v12s/print_plate_inverter_tile_10.stl), [`11`](stl/v12s/print_plate_inverter_tile_11.stl), [`20`](stl/v12s/print_plate_inverter_tile_20.stl), [`21`](stl/v12s/print_plate_inverter_tile_21.stl) | Flat on each tile's untouched face (lower row has rabbets/pockets on inverter face; upper row on column face). Zero bridges, no supports | 4 / 30% | `168.5 × 140 × 6`. First digit = column from back (`0..2`), second = row from bottom (`0..1`). Exact `Ø 5.6 mm` (M4) and `Ø 7.5 mm` (M5) insert holes are pre-printed in place (no drilling) |
 | **Plate spline** | 8 | [`plate_inverter_splines.stl`](stl/v12s/plate_inverter_splines.stl) (all 8 on one bed) | Flat, as exported | 4 / 100% | `60 × 18 × 3`. Glued with CA into flush pockets across the two vertical column joints (2 per row per joint) |
@@ -85,7 +85,8 @@ For direct McMaster-Carr links, pack quantities, and a copy-paste Order Pad bloc
 | **1/4"-20 drop-in T-nuts, IceBox stack straps** | `6000N501` | **8** (2 packs of 4) | The rails' **outer** slots: 2 in each bottom depth rail of the box, 2 in each top depth rail of the IceBox under it (dropped in after the box is stood on the IceBox) |
 | **1/4"-20 × 1/2 in button-head**, 18-8 SS | `92949A537` | **8** (25) | IceBox stack straps into the rail T-nuts (`4 mm` plate + washer under the head leaves `~7 mm` for the nut, per the screw-length rule) |
 | **1/4 in flat washers**, 18-8 SS | `92141A029` *(verify)* | **8** (100) | Under the stack-strap button heads |
-| **1/4"-20 × 1/2 in flat-head** (82° countersunk), 18-8 SS | `92210A537` | **20** (50) | All `6 mm` walls into rail T-nuts: tray outer & end walls (8), bus shelf end walls (4), drop-shelf hangers (4), Garmin upper & lower hanger plates (4) |
+| **1/4"-20 × 3/4 in flat-head** (82° countersunk), 18-8 SS | `92210A540` (order 1) | **4** (50) | The drop-shelf hangers' `13 mm` band into the top outboard rail's T-nuts (`6 mm` into the nut) |
+| **1/4"-20 × 1/2 in flat-head** (82° countersunk), 18-8 SS | `92210A537` | **16** (50) | All `6 mm` walls into rail T-nuts: tray outer & end walls (8), bus shelf end walls (4), Garmin upper & lower hanger plates (4) |
 | **1/4"-20 × 7/8 in flat-head** (82° countersunk), 18-8 SS | `92210A541` | **2** (25) | Post clips into top width rails (2) |
 | **1/4"-20 × 7/8 in button-head**, 18-8 SS | `92949A541` | **2** (25) | Post sills into bottom width rails (2, plain hole, head on post's inner face) |
 | **M4 × 0.7 heat-set inserts, standard** (`7.9 mm` long) | `94180A353` | **12** (50) | Thick printed parts: tray inboard wall faces (6, for bus shelf lip), tray inboard wall tops (4, for drop-shelf feet), inverter post tops (2, for clips) |
@@ -325,7 +326,7 @@ Work from the top with the lid off. Every fastener is reached from above or alon
 
 ### Steps 5 & 6: Drop In Batteries (Step 5), Then Install Breaker Drop Shelves & Breakers (Step 6)
 
-> **🔧 `2.5 mm`, `3 mm` & `5/32 in` Hex Keys  |  🔩 `4 × M4 × 10` (`92095A190`)  •  `4 × 1/4"-20 × 1/2 in` Flat-Head (`92210A537`)  •  `4 × M5 × 10` + `M5` Washers**
+> **🔧 `2.5 mm`, `3 mm` & `5/32 in` Hex Keys  |  🔩 `4 × M4 × 10` (`92095A190`)  •  `4 × 1/4"-20 × 3/4 in` Flat-Head (`92210A540`)  •  `4 × M5 × 10` + `M5` Washers**
 
 ![Steps 5 & 6 Visual Guide](manual/img/06-shelves-simple.png)
 
@@ -335,7 +336,7 @@ Work from the top with the lid off. Every fastener is reached from above or alon
 
 * **Step 5 — Lower Both Batteries In FIRST:** Lower each **Victron SuperPack 60Ah** straight down into its tray pocket before installing the shelves (a battery cannot pass under a shelf once installed).
 * **Step 6 ① — Bolt the Shelf Feet FIRST (`4 × M4 × 10`):** Set each drop shelf (`print_breaker_shelf_0..1`, with EPDM foam pad underneath) over the middle of its battery and drive **`2 × M4 × 10` button heads** straight down through the inboard foot into the tray wall's top `M4` inserts (`X = 81, 161 mm` and `360.5, 440.5 mm`).
-* **Step 6 ② — Bolt the Top Hangers SECOND (`4 × 1/4"-20 × 1/2 in`):** Drive **`2 × 1/4"-20 × 1/2 in` flat-head screws** through each shelf's top hanger into the top outboard rail's T-nuts (`X = 81, 161 mm` and `360.5, 440.5 mm`), compressing the foam pad `~1 mm` onto the battery top.
+* **Step 6 ② — Bolt the Top Hangers SECOND (`4 × 1/4"-20 × 3/4 in`):** Drive **`2 × 1/4"-20 × 3/4 in` flat-head screws** through each shelf's `13 mm` hanger band into the top outboard rail's T-nuts (`X = 81, 161 mm` and `360.5, 440.5 mm`), compressing the foam pad `~1 mm` onto the battery top.
 * **Step 6 ③ — Mount the Breakers (`4 × M5 × 10` + Washers):** Bolt each **Eaton Bussmann 285 breaker** onto the diagonal `M5` inserts on top of the shelf plate (studs facing the center column).
 
 ---
