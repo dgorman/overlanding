@@ -1348,8 +1348,8 @@ HOLES = {
                                                         # centred pattern sat 15.5 mm off the shelf lip, which is where the user's "11 mm closer" came from)
     "multiplus_1200_up": [(14.2, 68.0), (234.8, 68.0), (14.2, 311.8), (234.8, 311.8)],    # keyholes 220.6 x 243.8, upper pair 62.8 below the body top, M6
     "multiplus_1200":   [(99.4, 14.7), (343.2, 14.7), (99.4, 235.3), (343.2, 235.3)],
-    "busbar_n":         [(11.5, 16), (143.5, 16)],  # 5-stud M8 covered bar: mounting ears 132 mm on centre (owner-measured 2026-10-31; was 131 'verify')
-    "busbar_p":         [(11.5, 16), (143.5, 16)],  # same bar in red; both ears take an M5 into the shelf-floor insert
+    "busbar_n":         [(11.5, 16), (145.5, 16)],  # 5-stud M8 covered bar: mounting ears 134 mm on centre (owner, 2026-11-06, off the printed shelf:
+    "busbar_p":         [(11.5, 16), (145.5, 16)],  # 2 mm wider than the 2026-10-31 figure); both ears take an M5 into the shelf-floor insert
     "breaker_a":        [(12.32, 10.73), (68.96, 37.40)],   # Bussmann 285: two 6.6 mm holes on a 56.64 x 26.67 diagonal (x along the 81.28 length).
                                                             # Seen from above with the length to the right the diagonal runs lower-left to upper-right
                                                             # (series drawing, top view: hole top-left / bottom-right with the length vertical). The
@@ -2664,7 +2664,9 @@ V13_SHORT = dict(   # the 635 mm box (2026-10-24 layout): ONE ROW of charge gear
     # the shunt's stud edge 4.5 off it, slots 12.5 in), so the (+) bar, shunt and (-) bar read as one straight bus and the inboard 57 mm band
     # under the plate's cable window is empty: the inverter, Orion and Garmin leads coming through the window land on bare shelf, not on a bus bar.
     # (Before: the bars sat in the inboard row under the window with the shunt alone on the tray side.)
-    col=[dict(comp="shunt_x", x=226, y=4.5), dict(comp="busbar_px", x=45, y=1), dict(comp="busbar_nx", x=366, y=1)],
+    col=[dict(comp="shunt_x", x=226, y=4.5), dict(comp="busbar_px", x=43, y=1), dict(comp="busbar_nx", x=366, y=1)],
+    # bus bar ears 134 on centre (2026-11-06): each bar's INNER ear stays where the printed shelves had it and the OUTER one moves
+    # 2 mm toward the shelf's end (the + bar's origin moves back 2, the - bar's front ear moves forward 2), so the bores grow outward
     # (shelf units: Ø7.5 mm M5 heat-set insert bores pre-printed in plates 0, 1, 2.  The Garmin hangs from the top
     # inboard rail on its own printed plate, see garmin_hanger in build_v13, 2026-10-30)
     window=(out_D - 145.0, out_D - 75.0, 40.0, 110.0),
