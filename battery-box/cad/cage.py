@@ -2868,13 +2868,23 @@ def build_v13(a):
                 for hx in (25, 105):
                     sh = sh.cut(cq.Workplane("XY").center(xs + hx, yw + 13).circle(2.3).extrude(8).translate((0, 0, wt - 1)))        # 2 x M4 down through the inboard foot
             else:
-                sh = box(130, yw + 6 - y_in0, M5_DECK, (xs, y_in0, zs))                                          # plate from the rail face to the leg
-                sh = sh.union(box(130, 6, out_H - 3 - zs, (xs, y_in0, zs)))                                      # hanger up the top rail's inner face
+                # The hanger JOGS 2 mm inboard below the top rail (2026-11-06, user): the side panel sits 9.5 mm behind the rail's inner
+                # face, and the 4 AWG battery leads run in that recess behind the hanger; with the lower hanger and the plate's outboard
+                # edge stepped in 2 mm the channel is 11.5 mm, snug on 4 AWG without pinching. The 6 mm band on the rail keeps the 1/2 in
+                # screws (a thicker band would need 3/4 in screws, which bottom out in the slot).
+                jog = 2.0
+                sh = box(130, yw + 6 - y_in0 - jog, M5_DECK, (xs, y_in0 + jog, zs))                               # plate from the jogged hanger to the leg
+                sh = sh.union(box(130, 6, (out_H - B) - zs, (xs, y_in0 + jog, zs)))                              # lower hanger, 2 mm off the rail line
+                sh = sh.union(box(130, 6, B - 3, (xs, y_in0, out_H - B)))                                        # band on the top rail's inner face, bolted
                 sh = sh.union(box(130, 6, zs + 24 - wt, (xs, yw, wt)))                                            # leg down onto the wall top, 24 up past the plate as a lip
                 sh = sh.union(box(130, 15, 6, (xs, yw + 6, wt)))                                                  # foot over the wall top: 2 x M4 down into it
-                for (gy, dy, rs) in ((y_in0 + 6, 1, 18), (yw, -1, 5)):                                           # full-length ribs above the plate along the hanger (18)
+                for (gy, dy, rs) in ((y_in0 + jog + 6, 1, 18), (yw, -1, 5)):                                     # full-length ribs above the plate along the hanger (18)
                     rib = cq.Workplane("YZ").polyline([(gy, zs + M5_DECK), (gy + rs * dy, zs + M5_DECK), (gy, zs + M5_DECK + rs)]).close().extrude(130).translate((xs, 0, 0))
                     sh = sh.union(rib)
+                zc_tie = out_H - B - 9.0                                                                          # just under the rail, where the leads run
+                for sx in (xs + 30.0, xs + 100.0):                                                                # two zip-tie slot pairs through the lower
+                    for dx in (-8.0, 8.0):                                                                        # hanger (and its rib): the tie loops around
+                        sh = sh.cut(box(4.0, 40.0, 10.0, (sx + dx - 2.0, y_in0 - 1.0, zc_tie - 5.0)))             # the 4 AWG in the channel behind
                 for hx in (25, 105):
                     sh = sh.cut(cq.Workplane("XZ").center(xs + hx, hz).circle(3.4).extrude(-8).translate((0, y_in0 - 1, 0)))          # 1/4-20 into the rail slot
                     sh = sh.cut(countersink(f"print_breaker_shelf_{r}", (xs + hx, y_in0 + 6, hz), (0, -1, 0)))                      # countersink on the inner face
