@@ -3062,8 +3062,10 @@ def build_v13(a):
     assert bounds[1][1] - bounds[1][0] >= 100, "middle bus shelf plate too short for its two sill holes"
     for i in range(n_pl):
         xa, xb = bounds[i]
-        sh = box(xb - xa, y1s - y0s, M5_DECK, (xa, y0s, 0))                  # 11 mm floor (6 until 2026-11-01: the 6.7 mm M5 inserts and the bar screws'
-        sh = sh.union(box(xb - xa, 6, 34, (xa, y0s, 0)))                     # tips came out the bottom; now blind bores); lip against the trays' inboard walls (M4 inserts)
+        xa_body = (xa - 2.5) if i == 1 else xa                                # bus_shelf_1 is 2.5 mm longer on the -X (MPPT) end; all bolt holes stay fixed
+        w_body = xb - xa_body
+        sh = box(w_body, y1s - y0s, M5_DECK, (xa_body, y0s, 0))               # 11 mm floor (6 until 2026-11-01: the 6.7 mm M5 inserts and the bar screws'
+        sh = sh.union(box(w_body, 6, 34, (xa_body, y0s, 0)))                  # tips came out the bottom; now blind bores); lip against the trays' inboard walls (M4 inserts)
         for r in range(2):
             for hx in lip_holes[r]:
                 hxa = g[f"tx{r}"] + hx
@@ -3076,7 +3078,7 @@ def build_v13(a):
                 sh = sh.cut(cq.Workplane("YZ").center(yc, B / 2).circle(3.4).extrude(8).translate((xw0 - 1, 0, 0)))
                 sh = sh.cut(countersink(f"print_bus_shelf_{i}", (xw0 + 6 if i == 0 else xw0, yc, B / 2), ((-1, 0, 0) if i == 0 else (1, 0, 0))))
                 sh = sh.cut(head_relief((xw0 + 6 if i == 0 else xw0, yc, B / 2), ((-1, 0, 0) if i == 0 else (1, 0, 0))))   # head clearance over the 11 mm floor
-        sh = sh.union(box(xb - xa, V13["col_wall"], 34, (xa, y1s - V13["col_wall"], 0)))   # inboard wall = the inverter plate's sill: 2 x M4 through it into
+        sh = sh.union(box(w_body, V13["col_wall"], 34, (xa_body, y1s - V13["col_wall"], 0)))   # inboard wall = the inverter plate's sill: 2 x M4 through it into
         if i == n_pl - 1:
             sh = sh.cut(box(P["post_d"] + 4, 14, 40, (out_D - B - P["post_d"] - 2, y1s - 10, -1)))   # corner notched around the plate's front post
         if i == 0:
@@ -3094,7 +3096,7 @@ def build_v13(a):
             if i < n_pl - 1:
                 sh = sh.union(box(20, tw, 34, (xb, yt, 0)))
             if i > 0:
-                sh = sh.cut(box(21, tw + 1.3, 36, (xa - 1, yt - (1.0 if out < 0 else 0.3), -1)))   # notch: wall half + 0.3, 1 mm past the face
+                sh = sh.cut(box(21, tw + 1.3, 36, (xa_body - 1, yt - (1.0 if out < 0 else 0.3), -1)))   # notch: wall half + 0.3, 1 mm past the face
             for sx in (([xb + 10] if i < n_pl - 1 else []) + ([xa + 10] if i > 0 else [])) if P.get("lap_bolts", True) else []:
                 sh = sh.cut(cq.Workplane("XZ").center(sx, 26).circle(2.3).extrude(-8).translate((0, yt - (1 if out < 0 else 7 - tw), 0)))   # (not v12s)
         for xj in (bounds[1][0], bounds[2][0]):   # the trays' lip bolts must stay clear of the laps (hole in only one of the two wall halves)
@@ -3112,7 +3114,7 @@ def build_v13(a):
     for pl in (V13_SHORT["col"] if short else V13_COL):
         c = COMPONENTS[pl["comp"]]
         is_busbar = pl["comp"].startswith("busbar_")
-        sp_h = 10.0 if is_busbar else 0.0
+        sp_h = 15.0 if is_busbar else 0.0                                     # 15.0 mm tall bus bar riser spacer (was 10.0 mm)
         if is_busbar:
             sp_w = 25.4   # 1.0 in wide spacer block centered on the M5 nutsert line (v = 16.0)
             hkey_sp = {"busbar_px": "busbar_p", "busbar_nx": "busbar_n"}.get(pl["comp"], pl["comp"])
@@ -3120,7 +3122,8 @@ def build_v13(a):
             sp_at = (pl["x"], sp_y0, M5_DECK)
             sp = box(c.d, sp_w, sp_h, sp_at).edges("|Z").fillet(3.0)
             for (hu, hv) in HOLES.get(hkey_sp, ()):
-                sp = sp.cut(cq.Workplane("XY").center(pl["x"] + hu, y0s + 6 + pl["y"] + hv).circle(2.75).extrude(sp_h + 2.0).translate((0, 0, sp_at[2] - 1.0)))
+                # Ø8.25 mm (r = 4.125 mm) holes = 50% larger than Ø5.50 mm for alignment play
+                sp = sp.cut(cq.Workplane("XY").center(pl["x"] + hu, y0s + 6 + pl["y"] + hv).circle(4.125).extrude(sp_h + 2.0).translate((0, 0, sp_at[2] - 1.0)))
             add(a, sp, f"print_busbar_spacer_{bus_sp_idx}", ORANGE)
             bus_sp_idx += 1
         at = (pl["x"], y0s + 6 + pl["y"], M5_DECK + sp_h)

@@ -1277,17 +1277,19 @@ def build_center_bus_column(
 
     for i in range(3):
         xa, xb = bounds[i]
-        p_len = xb - xa
+        # Middle bus shelf (bus_shelf_1) extended 2.5 mm on -X (MPPT) end only; all bolt holes stay fixed at xa/xb
+        xa_body = (xa - 2.5) if i == 1 else xa
+        p_len = xb - xa_body
         b_name = f"print_bus_shelf_{i}"
 
         # 1. Base 11.0 mm floor + 6.0 mm outboard lip (Z=0..34) + 4.0 mm inboard sill wall (Z=0..34)
-        sh = add_box_feature(comp, xa, y0s, 0.0, p_len, y1s - y0s, M5_DECK_THICK, body_name=b_name)
+        sh = add_box_feature(comp, xa_body, y0s, 0.0, p_len, y1s - y0s, M5_DECK_THICK, body_name=b_name)
         add_box_feature(
-            comp, xa, y0s, M5_DECK_THICK, p_len, BUS_SHELF_OUT_LIP_T, BUS_SHELF_WALL_H - M5_DECK_THICK,
+            comp, xa_body, y0s, M5_DECK_THICK, p_len, BUS_SHELF_OUT_LIP_T, BUS_SHELF_WALL_H - M5_DECK_THICK,
             adsk.fusion.FeatureOperations.JoinFeatureOperation, sh,
         )
         add_box_feature(
-            comp, xa, y1s - cw, M5_DECK_THICK, p_len, cw, BUS_SHELF_WALL_H - M5_DECK_THICK,
+            comp, xa_body, y1s - cw, M5_DECK_THICK, p_len, cw, BUS_SHELF_WALL_H - M5_DECK_THICK,
             adsk.fusion.FeatureOperations.JoinFeatureOperation, sh,
         )
 
@@ -1317,7 +1319,7 @@ def build_center_bus_column(
                 )
             if i > 0:
                 add_box_feature(
-                    comp, xa - 0.5, yt - (0.5 if out_dir < 0 else 0.3), -0.5,
+                    comp, xa_body - 0.5, yt - (0.5 if out_dir < 0 else 0.3), -0.5,
                     lap + 0.5, tw + 0.8, BUS_SHELF_WALL_H + 1.0,
                     adsk.fusion.FeatureOperations.CutFeatureOperation, sh,
                 )
@@ -1343,18 +1345,18 @@ def build_center_bus_column(
         cut_blind_m5_tapered_bores(comp, sh, M5_DECK_THICK, plate_m5)
         apply_color(app, design, sh, *COL_PRINT_ORANGE)
 
-    # 7. 2x Full-Length 10 mm Bus Bar Riser Spacers (155 x 25.4 x 10 mm [1.0 in wide], 2x Ø5.5 mm M5 clearance holes at 134 mm c-c)
+    # 7. 2x Full-Length 15 mm Bus Bar Riser Spacers (155 x 25.4 x 15 mm [1.0 in wide], 2x Ø8.25 mm holes [+50% play] at 134 mm c-c)
     bb_dx, _bb_dy, _bb_dz = COMP_SPECS["busbar_5stud"]["dims"]
     sp_w_y = 25.4
     sp_y0 = BUSBAR_Y0 + 16.0 - sp_w_y / 2.0
     for sp_idx, bx0 in enumerate((BUSBAR_POS_X0, BUSBAR_NEG_X0)):
         sp_body = add_box_feature(
-            comp, bx0, sp_y0, M5_DECK_THICK, bb_dx, sp_w_y, 10.0,
+            comp, bx0, sp_y0, M5_DECK_THICK, bb_dx, sp_w_y, 15.0,
             body_name=f"print_busbar_spacer_{sp_idx}",
         )
         fillet_parallel_edges(comp, sp_body, "z", 3.0)
-        sp_holes = [(bx0 + du, BUSBAR_Y0 + dv, M5_DECK_THICK, 2.75) for (du, dv) in COMP_SPECS["busbar_5stud"]["holes_xy"]]
-        cut_cylinders_on_plane(comp, sp_body, "z", M5_DECK_THICK - 0.5, 11.0, sp_holes)
+        sp_holes = [(bx0 + du, BUSBAR_Y0 + dv, M5_DECK_THICK, 4.125) for (du, dv) in COMP_SPECS["busbar_5stud"]["holes_xy"]]
+        cut_cylinders_on_plane(comp, sp_body, "z", M5_DECK_THICK - 0.5, 16.0, sp_holes)
         apply_color(app, design, sp_body, *COL_PRINT_ORANGE)
 
     return comp, sill_holes_xz
@@ -1643,7 +1645,7 @@ def build_electrical_components(
         b_dx, b_dy, b_dz = COMP_SPECS["breaker_285"]["dims"]
         build_bussmann_285_breaker(app, design, comp, br_x, br_y, br_z, b_dx, b_dy, b_dz, r)
 
-    # 3. 2x Covered 5-Stud M8 Bus Bars (+ Red and - Black, lifted 10 mm on print_busbar_spacer_0..1) & Real Victron SmartShunt 500A STEP
+    # 3. 2x Covered 5-Stud M8 Bus Bars (+ Red and - Black, lifted 15 mm on print_busbar_spacer_0..1) & Real Victron SmartShunt 500A STEP
     def add_m8_busbar_studs(bus_body: adsk.fusion.BRepBody, bx0: float, by0: float, bz_top: float) -> None:
         stud_plane = create_offset_plane(comp, "z", bz_top - 2.0)
         stud_sketch = comp.sketches.add(stud_plane)
@@ -1658,19 +1660,19 @@ def build_electrical_components(
 
     bb_dx, bb_dy, bb_dz = COMP_SPECS["busbar_5stud"]["dims"]
     bus_pos = add_box_feature(
-        comp, BUSBAR_POS_X0, BUSBAR_Y0, M5_DECK_THICK + 10.0, bb_dx, bb_dy, bb_dz,
+        comp, BUSBAR_POS_X0, BUSBAR_Y0, M5_DECK_THICK + 15.0, bb_dx, bb_dy, bb_dz,
         body_name="power_busbar_5stud_pos",
     )
     fillet_parallel_edges(comp, bus_pos, "z", COMP_FILLET_R)
-    add_m8_busbar_studs(bus_pos, BUSBAR_POS_X0, BUSBAR_Y0, M5_DECK_THICK + 10.0 + bb_dz)
+    add_m8_busbar_studs(bus_pos, BUSBAR_POS_X0, BUSBAR_Y0, M5_DECK_THICK + 15.0 + bb_dz)
     apply_color(app, design, bus_pos, *COL_POWER_GOLD)
 
     bus_neg = add_box_feature(
-        comp, BUSBAR_NEG_X0, BUSBAR_Y0, M5_DECK_THICK + 10.0, bb_dx, bb_dy, bb_dz,
+        comp, BUSBAR_NEG_X0, BUSBAR_Y0, M5_DECK_THICK + 15.0, bb_dx, bb_dy, bb_dz,
         body_name="power_busbar_5stud_neg",
     )
     fillet_parallel_edges(comp, bus_neg, "z", COMP_FILLET_R)
-    add_m8_busbar_studs(bus_neg, BUSBAR_NEG_X0, BUSBAR_Y0, M5_DECK_THICK + 10.0 + bb_dz)
+    add_m8_busbar_studs(bus_neg, BUSBAR_NEG_X0, BUSBAR_Y0, M5_DECK_THICK + 15.0 + bb_dz)
     apply_color(app, design, bus_neg, *COL_POWER_GOLD)
 
     if not import_positioned_step(
@@ -2047,14 +2049,12 @@ def run(context: dict) -> None:
 
         root = design.rootComponent
 
-        # Build the 7 structured sub-assemblies (including separate Lid and 3D swept wiring harness)
+        # Build the clean Main Housing, Lid, side-wall port cutouts, and internal routing troughs
         build_frame_and_panels(app, design, root)
         build_battery_zone_outboard(app, design, root)
         _bus_comp, sill_holes_xz = build_center_bus_column(app, design, root)
         build_inverter_plate_assembly(app, design, root, sill_holes_xz)
         build_inboard_garmin_lane(app, design, root)
-        build_electrical_components(app, design, root)
-        build_wiring_harness_3d_pipes(app, design, root)
 
         # Fit camera to full assembly in isometric view
         vp = app.activeViewport
