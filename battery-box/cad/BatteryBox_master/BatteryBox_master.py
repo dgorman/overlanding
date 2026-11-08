@@ -1296,6 +1296,18 @@ def build_center_bus_column(
         cut_blind_m5_tapered_bores(comp, sh, M5_DECK_THICK, plate_m5)
         apply_color(app, design, sh, *COL_PRINT_ORANGE)
 
+    # 7. 2x Full-Length 10 mm Bus Bar Riser Spacers (155 x 35 x 10 mm, 2x Ø5.5 mm M5 clearance holes at 134 mm c-c)
+    bb_dx, bb_dy, _bb_dz = COMP_SPECS["busbar_5stud"]["dims"]
+    for sp_idx, bx0 in enumerate((BUSBAR_POS_X0, BUSBAR_NEG_X0)):
+        sp_body = add_box_feature(
+            comp, bx0, BUSBAR_Y0, M5_DECK_THICK, bb_dx, bb_dy, 10.0,
+            body_name=f"print_busbar_spacer_{sp_idx}",
+        )
+        fillet_parallel_edges(comp, sp_body, "z", 3.0)
+        sp_holes = [(bx0 + du, BUSBAR_Y0 + dv, M5_DECK_THICK, 2.75) for (du, dv) in COMP_SPECS["busbar_5stud"]["holes_xy"]]
+        cut_cylinders_on_plane(comp, sp_body, "z", M5_DECK_THICK - 0.5, 11.0, sp_holes)
+        apply_color(app, design, sp_body, *COL_PRINT_ORANGE)
+
     return comp, sill_holes_xz
 
 
@@ -1582,17 +1594,17 @@ def build_electrical_components(
         b_dx, b_dy, b_dz = COMP_SPECS["breaker_285"]["dims"]
         build_bussmann_285_breaker(app, design, comp, br_x, br_y, br_z, b_dx, b_dy, b_dz, r)
 
-    # 3. 2x Covered 5-Stud M8 Bus Bars (+ Red and - Black) & Real Victron SmartShunt 500A STEP
+    # 3. 2x Covered 5-Stud M8 Bus Bars (+ Red and - Black, lifted 10 mm on print_busbar_spacer_0..1) & Real Victron SmartShunt 500A STEP
     bb_dx, bb_dy, bb_dz = COMP_SPECS["busbar_5stud"]["dims"]
     bus_pos = add_box_feature(
-        comp, BUSBAR_POS_X0, BUSBAR_Y0, M5_DECK_THICK, bb_dx, bb_dy, bb_dz,
+        comp, BUSBAR_POS_X0, BUSBAR_Y0, M5_DECK_THICK + 10.0, bb_dx, bb_dy, bb_dz,
         body_name="power_busbar_5stud_pos",
     )
     fillet_parallel_edges(comp, bus_pos, "z", COMP_FILLET_R)
     apply_color(app, design, bus_pos, *COL_POWER_GOLD)
 
     bus_neg = add_box_feature(
-        comp, BUSBAR_NEG_X0, BUSBAR_Y0, M5_DECK_THICK, bb_dx, bb_dy, bb_dz,
+        comp, BUSBAR_NEG_X0, BUSBAR_Y0, M5_DECK_THICK + 10.0, bb_dx, bb_dy, bb_dz,
         body_name="power_busbar_5stud_neg",
     )
     fillet_parallel_edges(comp, bus_neg, "z", COMP_FILLET_R)

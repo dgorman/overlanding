@@ -3108,9 +3108,20 @@ def build_v13(a):
                 if xa + 6 < hx_s < xb - 6:
                     sh = sh.cut(m5_bore(hx_s, hy_s, M5_DECK, M5_BLIND))   # BLIND from the top, 8° tapered mouth
         add(a, sh, f"print_bus_shelf_{i}", ORANGE)
+    bus_sp_idx = 0
     for pl in (V13_SHORT["col"] if short else V13_COL):
         c = COMPONENTS[pl["comp"]]
-        at = (pl["x"], y0s + 6 + pl["y"], M5_DECK)
+        is_busbar = pl["comp"].startswith("busbar_")
+        sp_h = 10.0 if is_busbar else 0.0
+        if is_busbar:
+            sp_at = (pl["x"], y0s + 6 + pl["y"], M5_DECK)
+            sp = box(c.d, c.w, sp_h, sp_at).edges("|Z").fillet(3.0)
+            hkey_sp = {"busbar_px": "busbar_p", "busbar_nx": "busbar_n"}.get(pl["comp"], pl["comp"])
+            for (hu, hv) in HOLES.get(hkey_sp, ()):
+                sp = sp.cut(cq.Workplane("XY").center(sp_at[0] + hu, sp_at[1] + hv).circle(2.75).extrude(sp_h + 2.0).translate((0, 0, sp_at[2] - 1.0)))
+            add(a, sp, f"print_busbar_spacer_{bus_sp_idx}", ORANGE)
+            bus_sp_idx += 1
+        at = (pl["x"], y0s + 6 + pl["y"], M5_DECK + sp_h)
         col = BLUE if c.name.startswith("victron") else GOLD
         add(a, victron_shape(pl["comp"], c.d, c.w, c.h, at, unit_fallback(pl["comp"], c.d, c.w, c.h, at)), c.name + f"_shelf_{int(pl['x'])}", col)
     # --- Garmin PowerSwitch on a printed HANGER PLATE from the top inboard rail (2026-10-30, user's idea) ------------

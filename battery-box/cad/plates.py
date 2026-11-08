@@ -112,6 +112,7 @@ PLATES = {   # plate name: list of (file, rotation about Z, (x, y) of the boundi
     "plate_breaker_shelf": [("print_breaker_shelf_0.stl", 0, None)],   # one shelf (print it twice: two do not fit a bed)
     "plate_inverter_splines": [("print_plate_inverter_spline_*.stl", 0, None)],   # all the plate's splines in a row
     "plate_stack_straps": [("print_stack_strap_*.stl", 0, None)],   # the four IceBox stack straps on one bed
+    "plate_busbar_spacers": [("print_busbar_spacer_*.stl", 0, None)],   # both 10 mm bus bar riser spacers on one bed
     "plate_inverter_posts": [("print_post_inverter_0.stl", 45, (6, 32)), ("print_post_inverter_1.stl", 45, (32, 6)),   # 254 posts at
                              ("print_post_clip_0.stl", 0, (6, 210)), ("print_post_clip_1.stl", 0, (205, 6))],        # 45 deg, clips in the corners
 }
