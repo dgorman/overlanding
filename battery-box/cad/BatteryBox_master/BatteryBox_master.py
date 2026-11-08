@@ -285,21 +285,65 @@ def pt3d(x_mm: float, y_mm: float, z_mm: float) -> adsk.core.Point3D:
 def register_user_parameters(design: adsk.fusion.Design) -> None:
     """Register key top-level dimensions into Fusion's Change Parameters table."""
     params = [
-        ("BOX_DEPTH_X", BOX_DEPTH_X, "mm", "Overall box depth (front-to-back)"),
-        ("BOX_WIDTH_Y", BOX_WIDTH_Y, "mm", "Overall box width (outboard-to-inboard)"),
-        ("BOX_HEIGHT_Z", BOX_HEIGHT_Z, "mm", "Overall box frame height (excluding 6mm top lid)"),
-        ("RAIL_PROFILE", RAIL_PROFILE, "mm", "Metric 25-series extrusion width"),
-        ("CORNER_CUBE", CORNER_CUBE, "mm", "Goose Gear corner cube dimension"),
-        ("PANEL_THICK", PANEL_THICK, "mm", "Phenolic plywood panel thickness"),
+        ("BOX_DEPTH_X", BOX_DEPTH_X, "mm", "Overall enclosure length/depth along X (front-to-back)"),
+        ("BOX_WIDTH_Y", BOX_WIDTH_Y, "mm", "Overall enclosure width along Y (outboard-to-inboard)"),
+        ("BOX_HEIGHT_Z", BOX_HEIGHT_Z, "mm", "Overall enclosure frame height along Z (excluding 6mm lid)"),
+        ("LID_THICK", LID_THICK, "mm", "Top enclosure lid thickness"),
+        ("LID_LIP_DEPTH", PANEL_TONGUE, "mm", "Lid and panel tongue/lip registration depth"),
+        ("RAIL_PROFILE", RAIL_PROFILE, "mm", "Metric 25-series MaxLite aluminum rail profile width"),
+        ("RAIL_SLOT_W", RAIL_SLOT_W, "mm", "Metric 25-series T-slot opening width for 1/4-20 T-nuts"),
+        ("CORNER_CUBE", CORNER_CUBE, "mm", "Goose Gear 3-way corner cube outer dimension"),
+        ("PANEL_THICK", PANEL_THICK, "mm", "Slot-captured enclosure wall panel thickness"),
+        ("PANEL_TONGUE", PANEL_TONGUE, "mm", "Panel tongue depth captured in rail centerline slots"),
+        ("WALL_THICK_PAHT_CF", INVERTER_PLATE_THICK, "mm", "PAHT-CF structural inverter plate & post wall thickness"),
+        ("WALL_THICK_PETG_CF", TRAY_WALL_THICK, "mm", "PETG-CF battery tray, hanger & panel wall thickness"),
+        ("TRAY_WALL_THICK", TRAY_WALL_THICK, "mm", "Battery tray outboard & end wall thickness (PETG-CF)"),
+        ("TRAY_INBOARD_WALL", TRAY_INBOARD_WALL, "mm", "Thickened battery tray inboard wall for M4 heat-set inserts"),
+        ("TRAY_FLOOR_THICK", TRAY_FLOOR_THICK, "mm", "Battery tray floor thickness"),
+        ("TRAY_LIP_H", TRAY_LIP_H, "mm", "Battery tray containment pocket wall height"),
         ("TRAY_CLEARANCE", TRAY_CLEARANCE, "mm", "Per-side battery pocket clearance"),
         ("M5_DECK_THICK", M5_DECK_THICK, "mm", "Thickened deck for blind M5 heat-set inserts"),
-        ("DROP_SHELF_WIRE_RELIEF_Y", DROP_SHELF_WIRE_RELIEF_Y, "mm", "Back relief for 13.5mm 4-AWG wire channel"),
+        ("BUS_SHELF_WALL_H", BUS_SHELF_WALL_H, "mm", "Center bus column wire-routing trough wall height"),
+        ("BUS_SHELF_OUT_LIP_T", BUS_SHELF_OUT_LIP_T, "mm", "Bus shelf outboard lip thickness bolted to battery trays"),
+        ("BUS_SHELF_IN_WALL_T", BUS_SHELF_IN_WALL_T, "mm", "Bus shelf inboard sill wall thickness bolted to inverter plate"),
+        ("INVERTER_PLATE_THICK", INVERTER_PLATE_THICK, "mm", "PAHT-CF inverter mounting plate thickness"),
+        ("DROP_SHELF_WIRE_RELIEF_Y", DROP_SHELF_WIRE_RELIEF_Y, "mm", "Back relief for 17mm 4-AWG wire channel"),
+        ("CUBE_FILLET_R", CUBE_FILLET_R, "mm", "Corner cube edge fillet radius"),
+        ("STRAP_FILLET_R", STRAP_FILLET_R, "mm", "IceBox stack strap corner fillet radius"),
+        ("WINDOW_FILLET_R", WINDOW_FILLET_R, "mm", "70x70mm inverter plate cable window corner fillet radius"),
+        ("COMP_FILLET_R", COMP_FILLET_R, "mm", "Component & busbar spacer corner fillet radius"),
+        ("BATT_FILLET_R", BATT_FILLET_R, "mm", "SuperPack 60Ah battery housing corner fillet radius"),
+        ("M6_TERM_DIA", 6.0, "mm", "Victron SuperPack M6 battery terminal post diameter"),
+        ("M6_BATT0_POS_X", 59.5, "mm", "Battery 0 (rear) M6 positive terminal X coordinate"),
+        ("M6_BATT0_NEG_X", 232.5, "mm", "Battery 0 (rear) M6 negative terminal X coordinate"),
+        ("M6_BATT1_POS_X", 339.0, "mm", "Battery 1 (front) M6 positive terminal X coordinate"),
+        ("M6_BATT1_NEG_X", 512.0, "mm", "Battery 1 (front) M6 negative terminal X coordinate"),
+        ("M6_BATT_TERM_Y", 101.5, "mm", "SuperPack 60Ah M6 terminal centerline Y coordinate"),
+        ("M6_BREAKER_STUD_DIA", 6.4, "mm", "Eaton Bussmann 285 breaker M6/1/4-28 stud diameter"),
+        ("M8_BUSBAR_STUD_DIA", 8.0, "mm", "5-stud 250A bus bar M8 terminal stud diameter"),
+        ("M8_BUSBAR_POS_X0", BUSBAR_POS_X0, "mm", "Positive 5-stud M8 bus bar X origin on bus shelf"),
+        ("M8_BUSBAR_NEG_X0", BUSBAR_NEG_X0, "mm", "Negative 5-stud M8 bus bar X origin on bus shelf"),
+        ("M8_BUSBAR_STUD_Y", 217.5, "mm", "Single-row M8 bus bar stud line Y coordinate"),
+        ("M8_BUSBAR_STUD_PITCH", 22.0, "mm", "Center-to-center X pitch of the 5x M8 bus bar studs"),
+        ("M10_SHUNT_STUD_DIA", 10.0, "mm", "Victron SmartShunt 500A M10 terminal stud diameter"),
+        ("M10_SHUNT_X0", SMARTSHUNT_X0, "mm", "Victron SmartShunt 500A X origin on bus shelf"),
+        ("M10_SHUNT_STUD_Y", 216.0, "mm", "Victron SmartShunt 500A M10 stud line Y coordinate"),
+        ("UNC_25_CLEAR_DIA", UNC_25_CLEAR_DIA, "mm", "1/4-20 rail T-nut bolt clearance hole diameter"),
+        ("M4_CLEAR_DIA", M4_CLEAR_DIA, "mm", "M4 button-head bolt clearance hole diameter"),
+        ("M4_INSERT_BORE_DIA", M4_INSERT_BORE_DIA, "mm", "McMaster 94180A353/351 M4 heat-set insert bore diameter"),
+        ("M5_INSERT_BORE_DIA", M5_INSERT_BORE_DIA, "mm", "McMaster 94180A361 tapered M5 heat-set insert bore diameter"),
+        ("H2D_MAX_X", BED_H2D[0], "mm", "Bambu Lab H2D build plate max X dimension"),
+        ("H2D_MAX_Y", BED_H2D[1], "mm", "Bambu Lab H2D build plate max Y dimension"),
+        ("H2D_MAX_Z", BED_H2D[2], "mm", "Bambu Lab H2D build plate max Z height"),
         ("TILE_MAX_MM", TILE_MAX_MM, "mm", f"Max inverter plate tile size ({PRINTER_PRESET} preset)"),
     ]
     user_params = design.userParameters
     for name, number, unit, comment in params:
         existing = user_params.itemByName(name)
-        if not existing:
+        if existing:
+            existing.expression = f"{number} {unit}"
+            existing.comment = comment
+        else:
             user_params.add(name, adsk.core.ValueInput.createByString(f"{number} {unit}"), unit, comment)
 
 
@@ -1013,8 +1057,17 @@ def build_frame_and_panels(
     apply_color(app, design, p_front_out, *COL_PRINT_ORANGE)
     apply_color(app, design, p_front_in, *COL_PRINT_ORANGE)
 
-    # 4. Top Flat Lid Panel (571.5 x 488.1 x 6.0 mm, no top handles)
-    lid = add_box_feature(panel_comp, 0.0, 0.0, BOX_HEIGHT_Z, BOX_DEPTH_X, BOX_WIDTH_Y, LID_THICK, body_name="lid_from_icebox_top")
+    # 4. Separate Top Lid Sub-Component (571.5 x 488.1 x 6.0 mm + perimeter T-nut holes)
+    lid_comp = create_subcomponent(root, "01c_Enclosure_Top_Lid")
+    lid = add_box_feature(lid_comp, 0.0, 0.0, BOX_HEIGHT_Z, BOX_DEPTH_X, BOX_WIDTH_Y, LID_THICK, body_name="lid_from_icebox_top")
+    fillet_parallel_edges(lid_comp, lid, "z", CUBE_FILLET_R)
+    lid_bolts = [
+        (120.0, B / 2.0, BOX_HEIGHT_Z + LID_THICK),
+        (BOX_DEPTH_X - 120.0, B / 2.0, BOX_HEIGHT_Z + LID_THICK),
+        (120.0, BOX_WIDTH_Y - B / 2.0, BOX_HEIGHT_Z + LID_THICK),
+        (BOX_DEPTH_X - 120.0, BOX_WIDTH_Y - B / 2.0, BOX_HEIGHT_Z + LID_THICK),
+    ]
+    cut_countersink_14_20(lid_comp, lid, "z", BOX_HEIGHT_Z + LID_THICK, -1.0, lid_bolts, LID_THICK)
     apply_color(app, design, lid, *COL_PANEL_PLY)
 
     # 5. 4x Printed IceBox Stack Straps (60 x 46 x 6 mm across bottom depth rail seam, 82° countersunk)
@@ -1039,18 +1092,12 @@ def build_frame_and_panels(
                 body_name=st_name,
             )
             fillet_parallel_edges(comp, st, "y", STRAP_FILLET_R)
-            hole_list = []
             csk_centers = []
             for dx in (-STRAP_PITCH_X / 2.0, STRAP_PITCH_X / 2.0):
-                hole_list.append((sx + dx, y_start, -STRAP_PITCH_Z / 2.0, UNC_25_CLEAR_DIA / 2.0))
-                hole_list.append((sx + dx, y_start, +STRAP_PITCH_Z / 2.0, UNC_25_CLEAR_DIA / 2.0))
-                hole_list.append((sx + dx, y_start, +STRAP_PITCH_Z / 2.0 + STRAP_SLOT_FLOAT_Z / 2.0, UNC_25_CLEAR_DIA / 2.0))
-                hole_list.append((sx + dx, y_start, +STRAP_PITCH_Z / 2.0 - STRAP_SLOT_FLOAT_Z / 2.0, UNC_25_CLEAR_DIA / 2.0))
                 csk_centers.append((sx + dx, y_outer, -STRAP_PITCH_Z / 2.0))
                 csk_centers.append((sx + dx, y_outer, +STRAP_PITCH_Z / 2.0 - STRAP_SLOT_FLOAT_Z / 2.0))
                 csk_centers.append((sx + dx, y_outer, +STRAP_PITCH_Z / 2.0))
                 csk_centers.append((sx + dx, y_outer, +STRAP_PITCH_Z / 2.0 + STRAP_SLOT_FLOAT_Z / 2.0))
-            cut_cylinders_on_plane(comp, st, "y", y_start - 0.5, STRAP_T_Y + 1.0, hole_list)
             cut_countersink_14_20(comp, st, "y", y_outer, dir_in, csk_centers, with_floor_head_relief=False)
             apply_color(app, design, st, *COL_PRINT_ORANGE)
 
@@ -1296,11 +1343,13 @@ def build_center_bus_column(
         cut_blind_m5_tapered_bores(comp, sh, M5_DECK_THICK, plate_m5)
         apply_color(app, design, sh, *COL_PRINT_ORANGE)
 
-    # 7. 2x Full-Length 10 mm Bus Bar Riser Spacers (155 x 35 x 10 mm, 2x Ø5.5 mm M5 clearance holes at 134 mm c-c)
-    bb_dx, bb_dy, _bb_dz = COMP_SPECS["busbar_5stud"]["dims"]
+    # 7. 2x Full-Length 10 mm Bus Bar Riser Spacers (155 x 25.4 x 10 mm [1.0 in wide], 2x Ø5.5 mm M5 clearance holes at 134 mm c-c)
+    bb_dx, _bb_dy, _bb_dz = COMP_SPECS["busbar_5stud"]["dims"]
+    sp_w_y = 25.4
+    sp_y0 = BUSBAR_Y0 + 16.0 - sp_w_y / 2.0
     for sp_idx, bx0 in enumerate((BUSBAR_POS_X0, BUSBAR_NEG_X0)):
         sp_body = add_box_feature(
-            comp, bx0, BUSBAR_Y0, M5_DECK_THICK, bb_dx, bb_dy, 10.0,
+            comp, bx0, sp_y0, M5_DECK_THICK, bb_dx, sp_w_y, 10.0,
             body_name=f"print_busbar_spacer_{sp_idx}",
         )
         fillet_parallel_edges(comp, sp_body, "z", 3.0)
@@ -1595,12 +1644,25 @@ def build_electrical_components(
         build_bussmann_285_breaker(app, design, comp, br_x, br_y, br_z, b_dx, b_dy, b_dz, r)
 
     # 3. 2x Covered 5-Stud M8 Bus Bars (+ Red and - Black, lifted 10 mm on print_busbar_spacer_0..1) & Real Victron SmartShunt 500A STEP
+    def add_m8_busbar_studs(bus_body: adsk.fusion.BRepBody, bx0: float, by0: float, bz_top: float) -> None:
+        stud_plane = create_offset_plane(comp, "z", bz_top - 2.0)
+        stud_sketch = comp.sketches.add(stud_plane)
+        circles = stud_sketch.sketchCurves.sketchCircles
+        for k in range(5):
+            sx = bx0 + 33.5 + k * 22.0
+            sy = by0 + 17.5
+            circles.addByCenterRadius(sketch_world_point(stud_sketch, sx, sy, bz_top - 2.0), cm(4.0))
+        extrude_all_profiles(
+            comp, stud_sketch, "z", 12.0, adsk.fusion.FeatureOperations.JoinFeatureOperation, bus_body
+        )
+
     bb_dx, bb_dy, bb_dz = COMP_SPECS["busbar_5stud"]["dims"]
     bus_pos = add_box_feature(
         comp, BUSBAR_POS_X0, BUSBAR_Y0, M5_DECK_THICK + 10.0, bb_dx, bb_dy, bb_dz,
         body_name="power_busbar_5stud_pos",
     )
     fillet_parallel_edges(comp, bus_pos, "z", COMP_FILLET_R)
+    add_m8_busbar_studs(bus_pos, BUSBAR_POS_X0, BUSBAR_Y0, M5_DECK_THICK + 10.0 + bb_dz)
     apply_color(app, design, bus_pos, *COL_POWER_GOLD)
 
     bus_neg = add_box_feature(
@@ -1608,6 +1670,7 @@ def build_electrical_components(
         body_name="power_busbar_5stud_neg",
     )
     fillet_parallel_edges(comp, bus_neg, "z", COMP_FILLET_R)
+    add_m8_busbar_studs(bus_neg, BUSBAR_NEG_X0, BUSBAR_Y0, M5_DECK_THICK + 10.0 + bb_dz)
     apply_color(app, design, bus_neg, *COL_POWER_GOLD)
 
     if not import_positioned_step(
@@ -1809,6 +1872,84 @@ def build_electrical_components(
     return comp
 
 
+COL_WIRE_RED = ("Mat_Wire_Red_Pos", (215, 35, 35))
+COL_WIRE_BLACK = ("Mat_Wire_Black_Neg", (28, 30, 34))
+COL_WIRE_YELLOW = ("Mat_Wire_Solar_Yellow", (230, 175, 25))
+COL_WIRE_AC_BLUE = ("Mat_Wire_AC_Jacket", (45, 115, 210))
+
+
+def sweep_3d_pipe(
+    app: adsk.core.Application,
+    design: adsk.fusion.Design,
+    comp: adsk.fusion.Component,
+    wire_name: str,
+    waypoints_mm: list[tuple[float, float, float]],
+    dia_mm: float,
+    color_spec: tuple[str, tuple[int, int, int]],
+) -> adsk.fusion.BRepBody | None:
+    """Sweep a smooth 3D circular pipe body along a 3D fitted spline through waypoints_mm."""
+    path_sketch = comp.sketches.add(comp.xYConstructionPlane)
+    path_sketch.is3D = True
+    pts = adsk.core.ObjectCollection.create()
+    for wx, wy, wz in waypoints_mm:
+        pts.add(pt3d(wx, wy, wz))
+    spline = path_sketch.sketchCurves.sketchFittedSplines.add(pts)
+    path_sketch.isLightBulbOn = False
+
+    plane_input = comp.constructionPlanes.createInput()
+    plane_input.setByDistanceOnPath(spline, adsk.core.ValueInput.createByReal(0.0))
+    prof_plane = comp.constructionPlanes.add(plane_input)
+    prof_plane.isLightBulbOn = False
+
+    prof_sketch = comp.sketches.add(prof_plane)
+    prof_sketch.sketchCurves.sketchCircles.addByCenterRadius(
+        sketch_world_point(prof_sketch, *waypoints_mm[0]), cm(dia_mm / 2.0)
+    )
+    prof_sketch.isLightBulbOn = False
+
+    path = comp.features.createPath(spline, False)
+    sweep_input = comp.features.sweepFeatures.createInput(
+        prof_sketch.profiles.item(0), path, adsk.fusion.FeatureOperations.NewBodyFeatureOperation
+    )
+    sweep = comp.features.sweepFeatures.add(sweep_input)
+    if sweep.bodies.count > 0:
+        wbody = sweep.bodies.item(0)
+        wbody.name = wire_name
+        apply_color(app, design, wbody, *color_spec)
+        return wbody
+    return None
+
+
+def build_wiring_harness_3d_pipes(
+    app: adsk.core.Application,
+    design: adsk.fusion.Design,
+    root: adsk.fusion.Component,
+) -> adsk.fusion.Component:
+    """07_Wiring_Harness_3D_Pipes: Complete 3D swept pipe harness through the wire channels, bus trough, and 70x70 cable window."""
+    comp = create_subcomponent(root, "07_Wiring_Harness_3D_Pipes")
+
+    sweep_3d_pipe(app, design, comp, "wire_4awg_batt0_pos_to_breaker0", [(59.5, 101.5, 219.0), (59.5, 48.0, 232.0), (85.0, 48.0, 255.0), (119.0, 154.4, 263.5)], 9.0, COL_WIRE_RED)
+    sweep_3d_pipe(app, design, comp, "wire_4awg_breaker0_to_pos_busbar", [(172.3, 127.7, 263.5), (184.0, 186.0, 246.0), (165.0, 202.0, 130.0), (76.5, 217.5, 58.0)], 9.0, COL_WIRE_RED)
+    sweep_3d_pipe(app, design, comp, "wire_4awg_batt1_pos_to_breaker1", [(339.0, 101.5, 219.0), (339.0, 48.0, 232.0), (365.0, 48.0, 255.0), (398.5, 154.4, 263.5)], 9.0, COL_WIRE_RED)
+    sweep_3d_pipe(app, design, comp, "wire_4awg_breaker1_to_pos_busbar", [(451.8, 127.7, 263.5), (451.8, 186.0, 246.0), (410.0, 244.0, 45.0), (240.0, 244.0, 32.0), (98.5, 217.5, 58.0)], 9.0, COL_WIRE_RED)
+    sweep_3d_pipe(app, design, comp, "wire_4awg_batt0_neg_to_shunt", [(232.5, 101.5, 219.0), (248.0, 178.0, 205.0), (254.0, 200.0, 110.0), (258.5, 216.0, 56.0)], 9.0, COL_WIRE_BLACK)
+    sweep_3d_pipe(app, design, comp, "wire_4awg_batt1_neg_to_shunt", [(512.0, 101.5, 219.0), (512.0, 182.0, 205.0), (470.0, 252.0, 38.0), (310.0, 252.0, 38.0), (258.5, 216.0, 56.0)], 9.0, COL_WIRE_BLACK)
+    sweep_3d_pipe(app, design, comp, "wire_4awg_shunt_sys_to_neg_busbar", [(313.5, 216.0, 56.0), (356.0, 216.5, 66.0), (399.5, 217.5, 58.0)], 9.0, COL_WIRE_BLACK)
+    sweep_3d_pipe(app, design, comp, "wire_4awg_pos_bus_to_multiplus", [(120.5, 217.5, 58.0), (180.0, 265.0, 24.0), (440.0, 275.0, 28.0), (455.0, 315.0, 62.0), (420.0, 345.0, 82.0)], 9.0, COL_WIRE_RED)
+    sweep_3d_pipe(app, design, comp, "wire_4awg_neg_bus_to_multiplus", [(421.5, 217.5, 58.0), (435.0, 265.0, 32.0), (472.0, 315.0, 58.0), (420.0, 365.0, 75.0)], 9.0, COL_WIRE_BLACK)
+    sweep_3d_pipe(app, design, comp, "wire_6awg_pos_bus_to_orion_xs", [(142.5, 217.5, 58.0), (220.0, 278.0, 22.0), (390.0, 282.0, 35.0), (405.0, 280.0, 118.0)], 7.0, COL_WIRE_RED)
+    sweep_3d_pipe(app, design, comp, "wire_6awg_alt_sb50_to_orion_xs", [(508.0, 355.0, 110.0), (482.0, 325.0, 92.0), (462.0, 285.0, 92.0), (435.0, 280.0, 118.0)], 7.0, COL_WIRE_RED)
+    sweep_3d_pipe(app, design, comp, "wire_10awg_pos_bus_to_mppt", [(164.5, 217.5, 58.0), (150.0, 268.0, 35.0), (125.0, 268.0, 62.0)], 5.5, COL_WIRE_YELLOW)
+    sweep_3d_pipe(app, design, comp, "wire_10awg_pos_bus_to_garmin", [(142.5, 217.5, 58.0), (320.0, 286.0, 26.0), (448.0, 306.0, 82.0), (410.0, 415.0, 135.0), (365.0, 440.0, 155.0)], 5.5, COL_WIRE_RED)
+    sweep_3d_pipe(app, design, comp, "wire_10awg_gnd_bus_to_neg_busbar", [(406.5, 435.0, 70.0), (445.0, 380.0, 68.0), (460.0, 290.0, 52.0), (443.5, 217.5, 58.0)], 5.5, COL_WIRE_BLACK)
+    sweep_3d_pipe(app, design, comp, "wire_10awg_garmin_to_front_sockets", [(450.0, 440.0, 180.0), (485.0, 410.0, 175.0), (516.0, 355.0, 165.0)], 6.0, COL_WIRE_RED)
+    sweep_3d_pipe(app, design, comp, "wire_2awg_pack2_umbilical_pos", [(508.0, 208.0, 110.0), (475.0, 258.0, 52.0), (280.0, 258.0, 20.0), (164.5, 217.5, 58.0)], 10.0, COL_WIRE_RED)
+    sweep_3d_pipe(app, design, comp, "wire_2awg_pack2_umbilical_neg", [(508.0, 222.0, 110.0), (495.0, 232.0, 82.0), (487.5, 217.5, 58.0)], 10.0, COL_WIRE_BLACK)
+    sweep_3d_pipe(app, design, comp, "wire_12awg_ac_shore_in_to_multiplus", [(501.0, 423.0, 72.0), (460.0, 405.0, 76.0), (420.0, 385.0, 85.0)], 9.5, COL_WIRE_AC_BLUE)
+    sweep_3d_pipe(app, design, comp, "wire_12awg_ac_inv_out_from_multiplus", [(501.0, 423.0, 142.0), (460.0, 405.0, 132.0), (420.0, 385.0, 115.0)], 9.5, COL_WIRE_AC_BLUE)
+    return comp
+
+
 # ==============================================================================
 # 4. MAIN ENTRY POINT FOR AUTODESK FUSION
 # ==============================================================================
@@ -1906,13 +2047,14 @@ def run(context: dict) -> None:
 
         root = design.rootComponent
 
-        # Build the 6 structured sub-assemblies
+        # Build the 7 structured sub-assemblies (including separate Lid and 3D swept wiring harness)
         build_frame_and_panels(app, design, root)
         build_battery_zone_outboard(app, design, root)
         _bus_comp, sill_holes_xz = build_center_bus_column(app, design, root)
         build_inverter_plate_assembly(app, design, root, sill_holes_xz)
         build_inboard_garmin_lane(app, design, root)
         build_electrical_components(app, design, root)
+        build_wiring_harness_3d_pipes(app, design, root)
 
         # Fit camera to full assembly in isometric view
         vp = app.activeViewport

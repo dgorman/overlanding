@@ -3114,11 +3114,13 @@ def build_v13(a):
         is_busbar = pl["comp"].startswith("busbar_")
         sp_h = 10.0 if is_busbar else 0.0
         if is_busbar:
-            sp_at = (pl["x"], y0s + 6 + pl["y"], M5_DECK)
-            sp = box(c.d, c.w, sp_h, sp_at).edges("|Z").fillet(3.0)
+            sp_w = 25.4   # 1.0 in wide spacer block centered on the M5 nutsert line (v = 16.0)
             hkey_sp = {"busbar_px": "busbar_p", "busbar_nx": "busbar_n"}.get(pl["comp"], pl["comp"])
+            sp_y0 = y0s + 6 + pl["y"] + 16.0 - sp_w / 2.0
+            sp_at = (pl["x"], sp_y0, M5_DECK)
+            sp = box(c.d, sp_w, sp_h, sp_at).edges("|Z").fillet(3.0)
             for (hu, hv) in HOLES.get(hkey_sp, ()):
-                sp = sp.cut(cq.Workplane("XY").center(sp_at[0] + hu, sp_at[1] + hv).circle(2.75).extrude(sp_h + 2.0).translate((0, 0, sp_at[2] - 1.0)))
+                sp = sp.cut(cq.Workplane("XY").center(pl["x"] + hu, y0s + 6 + pl["y"] + hv).circle(2.75).extrude(sp_h + 2.0).translate((0, 0, sp_at[2] - 1.0)))
             add(a, sp, f"print_busbar_spacer_{bus_sp_idx}", ORANGE)
             bus_sp_idx += 1
         at = (pl["x"], y0s + 6 + pl["y"], M5_DECK + sp_h)
