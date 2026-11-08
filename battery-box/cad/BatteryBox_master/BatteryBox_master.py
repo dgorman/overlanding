@@ -492,14 +492,14 @@ def cut_countersink_14_20(
         csk_cones,
         taper_deg=-41.0,
     )
-    # 3. Optional Ø14.0 x 10.0 mm floor head_relief pocket (carves 2x-long screw-head & insertion-angle clearance into tray & bus-shelf floors)
+    # 3. Optional Ø14.0 x 15.0 mm (0.6 in) floor head_relief pocket (lets a 1/2 in / 12.7 mm flat-head screw sit flat before entering the hole)
     if with_floor_head_relief:
         cut_cylinders_on_plane(
             comp,
             target_body,
             axis,
-            face_pos_mm - inward_sign * 10.0,
-            inward_sign * 10.05,
+            face_pos_mm - inward_sign * 15.0,
+            inward_sign * 15.05,
             csk_cones,
         )
 

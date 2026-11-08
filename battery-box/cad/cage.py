@@ -2812,10 +2812,10 @@ V13_SHORT = dict(   # the 635 mm box (2026-10-24 layout): ONE ROW of charge gear
 COUNTERSINKS = []   # (part name, face point, unit axis INTO the part): every conical countersink, for check_countersinks (--clash)
 
 
-def head_relief(face_pt, axis_in, r=7.0, depth=10.0):
+def head_relief(face_pt, axis_in, r=7.0, depth=15.0):
     """Clearance for a flat head whose axis runs close to a floor: a cylinder about the bolt axis, from the wall's face OUT into
-    the space in front of it, so the head's lower edge cannot stand on the floor and the screw can angle into the bore (2026-11-07:
-    doubled from 5.0 mm to 10.0 mm so 1/4-20 x 1/2 in flat-head screws have plenty of length to angle into the bus shelf end walls)."""
+    the space in front of it, so the head's lower edge cannot stand on the floor and a 1/2 in (12.7 mm) screw can lie flat in the
+    15.0 mm (0.6 in) pocket before entering the bore (2026-11-07)."""
     ax = cq.Vector(*axis_in).normalized()
     return cq.Workplane("XY").add(cq.Solid.makeCylinder(r, depth, cq.Vector(*face_pt) + ax * 0.01, ax * -1.0))
 
