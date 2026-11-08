@@ -3244,6 +3244,8 @@ def build_v13(a):
             shp = shp.cut(window)
         shp = shp.cut(box(12, P["card_t"] + 2, 30 - zp + 1, (px0 - 1, yp - 1, zp - 1)))              # bottom corners clear the posts' solid sills
         shp = shp.cut(box(12, P["card_t"] + 2, 30 - zp + 1, (px1 - 11, yp - 1, zp - 1)))
+        if nm == "print_plate_inverter_tile_10":                                                      # extend +X post fin (Z = 30..zp+hp) by 2.5 mm; all holes unchanged
+            shp = shp.union(box(2.5, P["card_t"], zp + hp - 30.0, (px1, yp, 30.0)))
         if not lid_slot and not one_piece_posts:
             shp = shp.cut(box(14, P["card_t"] + 2, 40, (px0 - 1, yp - 1, hpost - 0.6)))              # top corners clear the post clips (legacy P1P only)
             shp = shp.cut(box(14, P["card_t"] + 2, 40, (px1 - 13, yp - 1, hpost - 0.6)))

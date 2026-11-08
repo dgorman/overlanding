@@ -1504,6 +1504,12 @@ def build_inverter_plate_assembly(
                     comp, px1 - 12.0, yp - 0.5, zp - 0.5, 12.5, pt + 1.0, POST_SLOT_Z0 - zp + 0.5,
                     adsk.fusion.FeatureOperations.CutFeatureOperation, tile,
                 )
+            if i == nx - 1:
+                # Extend +X vertical post fin (Z = POST_SLOT_Z0..tz_hi) by 2.5 mm into front post slot; all holes unchanged
+                add_box_feature(
+                    comp, px1, yp, POST_SLOT_Z0, 2.5, pt, tz_hi - POST_SLOT_Z0,
+                    adsk.fusion.FeatureOperations.JoinFeatureOperation, tile,
+                )
 
             # 70 x 70 mm Filleted Cable Pass-Through Window (X = 426.5..496.5, Z = 40..110 mm)
             if CABLE_WINDOW_X1 > tx0 and CABLE_WINDOW_X0 < tx0 + tw and CABLE_WINDOW_Z1 > tz_lo and CABLE_WINDOW_Z0 < tz_hi:
