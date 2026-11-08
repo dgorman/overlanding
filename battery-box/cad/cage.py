@@ -474,10 +474,9 @@ if P["card_plane"] == "v12":   # v12 and v13 share one front panel: the port str
     FRONT_PORTS = [("l14_30_in", 423, 65), ("l14_30_out", 423, 135), ("socket", 423, 190, 29),            # (v13's batteries run the outboard
                    ("sb50_solar", 370, 60), ("sb50_alt", 370, 116), ("socket", 370, 160, 22), ("socket", 370, 193, 22),   # side to the front; its plate's
                    ("socket", 338, 150, 29), ("socket", 338, 190, 29)]                                                   # front post ends at y 315)
-if P.get("icebox_front") in ("bezel", "side"):   # v12s / master port strip: 1 x 12V socket, 2 x round sockets (USB + solar Powerpole), SB50 alt, 2 x L14-30, SB50 pack
-    FRONT_PORTS = [("l14_30_in", 423, 72), ("l14_30_out", 423, 142),
-                   ("sb50_alt", 370, 118), ("socket", 370, 162, 22), ("socket", 370, 195, 22),
-                   ("socket", 338, 157, 29),
+if P.get("icebox_front") in ("bezel", "side"):   # v12s / master port strip: 2 clean columns on inverter side (Y = 355 & 423) + SB50 pack at Y = 215
+    FRONT_PORTS = [("l14_30_in", 423, 72), ("l14_30_out", 423, 142), ("socket", 423, 215, 22),
+                   ("sb50_alt", 355, 110), ("socket", 355, 165, 29), ("socket", 355, 215, 22),
                    ("sb50_pack", 215, 110)]   # SB50 umbilical inlet for the add-on pack, in front of the bus column, clear of the breakers on the plate
 INLET_BODY = {"l14": (60.0, 55.0), "sb50": (48.0, 37.0, 48.0), "sb175": (79.0, 56.0, 26.0)}   # (dia, depth) or (depth, w, h)
 N_BATT = 4

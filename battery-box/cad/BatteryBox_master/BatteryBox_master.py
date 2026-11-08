@@ -246,10 +246,10 @@ COMP_SPECS: dict[str, dict] = {
 FRONT_PANEL_PORTS: list[tuple[str, str, float, float, tuple[float, ...], float]] = [
     ("l14_30_shore_in", "circle", 423.0, 72.0, (60.0,), 55.0),
     ("l14_30_inv_out", "circle", 423.0, 142.0, (60.0,), 55.0),
-    ("sb50_alt_in", "rect", 370.0, 118.0, (37.0, 48.0), 48.0),
-    ("socket_usb_low", "circle", 370.0, 162.0, (22.0,), 40.0),
-    ("socket_usb_high", "circle", 370.0, 195.0, (22.0,), 40.0),
-    ("socket_12v_aux", "circle", 338.0, 157.0, (29.0,), 40.0),
+    ("socket_usb_high", "circle", 423.0, 215.0, (22.0,), 40.0),
+    ("sb50_alt_in", "rect", 355.0, 110.0, (37.0, 48.0), 48.0),
+    ("socket_12v_aux", "circle", 355.0, 165.0, (29.0,), 40.0),
+    ("socket_usb_low", "circle", 355.0, 215.0, (22.0,), 40.0),
     ("sb50_pack2_umbilical", "rect", 215.0, 110.0, (37.0, 48.0), 48.0),
 ]
 
