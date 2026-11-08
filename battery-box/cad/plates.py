@@ -73,8 +73,19 @@ def flat(tris):
     return face_down(max(face_areas(tris).items(), key=lambda kv: kv[1])[0])(tris)
 
 
+def flat_y_long(tris):
+    """Lie flat on Z=0 with the longer horizontal dimension along Y (so Bambu H2D X-axis auto-arrange packs side-by-side)."""
+    t = flat(tris)
+    lo = [min(v[k] for tri in t for v in tri) for k in range(3)]
+    hi = [max(v[k] for tri in t for v in tri) for k in range(3)]
+    if (hi[0] - lo[0]) > (hi[1] - lo[1]):
+        t = [ [(-v[1], v[0], v[2]) for v in tri] for tri in t ]
+    return t
+
+
 ORIENT_RULES = [   # (file-name prefix, orientation); first match wins; anything else prints as modelled
     ("print_breaker_shelf", edge_x_up),         # 130 mm edge vertical: every wall upright, the plate and leg need no support
+    ("print_busbar_spacer", flat_y_long),       # 35 mm (X) x 155 mm (Y) x 10 mm (Z) so H2D X-arrange packs them 82 x 155 mm
     ("print_post_inverter", flat),              # on the solid back, slot up, sill bolt hole vertical
     ("print_post_clip", flat),                  # on the plain outer face, countersink up
     ("print_plate_inverter_tile", flat),        # on the plain back: pilot holes and the half-lap rabbets face up
@@ -112,7 +123,7 @@ PLATES = {   # plate name: list of (file, rotation about Z, (x, y) of the boundi
     "plate_breaker_shelf": [("print_breaker_shelf_0.stl", 0, None)],   # one shelf (print it twice: two do not fit a bed)
     "plate_inverter_splines": [("print_plate_inverter_spline_*.stl", 0, None)],   # all the plate's splines in a row
     "plate_stack_straps": [("print_stack_strap_*.stl", 0, None)],   # the four IceBox stack straps on one bed
-    "plate_busbar_spacers": [("print_busbar_spacer_0.stl", 0, (0, 0)), ("print_busbar_spacer_1.stl", 0, (0, 47))],   # side-by-side (155 x 82 mm)
+    "plate_busbar_spacers": [("print_busbar_spacer_0.stl", 0, (0, 0)), ("print_busbar_spacer_1.stl", 0, (47, 0))],   # side-by-side (82 x 155 mm)
     "plate_inverter_posts": [("print_post_inverter_0.stl", 45, (6, 32)), ("print_post_inverter_1.stl", 45, (32, 6)),   # 254 posts at
                              ("print_post_clip_0.stl", 0, (6, 210)), ("print_post_clip_1.stl", 0, (205, 6))],        # 45 deg, clips in the corners
 }
