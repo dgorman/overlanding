@@ -3083,8 +3083,9 @@ def build_v13(a):
             sh = sh.cut(box(P["post_d"] + 4, 14, 40, (out_D - B - P["post_d"] - 2, y1s - 10, -1)))   # corner notched around the plate's front post
         if i == 0:
             sh = sh.cut(box(P["post_d"] + 4, 14, 40, (x_in0 - 2, y1s - 10, -1)))                     # and the back post
-        for sx in (xa + 40, xb - 40):                                        # inserts in the plate's bottom band (bolts from the column side)
+        for sx in (xa_body + 40, xb - 40):                                   # on bus_shelf_1, the -X hole (closest to MPPT) moves 2.5 mm toward MPPT (xa_body + 40)
             sh = sh.cut(cq.Workplane("XZ").center(sx, 28).circle(2.3).extrude(-8).translate((0, y1s - 7, 0)))
+        for sx in (xa + 40, xb - 40):                                        # inserts in the plate's bottom band stay at nominal (xa + 40, xb - 40)
             g.setdefault("sill_holes", []).append((sx, 28.0))                  # -> the plate gets a pilot for each (found missing 2026-10-25)
         # --- WALL half-laps (2026-10-23): the floor BUTTS; the lip and the inboard wall each carry a 20 mm half-lap, the tongue
         # being the OUTER half of the wall standing on the bed from the floor to the wall top (it fills a matching notch cut through

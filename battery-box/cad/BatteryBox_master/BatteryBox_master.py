@@ -1334,9 +1334,12 @@ def build_center_bus_column(
         cut_cylinders_on_plane(comp, sh, "y", y0s - 0.5, BUS_SHELF_OUT_LIP_T + 1.0, lip_holes)
 
         # 5. Inboard sill wall M4 clearance holes (2 per plate at Z = 28.0 mm into inverter plate bottom band)
-        sill_pts = []
+        # On bus_shelf_1 (i == 1), the -X hole (closest to MPPT) moves 2.5 mm toward MPPT (xa_body + 40.0)
+        sill_pts = [
+            (xa_body + 40.0, y1s - cw, 28.0, M4_CLEAR_DIA / 2.0),
+            (xb - 40.0, y1s - cw, 28.0, M4_CLEAR_DIA / 2.0),
+        ]
         for sx in (xa + 40.0, xb - 40.0):
-            sill_pts.append((sx, y1s - cw, 28.0, M4_CLEAR_DIA / 2.0))
             sill_holes_xz.append((sx, 28.0))
         cut_cylinders_on_plane(comp, sh, "y", y1s - cw - 0.5, cw + 1.0, sill_pts)
 
