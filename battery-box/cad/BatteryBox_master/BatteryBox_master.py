@@ -201,7 +201,7 @@ COMP_SPECS: dict[str, dict] = {
     },
     "cerbo": {
         "dims": (154.0, 48.0, 78.0),
-        "pos": (190.0, INVERTER_PLATE_Y0 - 48.0 - 3.0, 175.0),  # Top holes at 175 + 68 = 243.0 mm (aligned with MPPT & Orion; top at 253 mm)
+        "pos": (190.0, INVERTER_PLATE_Y0 - 48.0 - 3.0, 116.0),  # Centerline Z = 116 + 39 = 155.0 mm (aligned with MPPT centerline Z = 62 + 93 = 155.0 mm)
         "holes_xz": [(5.5, 10.0), (148.5, 10.0), (5.5, 68.0), (148.5, 68.0)],
         "insert": "M4",
         "face_side": -1,
@@ -1335,12 +1335,14 @@ def build_center_bus_column(
 
         # 5. Inboard sill wall M4 clearance holes (2 per plate at Z = 28.0 mm into inverter plate bottom band)
         # On bus_shelf_1 (i == 1), the -X hole (closest to MPPT) moves 2.5 mm toward MPPT (xa_body + 40.0)
+        # On print_plate_inverter_tile_10 (sx > 285.75 mm), the 3 sill holes move +2.5 mm away from MPPT (+X)
         sill_pts = [
             (xa_body + 40.0, y1s - cw, 28.0, M4_CLEAR_DIA / 2.0),
             (xb - 40.0, y1s - cw, 28.0, M4_CLEAR_DIA / 2.0),
         ]
         for sx in (xa + 40.0, xb - 40.0):
-            sill_holes_xz.append((sx, 28.0))
+            sx_plate = (sx + 2.5) if sx > (INNER_X0 + INNER_X1) / 2.0 else sx
+            sill_holes_xz.append((sx_plate, 28.0))
         cut_cylinders_on_plane(comp, sh, "y", y1s - cw - 0.5, cw + 1.0, sill_pts)
 
         # 6. Blind M5 tapered heat-set insert bores in the 11 mm floor

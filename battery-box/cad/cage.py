@@ -2788,9 +2788,9 @@ V13_SHORT = dict(   # the 635 mm box (2026-10-24 layout): ONE ROW of charge gear
     # shunt; the Garmin turned 90 deg on the plate's INVERTER face above the cable window, 59 mm in front of the MultiPlus's cable end and
     # 18 mm behind the socket bodies, so only its feed passes through the window and its outputs run straight to the front-panel ports.
     # (comp, x, z, tag[, side]): side +1 = inverter face, default -1 = column face.
-    # Top mounting holes of all three units (MPPT 62+181=243, Cerbo 175+68=243, Orion 118+125=243) share the Z = 243.0 mm vector,
-    # keeping all unit tops (248..255 mm) 26.7..33.7 mm clear below the lid and all bottom holes clear of the z 137..161 lap.
-    units=(("mppt_up", 50.0, 62.0, "mppt"), ("cerbo", 190.0, 175.0, "cerbo"), ("orion", 354.0, 118.0, "orion"),
+    # MPPT (z=62..248, centerline z=155.0) and Cerbo GX (z=116..194, centerline z=155.0) share the Z = 155.0 mm horizontal centerline,
+    # giving 87.7 mm of headroom above the Cerbo GX for Cat6, VE.Can, and HDMI cables sticking up toward the lid.
+    units=(("mppt_up", 50.0, 62.0, "mppt"), ("cerbo", 190.0, 116.0, "cerbo"), ("orion", 354.0, 118.0, "orion"),
            ("breaker_face", out_D - 150.0, 110.0, "breaker1"), ("breaker_face", out_D - 150.0, 185.0, "breaker2")),   # (breakers: pre-drop-shelf, filtered out)
     # The window is placed from the FRONT rail (out_D - ...) so it rides with the box depth. At 571.5 deep (2026-10-30) the 63.5 mm
     # that used to separate the MultiPlus's cable end from the Garmin on the plate's inverter face is gone, so the Garmin LIES FLAT ON
@@ -3085,8 +3085,9 @@ def build_v13(a):
             sh = sh.cut(box(P["post_d"] + 4, 14, 40, (x_in0 - 2, y1s - 10, -1)))                     # and the back post
         for sx in (xa_body + 40, xb - 40):                                   # on bus_shelf_1, the -X hole (closest to MPPT) moves 2.5 mm toward MPPT (xa_body + 40)
             sh = sh.cut(cq.Workplane("XZ").center(sx, 28).circle(2.3).extrude(-8).translate((0, y1s - 7, 0)))
-        for sx in (xa + 40, xb - 40):                                        # inserts in the plate's bottom band stay at nominal (xa + 40, xb - 40)
-            g.setdefault("sill_holes", []).append((sx, 28.0))                  # -> the plate gets a pilot for each (found missing 2026-10-25)
+        for sx in (xa + 40, xb - 40):                                        # on tile_10 (sx > 285.75), move the 3 bus_shelf sill holes +2.5 mm away from MPPT (+X)
+            sx_plate = (sx + 2.5) if sx > (x_in0 + out_D - B) / 2 else sx
+            g.setdefault("sill_holes", []).append((sx_plate, 28.0))          # -> the plate gets a pilot for each (found missing 2026-10-25)
         # --- WALL half-laps (2026-10-23): the floor BUTTS; the lip and the inboard wall each carry a 20 mm half-lap, the tongue
         # being the OUTER half of the wall standing on the bed from the floor to the wall top (it fills a matching notch cut through
         # the next plate's wall and floor edge). Every plate prints flat with no bridge or overhang. The earlier FLOOR half-lap's
