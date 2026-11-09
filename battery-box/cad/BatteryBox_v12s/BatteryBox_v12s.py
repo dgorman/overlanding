@@ -201,7 +201,7 @@ COMP_SPECS: dict[str, dict] = {
     },
     "cerbo": {
         "dims": (154.0, 48.0, 78.0),
-        "pos": (190.0, INVERTER_PLATE_Y0 - 48.0 - 3.0, 116.0),  # Centerline Z = 116 + 39 = 155.0 mm (aligned with MPPT centerline Z = 62 + 93 = 155.0 mm)
+        "pos": (190.0, INVERTER_PLATE_Y0 - 48.0 - 3.0, 120.0),  # Bottom M4 holes at Z = 120 + 10 = 130.0 mm (aligned with Orion bottom M4 holes at 118 + 12 = 130.0 mm)
         "holes_xz": [(5.5, 10.0), (148.5, 10.0), (5.5, 68.0), (148.5, 68.0)],
         "insert": "M4",
         "face_side": -1,

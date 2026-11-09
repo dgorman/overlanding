@@ -2788,9 +2788,9 @@ V13_SHORT = dict(   # the 635 mm box (2026-10-24 layout): ONE ROW of charge gear
     # shunt; the Garmin turned 90 deg on the plate's INVERTER face above the cable window, 59 mm in front of the MultiPlus's cable end and
     # 18 mm behind the socket bodies, so only its feed passes through the window and its outputs run straight to the front-panel ports.
     # (comp, x, z, tag[, side]): side +1 = inverter face, default -1 = column face.
-    # MPPT (z=62..248, centerline z=155.0) and Cerbo GX (z=116..194, centerline z=155.0) share the Z = 155.0 mm horizontal centerline,
-    # giving 87.7 mm of headroom above the Cerbo GX for Cat6, VE.Can, and HDMI cables sticking up toward the lid.
-    units=(("mppt_up", 50.0, 62.0, "mppt"), ("cerbo", 190.0, 116.0, "cerbo"), ("orion", 354.0, 118.0, "orion"),
+    # Cerbo GX at z=120.0 mm so its bottom M4 holes (120 + 10 = 130.0 mm) share the Z = 130.0 mm line with the Orion-Tr bottom M4 holes (118 + 12 = 130.0 mm),
+    # giving 83.7 mm of headroom above the Cerbo GX (top at z=198.0 mm) for Cat6, VE.Can, and HDMI cables sticking up toward the lid.
+    units=(("mppt_up", 50.0, 62.0, "mppt"), ("cerbo", 190.0, 120.0, "cerbo"), ("orion", 354.0, 118.0, "orion"),
            ("breaker_face", out_D - 150.0, 110.0, "breaker1"), ("breaker_face", out_D - 150.0, 185.0, "breaker2")),   # (breakers: pre-drop-shelf, filtered out)
     # The window is placed from the FRONT rail (out_D - ...) so it rides with the box depth. At 571.5 deep (2026-10-30) the 63.5 mm
     # that used to separate the MultiPlus's cable end from the Garmin on the plate's inverter face is gone, so the Garmin LIES FLAT ON
