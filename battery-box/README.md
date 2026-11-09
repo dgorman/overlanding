@@ -106,3 +106,36 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 | [`cad/manual.py`](cad/manual.py) | Renders the 10 colour-coded step-by-step assembly diagrams (`manual/img/01-frame.png` .. `10-ports-lid.png`) and individual part renders (`manual/img/part-*.png`) |
 | [`cad/simple_steps.py`](cad/simple_steps.py) | Generates simplified dimensioned shop drawings (`manual/img/03-posts-simple.png`) |
 | [`cad/render.py`](cad/render.py) | Generates shaded orthographic and isometric views in `renders/<variant>/` |
+
+---
+
+## 4. Final Production Print Settings (Bambu H2D — Bambu ABS-GF Black)
+
+While **PETG Basic** is used for test-fitting and prototyping, the final production parts are printed in **Bambu ABS-GF (Glass-Fiber ABS, Black)** (`4 × 1 kg` spools total; the full `master` box uses `~2.5–2.7 kg` at ABS-GF's `1.08 g/cm³` density, leaving over a spool of spare margin).
+
+### Why Bambu ABS-GF Black?
+- **Heat Resistance (`HDT ~99–108°C`):** Handles hot vehicle cabin temperatures (`60–70°C`) plus local heat from the MultiPlus 12/1200, Orion-Tr DC-DC, MPPT, and high-current bus bars without softening or bolt creep.
+- **100% Electrically Insulating:** Glass-fiber reinforcement (`-GF`) is completely non-conductive (unlike carbon-fiber `-CF` filaments, which can be slightly conductive/ESD-dissipative near bare `12 V` studs), making it safe for `print_busbar_spacer_0..1`, `print_bus_shelf_0..2`, and `print_breaker_shelf_0..1`.
+- **1:1 Dimensional Match with PETG Basic:** The glass fibers lock the polymer matrix during cooling (`~0.15–0.2%` shrinkage, identical to PETG Basic), so all `Ø5.6 mm` (`M4`) and `Ø7.5 mm` (`M5`) heat-set insert bores and the `2.5 mm` frame-span adjustments fit identically without rescaling in Bambu Studio.
+
+### Bambu Studio H2D Slicer & Prep Checklist
+1. **Filament Drying (Mandatory before printing):**
+   - Dry **Bambu ABS-GF** spools at **`80°C` for 6–8 hours** before printing and print from a dry AMS / drybox.
+   - **Nozzle:** `0.4 mm` (or `0.6 mm`) **hardened steel nozzle** (standard on H2D).
+2. **Chamber & Bed Adhesion (especially for `print_plate_inverter_tile_00..10` and `print_tray_battery_0..1`):**
+   - **Build Plate:** Textured PEI Plate with a thin coat of Bambu Liquid Glue (prevents corner lift on the `255 × 256 mm` tiles and aids release).
+   - **Active Chamber Heater:** Set to **`60°C`** and let the chamber pre-warm before starting large flat plates.
+   - **Cool-Down Rule:** Let the build plate cool below **`45°C`** before flexing or removing large flat tiles (`tile_00`, `tile_10`, `panel_*`) so they cool dead-flat inside the chamber.
+3. **Wall Loops, Shells & Infill by Part Group:**
+   - **Standard Structural Parts** (`print_tray_battery_0..1`, `print_bus_shelf_0..2`, `print_breaker_shelf_0..1`, `print_plate_inverter_tile_00..10`, `print_garmin_hanger*`, `print_panel_*`):
+     - **Layer height:** `0.20 mm` Standard @BBL H2D
+     - **Wall loops:** **`4 walls`**
+     - **Top / Bottom shells:** **`5 layers`** (`1.0 mm`)
+     - **Sparse infill:** **`25%` Gyroid or Cubic**
+   - **High-Clamp / Compression Parts** (`print_post_inverter_0..1`, `plate_busbar_spacers.stl` / `print_busbar_spacer_0..1`, `plate_stack_straps.stl` / `print_stack_strap_*`):
+     - **Wall loops:** **`5 walls`** (reinforces `1/4"-20` countersinks and `M5` bus bar compression sleeves)
+     - **Top / Bottom shells:** **`5 layers`** (`1.0 mm`)
+     - **Sparse infill:** **`35–40%` Gyroid or Cubic** (prevents compression crush under bolt torque)
+4. **Heat-Set Insert Installation (`M4` & `M5` in ABS-GF):**
+   - Set soldering iron tip temperature to **`260–270°C`** (`25–30°C` hotter than PETG).
+   - Press straight down with steady, light pressure until the flange is flush, hold a flat metal block against the face for `3–4 seconds` as it cools, and let cool completely before torquing bolts.
