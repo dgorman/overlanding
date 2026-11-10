@@ -155,7 +155,10 @@ def build_plates(stl_dir, quiet=False):
         out, x, parts, y_row, row_h = [], 0.0, [], 0.0, 0.0
         expanded = []
         for fn, rotz, at in items:   # a glob entry stands for every matching file
-            expanded += [(os.path.basename(m), rotz, at) for m in sorted(glob.glob(os.path.join(stl_dir, fn)))] if "*" in fn else [(fn, rotz, at)]
+            if "*" in fn:
+                expanded += [(os.path.basename(m), rotz, at) for m in sorted(glob.glob(os.path.join(stl_dir, fn)))]
+            elif os.path.exists(os.path.join(stl_dir, fn)):
+                expanded.append((fn, rotz, at))
         if not expanded:
             continue
         for fn, rotz, at in expanded:
