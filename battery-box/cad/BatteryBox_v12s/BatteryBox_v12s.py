@@ -964,8 +964,6 @@ def build_frame_and_panels(
             )
             sy += pitch_y
     extrude_all_profiles(panel_comp, back_out_sketch, "x", T + 1.0, adsk.fusion.FeatureOperations.CutFeatureOperation, p_back_out)
-    back_lap_holes = [(pm, end_lap_ymid, zb, M4_CLEAR_DIA / 2.0) for zb in (60.0, 140.0, 220.0)]
-    cut_cylinders_on_plane(panel_comp, p_back_out, "x", pm - 0.5, T + 1.0, back_lap_holes)
     apply_color(app, design, p_back_out, *COL_PRINT_ORANGE)
 
     p_back_in = add_box_feature(
@@ -991,10 +989,9 @@ def build_frame_and_panels(
         T + 1.0, GX_TOUCH_CUT_W_Y, GX_TOUCH_CUT_H_Z,
         adsk.fusion.FeatureOperations.CutFeatureOperation, p_back_in,
     )
-    cut_cylinders_on_plane(panel_comp, p_back_in, "x", pm - 0.5, T + 1.0, back_lap_holes)
     apply_color(app, design, p_back_in, *COL_PRINT_ORANGE)
 
-    # Front Port Panel: 2-tile H2D Printed Panel (split on 20 mm vertical half-lap at Y = 280..300 mm, 3x M4 bolts)
+    # Front Port Panel: 2-tile H2D Printed Panel (split on 20 mm glued vertical half-lap at Y = 280..300 mm, no bolts)
     xf_inner = BOX_DEPTH_X - pm - T  # 556.0 mm
     p_front_out = add_box_feature(
         panel_comp, xf_inner, B - tongue, B - tongue,
@@ -1051,9 +1048,6 @@ def build_frame_and_panels(
                 )
         extrude_all_profiles(panel_comp, f_sketch, "x", T + 1.0, adsk.fusion.FeatureOperations.CutFeatureOperation, target_front)
 
-    front_lap_holes = [(xf_inner, end_lap_ymid, zb, M4_CLEAR_DIA / 2.0) for zb in (60.0, 140.0, 220.0)]
-    cut_cylinders_on_plane(panel_comp, p_front_out, "x", xf_inner - 0.5, T + 1.0, front_lap_holes)
-    cut_cylinders_on_plane(panel_comp, p_front_in, "x", xf_inner - 0.5, T + 1.0, front_lap_holes)
     apply_color(app, design, p_front_out, *COL_PRINT_ORANGE)
     apply_color(app, design, p_front_in, *COL_PRINT_ORANGE)
 

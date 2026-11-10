@@ -2604,7 +2604,7 @@ def v12_panels(a):
     if printed_ends:
         b_out = back.intersect(box(40, ymid_end + lw_end / 2 + 20, big_end, (pm - 20, -20, -20))).cut(box(T - 3.0 + 1, lw_end, big_end, (pm + 3.0, ymid_end - lw_end / 2, -20)))
         b_in = back.intersect(box(40, out_W, big_end, (pm - 20, ymid_end - lw_end / 2, -20))).cut(box(3.0 + 1, lw_end, big_end, (pm - 1, ymid_end - lw_end / 2, -20)))
-        for zb in (60, 140, 220):
+        for zb in ((60, 140, 220) if P.get("lap_bolts", True) else ()):
             bolt_b = cq.Workplane("YZ").center(ymid_end, zb).circle(2.3).extrude(T + 2).translate((pm - 1, 0, 0))
             b_out, b_in = b_out.cut(bolt_b), b_in.cut(bolt_b)
         add(a, b_out, "print_panel_back_outboard", ORANGE)
@@ -2681,7 +2681,7 @@ def v12_panels(a):
     big = big_end
     outb = front.intersect(box(40, ymid + lw / 2 + 20, big, (xf - 20, -20, -20))).cut(box(3.0 + 1, lw, big, (xf - 1, ymid - lw / 2, -20)))
     inb = front.intersect(box(40, out_W, big, (xf - 20, ymid - lw / 2, -20))).cut(box(T - 3.0 + 1, lw, big, (xf + 3.0, ymid - lw / 2, -20)))
-    for zb in (60, 140, 220):
+    for zb in ((60, 140, 220) if P.get("lap_bolts", True) else ()):
         bolt = cq.Workplane("YZ").center(ymid, zb).circle(2.3).extrude(T + 2).translate((xf - 1, 0, 0))
         outb, inb = outb.cut(bolt), inb.cut(bolt)
     add(a, outb, "print_panel_front_outboard", ORANGE)
