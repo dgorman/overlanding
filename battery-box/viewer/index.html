@@ -60,7 +60,9 @@
     <div class="row" style="align-items:center">
       <label for="variant" style="margin:0">Version</label>
       <select id="variant">
-        <option value="v13" selected>v13 · slot-captured lid: U-bridge breaker shelves, buttressed posts &amp; standing Garmin panel</option>
+        <option value="v14" selected>v14 · single Victron 12.8V/200Ah Smart (BAT512120610) + front breaker &amp; VE.Bus BMS V2 deck</option>
+        <option value="master">master · H2D active build: 2 × SuperPack 60Ah, 1-piece posts, 2-tile inverter plate, 15 mm busbar spacers</option>
+        <option value="v13">v13 · slot-captured lid: U-bridge breaker shelves, buttressed posts &amp; standing Garmin panel</option>
         <option value="v12s">v12s · as built (2026-10-30): 25 in IceBox frame (571.5 deep), 12/1200 + two SuperPack 60Ah</option>
         <option value="pack2">pack2 · stacked add-on pack for v12s/v13: 2 × 2 SuperPack 60Ah, all printed</option>
         <option value="v12s_pack">v12s + pack2 · the box on the IceBox with the pack on the floor in front of it</option>
@@ -141,14 +143,14 @@ const GROUPS = {
 };
 // Sub-assemblies: what is built on the bench and goes into the box as one piece (v12/v12s/v13 naming; other variants fall into "Everything else")
 const SUBS = {
-  frame:   ['Frame: cubes, rails, panels, lid',        /^(cube_|bar_|panel_|lid_|icebox_|print_panel_front|print_cube|print_bar)/],
-  tray0:   ['Tray 0 (back) + battery',                  /(tray_battery_0|^battery_0)/],
-  tray1:   ['Tray 1 (front) + battery',                 /(tray_battery_1|^battery_1)/],
-  shelf:   ['Bus shelf: plates, bus bars, shunt',       /(print_bus_shelf|_shelf_)/],
-  plate:   ['Inverter plate + charge gear + breakers',  /(print_plate_inverter|_plate$|multiplus_long|multiplus_ii|multiplus_side)/],
-  posts:   ['Posts and clips',                          /(print_post)/],
-  ports:   ['Ports and sockets',                        /^socket_/],
-  other:   ['Everything else',                          /./],
+  frame:   ['Frame: cubes, rails, panels, lid',                  /^(cube_|bar_|panel_|lid_|icebox_|print_panel_front|print_panel_back|print_cube|print_bar)/],
+  tray0:   ['Tray 0 (back) + battery',                           /(tray_battery_0|^battery_0)/],
+  tray1:   ['Tray 1 (front) + battery / breaker & BMS deck',     /(tray_battery_1|^battery_1|print_breaker_deck|power_bms_deck|power_breaker_shelf)/],
+  shelf:   ['Bus shelf: plates, bus bars, shunt',                /(print_bus_shelf|print_busbar_spacer|power_shunt_shelf|power_busbar_pos_shelf|power_busbar_neg_shelf)/],
+  plate:   ['Inverter plate + charge gear + breakers',           /(print_plate_inverter|_plate$|multiplus_long|multiplus_ii|multiplus_side)/],
+  posts:   ['Posts and clips',                                   /(print_post)/],
+  ports:   ['Ports and sockets',                                 /^socket_/],
+  other:   ['Everything else',                                   /./],
 };
 const subasm = document.getElementById('subasm');
 const subObjs = {}; const subOn = {};
@@ -175,8 +177,12 @@ for (const [k, [label, col]] of Object.entries(GROUPS)) {
   legend.appendChild(l);
 }
 
-const BUILD = '20261106223000';   // bumped on every publish so browsers never reuse a cached model
+const BUILD = '20261110140000';   // bumped on every publish so browsers never reuse a cached model
 const VARIANTS = {
+  v14: { title: 'v14: single Victron 12.8V/200Ah Smart (BAT512120610) + front breaker & BMS deck', blurb: 'v14: swaps the two SuperPack 60Ah batteries for a single Victron Energy BAT512120610 LiFePO4 12.8V/200Ah Smart battery (321 × 152 × 237 mm) in the back tray (X = 25..359 mm, Y = 25..192 mm) while reusing 100% of master\'s frame rail and bus-shelf bolt holes. The front tray base (X = 359..546.5 mm, Z = 0..36 mm) carries a removable 11 mm printed deck (Z = 36..47 mm) holding both Eaton Bussmann 285 breakers and the Victron VE.Bus BMS V2 (105.5 × 94.5 × 23.8 mm).',
+    rows: [['Outer', '571.5 × 488.1 × 281.7 mm (22.5 × 19.2 × 11.1 in)'], ['Battery (Tray 0)', '1 × Victron BAT512120610 12.8V/200Ah Smart (321 × 152 × 237 mm) in 334 × 167 × 36 mm tray'], ['Front Tray 1 + Deck', '187.5 × 167 × 36 mm base tray + 187.5 × 167 × 11 mm removable deck (6 × M4 inserts)'], ['Front Deck Gear', '2 × Eaton Bussmann 285 breakers (4 × M5 blind bores) + 1 × Victron VE.Bus BMS V2 (4 × M4 blind bores)'], ['Bolt Compatibility', '100% identical rail & bus-shelf bolt pattern to master (X = 50, 223, 396.5, 521.5; Y = 50, 129; Lip X = 95, 195, 295, 395, 455, 515)']] },
+  master: { title: 'master: H2D active build (2 × SuperPack 60Ah)', blurb: 'master: the active Bambu H2D build with 1-piece full-height inverter posts (278.7 mm), 2-tile inverter plate, 15 mm tall busbar spacers, Cerbo GX bottom holes aligned with Orion-Tr (Z = 130 mm), and two SuperPack 60Ah batteries under hold-down breaker drop shelves.',
+    rows: [['Outer', '571.5 × 488.1 × 281.7 mm (22.5 × 19.2 × 11.1 in)'], ['Batteries', '2 × Victron SuperPack 60Ah in 242 × 160 × 36 mm trays'], ['Inverter plate', '2-tile H2D layout (print_plate_inverter_tile_00 & tile_10) + 1-piece 278.7 mm posts'], ['Bus shelf', '3-piece shelf (print_bus_shelf_0..2) with 15 mm busbar spacers & SmartShunt 500A']] },
   cube: { title: 'Cube frame, 12 uncut kit bars', blurb: 'v4: a 487 mm cube from 12 uncut kit bars, 71 mm lower than the IceBox. Drag to orbit, scroll to zoom. Lid hidden; uncheck panels to see inside.',
     rows: [['Outer', '487 × 487 × 487 mm'], ['vs IceBox', 'same width, 71 mm lower'], ['Distribution card', '419 × 423: MPPT · Cerbo · Garmin · bus'], ['Inverter/charger card', '419 × 254, MultiPlus 12/800'], ['Upper card', '419 × 171, Orion'], ['Battery bay', '4 × SuperPack: 3 up, 1 on side'], ['Lift', '910 / 741 / 658 mm']] },
   v12: { title: 'v12: half-height IceBox footprint', blurb: 'v12: a second IceBox 1.3 frame at the IceBox\'s own width and depth, 282 mm (11.1 in) tall: v13\'s box, so the frame, panels, lid, posts and port strip carry over when the inverter and batteries are upgraded. v13\'s interior with the MultiPlus-II 12/3000 (ordered 2026-10-14) on its long side on the full-depth plate and the two SuperPack 60Ah owned today at the ends of the outboard zone, the bus column between, the charge gear on the plate\'s column face, the ports on the inboard half of the front panel. Upgrade to v13 = swap the trays and batteries only. Drag to orbit, scroll to zoom.',
@@ -221,9 +227,15 @@ function labelSprite(text) {
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), depthTest: false, transparent: true }));
   sp.scale.set(c.width * 0.55, c.height * 0.55, 1); sp.renderOrder = 10; return sp;
 }
+async function fetchJsonWithBackup(file) {
+  let r = await fetch(`${file}?v=${BUILD}`, { cache: 'no-store' });
+  if (!r.ok) r = await fetch(`backup/${file}?v=${BUILD}`, { cache: 'no-store' });
+  if (!r.ok) throw new Error(`${file}: HTTP ${r.status}`);
+  return r.json();
+}
 async function loadDims(variant) {
   if (dimRoot) { scene.remove(dimRoot); dimRoot = null; }
-  let dims; try { dims = await (await fetch(`dims-${variant}.json?v=${BUILD}`, { cache: 'no-store' })).json(); } catch { return; }
+  let dims; try { dims = await fetchJsonWithBackup(`dims-${variant}.json`); } catch { return; }
   dimRoot = new THREE.Group();
   const mat = new THREE.LineBasicMaterial({ color: isDark() ? 0xffb07a : 0xb3410f, depthTest: false, transparent: true });
   for (const d of dims) {
@@ -253,7 +265,7 @@ function showNumbers(v) {
 // data: URI is blocked in sandboxed hosts, so decode it here and hand the
 // loader a GLB built in memory.
 async function loadModel(variant) {
-  const js = await (await fetch(`cage-${variant}.json?v=${BUILD}`, { cache: 'no-store' })).json();
+  const js = await fetchJsonWithBackup(`cage-${variant}.json`);
   const b64 = js.buffers[0].uri.split(',')[1]; delete js.buffers[0].uri;
   const raw = atob(b64); const bin = new Uint8Array(raw.length);
   for (let i = 0; i < raw.length; i++) bin[i] = raw.charCodeAt(i);
@@ -284,7 +296,7 @@ function setVariant(v) {
     if (!o.isMesh) return;
     if (!o.geometry.getAttribute('normal')) o.geometry.computeVertexNormals();
     const name = (o.name || o.parent?.name || '').toLowerCase().replace('print_pack_panel', 'panel_pack').replace('print_pack_lid', 'lid_pack');
-    const key = Object.keys(GROUPS).find(k => name.startsWith(k)) || 'print';
+    const key = name === 'power_bms_deck' ? 'victron' : (Object.keys(GROUPS).find(k => name.startsWith(k)) || 'print');
     const [, col, op] = GROUPS[key];
     o.material = new THREE.MeshStandardMaterial({ color: col, roughness: 0.6, metalness: key === 'bar' ? 0.5 : 0.05,
       transparent: op < 1, opacity: op, depthWrite: op >= 1, side: THREE.DoubleSide });
@@ -306,8 +318,14 @@ function setVariant(v) {
   document.getElementById('status').textContent = `${VARIANTS[v]?.title || v} loaded · ${liftable.length} parts ride on the cards · units mm`;
   }).catch(err => { document.getElementById('status').textContent = 'Could not load model: ' + err; });
 }
-document.getElementById('variant').addEventListener('change', e => setVariant(e.target.value));
-setVariant(document.getElementById('variant').value);
+const sel = document.getElementById('variant');
+const urlV = new URLSearchParams(location.search).get('v') || location.hash.replace(/^#/, '');
+if (urlV && VARIANTS[urlV]) sel.value = urlV;
+sel.addEventListener('change', e => {
+  history.replaceState(null, '', `?v=${e.target.value}`);
+  setVariant(e.target.value);
+});
+setVariant(sel.value);
 
 function setView(v) {
   const c = bbox.getCenter(new THREE.Vector3()); const s = bbox.getSize(new THREE.Vector3()); const r = s.length() * 0.8;
