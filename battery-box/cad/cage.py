@@ -2934,77 +2934,82 @@ def build_v13(a):
         txs = tuple(x_in0 + V13["end_gap"] + 6 + r * (fd + 12 + V13["row_gap"]) for r in range(2))
     bay_D = txs[1] + fd + (0 if direct else 6) - x_in0
     g["bay_D"] = bay_D
-    lip_holes = (V13_SHORT if short else V13)["lip_holes"][1 if (small or P.get("v14_single_200")) else 0]   # per tray, placed where the column has no part over the lip
+    lip_holes = ((42.0, 122.0, 202.0, 282.0), (43.75, 93.75, 143.75)) if P.get("v14_single_200") else (V13_SHORT if short else V13)["lip_holes"][1 if small else 0]
     ty = y_in0 + 1
     if P.get("v14_single_200"):
-        # --- v14: Single Victron BAT512120610 LiFePO4 12.8V/200Ah Smart (321 x 152 x 237 mm) at Back (MPPT) end (X = 25..359 mm)
-        #     + Front Breaker & VE.Bus BMS V2 Tray Base (X = 359..546.5 mm, Z = 0..36 mm) + Removable 11 mm Deck (Z = 36..47 mm)
-        #     reusing 100% of master's frame rail and print_bus_shelf_0..2 bolt holes.
-        tx0 = x_in0                                                    # 25.0 mm
-        fd0 = b.d + 2 * wall + 2 * clr                                 # 334.0 mm (X = 25.0..359.0 mm, fits 350 x 320 H2D bed in 1 piece)
+        # --- v14: Swapped layout to offset MultiPlus inverter weight (MultiPlus sits at X = 46..421 mm toward Back):
+        #   1. Front (+X, Orion end): Single Victron BAT512120610 LiFePO4 12.8V/200Ah Smart (321 x 152 x 237 mm) in print_tray_battery_0
+        #      (334.0 x 167.0 x 36.0 mm, X = 212.5..546.5 mm) with 3 equidistant 1/4-20 outboard rail holes, 4 equidistant M4 bus-shelf holes,
+        #      and no floor cutouts on the short-direction (width rail) bolts.
+        #   2. Back (-X, MPPT end): VE.Bus BMS V2 inside print_tray_battery_1 (187.5 x 167.0 x 56.0 mm, X = 25.0..212.5 mm) with 4 corner
+        #      pillars supporting an elevated 11.0 mm Breaker Deck (print_breaker_deck_0, Z = 56.0..67.0 mm) above the BMS.
+        fd0 = b.d + 2 * wall + 2 * clr                                 # 334.0 mm (fits 350 x 320 H2D bed in 1 piece)
         pw0 = b.w + 2 * clr                                            # 153.0 mm (outboard wall 6.0 mm, inboard wall 8.0 mm)
-        tx1_ref = out_D - B - (COMPONENTS["battery"].d + 2 * wall + 2 * clr)   # 304.5 mm: master's Tray 1 origin so bus_shelf_0..2 lip holes stay identical
-        g["tx0"], g["tx1"] = tx0, tx1_ref
+        tx1 = x_in0                                                    # 25.0 mm: Back BMS Tray origin (X = 25.0..212.5 mm)
+        fd1 = (out_D - B) - x_in0 - fd0                                # 187.5 mm: Back BMS Tray length
+        tx0 = tx1 + fd1                                                # 212.5 mm: Front 200Ah Battery Tray origin (X = 212.5..546.5 mm)
+        g["tx0"], g["tx1"] = tx0, tx1
         g["bay_D"] = (out_D - B) - x_in0                               # 521.5 mm
-        # 1. Back 200Ah Battery Tray (print_tray_battery_0: 334.0 x 167.0 x 36.0 mm, X = 25.0..359.0 mm)
+        # 1. Front 200Ah Battery Tray (print_tray_battery_0: 334.0 x 167.0 x 36.0 mm, X = 212.5..546.5 mm)
         tray0 = box(fd0, fw, lip + fl).cut(box(fd0 - 2 * wall, pw0, lip + fl + 1, (wall, wall, fl)))
         if P.get("cube", B) > B + 0.05:
-            tray0 = tray0.cut(box(2.5, 2.5, lip + fl + 2, (-1.0, -1.0, -1.0)))
-        for sx in (70.0, 172.0):                                       # exact master Tray 0 outboard rail holes (world X = 95.0, 197.0 mm)
+            tray0 = tray0.cut(box(2.5, 2.5, lip + fl + 2, (fd0 - 1.5, -1.0, -1.0)))   # front-outboard corner cube notch
+        for sx in (67.0, 167.0, 267.0):                                # 3 equidistant 1/4-20 outboard 8020 rail holes (100.0 mm pitch; world X = 279.5, 379.5, 479.5 mm)
             tray0 = tray0.cut(cq.Workplane("XZ").center(sx, B / 2).circle(3.4).extrude(-(wall + 2)).translate((0, -1, 0)))
             tray0 = tray0.cut(countersink("print_tray_battery_0", (tx0 + sx, ty + wall, B / 2), (0, -1, 0)).translate((-tx0, -ty, 0)))
             tray0 = tray0.cut(head_relief((sx, wall, B / 2), (0, -1, 0)))
-        for sy in (28.0, fw - 28.0):                                   # exact master Tray 0 back width rail holes (world Y = 54.0, 165.0 mm)
-            tray0 = tray0.cut(cq.Workplane("YZ").center(sy, B / 2).circle(3.4).extrude(wall + 2).translate((-1, 0, 0)))
-            tray0 = tray0.cut(countersink("print_tray_battery_0", (tx0 + wall, ty + sy, B / 2), (-1, 0, 0)).translate((-tx0, -ty, 0)))
-            tray0 = tray0.cut(head_relief((wall, sy, B / 2), (-1, 0, 0)))
-        for hx_w in (65.0, 125.0, 165.0, 344.5):                       # 3 x M4 for bus_shelf_0 + 1 x M4 at X=344.5 for bus_shelf_1 (7 mm blind in 8 mm wall)
-            tray0 = tray0.cut(cq.Workplane("XZ").center(hx_w - tx0, 17.0).circle(M4S_BORE_R).extrude(-8.0).translate((0, fw - 7.0, 0)))
+        xw0 = fd0 - wall
+        for sy in (28.0, fw - 28.0):                                   # front width rail 1/4-20 holes (world Y = 54.0, 165.0 mm) — no floor cutouts on short direction
+            tray0 = tray0.cut(cq.Workplane("YZ").center(sy, B / 2).circle(3.4).extrude(wall + 2).translate((fd0 - wall - 1, 0, 0)))
+            tray0 = tray0.cut(countersink("print_tray_battery_0", (tx0 + xw0, ty + sy, B / 2), (1, 0, 0)).translate((-tx0, -ty, 0)))
+        for hx in lip_holes[0]:                                        # 4 equidistant M4 heat-set insert holes (80.0 mm pitch: 42, 122, 202, 282 mm; 7 mm blind in 8 mm wall)
+            tray0 = tray0.cut(cq.Workplane("XZ").center(hx, 17.0).circle(M4S_BORE_R).extrude(-8.0).translate((0, fw - 7.0, 0)))
         add(a, tray0.translate((tx0, ty, 0)), "print_tray_battery_0", ORANGE)
         at0 = (tx0 + wall + clr, ty + wall + clr, fl)
         add(a, victron_shape(bkey, b.d, b.w, b.h, at0, box(b.d, b.w, b.h, at0).edges("|Z").fillet(6)), "battery_0", BATT)
-        # 2. Front Breaker + BMS Tray Base (print_tray_battery_1: 187.5 x 167.0 x 36.0 mm, X = 359.0..546.5 mm, Z = 0..36.0 mm)
-        tx1 = tx0 + fd0                                                # 359.0 mm
-        fd1 = (out_D - B) - tx1                                        # 187.5 mm
+        # 2. Back VE.Bus BMS V2 Tray Base (print_tray_battery_1: 187.5 x 167.0 x 56.0 mm, X = 25.0..212.5 mm)
         tray1 = box(fd1, fw, lip + fl).cut(box(fd1 - 2 * wall, pw0, lip + fl + 1, (wall, wall, fl)))
-        if P.get("cube", B) > B + 0.05:
-            tray1 = tray1.cut(box(2.5, 2.5, lip + fl + 2, (fd1 - 1.5, -1.0, -1.0)))
-        for sx_w in (374.5, 476.5):                                    # exact master Tray 1 outboard rail holes (world X = 374.5, 476.5 mm)
-            sx = sx_w - tx1
+        for sx in (43.75, 143.75):                                     # 2 equidistant 1/4-20 outboard 8020 rail holes (100.0 mm pitch; world X = 68.75, 168.75 mm)
             tray1 = tray1.cut(cq.Workplane("XZ").center(sx, B / 2).circle(3.4).extrude(-(wall + 2)).translate((0, -1, 0)))
-            tray1 = tray1.cut(countersink("print_tray_battery_1", (sx_w, ty + wall, B / 2), (0, -1, 0)).translate((-tx1, -ty, 0)))
+            tray1 = tray1.cut(countersink("print_tray_battery_1", (tx1 + sx, ty + wall, B / 2), (0, -1, 0)).translate((-tx1, -ty, 0)))
             tray1 = tray1.cut(head_relief((sx, wall, B / 2), (0, -1, 0)))
-        xw1 = fd1 - wall
-        for sy in (28.0, fw - 28.0):                                   # exact master Tray 1 front width rail holes (world Y = 54.0, 165.0 mm)
-            tray1 = tray1.cut(cq.Workplane("YZ").center(sy, B / 2).circle(3.4).extrude(wall + 2).translate((fd1 - wall - 1, 0, 0)))
-            tray1 = tray1.cut(countersink("print_tray_battery_1", (tx1 + xw1, ty + sy, B / 2), (1, 0, 0)).translate((-tx1, -ty, 0)))
-            tray1 = tray1.cut(head_relief((xw1, sy, B / 2), (1, 0, 0)))
-        for hx_w in (424.5, 504.5):                                    # 2 x M4 for bus_shelf_2 (world X = 424.5, 504.5 mm, 7 mm blind in 8 mm wall)
-            tray1 = tray1.cut(cq.Workplane("XZ").center(hx_w - tx1, 17.0).circle(M4S_BORE_R).extrude(-8.0).translate((0, fw - 7.0, 0)))
-        deck_bolts = ((397.0, 38.0), (369.0, 120.0), (511.0, 38.0), (536.5, 120.0))   # 4 x M4 deck mounting bosses (clear of rail screws, BMS & breakers)
-        for (bx_w, by_w) in deck_bolts:
-            bx_l, by_l = bx_w - tx1, by_w - ty
-            boss = box(16.0, 16.0, lip, (bx_l - 8.0, by_l - 8.0, fl)).intersect(box(fd1, fw, lip + fl))
-            tray1 = tray1.union(boss).cut(cq.Workplane("XY").center(bx_l, by_l).circle(M4S_BORE_R).extrude(13.0).translate((0, 0, lip + fl - 12.0)))
+        for sy in (28.0, fw - 28.0):                                   # back width rail 1/4-20 holes (world Y = 54.0, 165.0 mm) — no floor cutouts on short direction
+            tray1 = tray1.cut(cq.Workplane("YZ").center(sy, B / 2).circle(3.4).extrude(wall + 2).translate((-1, 0, 0)))
+            tray1 = tray1.cut(countersink("print_tray_battery_1", (tx1 + wall, ty + sy, B / 2), (-1, 0, 0)).translate((-tx1, -ty, 0)))
+        for hx in lip_holes[1]:                                        # 3 equidistant M4 heat-set insert holes (50.0 mm pitch: 43.75, 93.75, 143.75 mm; 7 mm blind in 8 mm wall)
+            tray1 = tray1.cut(cq.Workplane("XZ").center(hx, 17.0).circle(M4S_BORE_R).extrude(-8.0).translate((0, fw - 7.0, 0)))
+        # Raised 3.5 mm BMS mounting pad on tray1 floor (Z = 6.0..9.5 mm) so 4 x Ø5.6 x 8.0 mm blind M4 bores leave 1.5 mm solid bottom skin
+        cbms = COMPONENTS["bms_flat"]
+        bms_pad_h = 3.5
+        bms_lx, bms_ly = (fd1 - cbms.d) / 2.0, (fw - cbms.w) / 2.0
+        tray1 = tray1.union(box(cbms.d + 8.0, cbms.w + 8.0, bms_pad_h, (bms_lx - 4.0, bms_ly - 4.0, fl)))
+        for (u, v) in HOLES["bms_flat"]:
+            tray1 = tray1.cut(cq.Workplane("XY").center(bms_lx + u, bms_ly + v).circle(M4S_BORE_R).extrude(8.5).translate((0, 0, fl + bms_pad_h - 8.0)))
+        # 4 corner pillars rising to Z = 56.0 mm (20.0 mm above the Z = 36.0 mm tray wall top) to hold the Breaker Deck above the BMS
+        zd0 = 56.0
+        deck_bolts_l = ((10.0, 10.0), (10.0, fw - 10.0), (fd1 - 10.0, 10.0), (fd1 - 10.0, fw - 10.0))
+        for (bx_l, by_l) in deck_bolts_l:
+            pillar = box(20.0, 20.0, zd0 - fl, (bx_l - 10.0, by_l - 10.0, fl)).intersect(box(fd1, fw, zd0))
+            tray1 = tray1.union(pillar).cut(cq.Workplane("XY").center(bx_l, by_l).circle(M4S_BORE_R).extrude(13.0).translate((0, 0, zd0 - 12.0)))
+        if P.get("cube", B) > B + 0.05:
+            tray1 = tray1.cut(box(2.5, 2.5, zd0 + 2, (-1.0, -1.0, -1.0)))   # back-outboard corner cube notch full height
         add(a, tray1.translate((tx1, ty, 0)), "print_tray_battery_1", ORANGE)
-        # 3. Removable 11 mm Breaker + VE.Bus BMS V2 Deck Plate (print_breaker_deck_0: 187.5 x 167.0 x 11.0 mm, Z = 36.0..47.0 mm)
-        zd0 = lip + fl                                                 # 36.0 mm
+        bms_at = (tx1 + bms_lx, ty + bms_ly, fl + bms_pad_h)
+        add(a, victron_shape("bms_flat", cbms.d, cbms.w, cbms.h, bms_at, box(cbms.d, cbms.w, cbms.h, bms_at).edges("|Z").fillet(3)), "power_bms_deck", BLUE)
+        # 3. Elevated 11 mm Breaker Deck above the BMS (print_breaker_deck_0: 187.5 x 167.0 x 11.0 mm, Z = 56.0..67.0 mm)
         deck = box(fd1, fw, M5_DECK, (tx1, ty, zd0))
-        for (bx_w, by_w) in deck_bolts:                                # 4 x Ø4.6 mm M4 clearance holes into tray1's top M4 inserts
-            deck = deck.cut(cq.Workplane("XY").center(bx_w, by_w).circle(2.3).extrude(M5_DECK + 2.0).translate((0, 0, zd0 - 1.0)))
+        if P.get("cube", B) > B + 0.05:
+            deck = deck.cut(box(2.5, 2.5, M5_DECK + 2, (tx1 - 1.0, ty - 1.0, zd0 - 1.0)))
+        for (bx_l, by_l) in deck_bolts_l:                              # 4 x Ø4.6 mm M4 clearance holes into tray1's 4 corner pillars
+            deck = deck.cut(cq.Workplane("XY").center(tx1 + bx_l, ty + by_l).circle(2.3).extrude(M5_DECK + 2.0).translate((0, 0, zd0 - 1.0)))
         cb = COMPONENTS["breaker_a"]
-        for r_br, bx_br in enumerate((tx1 + 7.0, tx1 + 99.0)):         # 2 x Eaton Bussmann 285 breakers along inboard side (Y = 143.5..191.63 mm)
-            by_br = ty + 117.5
+        for r_br, bx_br in enumerate((tx1 + 10.0, tx1 + 96.0)):        # 2 x Eaton Bussmann 285 breakers centered in Y with generous wire room all around
+            by_br = ty + (fw - cb.w) / 2.0
             for (u, v) in HOLES["breaker_a"]:
                 deck = deck.cut(m5_bore(bx_br + u, by_br + v, zd0 + M5_DECK, M5_BLIND))
             at_br = (bx_br, by_br, zd0 + M5_DECK)
             add(a, victron_shape("breaker_a", cb.d, cb.w, cb.h, at_br, unit_fallback("breaker_a", cb.d, cb.w, cb.h, at_br)), f"power_breaker_shelf_{r_br}", GOLD)
-        cbms = COMPONENTS["bms_flat"]
-        bms_at = (tx1 + (fd1 - cbms.d) / 2.0, ty + 1.0, zd0 + M5_DECK)   # VE.Bus BMS V2 on outboard side (X = 405.25..500.25, Y = 27.0..132.8 mm)
-        for (u, v) in HOLES["bms_flat"]:                               # 4 x Ø5.6 x 9.5 mm blind M4 heat-set insert bores in the 11 mm deck
-            deck = deck.cut(cq.Workplane("XY").center(bms_at[0] + u, bms_at[1] + v).circle(M4S_BORE_R).extrude(M5_BLIND + 1.0).translate((0, 0, zd0 + M5_DECK - M5_BLIND)))
         add(a, deck, "print_breaker_deck_0", ORANGE)
-        add(a, victron_shape("bms_flat", cbms.d, cbms.w, cbms.h, bms_at, box(cbms.d, cbms.w, cbms.h, bms_at).edges("|Z").fillet(3)), "power_bms_deck", BLUE)
     for r in (() if P.get("v14_single_200") else range(2)):
         tx = txs[r]
         tray = box(fd, fw, lip + fl).cut(box(fd - 2 * wall, pw, lip + fl + 1, (wall, wall, fl)))
@@ -3369,11 +3374,11 @@ def report_v13():
     mm = lambda v: f"{v:.0f} mm ({v / 25.4:.2f} in)"
     g = BS.get("_g12") or {}
     if P.get("v14_single_200"):
-        print(f"== Variant '{VARIANT}': single Victron BAT512120610 LiFePO4 12.8V/200Ah Smart + front Breaker & VE.Bus BMS V2 deck ==")
+        print(f"== Variant '{VARIANT}': single Victron BAT512120610 LiFePO4 12.8V/200Ah Smart (Front) + VE.Bus BMS V2 & Elevated Breaker Deck (Back) ==")
         print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}; bank 1 x 200 Ah = 200 Ah (2.56 kWh), 200 A continuous / 400 A peak")
-        print("  battery tray  : print_tray_battery_0 (334.0 x 167.0 x 36.0 mm, X = 25.0..359.0 mm), single-piece H2D print at Back (MPPT) end; reuses master's back rail, outboard rail, and bus_shelf_0..1 M4 lip holes")
-        print("  front tray    : print_tray_battery_1 (187.5 x 167.0 x 36.0 mm, X = 359.0..546.5 mm, Z = 0..36.0 mm); reuses master's front rail, outboard rail, and bus_shelf_2 M4 lip holes + 4 top M4 bosses")
-        print("  breaker/BMS   : print_breaker_deck_0 (187.5 x 167.0 x 11.0 mm, Z = 36.0..47.0 mm) bolted to print_tray_battery_1 (4 x M4); carries 2 x Eaton Bussmann 285 breakers (4 x M5 blind bores) + 1 x Victron VE.Bus BMS V2 (4 x M4 blind bores)")
+        print("  battery tray  : print_tray_battery_0 (334.0 x 167.0 x 36.0 mm, X = 212.5..546.5 mm, Front +X end); 3 equidistant 1/4-20 outboard rail holes (X = 279.5, 379.5, 479.5 mm) + 4 equidistant M4 bus_shelf_1..2 holes (X = 254.5, 334.5, 414.5, 494.5 mm)")
+        print("  back BMS tray : print_tray_battery_1 (187.5 x 167.0 x 56.0 mm, X = 25.0..212.5 mm, Back -X end); carries VE.Bus BMS V2 on floor (Z = 9.5..33.3 mm) + 2 equidistant 1/4-20 outboard rail holes + 3 equidistant M4 bus_shelf_0 holes (X = 68.75, 118.75, 168.75 mm)")
+        print("  breaker deck  : print_breaker_deck_0 (187.5 x 167.0 x 11.0 mm, Z = 56.0..67.0 mm) bolted to print_tray_battery_1's 4 corner pillars (4 x M4); carries 2 x Eaton Bussmann 285 breakers (4 x M5 blind bores) above the BMS")
         return
     if P.get("batt") == "battery":
         ii = P.get("inverter_long") == "multiplus_ii_long"
