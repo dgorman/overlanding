@@ -2626,8 +2626,15 @@ def v12_panels(a):
         add(a, b_in, "print_panel_back_inboard_gx", ORANGE)
     else:
         add(a, back, "panel_back_perforated_from_icebox", PANEL)
-    front = slot_panel("y", out_D - pm - T, in_W)
-    xf = out_D - pm - T                                            # the front panel's inner face
+    t_front = t_back
+    xf = out_D - pm_back - t_front                                  # the front panel's inner face
+    if printed_ends:
+        front = box(t_front, in_W + 6.0, z_b1 - z_b0, (xf, B - 3.0, z_b0))
+        for cy_n in (B - 3.0, out_W - B + 3.0):
+            for cz_n in (z_b0, z_b1):
+                front = front.cut(cq.Workplane("YZ").center(cy_n, cz_n).circle(r_notch_back).extrude(t_front + 4.0).translate((xf - 2.0, 0, 0)))
+    else:
+        front = slot_panel("y", out_D - pm - T, in_W)
     if P.get("icebox_front") == "bezel":   # the slotted rear-panel offcut (IceBox rows 4-7) with a 139 x 210 opening for a printed port bezel behind it
         front = icebox_slots(front, xf, 4, 4, 237.0)
         opening = (318.0, 457.0, 34.0, 244.0)
@@ -2640,26 +2647,27 @@ def v12_panels(a):
     else:
         bezel = None; xf_ports = xf
     for port in FRONT_PORTS:   # bodies point -X from the front panel's inner face
-        kind, y, z = port[0], port[1], port[2]
+        kind, y, z_raw = port[0], port[1], port[2]
+        z = z_raw + z_shift_back                                    # keeps top margin fixed while adding +7.8 mm to the bottom of printed front panels
         tgt = bezel if bezel is not None else front
         if kind == "socket":
             r = port[3] / 2
-            tgt = tgt.cut(cq.Workplane("YZ").center(y, z).circle(r).extrude(T + 2).translate((xf_ports - 1, 0, 0)))
-            flange = cq.Workplane("YZ").center(y, z).circle(r + 2.5).extrude(2.5).translate((xf_ports + T, 0, 0))
-            barrel = cq.Workplane("YZ").center(y, z).circle(r - 0.2).extrude(-(28 + T)).translate((xf_ports + T, 0, 0))
+            tgt = tgt.cut(cq.Workplane("YZ").center(y, z).circle(r).extrude(t_front + 2).translate((xf_ports - 1, 0, 0)))
+            flange = cq.Workplane("YZ").center(y, z).circle(r + 2.5).extrude(2.5).translate((xf_ports + t_front, 0, 0))
+            barrel = cq.Workplane("YZ").center(y, z).circle(r - 0.2).extrude(-(28 + t_front)).translate((xf_ports + t_front, 0, 0))
             nut = cq.Workplane("YZ").center(y, z).polygon(6, 2 * (r + 2.0)).extrude(-6).translate((xf_ports, 0, 0))
             tabs = box(12, 10, 14, (xf_ports - 40, y - 5, z - 7))
-            add(a, flange.union(barrel).union(nut).union(tabs), f"socket_{int(y)}_{int(z)}", (0.3, 0.3, 0.3))
+            add(a, flange.union(barrel).union(nut).union(tabs), f"socket_{int(y)}_{int(z_raw)}", (0.3, 0.3, 0.3))
         elif kind.startswith("l14"):
-            tgt = tgt.cut(cq.Workplane("YZ").center(y, z).circle(30).extrude(T + 2).translate((xf_ports - 1, 0, 0)))
-            flange = cq.Workplane("YZ").center(y, z).circle(31.5).extrude(3.5).translate((xf_ports + T, 0, 0))
+            tgt = tgt.cut(cq.Workplane("YZ").center(y, z).circle(30).extrude(t_front + 2).translate((xf_ports - 1, 0, 0)))
+            flange = cq.Workplane("YZ").center(y, z).circle(31.5).extrude(3.5).translate((xf_ports + t_front, 0, 0))
             can = cq.Workplane("YZ").center(y, z).circle(26).extrude(-42).translate((xf_ports, 0, 0))
             boot = cq.Workplane("YZ").center(y, z).circle(18).extrude(-13).translate((xf_ports - 42, 0, 0))
             add(a, flange.union(can).union(boot), f"socket_{kind}", (0.3, 0.3, 0.3))
         else:
             is_175 = kind.startswith("sb175")
             w_, h_, d_ = PORT_FACE["sb175" if is_175 else "sb50"]
-            tgt = tgt.cut(box(T + 2, w_, h_, (xf_ports - 1, y - w_ / 2, z - h_ / 2)))
+            tgt = tgt.cut(box(t_front + 2, w_, h_, (xf_ports - 1, y - w_ / 2, z - h_ / 2)))
             if is_175:
                 at_p = (xf_ports - d_, y - w_ / 2, z - h_ / 2)
                 fb = box(d_, w_, h_, at_p)
@@ -2669,15 +2677,14 @@ def v12_panels(a):
                 at_p = (xf_ports - d_, y - sh_w / 2, z - sh_h / 2)
                 fb = box(d_, sh_w, sh_h, at_p)
                 sh_body = victron_shape("sb50_x", d_, sh_w, sh_h, at_p, fb)
-                bezel_p = box(2.5, w_, h_, (xf_ports + T, y - w_ / 2, z - h_ / 2)).cut(
-                    box(4.5, sh_w - 1, sh_h - 1, (xf_ports + T - 1, y - (sh_w - 1) / 2, z - (sh_h - 1) / 2))
+                bezel_p = box(2.5, w_, h_, (xf_ports + t_front, y - w_ / 2, z - h_ / 2)).cut(
+                    box(4.5, sh_w - 1, sh_h - 1, (xf_ports + t_front - 1, y - (sh_w - 1) / 2, z - (sh_h - 1) / 2))
                 )
                 add(a, sh_body.union(bezel_p), f"socket_{kind}", (0.3, 0.3, 0.3))
         if bezel is not None: bezel = tgt
         else: front = tgt
     # the front panel is PRINTED (the ports are cut in it): two tiles on a vertical 20 mm half-lap, the outboard
-    # tile keeping the outer half of the thickness across the lap, 3 x M4 through the lap (nuts on the bench); it slides into
-    # the rails' slots like the sheet panels
+    # tile keeping the outer half of the thickness across the lap; it slides into the rails' slots like the sheet panels
     if not printed_ends and (bezel is not None or P.get("icebox_front") == "side"):
         if bezel is not None:
             add(a, front, "panel_front_slotted_from_icebox", PANEL)
@@ -2694,10 +2701,11 @@ def v12_panels(a):
     ymid = ymid_end if printed_ends else (B + in_W / 2)
     lw = lw_end
     big = big_end
-    outb = front.intersect(box(40, ymid + lw / 2 + 20, big, (xf - 20, -20, -20))).cut(box(3.0 + 1, lw, big, (xf - 1, ymid - lw / 2, -20)))
-    inb = front.intersect(box(40, out_W, big, (xf - 20, ymid - lw / 2, -20))).cut(box(T - 3.0 + 1, lw, big, (xf + 3.0, ymid - lw / 2, -20)))
+    lap_t_front = t_front / 2.0
+    outb = front.intersect(box(40, ymid + lw / 2 + 20, big, (xf - 20, -20, -20))).cut(box(lap_t_front + 1, lw, big, (xf - 1, ymid - lw / 2, -20)))
+    inb = front.intersect(box(40, out_W, big, (xf - 20, ymid - lw / 2, -20))).cut(box(t_front - lap_t_front + 1, lw, big, (xf + lap_t_front, ymid - lw / 2, -20)))
     for zb in ((60, 140, 220) if P.get("lap_bolts", True) else ()):
-        bolt = cq.Workplane("YZ").center(ymid, zb).circle(2.3).extrude(T + 2).translate((xf - 1, 0, 0))
+        bolt = cq.Workplane("YZ").center(ymid, zb).circle(2.3).extrude(t_front + 2).translate((xf - 1, 0, 0))
         outb, inb = outb.cut(bolt), inb.cut(bolt)
     add(a, outb, "print_panel_front_outboard", ORANGE)
     add(a, inb, "print_panel_front_inboard_ports", ORANGE)

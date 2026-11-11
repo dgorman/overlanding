@@ -994,41 +994,38 @@ def build_frame_and_panels(
     )
     apply_color(app, design, p_back_in, *COL_PRINT_ORANGE)
 
-    # Front Port Panel: 2-tile H2D Printed Panel (split on 20 mm glued vertical half-lap at Y = 280..300 mm, no bolts)
-    xf_inner = BOX_DEPTH_X - pm - T  # 556.0 mm
+    # Front Port Panel: 2-tile H2D Printed Panel (6.5 mm thick, +7.8 mm bottom height = 245.5 mm, R=17.2 mm corner notches, 20 mm glued half-lap)
+    t_front = t_back
+    xf_inner = BOX_DEPTH_X - pm_back - t_front
     p_front_out = add_box_feature(
-        panel_comp, xf_inner, B - tongue, B - tongue,
-        T, (end_lap_ymid + end_lap_w / 2.0) - (B - tongue), BOX_HEIGHT_Z - 2.0 * B + 2.0 * tongue,
+        panel_comp, xf_inner, B - tongue, z_b0,
+        t_front, (end_lap_ymid + end_lap_w / 2.0) - (B - tongue), h_back,
         body_name="print_panel_front_outboard",
     )
-    for cz0 in (B - tongue - 0.5, BOX_HEIGHT_Z - C):
-        add_box_feature(
-            panel_comp, xf_inner - 0.5, B - tongue - 0.5, cz0,
-            T + 1.0, (C - B + tongue) + 0.5, (C - B + tongue) + 0.5,
-            adsk.fusion.FeatureOperations.CutFeatureOperation, p_front_out,
-        )
-    # Half-lap rabbet on outboard front tile: keep outer 3.0 mm (cut inner 3.0 mm across Y = 280..300 mm)
+    cut_cylinders_on_plane(
+        panel_comp, p_front_out, "x", xf_inner - 0.5, t_front + 1.0,
+        [(xf_inner, B - tongue, z_b0, r_notch_back), (xf_inner, B - tongue, z_b1, r_notch_back)],
+    )
+    # Half-lap rabbet on outboard front tile: keep outer 3.25 mm (cut inner 3.25 mm across Y = 280..300 mm)
     add_box_feature(
-        panel_comp, xf_inner - 0.5, end_lap_ymid - end_lap_w / 2.0, B - tongue - 0.5,
-        T / 2.0 + 0.5, end_lap_w + 0.5, BOX_HEIGHT_Z - 2.0 * B + 2.0 * tongue + 1.0,
+        panel_comp, xf_inner - 0.5, end_lap_ymid - end_lap_w / 2.0, z_b0 - 0.5,
+        t_front / 2.0 + 0.5, end_lap_w + 0.5, h_back + 1.0,
         adsk.fusion.FeatureOperations.CutFeatureOperation, p_front_out,
     )
 
     p_front_in = add_box_feature(
-        panel_comp, xf_inner, end_lap_ymid - end_lap_w / 2.0, B - tongue,
-        T, (B + INNER_WIDTH_Y + tongue) - (end_lap_ymid - end_lap_w / 2.0), BOX_HEIGHT_Z - 2.0 * B + 2.0 * tongue,
+        panel_comp, xf_inner, end_lap_ymid - end_lap_w / 2.0, z_b0,
+        t_front, (B + INNER_WIDTH_Y + tongue) - (end_lap_ymid - end_lap_w / 2.0), h_back,
         body_name="print_panel_front_inboard_ports",
     )
-    for cz0 in (B - tongue - 0.5, BOX_HEIGHT_Z - C):
-        add_box_feature(
-            panel_comp, xf_inner - 0.5, B + INNER_WIDTH_Y + tongue - (C - B + tongue) + 0.5, cz0,
-            T + 1.0, (C - B + tongue) + 0.5, (C - B + tongue) + 0.5,
-            adsk.fusion.FeatureOperations.CutFeatureOperation, p_front_in,
-        )
-    # Half-lap rabbet on inboard front tile: keep inner 3.0 mm (cut outer 3.0 mm across Y = 280..300 mm)
+    cut_cylinders_on_plane(
+        panel_comp, p_front_in, "x", xf_inner - 0.5, t_front + 1.0,
+        [(xf_inner, B + INNER_WIDTH_Y + tongue, z_b0, r_notch_back), (xf_inner, B + INNER_WIDTH_Y + tongue, z_b1, r_notch_back)],
+    )
+    # Half-lap rabbet on inboard front tile: keep inner 3.25 mm (cut outer 3.25 mm across Y = 280..300 mm)
     add_box_feature(
-        panel_comp, xf_inner + T / 2.0, end_lap_ymid - end_lap_w / 2.0 - 0.5, B - tongue - 0.5,
-        T / 2.0 + 0.5, end_lap_w + 0.5, BOX_HEIGHT_Z - 2.0 * B + 2.0 * tongue + 1.0,
+        panel_comp, xf_inner + t_front / 2.0, end_lap_ymid - end_lap_w / 2.0 - 0.5, z_b0 - 0.5,
+        t_front / 2.0 + 0.5, end_lap_w + 0.5, h_back + 1.0,
         adsk.fusion.FeatureOperations.CutFeatureOperation, p_front_in,
     )
 
@@ -1037,9 +1034,10 @@ def build_frame_and_panels(
         f_sketch = panel_comp.sketches.add(f_plane)
         f_circles = f_sketch.sketchCurves.sketchCircles
         f_lines = f_sketch.sketchCurves.sketchLines
-        for _pname, pkind, py, pz, psize, _pdepth in FRONT_PANEL_PORTS:
+        for _pname, pkind, py, pz_raw, psize, _pdepth in FRONT_PANEL_PORTS:
             if not y_filter(py):
                 continue
+            pz = pz_raw + z_shift_back
             if pkind == "circle":
                 rad = psize[0] / 2.0
                 f_circles.addByCenterRadius(sketch_world_point(f_sketch, xf_inner - 0.5, py, pz), cm(rad))
@@ -1049,7 +1047,7 @@ def build_frame_and_panels(
                     sketch_world_point(f_sketch, xf_inner - 0.5, py - pw / 2.0, pz - ph / 2.0),
                     sketch_world_point(f_sketch, xf_inner - 0.5, py + pw / 2.0, pz + ph / 2.0),
                 )
-        extrude_all_profiles(panel_comp, f_sketch, "x", T + 1.0, adsk.fusion.FeatureOperations.CutFeatureOperation, target_front)
+        extrude_all_profiles(panel_comp, f_sketch, "x", t_front + 1.0, adsk.fusion.FeatureOperations.CutFeatureOperation, target_front)
 
     apply_color(app, design, p_front_out, *COL_PRINT_ORANGE)
     apply_color(app, design, p_front_in, *COL_PRINT_ORANGE)
