@@ -2563,7 +2563,7 @@ def v12_panels(a):
     pm_back = B / 2 - t_back / 2
     z_ext_bot_back = 7.8 if printed_ends else 0.0                   # +7.8 mm added to bottom of printed back panel (total height 245.5 mm)
     z_shift_back = z_ext_bot_back / 2.0                             # 3.9 mm: centers 245.5 mm panel in top/bottom rail slots while keeping top margin fixed
-    r_notch_back = 8.6                                              # generous ~2.3x corner notch radius (was 3.75 mm) clearing corner cubes + slot alignment nubs
+    r_notch_back = 17.2                                             # 2x larger corner notch radius (was 8.6 mm) generously clearing corner cubes + slot alignment nubs
     if printed_ends:
         z_b0 = B - 3.0 - z_shift_back                               # 18.10 mm
         z_b1 = out_H - B + 3.0 + z_shift_back                       # 263.60 mm (height = 245.50 mm)

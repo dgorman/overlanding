@@ -927,7 +927,7 @@ def build_frame_and_panels(
     p_in = make_slot_panel("x", BOX_WIDTH_Y - pm - T, INNER_DEPTH_X, "panel_side_inboard_from_icebox")
     apply_color(app, design, p_in, *COL_PANEL_PLY)
 
-    # Back Panel: 2-tile H2D Printed Panel (6.5 mm thick, +7.8 mm bottom height = 245.5 mm, R=8.6 mm corner notches, 20 mm glued half-lap)
+    # Back Panel: 2-tile H2D Printed Panel (6.5 mm thick, +7.8 mm bottom height = 245.5 mm, R=17.2 mm corner notches, 20 mm glued half-lap)
     end_lap_ymid = 290.0
     end_lap_w = 20.0
     t_back = T + 0.5
@@ -936,7 +936,7 @@ def build_frame_and_panels(
     z_b0 = B - tongue - z_shift_back
     z_b1 = BOX_HEIGHT_Z - B + tongue + z_shift_back
     h_back = z_b1 - z_b0
-    r_notch_back = 8.6
+    r_notch_back = 17.2
     p_back_out = add_box_feature(
         panel_comp, pm_back, B - tongue, z_b0,
         t_back, (end_lap_ymid + end_lap_w / 2.0) - (B - tongue), h_back,
