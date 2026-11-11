@@ -927,66 +927,69 @@ def build_frame_and_panels(
     p_in = make_slot_panel("x", BOX_WIDTH_Y - pm - T, INNER_DEPTH_X, "panel_side_inboard_from_icebox")
     apply_color(app, design, p_in, *COL_PANEL_PLY)
 
-    # Back Panel: 2-tile H2D Printed Panel (split on 20 mm vertical half-lap at Y = 280..300 mm, 3x M4 bolts)
+    # Back Panel: 2-tile H2D Printed Panel (6.5 mm thick, +7.8 mm bottom height = 245.5 mm, R=8.6 mm corner notches, 20 mm glued half-lap)
     end_lap_ymid = 290.0
     end_lap_w = 20.0
+    t_back = T + 0.5
+    pm_back = B / 2.0 - t_back / 2.0
+    z_shift_back = 3.9
+    z_b0 = B - tongue - z_shift_back
+    z_b1 = BOX_HEIGHT_Z - B + tongue + z_shift_back
+    h_back = z_b1 - z_b0
+    r_notch_back = 8.6
     p_back_out = add_box_feature(
-        panel_comp, pm, B - tongue, B - tongue,
-        T, (end_lap_ymid + end_lap_w / 2.0) - (B - tongue), BOX_HEIGHT_Z - 2.0 * B + 2.0 * tongue,
+        panel_comp, pm_back, B - tongue, z_b0,
+        t_back, (end_lap_ymid + end_lap_w / 2.0) - (B - tongue), h_back,
         body_name="print_panel_back_outboard",
     )
-    for cz0 in (B - tongue - 0.5, BOX_HEIGHT_Z - C):
-        add_box_feature(
-            panel_comp, pm - 0.5, B - tongue - 0.5, cz0,
-            T + 1.0, (C - B + tongue) + 0.5, (C - B + tongue) + 0.5,
-            adsk.fusion.FeatureOperations.CutFeatureOperation, p_back_out,
-        )
-    # Half-lap rabbet on outboard tile: keep outer 3.0 mm (cut inner 3.0 mm across Y = 280..300 mm)
+    cut_cylinders_on_plane(
+        panel_comp, p_back_out, "x", pm_back - 0.5, t_back + 1.0,
+        [(pm_back, B - tongue, z_b0, r_notch_back), (pm_back, B - tongue, z_b1, r_notch_back)],
+    )
+    # Half-lap rabbet on outboard tile: keep outer 3.25 mm (cut inner 3.25 mm across Y = 280..300 mm)
     add_box_feature(
-        panel_comp, pm + T / 2.0, end_lap_ymid - end_lap_w / 2.0, B - tongue - 0.5,
-        T / 2.0 + 0.5, end_lap_w + 0.5, BOX_HEIGHT_Z - 2.0 * B + 2.0 * tongue + 1.0,
+        panel_comp, pm_back + t_back / 2.0, end_lap_ymid - end_lap_w / 2.0, z_b0 - 0.5,
+        t_back / 2.0 + 0.5, end_lap_w + 0.5, h_back + 1.0,
         adsk.fusion.FeatureOperations.CutFeatureOperation, p_back_out,
     )
     # Ventilation slots on outboard back tile only (Y + slot_w < 270.0 mm)
-    back_out_plane = create_offset_plane(panel_comp, "x", pm - 0.5)
+    back_out_plane = create_offset_plane(panel_comp, "x", pm_back - 0.5)
     back_out_sketch = panel_comp.sketches.add(back_out_plane)
     bo_lines = back_out_sketch.sketchCurves.sketchLines
     slot_w, slot_h, pitch_y, pitch_z = 72.0, 22.0, 92.0, 46.0
     for r in range(4):
-        sz = B + 60.0 + r * pitch_z
+        sz = B + 60.0 + r * pitch_z + z_shift_back
         if sz < B + 4.0 or sz + slot_h > BOX_HEIGHT_Z - B - 4.0:
             continue
         sy = B + 40.0 + (pitch_y / 2.0 if r % 2 == 1 else 0.0)
         while sy + slot_w < 270.0:
             bo_lines.addTwoPointRectangle(
-                sketch_world_point(back_out_sketch, pm - 0.5, sy, sz),
-                sketch_world_point(back_out_sketch, pm - 0.5, sy + slot_w, sz + slot_h),
+                sketch_world_point(back_out_sketch, pm_back - 0.5, sy, sz),
+                sketch_world_point(back_out_sketch, pm_back - 0.5, sy + slot_w, sz + slot_h),
             )
             sy += pitch_y
-    extrude_all_profiles(panel_comp, back_out_sketch, "x", T + 1.0, adsk.fusion.FeatureOperations.CutFeatureOperation, p_back_out)
+    extrude_all_profiles(panel_comp, back_out_sketch, "x", t_back + 1.0, adsk.fusion.FeatureOperations.CutFeatureOperation, p_back_out)
     apply_color(app, design, p_back_out, *COL_PRINT_ORANGE)
 
     p_back_in = add_box_feature(
-        panel_comp, pm, end_lap_ymid - end_lap_w / 2.0, B - tongue,
-        T, (B + INNER_WIDTH_Y + tongue) - (end_lap_ymid - end_lap_w / 2.0), BOX_HEIGHT_Z - 2.0 * B + 2.0 * tongue,
+        panel_comp, pm_back, end_lap_ymid - end_lap_w / 2.0, z_b0,
+        t_back, (B + INNER_WIDTH_Y + tongue) - (end_lap_ymid - end_lap_w / 2.0), h_back,
         body_name="print_panel_back_inboard_gx",
     )
-    for cz0 in (B - tongue - 0.5, BOX_HEIGHT_Z - C):
-        add_box_feature(
-            panel_comp, pm - 0.5, B + INNER_WIDTH_Y + tongue - (C - B + tongue) + 0.5, cz0,
-            T + 1.0, (C - B + tongue) + 0.5, (C - B + tongue) + 0.5,
-            adsk.fusion.FeatureOperations.CutFeatureOperation, p_back_in,
-        )
-    # Half-lap rabbet on inboard tile: keep inner 3.0 mm (cut outer 3.0 mm across Y = 280..300 mm)
+    cut_cylinders_on_plane(
+        panel_comp, p_back_in, "x", pm_back - 0.5, t_back + 1.0,
+        [(pm_back, B + INNER_WIDTH_Y + tongue, z_b0, r_notch_back), (pm_back, B + INNER_WIDTH_Y + tongue, z_b1, r_notch_back)],
+    )
+    # Half-lap rabbet on inboard tile: keep inner 3.25 mm (cut outer 3.25 mm across Y = 280..300 mm)
     add_box_feature(
-        panel_comp, pm - 0.5, end_lap_ymid - end_lap_w / 2.0 - 0.5, B - tongue - 0.5,
-        T / 2.0 + 0.5, end_lap_w + 0.5, BOX_HEIGHT_Z - 2.0 * B + 2.0 * tongue + 1.0,
+        panel_comp, pm_back - 0.5, end_lap_ymid - end_lap_w / 2.0 - 0.5, z_b0 - 0.5,
+        t_back / 2.0 + 0.5, end_lap_w + 0.5, h_back + 1.0,
         adsk.fusion.FeatureOperations.CutFeatureOperation, p_back_in,
     )
-    # GX Touch 50 flush rectangular cutout (128 x 86 mm at Y=383.1, Z=160.0) in solid inboard tile
+    # GX Touch 50 flush rectangular cutout (128 x 86 mm, 56.7 mm from top edge, 102.8 mm from bottom edge) in solid inboard tile
     add_box_feature(
-        panel_comp, pm - 0.5, GX_TOUCH_YC - GX_TOUCH_CUT_W_Y / 2.0, GX_TOUCH_ZC - GX_TOUCH_CUT_H_Z / 2.0,
-        T + 1.0, GX_TOUCH_CUT_W_Y, GX_TOUCH_CUT_H_Z,
+        panel_comp, pm_back - 0.5, GX_TOUCH_YC - GX_TOUCH_CUT_W_Y / 2.0, (GX_TOUCH_ZC + z_shift_back) - GX_TOUCH_CUT_H_Z / 2.0,
+        t_back + 1.0, GX_TOUCH_CUT_W_Y, GX_TOUCH_CUT_H_Z,
         adsk.fusion.FeatureOperations.CutFeatureOperation, p_back_in,
     )
     apply_color(app, design, p_back_in, *COL_PRINT_ORANGE)

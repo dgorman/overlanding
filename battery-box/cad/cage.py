@@ -749,7 +749,8 @@ def bar(length: float, axis: str):
     """1" square bar with a shallow slot hint on each face (visual only)."""
     b = cq.Workplane("YZ").rect(B, B).extrude(length)
     for ang in (0, 90, 180, 270):
-        slot = (cq.Workplane("YZ").center(0, B / 2 - 1.5).rect(6.4, 3)
+        sd = 8.0 if ang in (0, 180) else 3.0
+        slot = (cq.Workplane("YZ").center(0, B / 2 - sd / 2).rect(6.6, sd)
                 .extrude(length).rotate((0, 0, 0), (1, 0, 0), ang))
         b = b.cut(slot)
     if axis == "y":
@@ -2557,9 +2558,22 @@ def v12_panels(a):
             return body.union(box(length - 2 * e, T, out_H - 2 * B + 6, (C, thick_at, B - 3)))
         body = box(T, length, out_H - 2 * B, (thick_at, B, B)).union(box(T, length + 6, out_H - 2 * C, (thick_at, B - 3, C)))
         return body.union(box(T, length - 2 * e, out_H - 2 * B + 6, (thick_at, C, B - 3)))
-    back = slot_panel("y", pm, in_W)                                                          # the IceBox's perforated rear panel, cut to height
-    slot_w, slot_h, pitch_y, pitch_z = 72.0, 22.0, 92.0, 46.0
     printed_ends = bool(P.get("printed_ends"))
+    t_back = (T + 0.5) if printed_ends else T                       # 6.5 mm thickness (+0.5 mm) on printed back panels for snug 6.5 mm rail slot fit
+    pm_back = B / 2 - t_back / 2
+    z_ext_bot_back = 7.8 if printed_ends else 0.0                   # +7.8 mm added to bottom of printed back panel (total height 245.5 mm)
+    z_shift_back = z_ext_bot_back / 2.0                             # 3.9 mm: centers 245.5 mm panel in top/bottom rail slots while keeping top margin fixed
+    r_notch_back = 8.6                                              # generous ~2.3x corner notch radius (was 3.75 mm) clearing corner cubes + slot alignment nubs
+    if printed_ends:
+        z_b0 = B - 3.0 - z_shift_back                               # 18.10 mm
+        z_b1 = out_H - B + 3.0 + z_shift_back                       # 263.60 mm (height = 245.50 mm)
+        back = box(t_back, in_W + 6.0, z_b1 - z_b0, (pm_back, B - 3.0, z_b0))
+        for cy_n in (B - 3.0, out_W - B + 3.0):
+            for cz_n in (z_b0, z_b1):
+                back = back.cut(cq.Workplane("YZ").center(cy_n, cz_n).circle(r_notch_back).extrude(t_back + 4.0).translate((pm_back - 2.0, 0, 0)))
+    else:
+        back = slot_panel("y", pm, in_W)                            # the IceBox's perforated rear panel, cut to height
+    slot_w, slot_h, pitch_y, pitch_z = 72.0, 22.0, 92.0, 46.0
     def icebox_slots(panel, x_face, first_row, n_rows, z_shift, y_limit=None):
         # the IceBox back panel's slot rows are at z = B + 60 + r * pitch_z (r = 0..7) with the odd rows staggered half a pitch;
         # the box's back panel is its bottom 237 mm (rows 0-3), the front panel the offcut above it (rows 4-7, shifted down)
@@ -2570,19 +2584,19 @@ def v12_panels(a):
                 continue
             y = B + 40 + ((pitch_y / 2) if r % 2 else 0)
             while y + slot_w < lim:
-                panel = panel.cut(cq.Workplane("YZ").center(y + slot_w / 2, z + slot_h / 2).slot2D(slot_w, slot_h).extrude(T + 8).translate((x_face - 4, 0, 0)))
+                panel = panel.cut(cq.Workplane("YZ").center(y + slot_w / 2, z + slot_h / 2).slot2D(slot_w, slot_h).extrude(t_back + 8).translate((x_face - 4, 0, 0)))
                 y += pitch_y
         return panel
     if P.get("perforated_back"):
-        back = icebox_slots(back, pm, 0, 4, 0.0, y_limit=(270.0 if printed_ends else None))
+        back = icebox_slots(back, pm_back, 0, 4, -z_shift_back, y_limit=(270.0 if printed_ends else None))
     if P.get("gx_touch", False):
         # Victron GX Touch 50 FLUSH (136 x 94 x 12, 800x480) let into the BACK panel at its inboard end (user, 2026-10-30): the
         # panel's inner face is 30 mm from the MultiPlus's back end there, enough for the 12 mm body and a right-angle cable plug.
         # Cut-out modelled as the body (128 x 86); VERIFY against the flush kit's template before cutting.
         tw, th, td = 136.0, 94.0, 12.0
         cw_, ch_ = 128.0, 86.0
-        yc, zc = out_W - B - 80.0, 160.0                            # bezel edge 5 mm clear of the inboard corner rail
-        back = back.cut(box(T + 2, cw_, ch_, (pm - 1, yc - cw_ / 2, zc - ch_ / 2)))
+        yc, zc = out_W - B - 80.0, 160.0 + z_shift_back             # bezel edge 5 mm clear of the inboard corner rail; top margin stays 56.7 mm, bottom margin +7.8 mm (102.8 mm)
+        back = back.cut(box(t_back + 2, cw_, ch_, (pm_back - 1, yc - cw_ / 2, zc - ch_ / 2)))
         if not printed_ends:
             bezel = box(3.0, 150.0, 108.0, (pm - 3.0, yc - 75.0, zc - 54.0)).cut(box(5.0, cw_, ch_, (pm - 4.0, yc - cw_ / 2, zc - ch_ / 2)))
             for (by, bz) in ((yc - 70, zc - 49), (yc + 70, zc - 49), (yc - 70, zc + 49), (yc + 70, zc + 49)):
@@ -2593,19 +2607,20 @@ def v12_panels(a):
             add(a, body.union(face), "gx_touch_50", BLACK)
             add(a, box(15.0, 40.0, 20.0, (pm - 3.0 + td, yc - 20.0, zc - 10.0)), "gx_touch_cable_plug", (0.3, 0.3, 0.3))
         else:
-            body = box(td, cw_, ch_, (pm, yc - cw_ / 2, zc - ch_ / 2))
-            face = box(3.0, tw, th, (pm - 3.0, yc - tw / 2, zc - th / 2))
+            body = box(td, cw_, ch_, (pm_back, yc - cw_ / 2, zc - ch_ / 2))
+            face = box(3.0, tw, th, (pm_back - 3.0, yc - tw / 2, zc - th / 2))
             add(a, body.union(face), "gx_touch_50", BLACK)
-            add(a, box(15.0, 40.0, 20.0, (pm + td, yc - 20.0, zc - 10.0)), "gx_touch_cable_plug", (0.3, 0.3, 0.3))
+            add(a, box(15.0, 40.0, 20.0, (pm_back + td, yc - 20.0, zc - 10.0)), "gx_touch_cable_plug", (0.3, 0.3, 0.3))
     for nm, shp in (("panel_side_outboard_from_icebox", slot_panel("x", pm, in_D)),          # cut down from the IceBox's side panels
                     ("panel_side_inboard_from_icebox", slot_panel("x", out_W - pm - T, in_D))):
         add(a, shp, nm, PANEL)
-    ymid_end, lw_end, big_end = 290.0, 20.0, out_H + 40.0           # H2D 2-tile end-panel split at Y = 280..300 mm (278 x 238 and 186 x 238)
+    ymid_end, lw_end, big_end = 290.0, 20.0, out_H + 40.0           # H2D 2-tile end-panel split at Y = 280..300 mm
     if printed_ends:
-        b_out = back.intersect(box(40, ymid_end + lw_end / 2 + 20, big_end, (pm - 20, -20, -20))).cut(box(T - 3.0 + 1, lw_end, big_end, (pm + 3.0, ymid_end - lw_end / 2, -20)))
-        b_in = back.intersect(box(40, out_W, big_end, (pm - 20, ymid_end - lw_end / 2, -20))).cut(box(3.0 + 1, lw_end, big_end, (pm - 1, ymid_end - lw_end / 2, -20)))
+        lap_t_back = t_back / 2.0                                   # 3.25 mm half-lap on 6.5 mm back panel
+        b_out = back.intersect(box(40, ymid_end + lw_end / 2 + 20, big_end, (pm_back - 20, -20, -20))).cut(box(t_back - lap_t_back + 1, lw_end, big_end, (pm_back + lap_t_back, ymid_end - lw_end / 2, -20)))
+        b_in = back.intersect(box(40, out_W, big_end, (pm_back - 20, ymid_end - lw_end / 2, -20))).cut(box(lap_t_back + 1, lw_end, big_end, (pm_back - 1, ymid_end - lw_end / 2, -20)))
         for zb in ((60, 140, 220) if P.get("lap_bolts", True) else ()):
-            bolt_b = cq.Workplane("YZ").center(ymid_end, zb).circle(2.3).extrude(T + 2).translate((pm - 1, 0, 0))
+            bolt_b = cq.Workplane("YZ").center(ymid_end, zb).circle(2.3).extrude(t_back + 2).translate((pm_back - 1, 0, 0))
             b_out, b_in = b_out.cut(bolt_b), b_in.cut(bolt_b)
         add(a, b_out, "print_panel_back_outboard", ORANGE)
         add(a, b_in, "print_panel_back_inboard_gx", ORANGE)
