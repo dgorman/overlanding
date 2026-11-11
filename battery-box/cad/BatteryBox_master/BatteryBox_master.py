@@ -927,10 +927,10 @@ def build_frame_and_panels(
     p_in = make_slot_panel("x", BOX_WIDTH_Y - pm - T, INNER_DEPTH_X, "panel_side_inboard_from_icebox")
     apply_color(app, design, p_in, *COL_PANEL_PLY)
 
-    # Back Panel: 2-tile H2D Printed Panel (6.5 mm thick, +7.8 mm bottom height = 245.5 mm, R=17.2 mm corner notches, 20 mm glued half-lap)
+    # Back Panel: 2-tile H2D Printed Panel (6.25 mm thick, +7.8 mm bottom height = 245.5 mm, R=17.2 mm corner notches, 20 mm glued half-lap)
     end_lap_ymid = 290.0
     end_lap_w = 20.0
-    t_back = T + 0.5
+    t_back = T + 0.25
     pm_back = B / 2.0 - t_back / 2.0
     z_shift_back = 3.9
     z_b0 = B - tongue - z_shift_back
@@ -946,7 +946,7 @@ def build_frame_and_panels(
         panel_comp, p_back_out, "x", pm_back - 0.5, t_back + 1.0,
         [(pm_back, B - tongue, z_b0, r_notch_back), (pm_back, B - tongue, z_b1, r_notch_back)],
     )
-    # Half-lap rabbet on outboard tile: keep outer 3.25 mm (cut inner 3.25 mm across Y = 280..300 mm)
+    # Half-lap rabbet on outboard tile: keep outer 3.125 mm (cut inner 3.125 mm across Y = 280..300 mm)
     add_box_feature(
         panel_comp, pm_back + t_back / 2.0, end_lap_ymid - end_lap_w / 2.0, z_b0 - 0.5,
         t_back / 2.0 + 0.5, end_lap_w + 0.5, h_back + 1.0,
@@ -980,7 +980,7 @@ def build_frame_and_panels(
         panel_comp, p_back_in, "x", pm_back - 0.5, t_back + 1.0,
         [(pm_back, B + INNER_WIDTH_Y + tongue, z_b0, r_notch_back), (pm_back, B + INNER_WIDTH_Y + tongue, z_b1, r_notch_back)],
     )
-    # Half-lap rabbet on inboard tile: keep inner 3.25 mm (cut outer 3.25 mm across Y = 280..300 mm)
+    # Half-lap rabbet on inboard tile: keep inner 3.125 mm (cut outer 3.125 mm across Y = 280..300 mm)
     add_box_feature(
         panel_comp, pm_back - 0.5, end_lap_ymid - end_lap_w / 2.0 - 0.5, z_b0 - 0.5,
         t_back / 2.0 + 0.5, end_lap_w + 0.5, h_back + 1.0,
@@ -994,7 +994,7 @@ def build_frame_and_panels(
     )
     apply_color(app, design, p_back_in, *COL_PRINT_ORANGE)
 
-    # Front Port Panel: 2-tile H2D Printed Panel (6.5 mm thick, +7.8 mm bottom height = 245.5 mm, R=17.2 mm corner notches, 20 mm glued half-lap)
+    # Front Port Panel: 2-tile H2D Printed Panel (6.25 mm thick, +7.8 mm bottom height = 245.5 mm, R=17.2 mm corner notches, 20 mm glued half-lap)
     t_front = t_back
     xf_inner = BOX_DEPTH_X - pm_back - t_front
     p_front_out = add_box_feature(
@@ -1006,7 +1006,7 @@ def build_frame_and_panels(
         panel_comp, p_front_out, "x", xf_inner - 0.5, t_front + 1.0,
         [(xf_inner, B - tongue, z_b0, r_notch_back), (xf_inner, B - tongue, z_b1, r_notch_back)],
     )
-    # Half-lap rabbet on outboard front tile: keep outer 3.25 mm (cut inner 3.25 mm across Y = 280..300 mm)
+    # Half-lap rabbet on outboard front tile: keep outer 3.125 mm (cut inner 3.125 mm across Y = 280..300 mm)
     add_box_feature(
         panel_comp, xf_inner - 0.5, end_lap_ymid - end_lap_w / 2.0, z_b0 - 0.5,
         t_front / 2.0 + 0.5, end_lap_w + 0.5, h_back + 1.0,
@@ -1022,7 +1022,7 @@ def build_frame_and_panels(
         panel_comp, p_front_in, "x", xf_inner - 0.5, t_front + 1.0,
         [(xf_inner, B + INNER_WIDTH_Y + tongue, z_b0, r_notch_back), (xf_inner, B + INNER_WIDTH_Y + tongue, z_b1, r_notch_back)],
     )
-    # Half-lap rabbet on inboard front tile: keep inner 3.25 mm (cut outer 3.25 mm across Y = 280..300 mm)
+    # Half-lap rabbet on inboard front tile: keep inner 3.125 mm (cut outer 3.125 mm across Y = 280..300 mm)
     add_box_feature(
         panel_comp, xf_inner + t_front / 2.0, end_lap_ymid - end_lap_w / 2.0 - 0.5, z_b0 - 0.5,
         t_front / 2.0 + 0.5, end_lap_w + 0.5, h_back + 1.0,

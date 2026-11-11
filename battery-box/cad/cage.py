@@ -2559,7 +2559,7 @@ def v12_panels(a):
         body = box(T, length, out_H - 2 * B, (thick_at, B, B)).union(box(T, length + 6, out_H - 2 * C, (thick_at, B - 3, C)))
         return body.union(box(T, length - 2 * e, out_H - 2 * B + 6, (thick_at, C, B - 3)))
     printed_ends = bool(P.get("printed_ends"))
-    t_back = (T + 0.5) if printed_ends else T                       # 6.5 mm thickness (+0.5 mm) on printed back panels for snug 6.5 mm rail slot fit
+    t_back = (T + 0.25) if printed_ends else T                      # 6.25 mm thickness (+0.25 mm) on printed end panels for 0.25 mm clearance in 6.5 mm rail slot
     pm_back = B / 2 - t_back / 2
     z_ext_bot_back = 7.8 if printed_ends else 0.0                   # +7.8 mm added to bottom of printed back panel (total height 245.5 mm)
     z_shift_back = z_ext_bot_back / 2.0                             # 3.9 mm: centers 245.5 mm panel in top/bottom rail slots while keeping top margin fixed
@@ -2616,7 +2616,7 @@ def v12_panels(a):
         add(a, shp, nm, PANEL)
     ymid_end, lw_end, big_end = 290.0, 20.0, out_H + 40.0           # H2D 2-tile end-panel split at Y = 280..300 mm
     if printed_ends:
-        lap_t_back = t_back / 2.0                                   # 3.25 mm half-lap on 6.5 mm back panel
+        lap_t_back = t_back / 2.0                                   # 3.125 mm half-lap on 6.25 mm back panel
         b_out = back.intersect(box(40, ymid_end + lw_end / 2 + 20, big_end, (pm_back - 20, -20, -20))).cut(box(t_back - lap_t_back + 1, lw_end, big_end, (pm_back + lap_t_back, ymid_end - lw_end / 2, -20)))
         b_in = back.intersect(box(40, out_W, big_end, (pm_back - 20, ymid_end - lw_end / 2, -20))).cut(box(lap_t_back + 1, lw_end, big_end, (pm_back - 1, ymid_end - lw_end / 2, -20)))
         for zb in ((60, 140, 220) if P.get("lap_bolts", True) else ()):
