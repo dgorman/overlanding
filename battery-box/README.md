@@ -144,10 +144,10 @@ While **PETG Basic** is used for test-fitting and prototyping, the final product
 1. **PETG Matte Flat Panel Baseline (`print_panel_*`, `6.25 mm` panel thickness):**
    - **Drying & Prep:** Dry PETG Matte overnight in AMS 2 Pro (`~10%` RH). Wash Textured PEI plate with Dawn + warm water, apply a thin coat of **Bambu Liquid Glue** as a release barrier, and let the plate cool below **`35–40°C`** before flexing off to prevent stress-whitening swirls.
    - **Process (`0.20mm Standard @BBL H2D`):** `4` wall loops, `6–7` top shell layers (`1.2–1.4 mm`), `5` bottom shell layers, `25%` **Gyroid** (or **Cross Hatch**) sparse infill, **Precise Z height** enabled.
-2. **Half-Lap Overhang Support Baseline (`print_panel_back_inboard_gx.stl` only):**
-   - **CAD Lap Geometry:** Both back tiles print with their exterior (`-X`) face flat on `Z = 0` so Textured PEI faces out on both tiles. `print_panel_back_outboard.stl` prints support-free (`Z = 0.000..3.125 mm` outer flap); `print_panel_back_inboard_gx.stl` prints with an overhanging inner flap at **`Z = 3.200..6.100 mm`** (`16 × 0.20 mm` exact layer boundary for `+0.075 mm` glue/interface allowance over the `3.125 mm` mating flap, plus `-0.15 mm` inner relief capping total joint thickness at `6.10 mm` inside the rail slot).
+2. **Half-Lap Overhang Support Baseline (`print_panel_back_outboard.stl` only):**
+   - **CAD Lap Geometry:** Both back tiles print with their outer Textured PEI face on `Z = 0`. `print_panel_back_inboard_gx.stl` prints support-free (`Z = 0.000..3.125 mm` flap); `print_panel_back_outboard.stl` prints with an overhanging flap at **`Z = 3.200..6.100 mm`** (`16 × 0.20 mm` exact layer boundary for `+0.075 mm` glue/interface allowance over the `3.125 mm` mating flap, plus `-0.15 mm` inner relief capping total joint thickness at `6.10 mm` inside the rail slot).
    - **Bambu Studio `Support` Tab Baseline:**
-     - **Enable support:** `Checked` *(for `print_panel_back_inboard_gx` only; keep unchecked on main preset)*
+     - **Enable support:** `Checked` *(for `print_panel_back_outboard` only; keep unchecked on main preset)*
      - **Type:** `normal(auto)` · **Style:** `Snug` · **Threshold angle:** `30°`
      - **On build plate only:** `Checked` · **Remove small overhangs:** `Checked`
      - **Support/raft base & interface:** `Default` *(same PETG Matte; optional H2D dual-nozzle alternative: `PLA` interface with `0 mm` Top Z distance & `0 mm` Top interface spacing)*

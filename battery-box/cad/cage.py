@@ -2616,13 +2616,13 @@ def v12_panels(a):
         add(a, shp, nm, PANEL)
     ymid_end, lw_end, big_end = 290.0, 20.0, out_H + 40.0           # H2D 2-tile end-panel split at Y = 280..300 mm
     if printed_ends:
-        lap_t_back = t_back / 2.0                                   # 3.125 mm outer half-lap on back_outboard
-        lap_z_in = 3.20                                             # exact 16x0.20mm layer ceiling (+0.075 mm glue/support-breakoff relief over 3.125 mm flap)
-        lap_clr_in = 0.15                                           # 0.15 mm inner-face relief on back_inboard_gx -> 6.10 mm combined seam in rail slot
-        b_out = back.intersect(box(40, ymid_end + lw_end / 2 + 20, big_end, (pm_back - 20, -20, -20))).cut(box(t_back - lap_t_back + 1, lw_end, big_end, (pm_back + lap_t_back, ymid_end - lw_end / 2, -20)))
-        b_in = (back.intersect(box(40, out_W, big_end, (pm_back - 20, ymid_end - lw_end / 2, -20)))
-                .cut(box(lap_z_in + 1, lw_end, big_end, (pm_back - 1, ymid_end - lw_end / 2, -20)))
-                .cut(box(lap_clr_in + 1, lw_end, big_end, (pm_back + t_back - lap_clr_in, ymid_end - lw_end / 2, -20))))
+        lap_t_back = t_back / 2.0                                   # 3.125 mm half-lap on back_inboard_gx
+        lap_z_out = 3.20                                            # exact 16x0.20mm layer ceiling (+0.075 mm glue/support-breakoff relief over 3.125 mm flap)
+        lap_clr_out = 0.15                                          # 0.15 mm flap relief on back_outboard -> 6.10 mm combined seam in rail slot
+        b_out = (back.intersect(box(40, ymid_end + lw_end / 2 + 20, big_end, (pm_back - 20, -20, -20)))
+                 .cut(box(lap_z_out + 1, lw_end, big_end, (pm_back + t_back - lap_z_out, ymid_end - lw_end / 2, -20)))
+                 .cut(box(lap_clr_out + 1, lw_end, big_end, (pm_back - 1, ymid_end - lw_end / 2, -20))))
+        b_in = back.intersect(box(40, out_W, big_end, (pm_back - 20, ymid_end - lw_end / 2, -20))).cut(box(lap_t_back + 1, lw_end, big_end, (pm_back - 1, ymid_end - lw_end / 2, -20)))
         for zb in ((60, 140, 220) if P.get("lap_bolts", True) else ()):
             bolt_b = cq.Workplane("YZ").center(ymid_end, zb).circle(2.3).extrude(t_back + 2).translate((pm_back - 1, 0, 0))
             b_out, b_in = b_out.cut(bolt_b), b_in.cut(bolt_b)
