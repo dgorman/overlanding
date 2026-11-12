@@ -83,6 +83,11 @@ def flat_y_long(tris):
     return t
 
 
+def back_outboard_tex_out(tris: list[list[tuple[float, float, float]]]) -> list[list[tuple[float, float, float]]]:
+    """Orient print_panel_back_outboard with +X face on Z=0 so its build-plate texture faces out alongside print_panel_back_inboard_gx."""
+    return [[(-v[2], -v[1], -v[0]) for v in t] for t in tris]
+
+
 ORIENT_RULES = [   # (file-name prefix, orientation); first match wins; anything else prints as modelled
     ("print_breaker_shelf", edge_x_up),         # 130 mm edge vertical: every wall upright, the plate and leg need no support
     ("print_busbar_spacer", flat_y_long),       # 35 mm (X) x 155 mm (Y) x 10 mm (Z) so H2D X-arrange packs them 82 x 155 mm
@@ -90,6 +95,7 @@ ORIENT_RULES = [   # (file-name prefix, orientation); first match wins; anything
     ("print_post_clip", flat),                  # on the plain outer face, countersink up
     ("print_plate_inverter_tile", flat),        # on the plain back: pilot holes and the half-lap rabbets face up
     ("print_plate_inverter_spline", flat),
+    ("print_panel_back_outboard", back_outboard_tex_out),
     ("print_panel_", flat),                     # 2-tile printed end panels lie flat on the bed, half-lap rabbet facing up
     ("print_garmin_hanger", flat),
     ("print_touch_bezel", flat),

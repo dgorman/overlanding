@@ -946,10 +946,15 @@ def build_frame_and_panels(
         panel_comp, p_back_out, "x", pm_back - 0.5, t_back + 1.0,
         [(pm_back, B - tongue, z_b0, r_notch_back), (pm_back, B - tongue, z_b1, r_notch_back)],
     )
-    # Half-lap rabbet on outboard tile: keep outer 3.125 mm (cut inner 3.125 mm across Y = 280..300 mm)
+    # Half-lap rabbet on outboard tile: keep 2.975 mm flap (cut inner 3.125 mm + 0.15 mm outer flap relief across Y = 280..300 mm -> 6.10 mm combined seam)
     add_box_feature(
         panel_comp, pm_back + t_back / 2.0, end_lap_ymid - end_lap_w / 2.0, z_b0 - 0.5,
         t_back / 2.0 + 0.5, end_lap_w + 0.5, h_back + 1.0,
+        adsk.fusion.FeatureOperations.CutFeatureOperation, p_back_out,
+    )
+    add_box_feature(
+        panel_comp, pm_back - 0.5, end_lap_ymid - end_lap_w / 2.0, z_b0 - 0.5,
+        0.15 + 0.5, end_lap_w + 0.5, h_back + 1.0,
         adsk.fusion.FeatureOperations.CutFeatureOperation, p_back_out,
     )
     # Ventilation slots on outboard back tile only (Y + slot_w < 270.0 mm)
