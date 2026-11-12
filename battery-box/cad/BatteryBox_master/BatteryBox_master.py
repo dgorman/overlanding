@@ -946,15 +946,10 @@ def build_frame_and_panels(
         panel_comp, p_back_out, "x", pm_back - 0.5, t_back + 1.0,
         [(pm_back, B - tongue, z_b0, r_notch_back), (pm_back, B - tongue, z_b1, r_notch_back)],
     )
-    # Half-lap rabbet on outboard tile: keep 2.975 mm flap (cut inner 3.125 mm + 0.15 mm outer flap relief across Y = 280..300 mm -> 6.10 mm combined seam)
+    # Half-lap rabbet on outboard tile: keep outer 3.125 mm (cut inner 3.125 mm across Y = 280..300 mm)
     add_box_feature(
         panel_comp, pm_back + t_back / 2.0, end_lap_ymid - end_lap_w / 2.0, z_b0 - 0.5,
         t_back / 2.0 + 0.5, end_lap_w + 0.5, h_back + 1.0,
-        adsk.fusion.FeatureOperations.CutFeatureOperation, p_back_out,
-    )
-    add_box_feature(
-        panel_comp, pm_back - 0.5, end_lap_ymid - end_lap_w / 2.0, z_b0 - 0.5,
-        0.15 + 0.5, end_lap_w + 0.5, h_back + 1.0,
         adsk.fusion.FeatureOperations.CutFeatureOperation, p_back_out,
     )
     # Ventilation slots on outboard back tile only (Y + slot_w < 270.0 mm)
@@ -985,10 +980,15 @@ def build_frame_and_panels(
         panel_comp, p_back_in, "x", pm_back - 0.5, t_back + 1.0,
         [(pm_back, B + INNER_WIDTH_Y + tongue, z_b0, r_notch_back), (pm_back, B + INNER_WIDTH_Y + tongue, z_b1, r_notch_back)],
     )
-    # Half-lap rabbet on inboard tile: keep inner 3.125 mm (cut outer 3.125 mm across Y = 280..300 mm)
+    # Half-lap rabbet on inboard tile: Z = 3.20..6.10 mm flap (+0.075 mm glue/support-breakoff relief + 0.15 mm inner seam relief -> 6.10 mm seam)
     add_box_feature(
         panel_comp, pm_back - 0.5, end_lap_ymid - end_lap_w / 2.0 - 0.5, z_b0 - 0.5,
-        t_back / 2.0 + 0.5, end_lap_w + 0.5, h_back + 1.0,
+        3.20 + 0.5, end_lap_w + 0.5, h_back + 1.0,
+        adsk.fusion.FeatureOperations.CutFeatureOperation, p_back_in,
+    )
+    add_box_feature(
+        panel_comp, pm_back + t_back - 0.15, end_lap_ymid - end_lap_w / 2.0 - 0.5, z_b0 - 0.5,
+        0.15 + 0.5, end_lap_w + 0.5, h_back + 1.0,
         adsk.fusion.FeatureOperations.CutFeatureOperation, p_back_in,
     )
     # GX Touch 50 flush rectangular cutout (128 x 86 mm, 56.7 mm from top edge, 102.8 mm from bottom edge) in solid inboard tile
