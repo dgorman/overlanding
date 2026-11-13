@@ -2626,6 +2626,250 @@ def v12_panels(a):
             for cz_n in (z_b0, z_b1):
                 s_out = s_out.cut(cq.Workplane("XZ").center(cx_n, cz_n).circle(r_notch_back).extrude(-(t_side + 4.0)).translate((0, y_s_out - 2.0, 0)))
                 s_in = s_in.cut(cq.Workplane("XZ").center(cx_n, cz_n).circle(r_notch_back).extrude(-(t_side + 4.0)).translate((0, y_s_in - 2.0, 0)))
+        def _make_side_topo_inlays(mode: str, y_face: float, out_sign: int):
+            """Build continuous 0.60 mm flush Green topo contours + White elevation text across the 2 side tiles."""
+            import numpy as np
+
+            def marching_squares(Xg: np.ndarray, Zg: np.ndarray, Eg: np.ndarray, level: float) -> list[np.ndarray]:
+                ny, nx = Eg.shape
+                segs: list[tuple[tuple[float, float], tuple[float, float]]] = []
+
+                def interp(p1: tuple[float, float], v1: float, p2: tuple[float, float], v2: float) -> tuple[float, float]:
+                    if abs(v2 - v1) < 1e-9:
+                        return (0.5 * (p1[0] + p2[0]), 0.5 * (p1[1] + p2[1]))
+                    t = (level - v1) / (v2 - v1)
+                    return (round(p1[0] + t * (p2[0] - p1[0]), 4), round(p1[1] + t * (p2[1] - p1[1]), 4))
+
+                for j in range(ny - 1):
+                    for i in range(nx - 1):
+                        v00, v10, v11, v01 = Eg[j, i], Eg[j, i + 1], Eg[j + 1, i + 1], Eg[j + 1, i]
+                        b00, b10, b11, b01 = v00 >= level, v10 >= level, v11 >= level, v01 >= level
+                        code = (int(b00) << 0) | (int(b10) << 1) | (int(b11) << 2) | (int(b01) << 3)
+                        if code == 0 or code == 15:
+                            continue
+                        p00 = (float(Xg[j, i]), float(Zg[j, i]))
+                        p10 = (float(Xg[j, i + 1]), float(Zg[j, i + 1]))
+                        p11 = (float(Xg[j + 1, i + 1]), float(Zg[j + 1, i + 1]))
+                        p01 = (float(Xg[j + 1, i]), float(Zg[j + 1, i]))
+                        pts = {}
+                        if b00 != b10: pts[0] = interp(p00, v00, p10, v10)
+                        if b10 != b11: pts[1] = interp(p10, v10, p11, v11)
+                        if b11 != b01: pts[2] = interp(p11, v11, p01, v01)
+                        if b01 != b00: pts[3] = interp(p01, v01, p00, v00)
+                        keys = list(pts.keys())
+                        if len(keys) == 2:
+                            segs.append((pts[keys[0]], pts[keys[1]]))
+                        elif len(keys) == 4:
+                            avg = 0.25 * (v00 + v10 + v11 + v01)
+                            if (avg >= level) == b00:
+                                segs.append((pts[0], pts[1])); segs.append((pts[2], pts[3]))
+                            else:
+                                segs.append((pts[0], pts[3])); segs.append((pts[1], pts[2]))
+
+                adj: dict[tuple[float, float], list[int]] = {}
+                for idx_s, (sa, sb) in enumerate(segs):
+                    adj.setdefault(sa, []).append(idx_s)
+                    adj.setdefault(sb, []).append(idx_s)
+                used = [False] * len(segs)
+                chains: list[np.ndarray] = []
+                for idx_s in range(len(segs)):
+                    if used[idx_s]:
+                        continue
+                    used[idx_s] = True
+                    sa, sb = segs[idx_s]
+                    chain = [sa, sb]
+                    while True:
+                        cur = chain[-1]
+                        nxt = next((si for si in adj.get(cur, ()) if not used[si]), None)
+                        if nxt is None: break
+                        used[nxt] = True
+                        pa, pb = segs[nxt]
+                        chain.append(pb if pa == cur else pa)
+                    while True:
+                        cur = chain[0]
+                        nxt = next((si for si in adj.get(cur, ()) if not used[si]), None)
+                        if nxt is None: break
+                        used[nxt] = True
+                        pa, pb = segs[nxt]
+                        chain.insert(0, pb if pa == cur else pa)
+                    if len(chain) >= 6:
+                        arr = np.array(chain)
+                        chains.append(np.vstack([arr[0], arr[1:-1:2], arr[-1]]) if len(arr) > 25 else arr)
+                return chains
+
+            def resample_smooth(pts: np.ndarray, pitch: float = 5.5) -> tuple[np.ndarray, bool]:
+                closed = float(np.hypot(*(pts[0] - pts[-1]))) < 5.0
+                if closed and len(pts) > 3:
+                    pts = np.vstack([pts[:-1], pts[0]])
+                for _ in range(2):
+                    out = []
+                    for i in range(len(pts) - 1):
+                        p, q = pts[i], pts[i + 1]
+                        out.append(0.75 * p + 0.25 * q)
+                        out.append(0.25 * p + 0.75 * q)
+                    if not closed:
+                        out[0], out[-1] = pts[0], pts[-1]
+                    else:
+                        out.append(out[0])
+                    pts = np.array(out)
+                diffs = np.diff(pts, axis=0)
+                seglen = np.hypot(diffs[:, 0], diffs[:, 1])
+                s = np.concatenate([[0.0], np.cumsum(seglen)])
+                total = float(s[-1])
+                if total < pitch * 2:
+                    return pts, closed
+                n_new = max(4, int(round(total / pitch)) + 1)
+                s_new = np.linspace(0.0, total, n_new)
+                return np.column_stack([np.interp(s_new, s, pts[:, 0]), np.interp(s_new, s, pts[:, 1])]), closed
+
+            def chain_to_ribbon_2d(pts: np.ndarray, closed: bool, half_w: float):
+                if closed:
+                    p = pts[:-1]
+                    n = len(p)
+                    t = np.roll(p, -1, axis=0) - np.roll(p, 1, axis=0)
+                    L = np.where(np.hypot(t[:, 0], t[:, 1]) < 1e-6, 1.0, np.hypot(t[:, 0], t[:, 1]))
+                    nx, nz = -t[:, 1] / L, t[:, 0] / L
+                    area = 0.5 * np.sum(p[:, 0] * np.roll(p[:, 1], -1) - np.roll(p[:, 0], -1) * p[:, 1])
+                    if area > 0:
+                        nx, nz = -nx, -nz
+                    outer = [(float(p[i, 0] + half_w * nx[i]), float(p[i, 1] + half_w * nz[i])) for i in range(n)]
+                    inner = [(float(p[i, 0] - half_w * nx[i]), float(p[i, 1] - half_w * nz[i])) for i in range(n)]
+                    return outer, inner
+                n = len(pts)
+                normals = np.zeros_like(pts)
+                for i in range(n):
+                    t = (pts[1] - pts[0]) if i == 0 else ((pts[-1] - pts[-2]) if i == n - 1 else (pts[i + 1] - pts[i - 1]))
+                    L = math.hypot(float(t[0]), float(t[1])) or 1.0
+                    normals[i] = (-t[1] / L, t[0] / L)
+                left = [(float(pts[i, 0] + half_w * normals[i, 0]), float(pts[i, 1] + half_w * normals[i, 1])) for i in range(n)]
+                right = [(float(pts[i, 0] - half_w * normals[i, 0]), float(pts[i, 1] - half_w * normals[i, 1])) for i in range(n - 1, -1, -1)]
+                t_end = pts[-1] - pts[-2]
+                ang0 = math.atan2(float(normals[-1, 1]), float(normals[-1, 0]))
+                ang1 = ang0 - math.pi
+                cap_end = []
+                for k in (1, 2, 3):
+                    a_ = ang0 + (ang1 - ang0) * (k / 4.0)
+                    cx, cz = math.cos(a_), math.sin(a_)
+                    if cx * t_end[0] + cz * t_end[1] < 0:
+                        a_ = ang0 + ((2 * math.pi + ang1 - ang0) if ang1 < ang0 else (ang1 - ang0 - 2 * math.pi)) * (k / 4.0)
+                        cx, cz = math.cos(a_), math.sin(a_)
+                    cap_end.append((float(pts[-1, 0] + half_w * cx), float(pts[-1, 1] + half_w * cz)))
+                t_beg = pts[0] - pts[1]
+                b0 = math.atan2(float(-normals[0, 1]), float(-normals[0, 0]))
+                b1 = b0 - math.pi
+                cap_beg = []
+                for k in (1, 2, 3):
+                    a_ = b0 + (b1 - b0) * (k / 4.0)
+                    cx, cz = math.cos(a_), math.sin(a_)
+                    if cx * t_beg[0] + cz * t_beg[1] < 0:
+                        a_ = b0 + ((2 * math.pi + b1 - b0) if b1 < b0 else (b1 - b0 - 2 * math.pi)) * (k / 4.0)
+                        cx, cz = math.cos(a_), math.sin(a_)
+                    cap_beg.append((float(pts[0, 0] + half_w * cx), float(pts[0, 1] + half_w * cz)))
+                return left + cap_end + right + cap_beg
+
+            # Local viewer plane (u left-to-right across wall, v bottom-to-top) -> (X, Z)
+            xs_g = np.linspace(21.0, 550.5, 220)
+            zs_g = np.linspace(22.0, 259.7, 110)
+            Ug, Vg = np.meshgrid(xs_g, zs_g)
+            if mode == "outboard":
+                E = (
+                    11350.0
+                    + 1820.0 * np.exp(-(((Ug - 365.0) * 0.90 + (Vg - 165.0) * 0.44)**2 / (2 * 82.0**2)
+                                        + (-(Ug - 365.0) * 0.44 + (Vg - 165.0) * 0.90)**2 / (2 * 52.0**2)))
+                    + 1220.0 * np.exp(-(((Ug - 155.0) * 0.85 - (Vg - 95.0) * 0.52)**2 / (2 * 78.0**2)
+                                        + ((Ug - 155.0) * 0.52 + (Vg - 95.0) * 0.85)**2 / (2 * 48.0**2)))
+                    + 520.0 * np.exp(-((Ug - 275.0)**2 / (2 * 145.0**2) + (Vg - 128.0 - 0.16 * (Ug - 275.0))**2 / (2 * 38.0**2)))
+                    + 115.0 * np.sin(Ug / 62.0 + 0.4) * np.cos(Vg / 42.0)
+                    + 65.0 * np.cos((Ug + 1.3 * Vg) / 48.0)
+                )
+            else:
+                E = (
+                    11350.0
+                    + 1680.0 * np.exp(-(((Ug - 210.0) * 0.88 - (Vg - 162.0) * 0.47)**2 / (2 * 86.0**2)
+                                        + ((Ug - 210.0) * 0.47 + (Vg - 162.0) * 0.88)**2 / (2 * 50.0**2)))
+                    + 1280.0 * np.exp(-(((Ug - 430.0) * 0.85 + (Vg - 102.0) * 0.52)**2 / (2 * 76.0**2)
+                                        + (-(Ug - 430.0) * 0.52 + (Vg - 102.0) * 0.85)**2 / (2 * 48.0**2)))
+                    + 480.0 * np.exp(-((Ug - 310.0)**2 / (2 * 140.0**2) + (Vg - 135.0 + 0.14 * (Ug - 310.0))**2 / (2 * 36.0**2)))
+                    + 110.0 * np.cos(Ug / 60.0) * np.sin(Vg / 40.0)
+                    + 60.0 * np.sin((Ug - 1.2 * Vg) / 50.0)
+                )
+
+            inlay_d_side = 0.60
+            # Map local (u, v) to global (X, Z): u = X when out_sign=-1 (-Y exterior), u = out_D - X when out_sign=+1 (+Y exterior)
+            orig_x = 0.0 if out_sign < 0 else out_D
+            x_dir_v = (-out_sign, 0, 0)      # (1, 0, 0) for -Y face, (-1, 0, 0) for +Y face
+            norm_v = (0, out_sign, 0)        # (0, -1, 0) for -Y face, (0, 1, 0) for +Y face
+            pl_base = cq.Plane(origin=(orig_x, y_face, 0.0), xDir=x_dir_v, normal=norm_v)
+            seam_u = 295.75 if out_sign < 0 else (out_D - 295.75)
+
+            green_solids: list[cq.Solid] = []
+            white_solids: list[cq.Solid] = []
+            placed: list[tuple[float, float]] = []
+            for lv in (11500, 11750, 12000, 12250, 12500, 12750, 13000, 13250):
+                is_idx = (lv % 500 == 0)
+                hw = 1.05 if is_idx else 0.725
+                chains = marching_squares(Ug, Vg, E, float(lv))
+                best = None
+                if is_idx:
+                    best_score = -1e9
+                    for ci, ch in enumerate(chains):
+                        if len(ch) < 14: continue
+                        for k in range(5, len(ch) - 5):
+                            pu, pv = ch[k]
+                            if not (68.0 <= pu <= 503.0 and 52.0 <= pv <= 230.0): continue
+                            if abs(pu - seam_u) < 28.0: continue
+                            if any(math.hypot(pu - ou, pv - ov) < 72.0 for ou, ov in placed): continue
+                            du, dv = ch[k + 3, 0] - ch[k - 3, 0], ch[k + 3, 1] - ch[k - 3, 1]
+                            ang = math.degrees(math.atan2(dv, du))
+                            if ang > 90: ang -= 180
+                            if ang < -90: ang += 180
+                            if abs(ang) > 42.0: continue
+                            score = 50.0 - abs(ang) + min(pu - 68.0, 503.0 - pu) * 0.08 + min(pv - 52.0, 230.0 - pv) * 0.1
+                            if score > best_score:
+                                best_score = score
+                                best = (ci, k, float(pu), float(pv), float(ang))
+                if best is not None:
+                    ci, k, pu, pv, ang = best
+                    placed.append((pu, pv))
+                    ux, uz = math.cos(math.radians(ang)), math.sin(math.radians(ang))
+                    pts_c = chains[ci]
+                    rx = (pts_c[:, 0] - pu) * ux + (pts_c[:, 1] - pv) * uz
+                    rz = -(pts_c[:, 0] - pu) * uz + (pts_c[:, 1] - pv) * ux
+                    inside = (np.abs(rx) < 18.5) & (np.abs(rz) < 6.0)
+                    new_chains = []
+                    for idx_c, c_arr in enumerate(chains):
+                        if idx_c != ci:
+                            new_chains.append(c_arr)
+                        else:
+                            cur = []
+                            for pt, ins in zip(pts_c, inside):
+                                if ins:
+                                    if len(cur) >= 2: new_chains.append(np.array(cur))
+                                    cur = []
+                                else:
+                                    cur.append(pt)
+                            if len(cur) >= 2: new_chains.append(np.array(cur))
+                    chains = new_chains
+                    px_g = pu if out_sign < 0 else (out_D - pu)
+                    x_dir_t = (-out_sign * math.cos(math.radians(ang)), 0.0, math.sin(math.radians(ang)))
+                    pl_t = cq.Plane(origin=(px_g, y_face, pv), xDir=x_dir_t, normal=norm_v)
+                    txt_w = cq.Workplane(pl_t).text(
+                        str(lv), fontsize=8.0, distance=-inlay_d_side, font="Arial", kind="bold", halign="center", valign="center"
+                    )
+                    white_solids.extend(txt_w.solids().vals())
+                for ch in chains:
+                    rs, closed = resample_smooth(ch, pitch=5.5)
+                    res = chain_to_ribbon_2d(rs, closed, hw)
+                    if closed:
+                        outer, inner = res
+                        s_o = cq.Workplane(pl_base).polyline(outer).close().extrude(-inlay_d_side)
+                        s_i = cq.Workplane(pl_base).polyline(inner).close().extrude(-inlay_d_side - 0.2).translate((0, out_sign * 0.1, 0))
+                        sh = s_o.cut(s_i)
+                    else:
+                        sh = cq.Workplane(pl_base).polyline(res).close().extrude(-inlay_d_side)
+                    green_solids.extend(sh.solids().vals())
+            return cq.Workplane(obj=cq.Compound.makeCompound(green_solids)), cq.Workplane(obj=cq.Compound.makeCompound(white_solids))
+
         # Outboard pair (-Y exterior): back tile keeps -Y outer 3.125 mm (support-free); front tile gets Z=3.20..6.10 mm (-0.15 mm relieved) inner flap
         s_out_back = (s_out.intersect(box(xmid_side + lw_side / 2 + 20, 40, big_end, (-20, y_s_out - 20, -20)))
                       .cut(box(lw_side, t_side - lap_t_side + 1, big_end, (xmid_side - lw_side / 2, y_s_out + lap_t_side, -20))))
@@ -2638,10 +2882,21 @@ def v12_panels(a):
         s_in_front = (s_in.intersect(box(out_D + 20, 40, big_end, (xmid_side - lw_side / 2, y_s_in - 20, -20)))
                       .cut(box(lw_side, lap_z_side + 1, big_end, (xmid_side - lw_side / 2, y_s_in + t_side - lap_z_side, -20)))
                       .cut(box(lw_side, lap_clr_side + 1, big_end, (xmid_side - lw_side / 2, y_s_in - 1, -20))))
-        add(a, s_out_back, "print_panel_side_outboard_back", ORANGE)
-        add(a, s_out_front, "print_panel_side_outboard_front", ORANGE)
-        add(a, s_in_back, "print_panel_side_inboard_back", ORANGE)
-        add(a, s_in_front, "print_panel_side_inboard_front", ORANGE)
+
+        g_out_all, w_out_all = _make_side_topo_inlays("outboard", y_s_out, -1)
+        g_in_all, w_in_all = _make_side_topo_inlays("inboard", y_s_in + t_side, +1)
+        for s_name, s_tile, g_all, w_all in (
+            ("print_panel_side_outboard_back", s_out_back, g_out_all, w_out_all),
+            ("print_panel_side_outboard_front", s_out_front, g_out_all, w_out_all),
+            ("print_panel_side_inboard_back", s_in_back, g_in_all, w_in_all),
+            ("print_panel_side_inboard_front", s_in_front, g_in_all, w_in_all),
+        ):
+            t_w = w_all.intersect(s_tile)
+            t_g = g_all.intersect(s_tile).cut(t_w)
+            s_clean = s_tile.cut(t_g).cut(t_w)
+            add(a, s_clean, s_name, ORANGE)
+            add(a, t_g, f"{s_name}_inlay_green", (0.18, 0.62, 0.30))
+            add(a, t_w, f"{s_name}_inlay_white", (0.96, 0.97, 0.98))
     else:
         for nm, shp in (("panel_side_outboard_from_icebox", slot_panel("x", pm, in_D)),          # cut down from the IceBox's side panels
                         ("panel_side_inboard_from_icebox", slot_panel("x", out_W - pm - T, in_D))):
@@ -4095,8 +4350,14 @@ def check_plate_pilots(a):
         print(f"  BLOCKED pilot at x {x:.1f} z {z:.1f}")
 
 
-def write_multicolor_3mf(path: str, black_tris: list, white_tris: list, obj_name: str = "print_panel_front_inboard_ports") -> None:
-    """Write a Bambu-Studio-ready 2-part .3mf (panel_black=Filament 1, inlay_white=Filament 2) centered on H2D bed."""
+def write_multicolor_3mf(
+    path: str,
+    black_tris: list,
+    white_tris: list,
+    obj_name: str = "print_panel_front_inboard_ports",
+    green_tris: list | None = None,
+) -> None:
+    """Write a Bambu-Studio-ready multi-part .3mf (panel_black=1, inlay_white=2, optional inlay_green=3) centered on H2D bed."""
     import zipfile
 
     def mesh_xml(tris: list) -> str:
@@ -4127,6 +4388,11 @@ def write_multicolor_3mf(path: str, black_tris: list, white_tris: list, obj_name
     w_y = max(v[1] for t in black_tris for v in t)
     tx, ty = round(175.0 - 0.5 * w_x, 3), round(160.0 - 0.5 * w_y, 3)
 
+    parts = [("panel_black", black_tris, 1), ("inlay_white", white_tris, 2)]
+    if green_tris:
+        parts.append(("inlay_green", green_tris, 3))
+    wrapper_id = len(parts) + 1
+
     content_types = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">\n'
@@ -4141,39 +4407,45 @@ def write_multicolor_3mf(path: str, black_tris: list, white_tris: list, obj_name
         '  <Relationship Target="/3D/3dmodel.model" Id="rel-1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>\n'
         '</Relationships>\n'
     )
+    obj_xml = "\n".join(
+        f'    <object id="{idx}" name="{nm}" type="model">\n{mesh_xml(tr)}\n    </object>'
+        for idx, (nm, tr, _) in enumerate(parts, start=1)
+    )
+    comp_xml = "\n".join(
+        f'        <component objectid="{idx}" transform="1 0 0 0 1 0 0 0 1 0 0 0"/>'
+        for idx in range(1, len(parts) + 1)
+    )
+    part_cfg_xml = "\n".join(
+        f'    <part id="{idx}" subtype="normal_part">\n'
+        f'      <metadata key="name" value="{nm}"/>\n'
+        f'      <metadata key="extruder" value="{ext}"/>\n'
+        f'    </part>'
+        for idx, (nm, _, ext) in enumerate(parts, start=1)
+    )
     model_xml = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n'
         '  <metadata name="Application">BambuStudio</metadata>\n'
         '  <resources>\n'
-        f'    <object id="1" name="panel_black" type="model">\n{mesh_xml(black_tris)}\n    </object>\n'
-        f'    <object id="2" name="inlay_white" type="model">\n{mesh_xml(white_tris)}\n    </object>\n'
-        f'    <object id="3" name="{obj_name}" type="model">\n'
+        f'{obj_xml}\n'
+        f'    <object id="{wrapper_id}" name="{obj_name}" type="model">\n'
         '      <components>\n'
-        '        <component objectid="1" transform="1 0 0 0 1 0 0 0 1 0 0 0"/>\n'
-        '        <component objectid="2" transform="1 0 0 0 1 0 0 0 1 0 0 0"/>\n'
+        f'{comp_xml}\n'
         '      </components>\n'
         '    </object>\n'
         '  </resources>\n'
         '  <build>\n'
-        f'    <item objectid="3" transform="1 0 0 0 1 0 0 0 1 {tx} {ty} 0"/>\n'
+        f'    <item objectid="{wrapper_id}" transform="1 0 0 0 1 0 0 0 1 {tx} {ty} 0"/>\n'
         '  </build>\n'
         '</model>\n'
     )
     settings_xml = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<config>\n'
-        '  <object id="3">\n'
+        f'  <object id="{wrapper_id}">\n'
         f'    <metadata key="name" value="{obj_name}"/>\n'
         '    <metadata key="extruder" value="1"/>\n'
-        '    <part id="1" subtype="normal_part">\n'
-        '      <metadata key="name" value="panel_black"/>\n'
-        '      <metadata key="extruder" value="1"/>\n'
-        '    </part>\n'
-        '    <part id="2" subtype="normal_part">\n'
-        '      <metadata key="name" value="inlay_white"/>\n'
-        '      <metadata key="extruder" value="2"/>\n'
-        '    </part>\n'
+        f'{part_cfg_xml}\n'
         '  </object>\n'
         '</config>\n'
     )
@@ -4204,18 +4476,36 @@ def export(a: cq.Assembly):
             clean_nm = child.name.replace("__card", "")
             path = os.path.join(STL, f"{clean_nm}.stl")
             cq.exporters.export(child.obj, path)
-            ref_lo = lo_map.get(clean_nm[:-len("_inlay_white")]) if clean_nm.endswith("_inlay_white") else None
+            ref_lo = None
+            for sfx in ("_inlay_white", "_inlay_green"):
+                if clean_nm.endswith(sfx):
+                    ref_lo = lo_map.get(clean_nm[:-len(sfx)])
+                    break
             tris, lo = plates.reorient_file(path, ref_lo=ref_lo, return_lo=True)      # the file lies in its print orientation at the origin
             lo_map[clean_nm] = lo
             tris_map[clean_nm] = tris
             dims = tuple(round(max(v[k] for t in tris for v in t), 1) for k in range(3))   # as it sits on the bed: x, y, height
             key = child.name.split("_")[1]
             seen.setdefault((key, dims), 0); seen[(key, dims)] += 1
-    for base_nm in ("print_panel_front_outboard", "print_panel_front_inboard_ports"):
-        inlay_nm = f"{base_nm}_inlay_white"
-        if base_nm in tris_map and inlay_nm in tris_map:
+    for base_nm in (
+        "print_panel_front_outboard",
+        "print_panel_front_inboard_ports",
+        "print_panel_side_outboard_back",
+        "print_panel_side_outboard_front",
+        "print_panel_side_inboard_back",
+        "print_panel_side_inboard_front",
+    ):
+        inlay_w = f"{base_nm}_inlay_white"
+        inlay_g = f"{base_nm}_inlay_green"
+        if base_nm in tris_map and inlay_w in tris_map:
             p3mf = os.path.join(STL, f"{base_nm}_multicolor.3mf")
-            write_multicolor_3mf(p3mf, tris_map[base_nm], tris_map[inlay_nm], obj_name=base_nm)
+            write_multicolor_3mf(
+                p3mf,
+                tris_map[base_nm],
+                tris_map[inlay_w],
+                obj_name=base_nm,
+                green_tris=tris_map.get(inlay_g),
+            )
             print(f"wrote {base_nm}_multicolor.3mf")
     for (key, dims), n in seen.items():
         flag = "" if dims[0] <= bed[0] and dims[1] <= bed[1] and dims[2] <= bed[2] else "  <-- exceeds bed"
