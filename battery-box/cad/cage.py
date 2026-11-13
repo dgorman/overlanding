@@ -2767,32 +2767,75 @@ def v12_panels(a):
                     cap_beg.append((float(pts[0, 0] + half_w * cx), float(pts[0, 1] + half_w * cz)))
                 return left + cap_end + right + cap_beg
 
+            def _smooth_sig(x: np.ndarray, neg: float, pos: float, w: float = 28.0) -> np.ndarray:
+                return 0.5 * (neg + pos) + 0.5 * (pos - neg) * np.tanh(x / w)
+
             # Local viewer plane (u left-to-right across wall, v bottom-to-top) -> (X, Z)
             xs_g = np.linspace(21.0, 550.5, 220)
             zs_g = np.linspace(22.0, 259.7, 110)
             Ug, Vg = np.meshgrid(xs_g, zs_g)
             if mode == "outboard":
-                E = (
-                    11350.0
-                    + 1820.0 * np.exp(-(((Ug - 365.0) * 0.90 + (Vg - 165.0) * 0.44)**2 / (2 * 82.0**2)
-                                        + (-(Ug - 365.0) * 0.44 + (Vg - 165.0) * 0.90)**2 / (2 * 52.0**2)))
-                    + 1220.0 * np.exp(-(((Ug - 155.0) * 0.85 - (Vg - 95.0) * 0.52)**2 / (2 * 78.0**2)
-                                        + ((Ug - 155.0) * 0.52 + (Vg - 95.0) * 0.85)**2 / (2 * 48.0**2)))
-                    + 520.0 * np.exp(-((Ug - 275.0)**2 / (2 * 145.0**2) + (Vg - 128.0 - 0.16 * (Ug - 275.0))**2 / (2 * 38.0**2)))
-                    + 115.0 * np.sin(Ug / 62.0 + 0.4) * np.cos(Vg / 42.0)
-                    + 65.0 * np.cos((Ug + 1.3 * Vg) / 48.0)
+                U = (
+                    Ug
+                    + 30.0 * np.sin((Vg - 95.0) / 54.0 + 0.3 * np.cos(Ug / 130.0))
+                    + 16.0 * np.cos((Ug + 1.1 * Vg) / 72.0)
+                    + 7.0 * np.sin((Ug - 1.4 * Vg) / 38.0)
                 )
+                V = (
+                    Vg
+                    + 24.0 * np.sin((Ug - 210.0) / 82.0 + 0.4 * np.sin(Vg / 70.0))
+                    - 12.0 * np.sin((Ug - 1.2 * Vg) / 60.0)
+                    + 6.0 * np.cos((1.3 * Ug + Vg) / 42.0)
+                )
+                du1, dv1 = U - 385.0, V - 172.0
+                r1x, r1y = 0.85 * du1 + 0.53 * dv1, -0.53 * du1 + 0.85 * dv1
+                p1 = 1980.0 * np.exp(-0.5 * ((r1x / _smooth_sig(r1x, 42.0, 128.0, 34.0)) ** 2
+                                             + (r1y / _smooth_sig(r1y, 26.0, 68.0, 26.0)) ** 2))
+                du2, dv2 = U - 148.0, V - 102.0
+                r2x, r2y = 0.82 * du2 - 0.57 * dv2, 0.57 * du2 + 0.82 * dv2
+                p2 = 1620.0 * np.exp(-0.5 * ((r2x / _smooth_sig(r2x, 82.0, 36.0, 28.0)) ** 2
+                                             + (r2y / _smooth_sig(r2y, 64.0, 28.0, 24.0)) ** 2))
+                crest_v = 132.0 + 0.14 * (U - 280.0) + 24.0 * np.sin((U - 175.0) / 56.0)
+                ridge = 620.0 * np.exp(-0.5 * ((V - crest_v) / 28.0) ** 2) * np.exp(-0.5 * ((U - 275.0) / 145.0) ** 2)
+                knob_se = 680.0 * np.exp(-0.5 * (((U - 485.0) / 68.0) ** 2 + ((V - 48.0) / 42.0) ** 2))
+                knob_nw = 520.0 * np.exp(-0.5 * (((U - 68.0) / 62.0) ** 2 + ((V - 230.0) / 44.0) ** 2))
+                d_draw = V - (35.0 + 0.52 * (U - 205.0) + 16.0 * np.sin(U / 42.0))
+                draw = -440.0 * np.exp(-0.5 * (d_draw / 17.0) ** 2) * np.exp(-0.5 * ((U - 295.0) / 115.0) ** 2)
+                s1 = np.sin((U + 0.65 * V) / 46.0)
+                tex = 110.0 * (1.0 - np.sqrt(s1 * s1 + 0.05)) + 65.0 * np.sin(U / 44.0 + 0.8) * np.cos(V / 34.0)
+                E_raw = 11260.0 + p1 + p2 + ridge + knob_se + knob_nw + draw + tex
+                E = E_raw - 165.0 * np.sin((E_raw - 12050.0) / 140.0) * np.exp(-((E_raw - 12050.0) / 260.0) ** 2)
             else:
-                E = (
-                    11350.0
-                    + 1680.0 * np.exp(-(((Ug - 210.0) * 0.88 - (Vg - 162.0) * 0.47)**2 / (2 * 86.0**2)
-                                        + ((Ug - 210.0) * 0.47 + (Vg - 162.0) * 0.88)**2 / (2 * 50.0**2)))
-                    + 1280.0 * np.exp(-(((Ug - 430.0) * 0.85 + (Vg - 102.0) * 0.52)**2 / (2 * 76.0**2)
-                                        + (-(Ug - 430.0) * 0.52 + (Vg - 102.0) * 0.85)**2 / (2 * 48.0**2)))
-                    + 480.0 * np.exp(-((Ug - 310.0)**2 / (2 * 140.0**2) + (Vg - 135.0 + 0.14 * (Ug - 310.0))**2 / (2 * 36.0**2)))
-                    + 110.0 * np.cos(Ug / 60.0) * np.sin(Vg / 40.0)
-                    + 60.0 * np.sin((Ug - 1.2 * Vg) / 50.0)
+                U = (
+                    Ug
+                    - 28.0 * np.sin((Vg - 115.0) / 52.0 + 0.3 * np.sin(Ug / 120.0))
+                    + 15.0 * np.cos((Ug - 1.15 * Vg) / 70.0)
+                    + 7.0 * np.sin((Ug + 1.4 * Vg) / 39.0)
                 )
+                V = (
+                    Vg
+                    - 22.0 * np.sin((Ug - 315.0) / 80.0 + 0.4 * np.cos(Vg / 68.0))
+                    + 12.0 * np.sin((Ug + 1.2 * Vg) / 58.0)
+                    + 6.0 * np.cos((1.2 * Ug - Vg) / 44.0)
+                )
+                du1, dv1 = U - 188.0, V - 164.0
+                r1x, r1y = 0.87 * du1 - 0.49 * dv1, 0.49 * du1 + 0.87 * dv1
+                p1 = 1940.0 * np.exp(-0.5 * ((r1x / _smooth_sig(r1x, 122.0, 42.0, 32.0)) ** 2
+                                             + (r1y / _smooth_sig(r1y, 64.0, 27.0, 24.0)) ** 2))
+                du2, dv2 = U - 430.0, V - 94.0
+                r2x, r2y = 0.80 * du2 + 0.60 * dv2, -0.60 * du2 + 0.80 * dv2
+                p2 = 1660.0 * np.exp(-0.5 * ((r2x / _smooth_sig(r2x, 86.0, 34.0, 28.0)) ** 2
+                                             + (r2y / _smooth_sig(r2y, 29.0, 62.0, 24.0)) ** 2))
+                crest_v = 128.0 - 0.14 * (U - 295.0) - 22.0 * np.sin((U - 160.0) / 54.0)
+                ridge = 600.0 * np.exp(-0.5 * ((V - crest_v) / 27.0) ** 2) * np.exp(-0.5 * ((U - 295.0) / 145.0) ** 2)
+                knob_sw = 620.0 * np.exp(-0.5 * (((U - 72.0) / 64.0) ** 2 + ((V - 44.0) / 40.0) ** 2))
+                knob_ne = 540.0 * np.exp(-0.5 * (((U - 500.0) / 60.0) ** 2 + ((V - 228.0) / 42.0) ** 2))
+                d_draw = V - (225.0 - 0.48 * (U - 340.0) + 15.0 * np.cos(U / 40.0))
+                draw = -420.0 * np.exp(-0.5 * (d_draw / 17.0) ** 2) * np.exp(-0.5 * ((U - 280.0) / 118.0) ** 2)
+                s1 = np.sin((U - 0.70 * V) / 45.0)
+                tex = 110.0 * (1.0 - np.sqrt(s1 * s1 + 0.05)) + 65.0 * np.cos(U / 42.0 + 0.5) * np.sin(V / 34.0)
+                E_raw = 11260.0 + p1 + p2 + ridge + knob_sw + knob_ne + draw + tex
+                E = E_raw - 165.0 * np.sin((E_raw - 12050.0) / 140.0) * np.exp(-((E_raw - 12050.0) / 260.0) ** 2)
 
             inlay_d_side = 0.60
             # Map local (u, v) to global (X, Z): u = X when out_sign=-1 (-Y exterior), u = out_D - X when out_sign=+1 (+Y exterior)
@@ -2802,13 +2845,19 @@ def v12_panels(a):
             pl_base = cq.Plane(origin=(orig_x, y_face, 0.0), xDir=x_dir_v, normal=norm_v)
             seam_u = 295.75 if out_sign < 0 else (out_D - 295.75)
 
+            levels = (11250, 11500, 11750, 12000, 12250, 12500, 12750, 13000, 13250)
+            chains_by_lv = {lv: marching_squares(Ug, Vg, E, float(lv)) for lv in levels}
+
             green_solids: list[cq.Solid] = []
             white_solids: list[cq.Solid] = []
             placed: list[tuple[float, float]] = []
-            for lv in (11500, 11750, 12000, 12250, 12500, 12750, 13000, 13250):
+            for lv in levels:
                 is_idx = (lv % 500 == 0)
                 hw = 1.05 if is_idx else 0.725
-                chains = marching_squares(Ug, Vg, E, float(lv))
+                chains = chains_by_lv[lv]
+                other_pts = np.vstack(
+                    [c for olv, och in chains_by_lv.items() if olv != lv for c in och]
+                ) if any(olv != lv and chains_by_lv[olv] for olv in levels) else np.empty((0, 2))
                 best = None
                 if is_idx:
                     best_score = -1e9
@@ -2824,7 +2873,17 @@ def v12_panels(a):
                             if ang > 90: ang -= 180
                             if ang < -90: ang += 180
                             if abs(ang) > 42.0: continue
-                            score = 50.0 - abs(ang) + min(pu - 68.0, 503.0 - pu) * 0.08 + min(pv - 52.0, 230.0 - pv) * 0.1
+                            # Ensure the label box clears all neighboring contour levels so text never collides into cliff bands
+                            nbr_clr = 30.0
+                            if len(other_pts):
+                                ux_, uz_ = math.cos(math.radians(ang)), math.sin(math.radians(ang))
+                                drx = (other_pts[:, 0] - pu) * ux_ + (other_pts[:, 1] - pv) * uz_
+                                drz = -(other_pts[:, 0] - pu) * uz_ + (other_pts[:, 1] - pv) * ux_
+                                near = other_pts[(np.abs(drx) < 21.0) & (np.abs(drz) < 9.0)]
+                                if len(near):
+                                    nbr_clr = float(np.min(np.hypot(near[:, 0] - pu, near[:, 1] - pv)))
+                                    if nbr_clr < 7.0: continue
+                            score = 50.0 - abs(ang) + min(nbr_clr, 20.0) * 1.4 + min(pu - 68.0, 503.0 - pu) * 0.08 + min(pv - 52.0, 230.0 - pv) * 0.1
                             if score > best_score:
                                 best_score = score
                                 best = (ci, k, float(pu), float(pv), float(ang))
@@ -2858,7 +2917,7 @@ def v12_panels(a):
                     )
                     white_solids.extend(txt_w.solids().vals())
                 for ch in chains:
-                    rs, closed = resample_smooth(ch, pitch=5.5)
+                    rs, closed = resample_smooth(ch, pitch=5.0)
                     res = chain_to_ribbon_2d(rs, closed, hw)
                     if closed:
                         outer, inner = res
