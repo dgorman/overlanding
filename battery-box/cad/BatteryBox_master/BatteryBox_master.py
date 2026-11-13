@@ -157,22 +157,19 @@ CABLE_WINDOW_X1: float = BOX_DEPTH_X - 75.0               # 496.5 mm (70.0 mm wi
 CABLE_WINDOW_Z0: float = 40.0
 CABLE_WINDOW_Z1: float = 110.0                            # 70.0 mm tall
 
-# Inboard Wiring Lane: Two-Piece Full-Height Garmin Hanger & Wire-Management Tie-Slot Wall
+# Inboard Wiring Lane: Single-Piece Full-Height H2D Garmin Hanger & Wire-Management Tie-Slot Wall
 GARMIN_HANGER_LEN_X: float = 130.0
 GARMIN_HANGER_THICK_Y: float = 6.0
 GARMIN_HANGER_X0: float = BOX_DEPTH_X - 25.0 - 55.0 - 20.0 - GARMIN_HANGER_LEN_X  # 341.5 mm (20 mm behind port bodies)
 GARMIN_HANGER_Y0: float = INNER_Y1 - GARMIN_HANGER_THICK_Y                        # 457.1 mm (against inboard rail)
-GARMIN_UPPER_Z0: float = 130.0
-GARMIN_UPPER_Z1: float = BOX_HEIGHT_Z - 3.0               # 278.7 mm
-GARMIN_LOWER_Z0: float = 2.0
-GARMIN_LOWER_Z1: float = 129.0                            # 1.0 mm gap below upper hanger
+GARMIN_HANGER_Z0: float = 2.0
+GARMIN_HANGER_Z1: float = BOX_HEIGHT_Z - 3.0              # 278.7 mm (276.7 mm single-piece H2D height)
 GARMIN_RAIL_BOLT_DX: tuple[float, float] = (25.0, GARMIN_HANGER_LEN_X - 25.0)     # X = 366.5, 446.5 mm
 TIE_SLOT_W_X: float = 4.0
 TIE_SLOT_H_Z: float = 10.0
 TIE_SLOT_PAIR_SPAN_X: float = 16.0                        # Slots at -8.0 and +8.0 mm from center
 TIE_SLOT_CENTERS_DX: tuple[float, float, float] = (30.0, 65.0, 100.0)
-TIE_SLOT_ROWS_UPPER_Z: tuple[float, float] = (138.0, 243.0)
-TIE_SLOT_ROWS_LOWER_Z: tuple[float, float] = (40.0, 100.0)
+TIE_SLOT_ROWS_Z: tuple[float, float, float, float] = (40.0, 100.0, 138.0, 243.0)
 
 # IceBox Stack Straps (x4 across bottom depth rail seam, 6.0 mm thick for 1/4"-20 x 1/2" countersinks)
 STRAP_W_X: float = 60.0
@@ -1557,7 +1554,7 @@ def build_inboard_garmin_lane(
     design: adsk.fusion.Design,
     root: adsk.fusion.Component,
 ) -> adsk.fusion.Component:
-    """05_Inboard_Garmin_Lane: Upper & Lower Garmin Hanger Plates with 5 Rows of Paired Wire-Management Tie Slots & GX Touch Bezel."""
+    """05_Inboard_Garmin_Lane: Single-Piece Full-Height H2D Garmin Hanger Plate with 4 Rows of Paired Wire-Management Tie Slots & Blue Sea 2701 Ground Bus."""
     comp = create_subcomponent(root, "05_Inboard_Garmin_Lane")
     gw, gt = GARMIN_HANGER_LEN_X, GARMIN_HANGER_THICK_Y
     gx0, gy = GARMIN_HANGER_X0, GARMIN_HANGER_Y0
@@ -1578,39 +1575,32 @@ def build_inboard_garmin_lane(
                     )
         extrude_all_profiles(comp, sketch, "y", gt + 1.0, adsk.fusion.FeatureOperations.CutFeatureOperation, target_body)
 
-    # 1. Upper Garmin Hanger Plate (Z = 130.0 .. 278.7 mm)
-    u_hanger = add_box_feature(
-        comp, gx0, gy, GARMIN_UPPER_Z0, gw, gt, GARMIN_UPPER_Z1 - GARMIN_UPPER_Z0,
+    # Single-Piece Full-Height Garmin & Blue Sea 2701 Hanger Plate (Z = 2.0 .. 278.7 mm -> 130.0 x 276.7 x 6.0 mm)
+    hanger = add_box_feature(
+        comp, gx0, gy, GARMIN_HANGER_Z0, gw, gt, GARMIN_HANGER_Z1 - GARMIN_HANGER_Z0,
         body_name="print_garmin_hanger",
     )
     hz_top = BOX_HEIGHT_Z - RAIL_PROFILE / 2.0
-    u_rail_bolts = [(gx0 + dx, gy, hz_top) for dx in GARMIN_RAIL_BOLT_DX]
-    cut_countersink_14_20(comp, u_hanger, "y", gy, +1.0, u_rail_bolts, gt)
+    hz_bot = RAIL_PROFILE / 2.0
+    rail_bolts = [
+        (gx0 + dx, gy, bz)
+        for bz in (hz_bot, hz_top)
+        for dx in GARMIN_RAIL_BOLT_DX
+    ]
+    cut_countersink_14_20(comp, hanger, "y", gy, +1.0, rail_bolts, gt)
 
     g_spec = COMP_SPECS["garmin_ps"]
     gx_unit, _gy_unit, gz_unit = g_spec["pos"]
-    g_m4_bores = [
-        (gx_unit + u, gy, gz_unit + v, M4_INSERT_BORE_DIA / 2.0) for (u, v) in g_spec["holes_xz"]
-    ]
-    cut_cylinders_on_plane(comp, u_hanger, "y", gy - 0.5, gt + 1.0, g_m4_bores)
-    cut_zip_tie_slot_rows(u_hanger, TIE_SLOT_ROWS_UPPER_Z)
-    apply_color(app, design, u_hanger, *COL_PRINT_ORANGE)
-
-    # 2. Lower Garmin Wire-Management & Blue Sea 2701 Hanger Plate (Z = 2.0 .. 129.0 mm)
-    l_hanger = add_box_feature(
-        comp, gx0, gy, GARMIN_LOWER_Z0, gw, gt, GARMIN_LOWER_Z1 - GARMIN_LOWER_Z0,
-        body_name="print_garmin_hanger_lower",
-    )
-    l_rail_bolts = [(gx0 + dx, gy, RAIL_PROFILE / 2.0) for dx in GARMIN_RAIL_BOLT_DX]
-    cut_countersink_14_20(comp, l_hanger, "y", gy, +1.0, l_rail_bolts, gt)
     gb_spec = COMP_SPECS["gnd_bus_2701"]
     gb_x0, _gb_y0, gb_z0 = gb_spec["pos"]
-    gb_m4_bores = [
+    m4_bores = [
+        (gx_unit + u, gy, gz_unit + v, M4_INSERT_BORE_DIA / 2.0) for (u, v) in g_spec["holes_xz"]
+    ] + [
         (gb_x0 + u, gy, gb_z0 + v, M4_INSERT_BORE_DIA / 2.0) for (u, v) in gb_spec["holes_xz"]
     ]
-    cut_cylinders_on_plane(comp, l_hanger, "y", gy - 0.5, gt + 1.0, gb_m4_bores)
-    cut_zip_tie_slot_rows(l_hanger, TIE_SLOT_ROWS_LOWER_Z)
-    apply_color(app, design, l_hanger, *COL_PRINT_ORANGE)
+    cut_cylinders_on_plane(comp, hanger, "y", gy - 0.5, gt + 1.0, m4_bores)
+    cut_zip_tie_slot_rows(hanger, TIE_SLOT_ROWS_Z)
+    apply_color(app, design, hanger, *COL_PRINT_ORANGE)
 
     return comp
 

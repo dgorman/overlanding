@@ -3277,32 +3277,46 @@ def build_v13(a):
                 hp_ = tie_slots(hp_, zrow, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
             add(a, hp_, "print_garmin_hanger", ORANGE)
         else:
-            hp_ = box(gw, gt, out_H - 3.0 - gz0, (gx0, gy, gz0))
-            for hx in (gx0 + 25.0, gx0 + gw - 25.0):
-                hp_ = hp_.cut(cq.Workplane("XZ").center(hx, hz).circle(3.4).extrude(-(gt + 2)).translate((0, gy - 1, 0)))     # 1/4-20 into the slot
-                hp_ = hp_.cut(countersink("print_garmin_hanger", (hx, gy, hz), (0, 1, 0)))                                     # head on the inner face
+            one_piece_garmin = max(P.get("bed", (256.0, 256.0, 256.0))[:2]) >= 280.0
             gx, gz = gx0 + (gw - gc.w) / 2, 150.0
-            for (u, v) in HOLES["garmin"]:                           # M4 inserts in the plate (short, 94180A351), Ø5.6 mm pre-printed bores
-                hp_ = hp_.cut(cq.Workplane("XZ").center(gx + u, gz + v).circle(M4S_BORE_R).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
-            hp_ = tie_slots(hp_, 243.0, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
-            hp_ = tie_slots(hp_, 138.0, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
-            add(a, hp_, "print_garmin_hanger", ORANGE)
-            # the LOWER plate (2026-10-31, user: run it to the bottom rail so wires can be tied to it): the full drop is 277, over the
-            # bed, so a second plate stands on the bottom inboard rail's inner slot (free in the ledger) with its own two countersunk
-            # 1/4-20, a 1 mm gap under the upper plate, and cable-tie slots on a 40 mm grid
-            lz0, lz1 = 2.0, gz0 - 1.0
-            lp_ = box(gw, gt, lz1 - lz0, (gx0, gy, lz0))
-            for hx in (gx0 + 25.0, gx0 + gw - 25.0):
-                lp_ = lp_.cut(cq.Workplane("XZ").center(hx, B / 2).circle(3.4).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
-                lp_ = lp_.cut(countersink("print_garmin_hanger_lower", (hx, gy, B / 2), (0, 1, 0)))
-            for zrow in (40.0, 100.0):                                # top & bottom tie-slot rows only (middle 70 mm row removed for Blue Sea 2701)
-                lp_ = tie_slots(lp_, zrow, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
-            # Garmin port-circuit GROUND BUS: Blue Sea 2701 DualBus 100A (76.50 x 46.48 x 25.0 mm, 2 x M4 short inserts at 57.20 mm centers)
             gb = COMPONENTS["gnd_bus"]
             gb_at = (gx0 + (gw - gb.w) / 2, gy - gb.d, 70.0 - gb.h / 2)   # z 46.75..93.25 (centred at z = 70.0 mm between the 40 and 100 tie-slot rows)
-            for (u, v) in HOLES["gnd_bus"]:                               # 2 x short M4 inserts (94180A351, Ø5.6 mm pre-printed bores)
-                lp_ = lp_.cut(cq.Workplane("XZ").center(gb_at[0] + u, gb_at[2] + v).circle(M4S_BORE_R).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
-            add(a, lp_, "print_garmin_hanger_lower", ORANGE)
+            if one_piece_garmin:
+                # H2D master / v14: single full-height 130 x 276.7 x 6 mm plate spanning both top and bottom inboard rails (Z = 2.0..278.7 mm)
+                lz0 = 2.0
+                hp_ = box(gw, gt, out_H - 3.0 - lz0, (gx0, gy, lz0))
+                for bz in (B / 2, hz):
+                    for hx in (gx0 + 25.0, gx0 + gw - 25.0):
+                        hp_ = hp_.cut(cq.Workplane("XZ").center(hx, bz).circle(3.4).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
+                        hp_ = hp_.cut(countersink("print_garmin_hanger", (hx, gy, bz), (0, 1, 0)))
+                for (u, v) in HOLES["garmin"]:                           # M4 inserts in the plate (short, 94180A351), Ø5.6 mm pre-printed bores
+                    hp_ = hp_.cut(cq.Workplane("XZ").center(gx + u, gz + v).circle(M4S_BORE_R).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
+                for (u, v) in HOLES["gnd_bus"]:                          # 2 x short M4 inserts (94180A351, Ø5.6 mm pre-printed bores) for Blue Sea 2701
+                    hp_ = hp_.cut(cq.Workplane("XZ").center(gb_at[0] + u, gb_at[2] + v).circle(M4S_BORE_R).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
+                for zrow in (40.0, 100.0, 138.0, 243.0):
+                    hp_ = tie_slots(hp_, zrow, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
+                add(a, hp_, "print_garmin_hanger", ORANGE)
+            else:
+                hp_ = box(gw, gt, out_H - 3.0 - gz0, (gx0, gy, gz0))
+                for hx in (gx0 + 25.0, gx0 + gw - 25.0):
+                    hp_ = hp_.cut(cq.Workplane("XZ").center(hx, hz).circle(3.4).extrude(-(gt + 2)).translate((0, gy - 1, 0)))     # 1/4-20 into the slot
+                    hp_ = hp_.cut(countersink("print_garmin_hanger", (hx, gy, hz), (0, 1, 0)))                                     # head on the inner face
+                for (u, v) in HOLES["garmin"]:                           # M4 inserts in the plate (short, 94180A351), Ø5.6 mm pre-printed bores
+                    hp_ = hp_.cut(cq.Workplane("XZ").center(gx + u, gz + v).circle(M4S_BORE_R).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
+                hp_ = tie_slots(hp_, 243.0, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
+                hp_ = tie_slots(hp_, 138.0, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
+                add(a, hp_, "print_garmin_hanger", ORANGE)
+                # 256 mm P1P fallback: split into upper + lower plate with 1 mm gap at Z = 129..130 mm
+                lz0, lz1 = 2.0, gz0 - 1.0
+                lp_ = box(gw, gt, lz1 - lz0, (gx0, gy, lz0))
+                for hx in (gx0 + 25.0, gx0 + gw - 25.0):
+                    lp_ = lp_.cut(cq.Workplane("XZ").center(hx, B / 2).circle(3.4).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
+                    lp_ = lp_.cut(countersink("print_garmin_hanger_lower", (hx, gy, B / 2), (0, 1, 0)))
+                for zrow in (40.0, 100.0):                                # top & bottom tie-slot rows only (middle 70 mm row removed for Blue Sea 2701)
+                    lp_ = tie_slots(lp_, zrow, (gx0 + 30.0, gx0 + gw / 2, gx0 + gw - 30.0))
+                for (u, v) in HOLES["gnd_bus"]:                           # 2 x short M4 inserts (94180A351, Ø5.6 mm pre-printed bores)
+                    lp_ = lp_.cut(cq.Workplane("XZ").center(gb_at[0] + u, gb_at[2] + v).circle(M4S_BORE_R).extrude(-(gt + 2)).translate((0, gy - 1, 0)))
+                add(a, lp_, "print_garmin_hanger_lower", ORANGE)
             add(a, gnd_bus_shape(gb.w, gb.d, gb.h, gb_at), "power_busbar_gnd_hanger", GOLD)
         at = (gx, gy - gc.d, gz)
         add(a, victron_shape("garmin", gc.w, gc.d, gc.h, at, unit_fallback("garmin", gc.w, gc.d, gc.h, at)), "garmin_powerswitch_hanger", BLACK)
