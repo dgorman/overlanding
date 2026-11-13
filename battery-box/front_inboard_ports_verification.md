@@ -28,7 +28,7 @@ Origin: **Left** `u = 0.0 mm` (`3.0 mm` outboard rail slot tongue), **Bottom** `
 
 | Port | Top Label | Center `(u, v)` (`mm`) | Cutout & M4 Mounting Holes *(100% Identical to `P4`)* | White PETG `0.60 mm` Flush Outline (`1.8 mm` Stroke) |
 | :--- | :---: | :---: | :--- | :--- |
-| **`sb50_pack`** | **`AUX BATT`** | `(193.0, 93.3)` | **`29.0 W × 53.0 H mm`** + `4 × Ø4.30 mm` M4 @ `45°` (`5.0 mm` from corners = `36.07 × 60.07 mm` C-C) | **White Rounded Box:** `45.0 × 69.0 mm` ID (`R7.5`) / `48.6 × 72.6 mm` OD (`R9.3`) |
+| **`sb50_pack`** | **`AUX BATT`** | `(193.0, 93.3)` | **`29.0 W × 53.0 H mm`** + `4 × Ø4.30 mm` M4 @ `45°` (`5.0 mm` from corners = `36.07 × 60.07 mm` C-C) | **White Rounded Box:** `55.0 × 79.0 mm` ID (`R7.5`) / `58.6 × 82.6 mm` OD (`R9.3`) *(9.5 mm past bolt centers)* |
 
 ### B. Inboard Front Tile — `print_panel_front_inboard_ports` (`186.1 W × 245.5 H × 6.25 T mm`)
 Origin: **Left** `u = 0.0 mm` (`20.0 mm` rear half-lap seam), **Bottom** `v = 0.0 mm` (`6.9 mm` bottom rail slot tongue; exposed vertical rail daylight = `v = 6.9 .. 238.6 mm`):
@@ -38,7 +38,7 @@ Origin: **Left** `u = 0.0 mm` (`20.0 mm` rear half-lap seam), **Bottom** `v = 0.
 | **`P1`** *(Bottom-Right)* | **`AC IN`** | `(143.0, 46.8)` | **`Ø45.00 mm`** + `2 × Ø4.30 mm` M4 at 12 & 6 o'clock (`v = 19.3` & `74.3`, `55.0 mm` C-C) | **White Circle:** `Ø65.0 mm` ID / `Ø68.6 mm` OD *(clears `5 mm` bezel + M4 heads)* |
 | **`P2`** *(Mid-Right)* | **`AC OUT`** | `(143.0, 128.8)` | **`Ø45.00 mm`** + `2 × Ø4.30 mm` M4 at 12 & 6 o'clock (`v = 101.3` & `156.3`, `55.0 mm` C-C) | **White Circle:** `Ø65.0 mm` ID / `Ø68.6 mm` OD |
 | **`P3`** *(Top-Right)* | **`DC OUT`** | `(143.0, 200.8)` | **`Ø29.50 mm`** *(rear locknut)* | **White Circle:** `Ø43.5 mm` ID / `Ø47.1 mm` OD *(`7.0 mm` radial gap from hole)* |
-| **`P4`** *(Bottom-Left)* | **`DC IN`** | `(75.0, 65.8)` | **`29.0 W × 53.0 H mm`** + `4 × Ø4.30 mm` M4 @ `45°` (`36.07 × 60.07 mm` C-C) | **White Rounded Box:** `45.0 × 69.0 mm` ID (`R7.5`) / `48.6 × 72.6 mm` OD (`R9.3`) |
+| **`P4`** *(Bottom-Left)* | **`DC IN`** | `(75.0, 65.8)` | **`29.0 W × 53.0 H mm`** + `4 × Ø4.30 mm` M4 @ `45°` (`36.07 × 60.07 mm` C-C) | **White Rounded Box:** `55.0 × 79.0 mm` ID (`R7.5`) / `58.6 × 82.6 mm` OD (`R9.3`) *(9.5 mm past bolt centers)* |
 | **`P5`** *(Mid-Left)* | **`DC OUT`** | `(75.0, 139.8)` | **`Ø29.50 mm`** *(rear locknut)* | **White Circle:** `Ø43.5 mm` ID / `Ø47.1 mm` OD *(`7.0 mm` radial gap from hole)* |
 | **`P6`** *(Top-Left)* | **`SOLAR IN`** | `(75.0, 200.8)` | **`Ø29.50 mm`** *(rear locknut)* | **White Circle:** `Ø43.5 mm` ID / `Ø47.1 mm` OD *(`7.0 mm` radial gap from hole)* |
 

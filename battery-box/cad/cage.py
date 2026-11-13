@@ -2800,14 +2800,14 @@ def v12_panels(a):
             ("circle", 423.0, 61.0 + z_shift_back, 32.50, "AC IN"),          # P1: Ø65.0 ID / Ø68.6 OD (clears 5mm bezel + M4 heads)
             ("circle", 423.0, 143.0 + z_shift_back, 32.50, "AC OUT"),        # P2: Ø65.0 ID / Ø68.6 OD
             ("circle", 423.0, 215.0 + z_shift_back, 21.75, "DC OUT"),        # P3: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
-            ("rbox",   355.0, 80.0 + z_shift_back, (45.0, 69.0), "DC IN"),   # P4: 8.0 mm from 29x53 cutout -> 45x69 ID / 48.6x72.6 OD
+            ("rbox",   355.0, 80.0 + z_shift_back, (55.0, 79.0), "DC IN"),   # P4: 9.5 mm past M4 centers (+5 mm per side over cover) -> 55x79 ID / 58.6x82.6 OD
             ("circle", 355.0, 154.0 + z_shift_back, 21.75, "DC OUT"),        # P5: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
             ("circle", 355.0, 215.0 + z_shift_back, 21.75, "SOLAR IN"),      # P6: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
         ])
         inb = inb.cut(inlay_wp)
 
         outb_inlay_wp = _make_port_inlays([
-            ("rbox",   215.0, 107.5 + z_shift_back, (45.0, 69.0), "AUX BATT"),  # sb50_pack: identical 29x53 cutout & 45x69 ID / 48.6x72.6 OD white frame
+            ("rbox",   215.0, 107.5 + z_shift_back, (55.0, 79.0), "AUX BATT"),  # sb50_pack: 55x79 ID / 58.6x82.6 OD (+5 mm per side past cover/bolts)
         ])
         outb = outb.cut(outb_inlay_wp)
 
