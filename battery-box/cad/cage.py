@@ -2801,8 +2801,8 @@ def v12_panels(a):
             ("circle", 423.0, 143.0 + z_shift_back, 32.50, "AC OUT"),        # P2: Ø65.0 ID / Ø68.6 OD
             ("circle", 423.0, 215.0 + z_shift_back, 21.75, "DC OUT"),        # P3: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
             ("rbox",   345.0, 68.0 + z_shift_back, (55.0, 79.0), "DC IN"),   # P4: Y=345 (u=65), v=53.8 (bottom 12.5 flush w/ P1); 55x79 ID / 58.6x82.6 OD
-            ("circle", 345.0, 150.0 + z_shift_back, 21.75, "DC OUT"),        # P5: centered between P4 "DC IN" & P6 (v=135.8, ~10 mm clear top & bot)
-            ("circle", 345.0, 215.0 + z_shift_back, 21.75, "SOLAR IN"),      # P6: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
+            ("circle", 345.0, 150.0 + z_shift_back, 21.75, "SOLAR IN"),      # P5: centered between P4 "DC IN" & P6 (v=135.8, ~10 mm clear top & bot)
+            ("circle", 345.0, 215.0 + z_shift_back, 21.75, "DC OUT"),        # P6: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD (top row both DC OUT)
         ])
         inb = inb.cut(inlay_wp)
 
