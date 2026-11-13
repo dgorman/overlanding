@@ -482,10 +482,10 @@ if P["card_plane"] == "v12":   # v12 and v13 share one front panel: the port str
     FRONT_PORTS = [("l14_30_in", 423, 65), ("l14_30_out", 423, 135), ("socket", 423, 190, 29),            # (v13's batteries run the outboard
                    ("sb50_solar", 370, 60), ("sb50_alt", 370, 116), ("socket", 370, 160, 22), ("socket", 370, 193, 22),   # side to the front; its plate's
                    ("socket", 338, 150, 29), ("socket", 338, 190, 29)]                                                   # front post ends at y 315)
-if P.get("icebox_front") in ("bezel", "side"):   # v12s / master port strip: 2 clean columns on inverter side (Y = 345 & 423) + SB50 pack at Y = 215
+if P.get("icebox_front") in ("bezel", "side"):   # v12s / master port strip: 2 clean columns on inboard (Y = 345 & 423) + 2 SB50 stacked near half-lap on outboard (Y = 247)
     FRONT_PORTS = [("l14_30_in", 423, 61.0), ("l14_30_out", 423, 143.0), ("socket", 423, 215.0, 29.5),
-                   ("sb50_alt", 345, 68.0), ("socket", 345, 150.0, 29.5), ("socket", 345, 215.0, 29.5),
-                   ("sb50_pack", 215, 107.5)]   # SB50 umbilical inlet for the add-on pack, in front of the bus column, clear of the breakers on the plate
+                   ("socket", 345, 61.0, 29.5), ("socket", 345, 143.0, 29.5), ("socket", 345, 215.0, 29.5),
+                   ("sb50_alt", 247, 86.0), ("sb50_pack", 247, 192.0)]   # 2 x SB50 (DC IN + AUX BATT) stacked vertically close to the half-lap to clear trimmed MOLLE panel
 INLET_BODY = {"l14": (45.0, 55.0), "sb50": (48.0, 29.0, 53.0), "sb175": (79.0, 56.0, 26.0)}   # (dia, depth) or (depth, w, h)
 N_BATT = 4
 post_h = in_H                                          # floor panel top to the underside of the top rails
@@ -2800,20 +2800,21 @@ def v12_panels(a):
             ("circle", 423.0, 61.0 + z_shift_back, 32.50, "AC IN"),          # P1: Ø65.0 ID / Ø68.6 OD (clears 5mm bezel + M4 heads)
             ("circle", 423.0, 143.0 + z_shift_back, 32.50, "AC OUT"),        # P2: Ø65.0 ID / Ø68.6 OD
             ("circle", 423.0, 215.0 + z_shift_back, 21.75, "DC OUT"),        # P3: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
-            ("rbox",   345.0, 68.0 + z_shift_back, (55.0, 79.0), "DC IN"),   # P4: Y=345 (u=65), v=53.8 (bottom 12.5 flush w/ P1); 55x79 ID / 58.6x82.6 OD
-            ("circle", 345.0, 150.0 + z_shift_back, 21.75, "SOLAR IN"),      # P5: centered between P4 "DC IN" & P6 (v=135.8, ~10 mm clear top & bot)
-            ("circle", 345.0, 215.0 + z_shift_back, 21.75, "DC OUT"),        # P6: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD (top row both DC OUT)
+            ("circle", 345.0, 61.0 + z_shift_back, 21.75, "DC OUT"),         # P4: Ø29.5 round socket row-aligned with P1
+            ("circle", 345.0, 143.0 + z_shift_back, 21.75, "DC OUT"),        # P5: Ø29.5 round socket row-aligned with P2
+            ("circle", 345.0, 215.0 + z_shift_back, 21.75, "DC OUT"),        # P6: Ø29.5 round socket row-aligned with P3
         ])
         inb = inb.cut(inlay_wp)
 
         outb_inlay_wp = _make_port_inlays([
-            ("rbox",   215.0, 107.5 + z_shift_back, (55.0, 79.0), "AUX BATT"),  # sb50_pack: 55x79 ID / 58.6x82.6 OD (+5 mm per side past cover/bolts)
+            ("rbox",   247.0, 86.0 + z_shift_back, (55.0, 79.0), "DC IN"),     # sb50_alt: 55x79 ID / 58.6x82.6 OD (+5 mm per side past cover/bolts)
+            ("rbox",   247.0, 192.0 + z_shift_back, (55.0, 79.0), "AUX BATT"), # sb50_pack: stacked above DC IN near lap to clear MOLLE panel
         ])
         outb = outb.cut(outb_inlay_wp)
 
-        # Removable exterior accessory MOLLE panel over print_panel_front_outboard when Pack2 is not connected
-        # 290.0 W (Y=1.5..291.5) x 278.7 H (Z=1.5..280.2) x 10.25 D (6.25 mm plate + 4.0 mm rail standoffs; Textured PEI face out, support-free)
-        m_y0, m_y1 = 1.5, 291.5
+        # Removable exterior accessory MOLLE panel over print_panel_front_outboard (trimmed inboard to clear stacked SB50 ports at Y=247)
+        # 208.5 W (Y=1.5..210.0) x 278.7 H (Z=1.5..280.2) x 10.25 D (6.25 mm plate + 4.0 mm rail standoffs; Textured PEI face out, support-free)
+        m_y0, m_y1 = 1.5, 210.0
         m_z0, m_z1 = 1.5, out_H - 1.5
         m_standoff, m_t = 4.0, t_front
         molle = box(m_t, m_y1 - m_y0, m_z1 - m_z0, (out_D + m_standoff, m_y0, m_z0)).edges("|X").fillet(8.0)
@@ -2825,19 +2826,19 @@ def v12_panels(a):
         molle = molle.union(pad_out).union(pad_bot).union(pad_top).union(rib_inb)
         # 6 x Ø6.8 mm through-holes for 1/4"-20 button-head screws or tool-less thumb knobs into front rails' outer T-slots
         molle_bolts = [
-            (75.0, B / 2.0), (235.0, B / 2.0),
-            (75.0, out_H - B / 2.0), (235.0, out_H - B / 2.0),
+            (65.0, B / 2.0), (175.0, B / 2.0),
+            (65.0, out_H - B / 2.0), (175.0, out_H - B / 2.0),
             (B / 2.0, 80.0), (B / 2.0, out_H - 80.0),
         ]
         for by_m, bz_m in molle_bolts:
             molle = molle.cut(
                 cq.Workplane("YZ").center(by_m, bz_m).circle(3.4).extrude(m_standoff + m_t + 2.0).translate((out_D - 1.0, 0, 0))
             )
-        # 6 cols x 8 rows = 48 MIL-STD PALS slots (30.0 x 13.4 mm stadium slots on true 38.1 x 25.4 mm / 1.5" x 1.0" pitch)
+        # 4 cols x 8 rows = 32 MIL-STD PALS slots (30.0 x 13.4 mm stadium slots on true 38.1 x 25.4 mm / 1.5" x 1.0" pitch)
         pals_pts = [
-            (151.5 + (c_i - 2.5) * 38.1, (out_H / 2.0) + (r_i - 3.5) * 25.4)
+            (111.0 + (c_i - 1.5) * 38.1, (out_H / 2.0) + (r_i - 3.5) * 25.4)
             for r_i in range(8)
-            for c_i in range(6)
+            for c_i in range(4)
         ]
         pals_cut = (
             cq.Workplane("YZ")
