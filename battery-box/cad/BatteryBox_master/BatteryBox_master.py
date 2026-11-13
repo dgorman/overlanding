@@ -241,13 +241,13 @@ COMP_SPECS: dict[str, dict] = {
 
 # Front Panel Port Cutouts: (name, shape, y_center_mm, z_center_mm, size_tuple_mm, inward_depth_mm)
 FRONT_PANEL_PORTS: list[tuple[str, str, float, float, tuple[float, ...], float]] = [
-    ("l14_30_shore_in", "circle", 423.0, 72.0, (60.0,), 55.0),
-    ("l14_30_inv_out", "circle", 423.0, 142.0, (60.0,), 55.0),
-    ("socket_usb_high", "circle", 423.0, 215.0, (22.0,), 40.0),
-    ("sb50_alt_in", "rect", 355.0, 110.0, (37.0, 48.0), 48.0),
-    ("socket_12v_aux", "circle", 355.0, 165.0, (29.0,), 40.0),
-    ("socket_usb_low", "circle", 355.0, 215.0, (22.0,), 40.0),
-    ("sb50_pack2_umbilical", "rect", 215.0, 110.0, (37.0, 48.0), 48.0),
+    ("l14_30_shore_in", "l14", 423.0, 72.0, (45.0,), 55.0),
+    ("l14_30_inv_out", "l14", 423.0, 142.0, (45.0,), 55.0),
+    ("socket_usb_high", "circle", 423.0, 215.0, (29.5,), 40.0),
+    ("sb50_alt_in", "sb50", 355.0, 107.5, (29.0, 53.0), 48.0),
+    ("socket_12v_aux", "circle", 355.0, 165.0, (29.5,), 40.0),
+    ("socket_usb_low", "circle", 355.0, 215.0, (29.5,), 40.0),
+    ("sb50_pack2_umbilical", "sb50", 215.0, 107.5, (29.0, 53.0), 48.0),
 ]
 
 # Rear Panel GX Touch 50 Cutout & Printed Bezel
@@ -918,13 +918,7 @@ def build_frame_and_panels(
                     )
             return body
 
-    p_out = make_slot_panel("x", pm, INNER_DEPTH_X, "panel_side_outboard_from_icebox")
-    apply_color(app, design, p_out, *COL_PANEL_PLY)
-
-    p_in = make_slot_panel("x", BOX_WIDTH_Y - pm - T, INNER_DEPTH_X, "panel_side_inboard_from_icebox")
-    apply_color(app, design, p_in, *COL_PANEL_PLY)
-
-    # Back Panel: 2-tile H2D Printed Panel (6.25 mm thick, +7.8 mm bottom height = 245.5 mm, R=17.2 mm corner notches, 20 mm glued half-lap)
+    # Back, Side & Front Panels: 2-tile H2D Printed Pairs (6.25 mm thick, 245.5 mm tall, R=17.2 mm corner notches, 20 mm half-lap w/ -0.15 mm relief)
     end_lap_ymid = 290.0
     end_lap_w = 20.0
     t_back = T + 0.25
@@ -934,6 +928,89 @@ def build_frame_and_panels(
     z_b1 = BOX_HEIGHT_Z - B + tongue + z_shift_back
     h_back = z_b1 - z_b0
     r_notch_back = 17.2
+
+    # 2 Solid H2D Side Panel Pairs (537.8 mm assembled = 524.0 mm as-built daylight + 2 x 6.9 mm tongues -> 278.9 x 245.5 x 6.25 mm per tile)
+    len_side = INNER_DEPTH_X + 2.5 + 2.0 * 6.9
+    side_lap_xmid = BOX_DEPTH_X / 2.0
+    side_lap_w = 20.0
+    x_s0 = side_lap_xmid - len_side / 2.0
+    x_s1 = side_lap_xmid + len_side / 2.0
+    y_s_out = pm_back
+    y_s_in = BOX_WIDTH_Y - pm_back - t_back
+
+    p_side_out_b = add_box_feature(
+        panel_comp, x_s0, y_s_out, z_b0,
+        (side_lap_xmid + side_lap_w / 2.0) - x_s0, t_back, h_back,
+        body_name="print_panel_side_outboard_back",
+    )
+    cut_cylinders_on_plane(
+        panel_comp, p_side_out_b, "y", y_s_out - 0.5, t_back + 1.0,
+        [(x_s0, y_s_out, z_b0, r_notch_back), (x_s0, y_s_out, z_b1, r_notch_back)],
+    )
+    add_box_feature(
+        panel_comp, side_lap_xmid - side_lap_w / 2.0, y_s_out + t_back / 2.0, z_b0 - 0.5,
+        side_lap_w + 0.5, t_back / 2.0 + 0.5, h_back + 1.0,
+        adsk.fusion.FeatureOperations.CutFeatureOperation, p_side_out_b,
+    )
+    apply_color(app, design, p_side_out_b, *COL_PRINT_ORANGE)
+
+    p_side_out_f = add_box_feature(
+        panel_comp, side_lap_xmid - side_lap_w / 2.0, y_s_out, z_b0,
+        x_s1 - (side_lap_xmid - side_lap_w / 2.0), t_back, h_back,
+        body_name="print_panel_side_outboard_front",
+    )
+    cut_cylinders_on_plane(
+        panel_comp, p_side_out_f, "y", y_s_out - 0.5, t_back + 1.0,
+        [(x_s1, y_s_out, z_b0, r_notch_back), (x_s1, y_s_out, z_b1, r_notch_back)],
+    )
+    add_box_feature(
+        panel_comp, side_lap_xmid - side_lap_w / 2.0 - 0.5, y_s_out - 0.5, z_b0 - 0.5,
+        side_lap_w + 0.5, 3.20 + 0.5, h_back + 1.0,
+        adsk.fusion.FeatureOperations.CutFeatureOperation, p_side_out_f,
+    )
+    add_box_feature(
+        panel_comp, side_lap_xmid - side_lap_w / 2.0 - 0.5, y_s_out + t_back - 0.15, z_b0 - 0.5,
+        side_lap_w + 0.5, 0.15 + 0.5, h_back + 1.0,
+        adsk.fusion.FeatureOperations.CutFeatureOperation, p_side_out_f,
+    )
+    apply_color(app, design, p_side_out_f, *COL_PRINT_ORANGE)
+
+    p_side_in_b = add_box_feature(
+        panel_comp, x_s0, y_s_in, z_b0,
+        (side_lap_xmid + side_lap_w / 2.0) - x_s0, t_back, h_back,
+        body_name="print_panel_side_inboard_back",
+    )
+    cut_cylinders_on_plane(
+        panel_comp, p_side_in_b, "y", y_s_in - 0.5, t_back + 1.0,
+        [(x_s0, y_s_in, z_b0, r_notch_back), (x_s0, y_s_in, z_b1, r_notch_back)],
+    )
+    add_box_feature(
+        panel_comp, side_lap_xmid - side_lap_w / 2.0, y_s_in - 0.5, z_b0 - 0.5,
+        side_lap_w + 0.5, t_back / 2.0 + 0.5, h_back + 1.0,
+        adsk.fusion.FeatureOperations.CutFeatureOperation, p_side_in_b,
+    )
+    apply_color(app, design, p_side_in_b, *COL_PRINT_ORANGE)
+
+    p_side_in_f = add_box_feature(
+        panel_comp, side_lap_xmid - side_lap_w / 2.0, y_s_in, z_b0,
+        x_s1 - (side_lap_xmid - side_lap_w / 2.0), t_back, h_back,
+        body_name="print_panel_side_inboard_front",
+    )
+    cut_cylinders_on_plane(
+        panel_comp, p_side_in_f, "y", y_s_in - 0.5, t_back + 1.0,
+        [(x_s1, y_s_in, z_b0, r_notch_back), (x_s1, y_s_in, z_b1, r_notch_back)],
+    )
+    add_box_feature(
+        panel_comp, side_lap_xmid - side_lap_w / 2.0 - 0.5, y_s_in + t_back - 3.20, z_b0 - 0.5,
+        side_lap_w + 0.5, 3.20 + 0.5, h_back + 1.0,
+        adsk.fusion.FeatureOperations.CutFeatureOperation, p_side_in_f,
+    )
+    add_box_feature(
+        panel_comp, side_lap_xmid - side_lap_w / 2.0 - 0.5, y_s_in - 0.5, z_b0 - 0.5,
+        side_lap_w + 0.5, 0.15 + 0.5, h_back + 1.0,
+        adsk.fusion.FeatureOperations.CutFeatureOperation, p_side_in_f,
+    )
+    apply_color(app, design, p_side_in_f, *COL_PRINT_ORANGE)
     p_back_out = add_box_feature(
         panel_comp, pm_back, B - tongue, z_b0,
         t_back, (end_lap_ymid + end_lap_w / 2.0) - (B - tongue), h_back,
@@ -1024,13 +1101,19 @@ def build_frame_and_panels(
         panel_comp, p_front_in, "x", xf_inner - 0.5, t_front + 1.0,
         [(xf_inner, B + INNER_WIDTH_Y + tongue, z_b0, r_notch_back), (xf_inner, B + INNER_WIDTH_Y + tongue, z_b1, r_notch_back)],
     )
-    # Half-lap rabbet on inboard front tile: keep inner 3.125 mm (cut outer 3.125 mm across Y = 280..300 mm)
+    # Half-lap rabbet on inboard front tile: Z = 3.20..6.10 mm flap when printed tex-out (+0.075 mm support relief + 0.15 mm seam relief -> 6.10 mm seam)
     add_box_feature(
-        panel_comp, xf_inner + t_front / 2.0, end_lap_ymid - end_lap_w / 2.0 - 0.5, z_b0 - 0.5,
-        t_front / 2.0 + 0.5, end_lap_w + 0.5, h_back + 1.0,
+        panel_comp, xf_inner + t_front - 3.20, end_lap_ymid - end_lap_w / 2.0 - 0.5, z_b0 - 0.5,
+        3.20 + 0.5, end_lap_w + 0.5, h_back + 1.0,
+        adsk.fusion.FeatureOperations.CutFeatureOperation, p_front_in,
+    )
+    add_box_feature(
+        panel_comp, xf_inner - 0.5, end_lap_ymid - end_lap_w / 2.0 - 0.5, z_b0 - 0.5,
+        0.15 + 0.5, end_lap_w + 0.5, h_back + 1.0,
         adsk.fusion.FeatureOperations.CutFeatureOperation, p_front_in,
     )
 
+    d45_sb = 5.0 / math.sqrt(2.0)
     for target_front, y_filter in ((p_front_out, lambda y: y < end_lap_ymid), (p_front_in, lambda y: y >= end_lap_ymid)):
         f_plane = create_offset_plane(panel_comp, "x", xf_inner - 0.5)
         f_sketch = panel_comp.sketches.add(f_plane)
@@ -1043,12 +1126,23 @@ def build_frame_and_panels(
             if pkind == "circle":
                 rad = psize[0] / 2.0
                 f_circles.addByCenterRadius(sketch_world_point(f_sketch, xf_inner - 0.5, py, pz), cm(rad))
+            elif pkind == "l14":
+                rad = psize[0] / 2.0
+                f_circles.addByCenterRadius(sketch_world_point(f_sketch, xf_inner - 0.5, py, pz), cm(rad))
+                for dz_m4 in (-27.5, 27.5):
+                    f_circles.addByCenterRadius(sketch_world_point(f_sketch, xf_inner - 0.5, py, pz + dz_m4), cm(2.15))
             else:
                 pw, ph = psize[0], psize[1]
                 f_lines.addTwoPointRectangle(
                     sketch_world_point(f_sketch, xf_inner - 0.5, py - pw / 2.0, pz - ph / 2.0),
                     sketch_world_point(f_sketch, xf_inner - 0.5, py + pw / 2.0, pz + ph / 2.0),
                 )
+                for dy_s in (-1.0, 1.0):
+                    for dz_s in (-1.0, 1.0):
+                        f_circles.addByCenterRadius(
+                            sketch_world_point(f_sketch, xf_inner - 0.5, py + dy_s * (pw / 2.0 + d45_sb), pz + dz_s * (ph / 2.0 + d45_sb)),
+                            cm(2.15),
+                        )
         extrude_all_profiles(panel_comp, f_sketch, "x", t_front + 1.0, adsk.fusion.FeatureOperations.CutFeatureOperation, target_front)
 
     apply_color(app, design, p_front_out, *COL_PRINT_ORANGE)

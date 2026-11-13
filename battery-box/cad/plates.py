@@ -88,6 +88,21 @@ def back_outboard_tex_out(tris: list[list[tuple[float, float, float]]]) -> list[
     return [[(-v[2], -v[1], -v[0]) for v in t] for t in tris]
 
 
+def front_tex_out(tris: list[list[tuple[float, float, float]]]) -> list[list[tuple[float, float, float]]]:
+    """Orient front panels with +X exterior face on Z=0 (Textured PEI side out, X_bed=245.5 mm)."""
+    return [[(v[2], v[1], -v[0]) for v in t] for t in tris]
+
+
+def side_outboard_tex_out(tris: list[list[tuple[float, float, float]]]) -> list[list[tuple[float, float, float]]]:
+    """Orient outboard side panels with -Y exterior face on Z=0 (Textured PEI side out, X_bed=245.5 x Y_bed=278.9 mm)."""
+    return [[(v[2], v[0], v[1]) for v in t] for t in tris]
+
+
+def side_inboard_tex_out(tris: list[list[tuple[float, float, float]]]) -> list[list[tuple[float, float, float]]]:
+    """Orient inboard side panels with +Y exterior face on Z=0 (Textured PEI side out, X_bed=245.5 x Y_bed=278.9 mm)."""
+    return [[(-v[2], v[0], -v[1]) for v in t] for t in tris]
+
+
 ORIENT_RULES = [   # (file-name prefix, orientation); first match wins; anything else prints as modelled
     ("print_breaker_shelf", edge_x_up),         # 130 mm edge vertical: every wall upright, the plate and leg need no support
     ("print_busbar_spacer", flat_y_long),       # 35 mm (X) x 155 mm (Y) x 10 mm (Z) so H2D X-arrange packs them 82 x 155 mm
@@ -96,6 +111,9 @@ ORIENT_RULES = [   # (file-name prefix, orientation); first match wins; anything
     ("print_plate_inverter_tile", flat),        # on the plain back: pilot holes and the half-lap rabbets face up
     ("print_plate_inverter_spline", flat),
     ("print_panel_back_outboard", back_outboard_tex_out),
+    ("print_panel_front_", front_tex_out),
+    ("print_panel_side_outboard_", side_outboard_tex_out),
+    ("print_panel_side_inboard_", side_inboard_tex_out),
     ("print_panel_", flat),                     # 2-tile printed end panels lie flat on the bed, half-lap rabbet facing up
     ("print_garmin_hanger", flat),
     ("print_touch_bezel", flat),

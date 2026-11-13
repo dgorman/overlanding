@@ -477,16 +477,16 @@ if P.get("swap"):   # v11: every port on the FRONT face, in the 78 mm strip betw
                    ("socket", 47, 130, 29), ("socket", 82, 130, 29), ("socket", 47, 170, 29), ("socket", 82, 170, 22), ("socket", 64, 210, 22),
                    ("sb50_solar", 64, 274), ("sb50_alt", 64, 330),
                    ("l14_30_in", 64, 400), ("l14_30_out", 64, 470)]
-PORT_FACE = {"sb175": (26.0, 56.0, 79.0), "sb50": (37.0, 48.0, 48.0), "iec": (24.0, 32.0, 50.0)}   # (w, h, depth), face centred
+PORT_FACE = {"sb175": (26.0, 56.0, 79.0), "sb50": (29.0, 53.0, 48.0), "iec": (24.0, 32.0, 50.0)}   # (w, h, depth), face centred
 if P["card_plane"] == "v12":   # v12 and v13 share one front panel: the port strip is the INBOARD 150 mm, three columns, under the top rail
     FRONT_PORTS = [("l14_30_in", 423, 65), ("l14_30_out", 423, 135), ("socket", 423, 190, 29),            # (v13's batteries run the outboard
                    ("sb50_solar", 370, 60), ("sb50_alt", 370, 116), ("socket", 370, 160, 22), ("socket", 370, 193, 22),   # side to the front; its plate's
                    ("socket", 338, 150, 29), ("socket", 338, 190, 29)]                                                   # front post ends at y 315)
 if P.get("icebox_front") in ("bezel", "side"):   # v12s / master port strip: 2 clean columns on inverter side (Y = 355 & 423) + SB50 pack at Y = 215
-    FRONT_PORTS = [("l14_30_in", 423, 72), ("l14_30_out", 423, 142), ("socket", 423, 215, 22),
-                   ("sb50_alt", 355, 110), ("socket", 355, 165, 29), ("socket", 355, 215, 22),
-                   ("sb50_pack", 215, 110)]   # SB50 umbilical inlet for the add-on pack, in front of the bus column, clear of the breakers on the plate
-INLET_BODY = {"l14": (60.0, 55.0), "sb50": (48.0, 37.0, 48.0), "sb175": (79.0, 56.0, 26.0)}   # (dia, depth) or (depth, w, h)
+    FRONT_PORTS = [("l14_30_in", 423, 72), ("l14_30_out", 423, 142), ("socket", 423, 215, 29.5),
+                   ("sb50_alt", 355, 107.5), ("socket", 355, 165, 29.5), ("socket", 355, 215, 29.5),
+                   ("sb50_pack", 215, 107.5)]   # SB50 umbilical inlet for the add-on pack, in front of the bus column, clear of the breakers on the plate
+INLET_BODY = {"l14": (45.0, 55.0), "sb50": (48.0, 29.0, 53.0), "sb175": (79.0, 56.0, 26.0)}   # (dia, depth) or (depth, w, h)
 N_BATT = 4
 post_h = in_H                                          # floor panel top to the underside of the top rails
 
@@ -749,7 +749,7 @@ def bar(length: float, axis: str):
     """1" square bar with a shallow slot hint on each face (visual only)."""
     b = cq.Workplane("YZ").rect(B, B).extrude(length)
     for ang in (0, 90, 180, 270):
-        sd = 8.0 if ang in (0, 180) else 3.0
+        sd = 8.5 if ang in (0, 180) else 3.0
         slot = (cq.Workplane("YZ").center(0, B / 2 - sd / 2).rect(6.6, sd)
                 .extrude(length).rotate((0, 0, 0), (1, 0, 0), ang))
         b = b.cut(slot)
@@ -2611,10 +2611,41 @@ def v12_panels(a):
             face = box(3.0, tw, th, (pm_back - 3.0, yc - tw / 2, zc - th / 2))
             add(a, body.union(face), "gx_touch_50", BLACK)
             add(a, box(15.0, 40.0, 20.0, (pm_back + td, yc - 20.0, zc - 10.0)), "gx_touch_cable_plug", (0.3, 0.3, 0.3))
-    for nm, shp in (("panel_side_outboard_from_icebox", slot_panel("x", pm, in_D)),          # cut down from the IceBox's side panels
-                    ("panel_side_inboard_from_icebox", slot_panel("x", out_W - pm - T, in_D))):
-        add(a, shp, nm, PANEL)
     ymid_end, lw_end, big_end = 290.0, 20.0, out_H + 40.0           # H2D 2-tile end-panel split at Y = 280..300 mm
+    if printed_ends:
+        # 2 solid 2-piece H2D side-panel pairs (537.8 mm = 524.0 mm as-built daylight + 2 x 6.9 mm tongues; 278.9 x 245.5 x 6.25 mm per tile, textured side out)
+        t_side = t_back
+        len_side = in_D + 2.5 + 2.0 * 6.9                           # 537.80 mm (21.17 in)
+        xmid_side, lw_side = out_D / 2.0, 20.0                      # centered split at X = 285.75 mm (lap X = 275.75..295.75 mm)
+        x_s0, x_s1 = xmid_side - len_side / 2.0, xmid_side + len_side / 2.0
+        lap_t_side, lap_z_side, lap_clr_side = t_side / 2.0, 3.20, 0.15
+        y_s_out, y_s_in = pm_back, out_W - pm_back - t_side
+        s_out = box(len_side, t_side, z_b1 - z_b0, (x_s0, y_s_out, z_b0))
+        s_in = box(len_side, t_side, z_b1 - z_b0, (x_s0, y_s_in, z_b0))
+        for cx_n in (x_s0, x_s1):
+            for cz_n in (z_b0, z_b1):
+                s_out = s_out.cut(cq.Workplane("XZ").center(cx_n, cz_n).circle(r_notch_back).extrude(-(t_side + 4.0)).translate((0, y_s_out - 2.0, 0)))
+                s_in = s_in.cut(cq.Workplane("XZ").center(cx_n, cz_n).circle(r_notch_back).extrude(-(t_side + 4.0)).translate((0, y_s_in - 2.0, 0)))
+        # Outboard pair (-Y exterior): back tile keeps -Y outer 3.125 mm (support-free); front tile gets Z=3.20..6.10 mm (-0.15 mm relieved) inner flap
+        s_out_back = (s_out.intersect(box(xmid_side + lw_side / 2 + 20, 40, big_end, (-20, y_s_out - 20, -20)))
+                      .cut(box(lw_side, t_side - lap_t_side + 1, big_end, (xmid_side - lw_side / 2, y_s_out + lap_t_side, -20))))
+        s_out_front = (s_out.intersect(box(out_D + 20, 40, big_end, (xmid_side - lw_side / 2, y_s_out - 20, -20)))
+                       .cut(box(lw_side, lap_z_side + 1, big_end, (xmid_side - lw_side / 2, y_s_out - 1, -20)))
+                       .cut(box(lw_side, lap_clr_side + 1, big_end, (xmid_side - lw_side / 2, y_s_out + t_side - lap_clr_side, -20))))
+        # Inboard pair (+Y exterior): back tile keeps +Y outer 3.125 mm (support-free); front tile gets Z=3.20..6.10 mm (-0.15 mm relieved) inner flap
+        s_in_back = (s_in.intersect(box(xmid_side + lw_side / 2 + 20, 40, big_end, (-20, y_s_in - 20, -20)))
+                     .cut(box(lw_side, lap_t_side + 1, big_end, (xmid_side - lw_side / 2, y_s_in - 1, -20))))
+        s_in_front = (s_in.intersect(box(out_D + 20, 40, big_end, (xmid_side - lw_side / 2, y_s_in - 20, -20)))
+                      .cut(box(lw_side, lap_z_side + 1, big_end, (xmid_side - lw_side / 2, y_s_in + t_side - lap_z_side, -20)))
+                      .cut(box(lw_side, lap_clr_side + 1, big_end, (xmid_side - lw_side / 2, y_s_in - 1, -20))))
+        add(a, s_out_back, "print_panel_side_outboard_back", ORANGE)
+        add(a, s_out_front, "print_panel_side_outboard_front", ORANGE)
+        add(a, s_in_back, "print_panel_side_inboard_back", ORANGE)
+        add(a, s_in_front, "print_panel_side_inboard_front", ORANGE)
+    else:
+        for nm, shp in (("panel_side_outboard_from_icebox", slot_panel("x", pm, in_D)),          # cut down from the IceBox's side panels
+                        ("panel_side_inboard_from_icebox", slot_panel("x", out_W - pm - T, in_D))):
+            add(a, shp, nm, PANEL)
     if printed_ends:
         lap_t_back = t_back / 2.0                                   # 3.125 mm half-lap on back_inboard_gx
         lap_z_out = 3.20                                            # exact 16x0.20mm layer ceiling (+0.075 mm glue/support-breakoff relief over 3.125 mm flap)
@@ -2663,9 +2694,13 @@ def v12_panels(a):
             tabs = box(12, 10, 14, (xf_ports - 40, y - 5, z - 7))
             add(a, flange.union(barrel).union(nut).union(tabs), f"socket_{int(y)}_{int(z_raw)}", (0.3, 0.3, 0.3))
         elif kind.startswith("l14"):
-            tgt = tgt.cut(cq.Workplane("YZ").center(y, z).circle(30).extrude(t_front + 2).translate((xf_ports - 1, 0, 0)))
+            r_l14 = 22.5                                            # Ø45.0 mm verified barrel cutout
+            r_m4 = 2.15                                             # Ø4.30 mm M4 clearance through-holes at 12 & 6 o'clock (5.0 mm from cutout -> 55.0 mm C-C)
+            tgt = tgt.cut(cq.Workplane("YZ").center(y, z).circle(r_l14).extrude(t_front + 2).translate((xf_ports - 1, 0, 0)))
+            for dz_m4 in (-27.5, 27.5):
+                tgt = tgt.cut(cq.Workplane("YZ").center(y, z + dz_m4).circle(r_m4).extrude(t_front + 2).translate((xf_ports - 1, 0, 0)))
             flange = cq.Workplane("YZ").center(y, z).circle(31.5).extrude(3.5).translate((xf_ports + t_front, 0, 0))
-            can = cq.Workplane("YZ").center(y, z).circle(26).extrude(-42).translate((xf_ports, 0, 0))
+            can = cq.Workplane("YZ").center(y, z).circle(22.0).extrude(-42).translate((xf_ports, 0, 0))
             boot = cq.Workplane("YZ").center(y, z).circle(18).extrude(-13).translate((xf_ports - 42, 0, 0))
             add(a, flange.union(can).union(boot), f"socket_{kind}", (0.3, 0.3, 0.3))
         else:
@@ -2677,11 +2712,21 @@ def v12_panels(a):
                 fb = box(d_, w_, h_, at_p)
                 add(a, victron_shape("sb175_h", d_, w_, h_, at_p, fb), f"socket_{kind}", (0.3, 0.3, 0.3))
             else:
-                sh_w, sh_h = 36.5, 16.0
+                d45 = 5.0 / (2.0 ** 0.5)                            # 4 x Ø4.30 mm M4 holes at 5.0 mm diagonally on 45° from corners (36.07 x 60.07 mm C-C)
+                for dy_s in (-1.0, 1.0):
+                    for dz_s in (-1.0, 1.0):
+                        tgt = tgt.cut(
+                            cq.Workplane("YZ")
+                            .center(y + dy_s * (w_ / 2 + d45), z + dz_s * (h_ / 2 + d45))
+                            .circle(2.15)
+                            .extrude(t_front + 2)
+                            .translate((xf_ports - 1, 0, 0))
+                        )
+                sh_w, sh_h = (16.0, 36.5) if w_ < h_ else (36.5, 16.0)
                 at_p = (xf_ports - d_, y - sh_w / 2, z - sh_h / 2)
                 fb = box(d_, sh_w, sh_h, at_p)
                 sh_body = victron_shape("sb50_x", d_, sh_w, sh_h, at_p, fb)
-                bezel_p = box(2.5, w_, h_, (xf_ports + t_front, y - w_ / 2, z - h_ / 2)).cut(
+                bezel_p = box(2.5, w_ + 14.0, h_ + 14.0, (xf_ports + t_front, y - (w_ + 14.0) / 2, z - (h_ + 14.0) / 2)).cut(
                     box(4.5, sh_w - 1, sh_h - 1, (xf_ports + t_front - 1, y - (sh_w - 1) / 2, z - (sh_h - 1) / 2))
                 )
                 add(a, sh_body.union(bezel_p), f"socket_{kind}", (0.3, 0.3, 0.3))
@@ -2707,7 +2752,13 @@ def v12_panels(a):
     big = big_end
     lap_t_front = t_front / 2.0
     outb = front.intersect(box(40, ymid + lw / 2 + 20, big, (xf - 20, -20, -20))).cut(box(lap_t_front + 1, lw, big, (xf - 1, ymid - lw / 2, -20)))
-    inb = front.intersect(box(40, out_W, big, (xf - 20, ymid - lw / 2, -20))).cut(box(t_front - lap_t_front + 1, lw, big, (xf + lap_t_front, ymid - lw / 2, -20)))
+    if printed_ends:
+        lap_z_front, lap_clr_front = 3.20, 0.15                     # Z = 3.20..6.10 mm flap when printed textured-side-out (+0.075 mm support relief + 0.15 mm seam relief)
+        inb = (front.intersect(box(40, out_W, big, (xf - 20, ymid - lw / 2, -20)))
+               .cut(box(lap_z_front + 1, lw, big, (xf + t_front - lap_z_front, ymid - lw / 2, -20)))
+               .cut(box(lap_clr_front + 1, lw, big, (xf - 1, ymid - lw / 2, -20))))
+    else:
+        inb = front.intersect(box(40, out_W, big, (xf - 20, ymid - lw / 2, -20))).cut(box(t_front - lap_t_front + 1, lw, big, (xf + lap_t_front, ymid - lw / 2, -20)))
     for zb in ((60, 140, 220) if P.get("lap_bolts", True) else ()):
         bolt = cq.Workplane("YZ").center(ymid, zb).circle(2.3).extrude(t_front + 2).translate((xf - 1, 0, 0))
         outb, inb = outb.cut(bolt), inb.cut(bolt)
