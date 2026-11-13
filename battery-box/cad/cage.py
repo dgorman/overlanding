@@ -2834,6 +2834,7 @@ def v12_panels(a):
             molle = molle.cut(
                 cq.Workplane("YZ").center(by_m, bz_m).circle(3.4).extrude(m_standoff + m_t + 2.0).translate((out_D - 1.0, 0, 0))
             )
+            molle = molle.cut(countersink("print_panel_front_outboard_molle", (out_D + m_standoff + m_t, by_m, bz_m), (-1, 0, 0)))
         # 4 cols x 8 rows = 32 MIL-STD PALS slots (30.0 x 13.4 mm stadium slots on true 38.1 x 25.4 mm / 1.5" x 1.0" pitch)
         pals_pts = [
             (111.0 + (c_i - 1.5) * 38.1, (out_H / 2.0) + (r_i - 3.5) * 25.4)
@@ -2856,7 +2857,51 @@ def v12_panels(a):
     if inlay_wp is not None:
         add(a, inlay_wp, "print_panel_front_inboard_ports_inlay_white", (0.96, 0.97, 0.98))
         add(a, molle, "print_panel_front_outboard_molle", ORANGE)
-    add(a, box(out_D, out_W, T, (0, 0, out_H)), "lid_from_icebox_top", PANEL)                    # the IceBox's top panel, uncut
+    if printed_ends:
+        # 4-piece (2x2) half-lapped 6.25 mm printed H2D roof sitting flat on top of the 4 upper 8020 rails (Z = 281.70..287.95 mm).
+        # 571.5 x 488.1 mm exceeds H2D's 350 x 320 mm bed in both axes (> 474.3 mm diagonal), so 4 tiles (295.75 x 254.05 mm) is the minimum split.
+        t_lid = t_back
+        lw_lid = 20.0
+        hx0, hx1 = out_D / 2.0 - lw_lid / 2.0, out_D / 2.0 + lw_lid / 2.0
+        hy0, hy1 = out_W / 2.0 - lw_lid / 2.0, out_W / 2.0 + lw_lid / 2.0
+        lap_t_lid, lap_z_lid, lap_clr_lid = t_lid / 2.0, 3.20, 0.15
+        z_mid_hi = out_H + t_lid - lap_t_lid
+        z_mid_lo = out_H + t_lid - lap_z_lid
+        z_top_lid = out_H + t_lid
+        lid_full = box(out_D, out_W, t_lid, (0, 0, out_H)).edges("|Z").fillet(3.0)
+
+        lid_bl = (lid_full.intersect(box(hx1 + 1.0, hy1 + 1.0, 20.0, (-1.0, -1.0, out_H - 5.0)))
+                  .cut(box(40.0, hy1 + 5.0, z_mid_hi - (out_H - 5.0), (hx0 - lap_clr_lid, -2.0, out_H - 5.0)))
+                  .cut(box(hx1 + 5.0, 40.0, z_mid_hi - (out_H - 5.0), (-2.0, hy0 - lap_clr_lid, out_H - 5.0))))
+        lid_br = (lid_full.intersect(box(hx1 + 1.0, out_W - hy0 + 2.0, 20.0, (-1.0, hy0, out_H - 5.0)))
+                  .cut(box(40.0, lw_lid + 5.0, 20.0, (hx0 - lap_clr_lid, hy0 - 2.0, out_H - 5.0)))
+                  .cut(box(hx1 + 5.0, lw_lid + lap_clr_lid + 1.0, 20.0, (-2.0, hy0 - 1.0, z_mid_lo)))
+                  .cut(box(hx1 + 5.0, lw_lid + lap_clr_lid + 1.0, lap_clr_lid + 1.0, (-2.0, hy0 - 1.0, out_H - 1.0)))
+                  .cut(box(40.0, out_W + 5.0, z_mid_hi - (out_H - 5.0), (hx0 - lap_clr_lid, hy0 - 2.0, out_H - 5.0))))
+        lid_tl = (lid_full.intersect(box(out_D - hx0 + 2.0, hy1 + 1.0, 20.0, (hx0, -1.0, out_H - 5.0)))
+                  .cut(box(lw_lid + 5.0, 40.0, 20.0, (hx0 - 2.0, hy0 - lap_clr_lid, out_H - 5.0)))
+                  .cut(box(lw_lid + lap_clr_lid + 1.0, hy1 + 5.0, 20.0, (hx0 - 1.0, -2.0, z_mid_lo)))
+                  .cut(box(lw_lid + lap_clr_lid + 1.0, hy1 + 5.0, lap_clr_lid + 1.0, (hx0 - 1.0, -2.0, out_H - 1.0)))
+                  .cut(box(out_D + 5.0, 40.0, z_mid_hi - (out_H - 5.0), (hx0 - 2.0, hy0 - lap_clr_lid, out_H - 5.0))))
+        lid_tr = (lid_full.intersect(box(out_D - hx0 + 2.0, out_W - hy0 + 2.0, 20.0, (hx0, hy0, out_H - 5.0)))
+                  .cut(box(lw_lid + lap_clr_lid + 1.0, out_W + 5.0, 20.0, (hx0 - 1.0, hy0 - 2.0, z_mid_lo)))
+                  .cut(box(lw_lid + lap_clr_lid + 1.0, out_W + 5.0, lap_clr_lid + 1.0, (hx0 - 1.0, hy0 - 2.0, out_H - 1.0)))
+                  .cut(box(out_D + 5.0, lw_lid + lap_clr_lid + 1.0, 20.0, (hx0 - 2.0, hy0 - 1.0, z_mid_lo)))
+                  .cut(box(out_D + 5.0, lw_lid + lap_clr_lid + 1.0, lap_clr_lid + 1.0, (hx0 - 2.0, hy0 - 1.0, out_H - 1.0))))
+
+        lid_specs = [
+            ("print_panel_lid_back_outboard", lid_bl, [(B / 2.0, 60.0), (B / 2.0, 195.0), (65.0, B / 2.0), (235.0, B / 2.0)]),
+            ("print_panel_lid_back_inboard", lid_br, [(B / 2.0, 293.0), (B / 2.0, 428.0), (65.0, out_W - B / 2.0), (235.0, out_W - B / 2.0)]),
+            ("print_panel_lid_front_outboard", lid_tl, [(out_D - B / 2.0, 60.0), (out_D - B / 2.0, 195.0), (336.5, B / 2.0), (506.5, B / 2.0)]),
+            ("print_panel_lid_front_inboard", lid_tr, [(out_D - B / 2.0, 293.0), (out_D - B / 2.0, 428.0), (336.5, out_W - B / 2.0), (506.5, out_W - B / 2.0)]),
+        ]
+        for lname, lshp, lbolts in lid_specs:
+            for bx_l, by_l in lbolts:
+                lshp = lshp.cut(cq.Workplane("XY").center(bx_l, by_l).circle(3.4).extrude(t_lid + 2.0).translate((0, 0, out_H - 1.0)))
+                lshp = lshp.cut(countersink(lname, (bx_l, by_l, z_top_lid), (0, 0, -1)))
+            add(a, lshp, lname, ORANGE)
+    else:
+        add(a, box(out_D, out_W, T, (0, 0, out_H)), "lid_from_icebox_top", PANEL)                    # the IceBox's top panel, uncut
     return xf
 
 

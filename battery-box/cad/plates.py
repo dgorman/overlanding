@@ -114,6 +114,7 @@ ORIENT_RULES = [   # (file-name prefix, orientation); first match wins; anything
     ("print_panel_front_", front_tex_out),
     ("print_panel_side_outboard_", side_outboard_tex_out),
     ("print_panel_side_inboard_", side_inboard_tex_out),
+    ("print_panel_lid_", top_down),             # 4-tile printed roof lies top-down (+Z Textured PEI exterior on Z=0, beveled bolt mouths at bed)
     ("print_panel_", flat),                     # 2-tile printed end panels lie flat on the bed, half-lap rabbet facing up
     ("print_garmin_hanger", flat),
     ("print_touch_bezel", flat),
