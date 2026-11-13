@@ -482,9 +482,9 @@ if P["card_plane"] == "v12":   # v12 and v13 share one front panel: the port str
     FRONT_PORTS = [("l14_30_in", 423, 65), ("l14_30_out", 423, 135), ("socket", 423, 190, 29),            # (v13's batteries run the outboard
                    ("sb50_solar", 370, 60), ("sb50_alt", 370, 116), ("socket", 370, 160, 22), ("socket", 370, 193, 22),   # side to the front; its plate's
                    ("socket", 338, 150, 29), ("socket", 338, 190, 29)]                                                   # front post ends at y 315)
-if P.get("icebox_front") in ("bezel", "side"):   # v12s / master port strip: 2 clean columns on inverter side (Y = 355 & 423) + SB50 pack at Y = 215
+if P.get("icebox_front") in ("bezel", "side"):   # v12s / master port strip: 2 clean columns on inverter side (Y = 345 & 423) + SB50 pack at Y = 215
     FRONT_PORTS = [("l14_30_in", 423, 61.0), ("l14_30_out", 423, 143.0), ("socket", 423, 215.0, 29.5),
-                   ("sb50_alt", 355, 80.0), ("socket", 355, 154.0, 29.5), ("socket", 355, 215.0, 29.5),
+                   ("sb50_alt", 345, 68.0), ("socket", 345, 150.0, 29.5), ("socket", 345, 215.0, 29.5),
                    ("sb50_pack", 215, 107.5)]   # SB50 umbilical inlet for the add-on pack, in front of the bus column, clear of the breakers on the plate
 INLET_BODY = {"l14": (45.0, 55.0), "sb50": (48.0, 29.0, 53.0), "sb175": (79.0, 56.0, 26.0)}   # (dia, depth) or (depth, w, h)
 N_BATT = 4
@@ -2800,9 +2800,9 @@ def v12_panels(a):
             ("circle", 423.0, 61.0 + z_shift_back, 32.50, "AC IN"),          # P1: Ø65.0 ID / Ø68.6 OD (clears 5mm bezel + M4 heads)
             ("circle", 423.0, 143.0 + z_shift_back, 32.50, "AC OUT"),        # P2: Ø65.0 ID / Ø68.6 OD
             ("circle", 423.0, 215.0 + z_shift_back, 21.75, "DC OUT"),        # P3: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
-            ("rbox",   355.0, 80.0 + z_shift_back, (55.0, 79.0), "DC IN"),   # P4: 9.5 mm past M4 centers (+5 mm per side over cover) -> 55x79 ID / 58.6x82.6 OD
-            ("circle", 355.0, 154.0 + z_shift_back, 21.75, "DC OUT"),        # P5: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
-            ("circle", 355.0, 215.0 + z_shift_back, 21.75, "SOLAR IN"),      # P6: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
+            ("rbox",   345.0, 68.0 + z_shift_back, (55.0, 79.0), "DC IN"),   # P4: Y=345 (u=65), v=53.8 (bottom 12.5 flush w/ P1); 55x79 ID / 58.6x82.6 OD
+            ("circle", 345.0, 150.0 + z_shift_back, 21.75, "DC OUT"),        # P5: centered between P4 "DC IN" & P6 (v=135.8, ~10 mm clear top & bot)
+            ("circle", 345.0, 215.0 + z_shift_back, 21.75, "SOLAR IN"),      # P6: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
         ])
         inb = inb.cut(inlay_wp)
 
