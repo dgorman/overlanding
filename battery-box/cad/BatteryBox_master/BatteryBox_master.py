@@ -241,11 +241,11 @@ COMP_SPECS: dict[str, dict] = {
 
 # Front Panel Port Cutouts: (name, shape, y_center_mm, z_center_mm, size_tuple_mm, inward_depth_mm)
 FRONT_PANEL_PORTS: list[tuple[str, str, float, float, tuple[float, ...], float]] = [
-    ("l14_30_shore_in", "l14", 423.0, 72.0, (45.0,), 55.0),
-    ("l14_30_inv_out", "l14", 423.0, 142.0, (45.0,), 55.0),
+    ("l14_30_shore_in", "l14", 423.0, 61.0, (45.0,), 55.0),
+    ("l14_30_inv_out", "l14", 423.0, 143.0, (45.0,), 55.0),
     ("socket_usb_high", "circle", 423.0, 215.0, (29.5,), 40.0),
-    ("sb50_alt_in", "sb50", 355.0, 107.5, (29.0, 53.0), 48.0),
-    ("socket_12v_aux", "circle", 355.0, 165.0, (29.5,), 40.0),
+    ("sb50_alt_in", "sb50", 355.0, 80.0, (29.0, 53.0), 48.0),
+    ("socket_12v_aux", "circle", 355.0, 154.0, (29.5,), 40.0),
     ("socket_usb_low", "circle", 355.0, 215.0, (29.5,), 40.0),
     ("sb50_pack2_umbilical", "sb50", 215.0, 107.5, (29.0, 53.0), 48.0),
 ]

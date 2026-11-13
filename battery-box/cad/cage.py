@@ -483,8 +483,8 @@ if P["card_plane"] == "v12":   # v12 and v13 share one front panel: the port str
                    ("sb50_solar", 370, 60), ("sb50_alt", 370, 116), ("socket", 370, 160, 22), ("socket", 370, 193, 22),   # side to the front; its plate's
                    ("socket", 338, 150, 29), ("socket", 338, 190, 29)]                                                   # front post ends at y 315)
 if P.get("icebox_front") in ("bezel", "side"):   # v12s / master port strip: 2 clean columns on inverter side (Y = 355 & 423) + SB50 pack at Y = 215
-    FRONT_PORTS = [("l14_30_in", 423, 72), ("l14_30_out", 423, 142), ("socket", 423, 215, 29.5),
-                   ("sb50_alt", 355, 107.5), ("socket", 355, 165, 29.5), ("socket", 355, 215, 29.5),
+    FRONT_PORTS = [("l14_30_in", 423, 61.0), ("l14_30_out", 423, 143.0), ("socket", 423, 215.0, 29.5),
+                   ("sb50_alt", 355, 80.0), ("socket", 355, 154.0, 29.5), ("socket", 355, 215.0, 29.5),
                    ("sb50_pack", 215, 107.5)]   # SB50 umbilical inlet for the add-on pack, in front of the bus column, clear of the breakers on the plate
 INLET_BODY = {"l14": (45.0, 55.0), "sb50": (48.0, 29.0, 53.0), "sb175": (79.0, 56.0, 26.0)}   # (dia, depth) or (depth, w, h)
 N_BATT = 4
@@ -2762,8 +2762,88 @@ def v12_panels(a):
     for zb in ((60, 140, 220) if P.get("lap_bolts", True) else ()):
         bolt = cq.Workplane("YZ").center(ymid, zb).circle(2.3).extrude(t_front + 2).translate((xf - 1, 0, 0))
         outb, inb = outb.cut(bolt), inb.cut(bolt)
+    inlay_wp = None
+    if printed_ends:
+        # Dual-nozzle flush White PETG rings, rounded SB50 frame, and top labels (0.60 mm = 3 x 0.20 mm layers on +X Z_bed=0 face)
+        x_out_face = xf + t_front
+        inlay_d = 0.60
+        ring_w = 1.80
+        lbl_gap = 2.20
+        lbl_fs = 7.4
+        inlay_solids = []
+        port_inlays = [
+            ("circle", 423.0, 61.0 + z_shift_back, 32.50, "AC IN"),      # P1: Ø65.0 ID / Ø68.6 OD (clears 5mm bezel + M4 heads)
+            ("circle", 423.0, 143.0 + z_shift_back, 32.50, "AC OUT"),    # P2: Ø65.0 ID / Ø68.6 OD
+            ("circle", 423.0, 215.0 + z_shift_back, 21.75, "DC OUT"),    # P3: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
+            ("rbox",   355.0, 80.0 + z_shift_back, (45.0, 69.0), "DC IN"),  # P4: 8.0 mm from 29x53 cutout -> 45x69 ID / 48.6x72.6 OD
+            ("circle", 355.0, 154.0 + z_shift_back, 21.75, "DC OUT"),    # P5: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
+            ("circle", 355.0, 215.0 + z_shift_back, 21.75, "SOLAR IN"),  # P6: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
+        ]
+        for ikind, iy, iz, isize, ilabel in port_inlays:
+            pl_f = cq.Plane(origin=(x_out_face, iy, iz), xDir=(0, 1, 0), normal=(1, 0, 0))
+            if ikind == "circle":
+                r_in = float(isize)
+                r_out = r_in + ring_w
+                sh = cq.Workplane(pl_f).circle(r_out).circle(r_in).extrude(-inlay_d)
+                z_lbl = iz + r_out + lbl_gap
+            else:
+                wi, hi = isize
+                wo, ho = wi + 2.0 * ring_w, hi + 2.0 * ring_w
+                outer_b = cq.Workplane(pl_f).rect(wo, ho).extrude(-inlay_d).edges("|X").fillet(9.3)
+                inner_b = cq.Workplane(pl_f).rect(wi, hi).extrude(-inlay_d - 0.2).translate((0.1, 0, 0)).edges("|X").fillet(7.5)
+                sh = outer_b.cut(inner_b)
+                z_lbl = iz + ho / 2.0 + lbl_gap
+            inlay_solids.extend(sh.solids().vals())
+            pl_t = cq.Plane(origin=(x_out_face, iy, z_lbl), xDir=(0, 1, 0), normal=(1, 0, 0))
+            txt_wp = cq.Workplane(pl_t).text(
+                ilabel, fontsize=lbl_fs, distance=-inlay_d, font="Arial", kind="bold", halign="center", valign="bottom"
+            )
+            inlay_solids.extend(txt_wp.solids().vals())
+        inlay_wp = cq.Workplane(obj=cq.Compound.makeCompound(inlay_solids))
+        inb = inb.cut(inlay_wp)
+
+        # Removable exterior accessory MOLLE panel over print_panel_front_outboard when Pack2 is not connected
+        # 290.0 W (Y=1.5..291.5) x 278.7 H (Z=1.5..280.2) x 10.25 D (6.25 mm plate + 4.0 mm rail standoffs; Textured PEI face out, support-free)
+        m_y0, m_y1 = 1.5, 291.5
+        m_z0, m_z1 = 1.5, out_H - 1.5
+        m_standoff, m_t = 4.0, t_front
+        molle = box(m_t, m_y1 - m_y0, m_z1 - m_z0, (out_D + m_standoff, m_y0, m_z0)).edges("|X").fillet(8.0)
+        # Perimeter standoff pads resting on the three front 25mm extrusion rails (1.75 mm clear of 25.75 mm corner cubes) + inboard stiffening lip
+        pad_out = box(m_standoff, 22.0, (out_H - C - 1.75) - (C + 1.75), (out_D, m_y0, C + 1.75))
+        pad_bot = box(m_standoff, (m_y1 - 2.0) - (C + 1.75), 22.0, (out_D, C + 1.75, m_z0))
+        pad_top = box(m_standoff, (m_y1 - 2.0) - (C + 1.75), 22.0, (out_D, C + 1.75, m_z1 - 22.0))
+        rib_inb = box(m_standoff - 0.5, 12.0, (out_H - C - 1.75) - (C + 1.75), (out_D + 0.5, m_y1 - 12.0, C + 1.75))
+        molle = molle.union(pad_out).union(pad_bot).union(pad_top).union(rib_inb)
+        # 6 x Ø6.8 mm through-holes for 1/4"-20 button-head screws or tool-less thumb knobs into front rails' outer T-slots
+        molle_bolts = [
+            (75.0, B / 2.0), (235.0, B / 2.0),
+            (75.0, out_H - B / 2.0), (235.0, out_H - B / 2.0),
+            (B / 2.0, 80.0), (B / 2.0, out_H - 80.0),
+        ]
+        for by_m, bz_m in molle_bolts:
+            molle = molle.cut(
+                cq.Workplane("YZ").center(by_m, bz_m).circle(3.4).extrude(m_standoff + m_t + 2.0).translate((out_D - 1.0, 0, 0))
+            )
+        # 6 cols x 8 rows = 48 MIL-STD PALS slots (30.0 x 13.4 mm stadium slots on true 38.1 x 25.4 mm / 1.5" x 1.0" pitch)
+        pals_pts = [
+            (151.5 + (c_i - 2.5) * 38.1, (out_H / 2.0) + (r_i - 3.5) * 25.4)
+            for r_i in range(8)
+            for c_i in range(6)
+        ]
+        pals_cut = (
+            cq.Workplane("YZ")
+            .pushPoints(pals_pts)
+            .slot2D(30.0, 13.4, 0)
+            .extrude(m_t + 2.0)
+            .translate((out_D + m_standoff - 1.0, 0, 0))
+        )
+        molle = molle.cut(pals_cut)
+
     add(a, outb, "print_panel_front_outboard", ORANGE)
     add(a, inb, "print_panel_front_inboard_ports", ORANGE)
+    if inlay_wp is not None:
+        add(a, inlay_wp, "print_panel_front_inboard_ports_inlay_white", (0.96, 0.97, 0.98))
+        add(a, molle, "print_panel_front_outboard_molle", ORANGE)
     add(a, box(out_D, out_W, T, (0, 0, out_H)), "lid_from_icebox_top", PANEL)                    # the IceBox's top panel, uncut
     return xf
 
@@ -3958,10 +4038,99 @@ def check_plate_pilots(a):
         print(f"  BLOCKED pilot at x {x:.1f} z {z:.1f}")
 
 
+def write_multicolor_3mf(path: str, black_tris: list, white_tris: list) -> None:
+    """Write a Bambu-Studio-ready 2-part .3mf (panel_black=Filament 1, inlay_white=Filament 2) centered on H2D bed."""
+    import zipfile
+
+    def mesh_xml(tris: list) -> str:
+        vmap: dict[tuple[float, float, float], int] = {}
+        verts: list[str] = []
+        tlines: list[str] = []
+        for a_, b_, c_ in tris:
+            idxs = []
+            for vx, vy, vz in (a_, b_, c_):
+                key = (round(vx, 4), round(vy, 4), round(vz, 4))
+                idx = vmap.get(key)
+                if idx is None:
+                    idx = len(verts)
+                    vmap[key] = idx
+                    verts.append(f'          <vertex x="{key[0]:.4f}" y="{key[1]:.4f}" z="{key[2]:.4f}"/>')
+                idxs.append(idx)
+            if idxs[0] != idxs[1] and idxs[1] != idxs[2] and idxs[0] != idxs[2]:
+                tlines.append(f'          <triangle v1="{idxs[0]}" v2="{idxs[1]}" v3="{idxs[2]}"/>')
+        return (
+            "      <mesh>\n        <vertices>\n"
+            + "\n".join(verts)
+            + "\n        </vertices>\n        <triangles>\n"
+            + "\n".join(tlines)
+            + "\n        </triangles>\n      </mesh>"
+        )
+
+    w_x = max(v[0] for t in black_tris for v in t)
+    w_y = max(v[1] for t in black_tris for v in t)
+    tx, ty = round(175.0 - 0.5 * w_x, 3), round(160.0 - 0.5 * w_y, 3)
+
+    content_types = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">\n'
+        '  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>\n'
+        '  <Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/>\n'
+        '  <Default Extension="config" ContentType="text/xml"/>\n'
+        '</Types>\n'
+    )
+    rels = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n'
+        '  <Relationship Target="/3D/3dmodel.model" Id="rel-1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>\n'
+        '</Relationships>\n'
+    )
+    model_xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n'
+        '  <metadata name="Application">BambuStudio</metadata>\n'
+        '  <resources>\n'
+        f'    <object id="1" name="panel_black" type="model">\n{mesh_xml(black_tris)}\n    </object>\n'
+        f'    <object id="2" name="inlay_white" type="model">\n{mesh_xml(white_tris)}\n    </object>\n'
+        '    <object id="3" name="print_panel_front_inboard_ports" type="model">\n'
+        '      <components>\n'
+        '        <component objectid="1" transform="1 0 0 0 1 0 0 0 1 0 0 0"/>\n'
+        '        <component objectid="2" transform="1 0 0 0 1 0 0 0 1 0 0 0"/>\n'
+        '      </components>\n'
+        '    </object>\n'
+        '  </resources>\n'
+        '  <build>\n'
+        f'    <item objectid="3" transform="1 0 0 0 1 0 0 0 1 {tx} {ty} 0"/>\n'
+        '  </build>\n'
+        '</model>\n'
+    )
+    settings_xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<config>\n'
+        '  <object id="3">\n'
+        '    <metadata key="name" value="print_panel_front_inboard_ports"/>\n'
+        '    <metadata key="extruder" value="1"/>\n'
+        '    <part id="1" subtype="normal_part">\n'
+        '      <metadata key="name" value="panel_black"/>\n'
+        '      <metadata key="extruder" value="1"/>\n'
+        '    </part>\n'
+        '    <part id="2" subtype="normal_part">\n'
+        '      <metadata key="name" value="inlay_white"/>\n'
+        '      <metadata key="extruder" value="2"/>\n'
+        '    </part>\n'
+        '  </object>\n'
+        '</config>\n'
+    )
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("[Content_Types].xml", content_types)
+        zf.writestr("_rels/.rels", rels)
+        zf.writestr("3D/3dmodel.model", model_xml)
+        zf.writestr("Metadata/model_settings.config", settings_xml)
+
+
 def export(a: cq.Assembly):
     os.makedirs(OUT, exist_ok=True); os.makedirs(VIEWER, exist_ok=True); os.makedirs(STL, exist_ok=True)
     for old in os.listdir(STL):          # part names carry positions; drop stale files from earlier layouts
-        if old.endswith(".stl") and not old.startswith(("print_tool_", "plate_")):   # tools.py / plates.py output, keep
+        if (old.endswith(".stl") or old.endswith(".3mf")) and not old.startswith(("print_tool_", "plate_")):   # tools.py / plates.py output, keep
             os.remove(os.path.join(STL, old))
     glb = os.path.join(OUT, "cage.glb"); a.export(glb, tolerance=1.5, angularTolerance=0.7)
     glb_to_json(glb, os.path.join(VIEWER, f"cage-{VARIANT}.json"))
@@ -3971,14 +4140,24 @@ def export(a: cq.Assembly):
     bed = P.get("bed", (256.0, 256.0, 256.0))
     print(f"== Printed parts (bed {bed[0]:.0f} x {bed[1]:.0f} x {bed[2]:.0f}) ==")
     seen = {}
+    lo_map = {}
+    tris_map = {}
     for child in a.children:
         if child.name.startswith("print_"):
-            path = os.path.join(STL, f"{child.name.replace('__card', '')}.stl")
+            clean_nm = child.name.replace("__card", "")
+            path = os.path.join(STL, f"{clean_nm}.stl")
             cq.exporters.export(child.obj, path)
-            tris = plates.reorient_file(path)      # the file lies in its print orientation at the origin (plates.ORIENT_RULES)
+            ref_lo = lo_map.get("print_panel_front_inboard_ports") if clean_nm == "print_panel_front_inboard_ports_inlay_white" else None
+            tris, lo = plates.reorient_file(path, ref_lo=ref_lo, return_lo=True)      # the file lies in its print orientation at the origin
+            lo_map[clean_nm] = lo
+            tris_map[clean_nm] = tris
             dims = tuple(round(max(v[k] for t in tris for v in t), 1) for k in range(3))   # as it sits on the bed: x, y, height
             key = child.name.split("_")[1]
             seen.setdefault((key, dims), 0); seen[(key, dims)] += 1
+    if "print_panel_front_inboard_ports" in tris_map and "print_panel_front_inboard_ports_inlay_white" in tris_map:
+        p3mf = os.path.join(STL, "print_panel_front_inboard_ports_multicolor.3mf")
+        write_multicolor_3mf(p3mf, tris_map["print_panel_front_inboard_ports"], tris_map["print_panel_front_inboard_ports_inlay_white"])
+        print("wrote print_panel_front_inboard_ports_multicolor.3mf")
     for (key, dims), n in seen.items():
         flag = "" if dims[0] <= bed[0] and dims[1] <= bed[1] and dims[2] <= bed[2] else "  <-- exceeds bed"
         print(f"  {n:2d} x {key:10s} {dims[0]:6.1f} x {dims[1]:6.1f} x {dims[2]:6.1f} tall{flag}")

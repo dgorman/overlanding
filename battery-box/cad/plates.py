@@ -27,10 +27,10 @@ def write(path, tris):
             f.write(struct.pack("<12fH", *(k / L for k in n), *a, *b, *c, 0))
 
 
-def normalise(tris):
-    """Move the part so its bounding box starts at the origin (the bed is z = 0)."""
-    lo = [min(v[k] for t in tris for v in t) for k in range(3)]
-    return [[(v[0] - lo[0], v[1] - lo[1], v[2] - lo[2]) for v in t] for t in tris]
+def normalise(tris, ref_lo=None):
+    """Move the part so its bounding box (or a reference parent's bounding box) starts at the origin (bed is z = 0)."""
+    lo = list(ref_lo) if ref_lo is not None else [min(v[k] for t in tris for v in t) for k in range(3)]
+    return [[(v[0] - lo[0], v[1] - lo[1], v[2] - lo[2]) for v in t] for t in tris], lo
 
 
 # --- orientations (proper rotations only, never a mirror) ----------------------------------------------------------
@@ -129,12 +129,12 @@ def orient_for(name):
     return as_modelled
 
 
-def reorient_file(path):
+def reorient_file(path, ref_lo=None, return_lo=False):
     """Rewrite one exported print_*.stl lying in its print orientation at the origin."""
     name = os.path.basename(path)
-    tris = normalise(orient_for(name)(read(path)))
+    tris, lo = normalise(orient_for(name)(read(path)), ref_lo=ref_lo)
     write(path, tris)
-    return tris
+    return (tris, lo) if return_lo else tris
 
 
 # --- plates --------------------------------------------------------------------------------------------------------
@@ -188,7 +188,7 @@ def build_plates(stl_dir, quiet=False):
         for fn, rotz, at in expanded:
             tris = read(os.path.join(stl_dir, fn))                       # already oriented by reorient_file
             if rotz:
-                tris = normalise(rot_z(tris, rotz))
+                tris, _ = normalise(rot_z(tris, rotz))
             w = max(v[0] for t in tris for v in t); d = max(v[1] for t in tris for v in t); h = max(v[2] for t in tris for v in t)
             if at is None:                       # next in a row, wrapping to a new row when the bed is full
                 if x + w > bed_x:

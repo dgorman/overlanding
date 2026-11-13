@@ -1,51 +1,43 @@
-# Final Production Engineering Specification — Front & Side H2D Panels
+# Dual-Nozzle Front Port Panel & Removable Accessory MOLLE Panel — Production Spec
 
-Source geometry verified directly from `stl/master/print_panel_front_inboard_ports.stl`, `stl/master/print_panel_front_outboard.stl`, `stl/master/print_panel_side_*.stl`, and `cad/cage.py`.
+Source geometry verified directly from `stl/master/print_panel_front_inboard_ports_multicolor.3mf`, `stl/master/print_panel_front_inboard_ports.stl`, `stl/master/print_panel_front_inboard_ports_inlay_white.stl`, `stl/master/print_panel_front_outboard_molle.stl`, and `cad/cage.py`.
 
-![print_panel_front_inboard_ports Final Engineering Drawing](./front_inboard_ports_verification.png)
-
-> **Ready to Print (All Textured PEI Side Out):** Every enclosure panel STL in `stl/master/` is pre-oriented with its **exterior Textured PEI face flat on `Z = 0.00 mm`** and `X_bed = 245.50 mm` so it drops straight onto the Bambu H2D build plate between the left/right nozzle exclusion strips without rotating.
+![Dual-Nozzle Front Port Panel & Accessory MOLLE Engineering Drawing](./front_inboard_ports_verification.png)
 
 ---
 
-## 1. H2D Print Schedule — Front & Side Enclosure Panels (`6` Plates Remaining)
+## 1. Dual-Nozzle Bambu H2D Setup — `print_panel_front_inboard_ports`
 
-*(Back pair `print_panel_back_inboard_gx.stl` and `print_panel_back_outboard.stl` already printed and verified.)*
+Because the panel prints **exterior face down on `Z = 0.00 mm` (Textured PEI plate)**, the `0.60 mm` (`3 × 0.20 mm` layers) White PETG circles, rounded rectangle, and port labels cure dead-flush inside the Black PETG panel face with zero raised snagging edges and only **3 nozzle swaps total** (Layers `1–3`, adding ~15 seconds on the H2D; Layers `4–31` print 100% single-nozzle Black PETG).
 
-| # | STL File (`stl/master/`) | Bed Footprint `X × Y × Z` (`mm`) | Half-Lap Flap (`Z` on Bed) | Bambu Studio H2D Support Setting | Notes |
-| :---: | :--- | :---: | :---: | :--- | :--- |
-| **1** | `print_panel_front_outboard.stl` | `245.5 × 278.0 × 6.25` | `Z = 0.000 .. 3.125 mm` | **NO supports** | Carries `Pack2` SB50 (`29.0 × 53.0 mm` + `4 × Ø4.3 M4 @ 45°`) |
-| **2** | `print_panel_front_inboard_ports.stl` | `245.5 × 186.1 × 6.25` | `Z = 3.200 .. 6.100 mm` | **Enable Supports** *(Normal, Snug, On build plate only)* | Carries final verified `P1`–`P6` ports + M4 holes; `-0.15 mm` lap relief |
-| **3** | `print_panel_side_outboard_back.stl` | `245.5 × 278.9 × 6.25` | `Z = 0.000 .. 3.125 mm` | **NO supports** | Solid outboard rear half (`537.8 mm` / `21.17"` assembled pair) |
-| **4** | `print_panel_side_outboard_front.stl` | `245.5 × 278.9 × 6.25` | `Z = 3.200 .. 6.100 mm` | **Enable Supports** *(Normal, Snug, On build plate only)* | Solid outboard front half; `-0.15 mm` lap relief (`6.10 mm` joint) |
-| **5** | `print_panel_side_inboard_back.stl` | `245.5 × 278.9 × 6.25` | `Z = 0.000 .. 3.125 mm` | **NO supports** | Solid inboard rear half (`537.8 mm` / `21.17"` assembled pair) |
-| **6** | `print_panel_side_inboard_front.stl` | `245.5 × 278.9 × 6.25` | `Z = 3.200 .. 6.100 mm` | **Enable Supports** *(Normal, Snug, On build plate only)* | Solid inboard front half; `-0.15 mm` lap relief (`6.10 mm` joint) |
+- **Option A — Single Multi-Part `.3mf` *(Easiest)*:** Import `stl/master/print_panel_front_inboard_ports_multicolor.3mf` into your Bambu Studio H2D project (`File -> Import -> Import 3MF/STL...`). In the **Objects** list, verify `panel_black` is assigned to your **Black PETG** nozzle and `inlay_white` is assigned to your **White PETG** nozzle, enable **Normal / Snug / On build plate only** supports for the `20 mm` half-lap, and slice.
+- **Option B — Paired STLs:** Select **both** `stl/master/print_panel_front_inboard_ports.stl` and `stl/master/print_panel_front_inboard_ports_inlay_white.stl` together, drag them onto the Bambu Studio plate, click **Yes** (*"Load these files as a single object with multiple parts?"*), and set `inlay_white` to your White PETG nozzle.
 
 ---
 
-## 2. Overall Envelope — `print_panel_front_inboard_ports.stl`
+## 2. Final Port Coordinates, White Outlines & Top Labels
 
-Viewed from the **exterior front** looking `-X` (**Left** `u = 0` is the `20.0 mm` half-lap seam; **Right** `u = 186.1 mm` slots into the inboard vertical rail; **Bottom** `v = 0` slots into the bottom width rail):
+Origin: **Left** `u = 0.0 mm` (`20.0 mm` rear half-lap seam), **Bottom** `v = 0.0 mm` (`6.9 mm` bottom rail slot tongue; exposed vertical rail daylight = `v = 6.9 .. 238.6 mm`):
 
-| Feature | Metric (`mm`) | Imperial (`in`) | Physical / Assembly Note |
-| :--- | :---: | :---: | :--- |
-| **Overall Blank (`W × H × T`)** | `186.10 × 245.50 × 6.25` | `7.327" × 9.665" × 0.246"` | `6.25 mm` wall thickness (`0.25 mm` clearance in `6.5 mm` rail slots) |
-| **Exposed Daylight Window** | `163.10 × 231.70` | `6.421" × 9.122"` | Clear face between `20 mm` lap step and `25 mm` aluminum rails |
-| **Rail Slot Tongues** | `3.0` (Right), `6.9` (Top/Bot) | `0.118"` (R), `0.272"` (T/B) | Right rail face at `u = 183.1`; Bot/Top rails at `v = 6.9` & `238.6` |
-| **Right Corner Notches** | `2 × R17.20` (`Ø34.40`) | `R0.677"` (`Ø1.354"`) | Clears front inboard corner cube connectors |
-| **Left Half-Lap Seam** | `20.00 W`, `Z = 3.20..6.10` | `0.787" W`, `2.90 mm` flap | `+0.075 mm` glue/interface gap + `-0.15 mm` inner relief (`6.10 mm` total seam) |
-| **Internal Rear Post Keepout** | `u = 2.0 .. 50.0` | `0.079" .. 1.969"` | `print_post_inverter_1` sits **`9.4 mm` (`0.37"`) behind inner face** full height |
-
----
-
-## 3. Final PLA-Test-Verified Port & M4 Bolt Cutouts
-
-| ID & Function | Center `(u, v)` (`mm`) | Final Production Cutout | M4 Mounting Bolt Holes (`Ø4.30 mm` Through) | Clearances & Webs |
+| Port | Top Label | Center `(u, v)` (`mm`) | Cutout & M4 Mounting Holes | White PETG `0.60 mm` Flush Outline (`1.8 mm` Stroke) |
 | :--- | :---: | :---: | :--- | :--- |
-| **`P1` — L14-30 Shore Power Inlet** *(Bottom-Right)* | `(143.0, 57.8)` | **`Ø45.00 mm`** (`1.772"`) | **`2 × Ø4.30 mm`** at 12 & 6 o'clock (`5.0 mm` from edge -> `v = 30.3` & `85.3 mm`, **`55.0 mm` C-to-C**) | `17.6 mm` web to Right rail; `84–135 mm` internal rear depth |
-| **`P2` — L14-30 Inverter AC Outlet** *(Mid-Right)* | `(143.0, 127.8)` | **`Ø45.00 mm`** (`1.772"`) | **`2 × Ø4.30 mm`** at 12 & 6 o'clock (`5.0 mm` from edge -> `v = 100.3` & `155.3 mm`, **`55.0 mm` C-to-C**) | `70.0 mm` above `P1` (`25.0 mm` cutout web; `10.7 mm` bridge between M4 holes) |
-| **`P3` — Upper-Right Round / USB** *(Top-Right)* | `(143.0, 200.8)` | **`Ø29.50 mm`** (`1.161"`) | Rear locknut *(no flange bolts)* | `73.0 mm` above `P2`; `23.05 mm` web to Top rail; `86.9 mm` rear depth |
-| **`P4` — Anderson SB50 Alt/Solar** *(Bottom-Left)* | `(75.0, 93.3)` | **`29.00 W × 53.00 H mm`** (`1.142" × 2.087"`)<br>`u = 60.5..89.5`, `v = 66.8..119.8` | **`4 × Ø4.30 mm`** at `5.0 mm` on `45°` from corners (`u = 56.96` & `93.04`, `v = 63.26` & `123.34` -> **`36.07 × 60.07 mm` C-to-C**) | `+5.0 mm` extended at bottom, `-8.0 mm` narrower; `4.81 mm` clear of `u = 50.0` rear post; `135.3 mm` rear depth |
-| **`P5` — 12V Aux / Marine Socket** *(Mid-Left)* | `(75.0, 150.8)` | **`Ø29.50 mm`** (`1.161"`) | Rear locknut *(no flange bolts)* | `16.25 mm` solid bridge above `P4` cutout; `50.0 mm` below `P6` |
-| **`P6` — Upper-Left Round / USB** *(Top-Left)* | `(75.0, 200.8)` | **`Ø29.50 mm`** (`1.161"`) | Rear locknut *(no flange bolts)* | `20.50 mm` bridge above `P5`; `23.05 mm` web to Top rail |
-| *(Companion)* **`sb50_pack` on `print_panel_front_outboard.stl`** | `65.0 mm` outboard of seam, `v = 93.3` | **`29.00 W × 53.00 H mm`** (`1.142" × 2.087"`) | **`4 × Ø4.30 mm`** at `5.0 mm` on `45°` from corners (**`36.07 × 60.07 mm` C-to-C**) | Matches `P4` pod geometry; `65.4 mm` (`2.57"`) clear rear depth to `print_breaker_shelf_1` |
+| **`P1`** *(Bottom-Right)* | **`AC IN`** | `(143.0, 46.8)` | **`Ø45.00 mm`** + `2 × Ø4.30 mm` M4 at 12 & 6 o'clock (`v = 19.3` & `74.3`, `55.0 mm` C-C) | **White Circle:** `Ø65.0 mm` ID / `Ø68.6 mm` OD *(clears `5 mm` bezel + M4 heads)* |
+| **`P2`** *(Mid-Right)* | **`AC OUT`** | `(143.0, 128.8)` | **`Ø45.00 mm`** + `2 × Ø4.30 mm` M4 at 12 & 6 o'clock (`v = 101.3` & `156.3`, `55.0 mm` C-C) | **White Circle:** `Ø65.0 mm` ID / `Ø68.6 mm` OD |
+| **`P3`** *(Top-Right)* | **`DC OUT`** | `(143.0, 200.8)` | **`Ø29.50 mm`** *(rear locknut)* | **White Circle:** `Ø43.5 mm` ID / `Ø47.1 mm` OD *(`7.0 mm` radial gap from hole)* |
+| **`P4`** *(Bottom-Left)* | **`DC IN`** | `(75.0, 65.8)` | **`29.0 W × 53.0 H mm`** + `4 × Ø4.30 mm` M4 @ `45°` (`36.07 × 60.07 mm` C-C) | **White Rounded Box:** `45.0 × 69.0 mm` ID (`R7.5`) / `48.6 × 72.6 mm` OD (`R9.3`) |
+| **`P5`** *(Mid-Left)* | **`DC OUT`** | `(75.0, 139.8)` | **`Ø29.50 mm`** *(rear locknut)* | **White Circle:** `Ø43.5 mm` ID / `Ø47.1 mm` OD *(`7.0 mm` radial gap from hole)* |
+| **`P6`** *(Top-Left)* | **`SOLAR IN`** | `(75.0, 200.8)` | **`Ø29.50 mm`** *(rear locknut)* | **White Circle:** `Ø43.5 mm` ID / `Ø47.1 mm` OD *(`7.0 mm` radial gap from hole)* |
+
+---
+
+## 3. Removable Exterior Accessory MOLLE Panel — `print_panel_front_outboard_molle.stl`
+
+Bolts directly onto the **outer `+X` T-slots** of the three front 25-series aluminum rails over `print_panel_front_outboard.stl` whenever the `Pack2` SB50 umbilical is not plugged in:
+
+| Feature | Specification | Notes |
+| :--- | :--- | :--- |
+| **Overall Envelope** | `290.0 W × 278.7 H × 10.25 D mm` (`11.42" × 10.97" × 0.404"`) | `6.25 mm` main plate + `4.00 mm` integral rear rail-standoff pads |
+| **H2D Print Footprint** | **`278.7 (X) × 290.0 (Y) × 10.25 (Z) mm`** | **1-piece H2D print**, Textured PEI face down on `Z = 0`, **NO supports** |
+| **MIL-STD PALS Grid** | **`6 cols × 8 rows = 48` stadium slots** (`30.0 × 13.4 mm`) | True **`38.1 × 25.4 mm` (`1.50" × 1.00"`)** Natick PALS webbing & `1/4"`/`M6` bolt pitch |
+| **Behind-Slot Strap Gap** | **`13.38 mm` (`0.53"`)** to `print_panel_front_outboard.stl` | `9.375 mm` rail slot recess + `4.0 mm` standoff pads (`8.4 mm` clear over SB50 bezel!) |
+| **Frame Mounting** | **`6 × Ø6.8 mm` through-holes** (`1/4"-20` button screws or thumb knobs) | Threads into `6` drop-in T-nuts in Top (`Z = 269.2`), Bottom (`Z = 12.5`), and Outboard (`Y = 12.5`) rail outer slots |
