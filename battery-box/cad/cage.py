@@ -2763,44 +2763,53 @@ def v12_panels(a):
         bolt = cq.Workplane("YZ").center(ymid, zb).circle(2.3).extrude(t_front + 2).translate((xf - 1, 0, 0))
         outb, inb = outb.cut(bolt), inb.cut(bolt)
     inlay_wp = None
+    outb_inlay_wp = None
     if printed_ends:
-        # Dual-nozzle flush White PETG rings, rounded SB50 frame, and top labels (0.60 mm = 3 x 0.20 mm layers on +X Z_bed=0 face)
+        # Dual-nozzle flush White PETG rings, rounded SB50 frames, and top labels (0.60 mm = 3 x 0.20 mm layers on +X Z_bed=0 face)
         x_out_face = xf + t_front
         inlay_d = 0.60
         ring_w = 1.80
         lbl_gap = 2.20
         lbl_fs = 7.4
-        inlay_solids = []
-        port_inlays = [
-            ("circle", 423.0, 61.0 + z_shift_back, 32.50, "AC IN"),      # P1: Ø65.0 ID / Ø68.6 OD (clears 5mm bezel + M4 heads)
-            ("circle", 423.0, 143.0 + z_shift_back, 32.50, "AC OUT"),    # P2: Ø65.0 ID / Ø68.6 OD
-            ("circle", 423.0, 215.0 + z_shift_back, 21.75, "DC OUT"),    # P3: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
-            ("rbox",   355.0, 80.0 + z_shift_back, (45.0, 69.0), "DC IN"),  # P4: 8.0 mm from 29x53 cutout -> 45x69 ID / 48.6x72.6 OD
-            ("circle", 355.0, 154.0 + z_shift_back, 21.75, "DC OUT"),    # P5: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
-            ("circle", 355.0, 215.0 + z_shift_back, 21.75, "SOLAR IN"),  # P6: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
-        ]
-        for ikind, iy, iz, isize, ilabel in port_inlays:
-            pl_f = cq.Plane(origin=(x_out_face, iy, iz), xDir=(0, 1, 0), normal=(1, 0, 0))
-            if ikind == "circle":
-                r_in = float(isize)
-                r_out = r_in + ring_w
-                sh = cq.Workplane(pl_f).circle(r_out).circle(r_in).extrude(-inlay_d)
-                z_lbl = iz + r_out + lbl_gap
-            else:
-                wi, hi = isize
-                wo, ho = wi + 2.0 * ring_w, hi + 2.0 * ring_w
-                outer_b = cq.Workplane(pl_f).rect(wo, ho).extrude(-inlay_d).edges("|X").fillet(9.3)
-                inner_b = cq.Workplane(pl_f).rect(wi, hi).extrude(-inlay_d - 0.2).translate((0.1, 0, 0)).edges("|X").fillet(7.5)
-                sh = outer_b.cut(inner_b)
-                z_lbl = iz + ho / 2.0 + lbl_gap
-            inlay_solids.extend(sh.solids().vals())
-            pl_t = cq.Plane(origin=(x_out_face, iy, z_lbl), xDir=(0, 1, 0), normal=(1, 0, 0))
-            txt_wp = cq.Workplane(pl_t).text(
-                ilabel, fontsize=lbl_fs, distance=-inlay_d, font="Arial", kind="bold", halign="center", valign="bottom"
-            )
-            inlay_solids.extend(txt_wp.solids().vals())
-        inlay_wp = cq.Workplane(obj=cq.Compound.makeCompound(inlay_solids))
+
+        def _make_port_inlays(specs: list[tuple]) -> cq.Workplane:
+            solids: list[cq.Solid] = []
+            for ikind, iy, iz, isize, ilabel in specs:
+                pl_f = cq.Plane(origin=(x_out_face, iy, iz), xDir=(0, 1, 0), normal=(1, 0, 0))
+                if ikind == "circle":
+                    r_in = float(isize)
+                    r_out = r_in + ring_w
+                    sh = cq.Workplane(pl_f).circle(r_out).circle(r_in).extrude(-inlay_d)
+                    z_lbl = iz + r_out + lbl_gap
+                else:
+                    wi, hi = isize
+                    wo, ho = wi + 2.0 * ring_w, hi + 2.0 * ring_w
+                    outer_b = cq.Workplane(pl_f).rect(wo, ho).extrude(-inlay_d).edges("|X").fillet(9.3)
+                    inner_b = cq.Workplane(pl_f).rect(wi, hi).extrude(-inlay_d - 0.2).translate((0.1, 0, 0)).edges("|X").fillet(7.5)
+                    sh = outer_b.cut(inner_b)
+                    z_lbl = iz + ho / 2.0 + lbl_gap
+                solids.extend(sh.solids().vals())
+                pl_t = cq.Plane(origin=(x_out_face, iy, z_lbl), xDir=(0, 1, 0), normal=(1, 0, 0))
+                txt_wp = cq.Workplane(pl_t).text(
+                    ilabel, fontsize=lbl_fs, distance=-inlay_d, font="Arial", kind="bold", halign="center", valign="bottom"
+                )
+                solids.extend(txt_wp.solids().vals())
+            return cq.Workplane(obj=cq.Compound.makeCompound(solids))
+
+        inlay_wp = _make_port_inlays([
+            ("circle", 423.0, 61.0 + z_shift_back, 32.50, "AC IN"),          # P1: Ø65.0 ID / Ø68.6 OD (clears 5mm bezel + M4 heads)
+            ("circle", 423.0, 143.0 + z_shift_back, 32.50, "AC OUT"),        # P2: Ø65.0 ID / Ø68.6 OD
+            ("circle", 423.0, 215.0 + z_shift_back, 21.75, "DC OUT"),        # P3: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
+            ("rbox",   355.0, 80.0 + z_shift_back, (45.0, 69.0), "DC IN"),   # P4: 8.0 mm from 29x53 cutout -> 45x69 ID / 48.6x72.6 OD
+            ("circle", 355.0, 154.0 + z_shift_back, 21.75, "DC OUT"),        # P5: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
+            ("circle", 355.0, 215.0 + z_shift_back, 21.75, "SOLAR IN"),      # P6: 7.0 mm from Ø29.5 hole -> Ø43.5 ID / Ø47.1 OD
+        ])
         inb = inb.cut(inlay_wp)
+
+        outb_inlay_wp = _make_port_inlays([
+            ("rbox",   215.0, 107.5 + z_shift_back, (45.0, 69.0), "AUX BATT"),  # sb50_pack: identical 29x53 cutout & 45x69 ID / 48.6x72.6 OD white frame
+        ])
+        outb = outb.cut(outb_inlay_wp)
 
         # Removable exterior accessory MOLLE panel over print_panel_front_outboard when Pack2 is not connected
         # 290.0 W (Y=1.5..291.5) x 278.7 H (Z=1.5..280.2) x 10.25 D (6.25 mm plate + 4.0 mm rail standoffs; Textured PEI face out, support-free)
@@ -2840,6 +2849,8 @@ def v12_panels(a):
         molle = molle.cut(pals_cut)
 
     add(a, outb, "print_panel_front_outboard", ORANGE)
+    if outb_inlay_wp is not None:
+        add(a, outb_inlay_wp, "print_panel_front_outboard_inlay_white", (0.96, 0.97, 0.98))
     add(a, inb, "print_panel_front_inboard_ports", ORANGE)
     if inlay_wp is not None:
         add(a, inlay_wp, "print_panel_front_inboard_ports_inlay_white", (0.96, 0.97, 0.98))
@@ -4038,7 +4049,7 @@ def check_plate_pilots(a):
         print(f"  BLOCKED pilot at x {x:.1f} z {z:.1f}")
 
 
-def write_multicolor_3mf(path: str, black_tris: list, white_tris: list) -> None:
+def write_multicolor_3mf(path: str, black_tris: list, white_tris: list, obj_name: str = "print_panel_front_inboard_ports") -> None:
     """Write a Bambu-Studio-ready 2-part .3mf (panel_black=Filament 1, inlay_white=Filament 2) centered on H2D bed."""
     import zipfile
 
@@ -4091,7 +4102,7 @@ def write_multicolor_3mf(path: str, black_tris: list, white_tris: list) -> None:
         '  <resources>\n'
         f'    <object id="1" name="panel_black" type="model">\n{mesh_xml(black_tris)}\n    </object>\n'
         f'    <object id="2" name="inlay_white" type="model">\n{mesh_xml(white_tris)}\n    </object>\n'
-        '    <object id="3" name="print_panel_front_inboard_ports" type="model">\n'
+        f'    <object id="3" name="{obj_name}" type="model">\n'
         '      <components>\n'
         '        <component objectid="1" transform="1 0 0 0 1 0 0 0 1 0 0 0"/>\n'
         '        <component objectid="2" transform="1 0 0 0 1 0 0 0 1 0 0 0"/>\n'
@@ -4107,7 +4118,7 @@ def write_multicolor_3mf(path: str, black_tris: list, white_tris: list) -> None:
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<config>\n'
         '  <object id="3">\n'
-        '    <metadata key="name" value="print_panel_front_inboard_ports"/>\n'
+        f'    <metadata key="name" value="{obj_name}"/>\n'
         '    <metadata key="extruder" value="1"/>\n'
         '    <part id="1" subtype="normal_part">\n'
         '      <metadata key="name" value="panel_black"/>\n'
@@ -4147,17 +4158,19 @@ def export(a: cq.Assembly):
             clean_nm = child.name.replace("__card", "")
             path = os.path.join(STL, f"{clean_nm}.stl")
             cq.exporters.export(child.obj, path)
-            ref_lo = lo_map.get("print_panel_front_inboard_ports") if clean_nm == "print_panel_front_inboard_ports_inlay_white" else None
+            ref_lo = lo_map.get(clean_nm[:-len("_inlay_white")]) if clean_nm.endswith("_inlay_white") else None
             tris, lo = plates.reorient_file(path, ref_lo=ref_lo, return_lo=True)      # the file lies in its print orientation at the origin
             lo_map[clean_nm] = lo
             tris_map[clean_nm] = tris
             dims = tuple(round(max(v[k] for t in tris for v in t), 1) for k in range(3))   # as it sits on the bed: x, y, height
             key = child.name.split("_")[1]
             seen.setdefault((key, dims), 0); seen[(key, dims)] += 1
-    if "print_panel_front_inboard_ports" in tris_map and "print_panel_front_inboard_ports_inlay_white" in tris_map:
-        p3mf = os.path.join(STL, "print_panel_front_inboard_ports_multicolor.3mf")
-        write_multicolor_3mf(p3mf, tris_map["print_panel_front_inboard_ports"], tris_map["print_panel_front_inboard_ports_inlay_white"])
-        print("wrote print_panel_front_inboard_ports_multicolor.3mf")
+    for base_nm in ("print_panel_front_outboard", "print_panel_front_inboard_ports"):
+        inlay_nm = f"{base_nm}_inlay_white"
+        if base_nm in tris_map and inlay_nm in tris_map:
+            p3mf = os.path.join(STL, f"{base_nm}_multicolor.3mf")
+            write_multicolor_3mf(p3mf, tris_map[base_nm], tris_map[inlay_nm], obj_name=base_nm)
+            print(f"wrote {base_nm}_multicolor.3mf")
     for (key, dims), n in seen.items():
         flag = "" if dims[0] <= bed[0] and dims[1] <= bed[1] and dims[2] <= bed[2] else "  <-- exceeds bed"
         print(f"  {n:2d} x {key:10s} {dims[0]:6.1f} x {dims[1]:6.1f} x {dims[2]:6.1f} tall{flag}")
