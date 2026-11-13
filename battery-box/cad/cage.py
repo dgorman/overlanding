@@ -749,7 +749,7 @@ def bar(length: float, axis: str):
     """1" square bar with a shallow slot hint on each face (visual only)."""
     b = cq.Workplane("YZ").rect(B, B).extrude(length)
     for ang in (0, 90, 180, 270):
-        sd = 8.5 if ang in (0, 180) else 3.0
+        sd = 8.5
         slot = (cq.Workplane("YZ").center(0, B / 2 - sd / 2).rect(6.6, sd)
                 .extrude(length).rotate((0, 0, 0), (1, 0, 0), ang))
         b = b.cut(slot)
@@ -2978,8 +2978,9 @@ def v12_panels(a):
     t_front = t_back
     xf = out_D - pm_back - t_front                                  # the front panel's inner face
     if printed_ends:
-        front = box(t_front, in_W + 6.0, z_b1 - z_b0, (xf, B - 3.0, z_b0))
-        for cy_n in (B - 3.0, out_W - B + 3.0):
+        tongue_front = 6.0                                          # 6.0 mm tongues into vertical 25mm rail T-slots (450.1 mm / 17.72" assembled, +6 mm over 17.48" w/ bottom clearance)
+        front = box(t_front, in_W + 2.0 * tongue_front, z_b1 - z_b0, (xf, B - tongue_front, z_b0))
+        for cy_n in (B - tongue_front, out_W - B + tongue_front):
             for cz_n in (z_b0, z_b1):
                 front = front.cut(cq.Workplane("YZ").center(cy_n, cz_n).circle(r_notch_back).extrude(t_front + 4.0).translate((xf - 2.0, 0, 0)))
     else:
