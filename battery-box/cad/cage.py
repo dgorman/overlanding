@@ -2613,15 +2613,16 @@ def v12_panels(a):
             add(a, box(15.0, 40.0, 20.0, (pm_back + td, yc - 20.0, zc - 10.0)), "gx_touch_cable_plug", (0.3, 0.3, 0.3))
     ymid_end, lw_end, big_end = 290.0, 20.0, out_H + 40.0           # H2D 2-tile end-panel split at Y = 280..300 mm
     if printed_ends:
-        # 2 solid 2-piece H2D side-panel pairs (537.8 mm = 524.0 mm as-built daylight + 2 x 6.9 mm tongues; 278.9 x 245.5 x 6.25 mm per tile, textured side out)
+        # 2 solid 2-piece H2D side-panel pairs: back tiles stay 278.9 mm (x_s0 = 16.85), front tiles trim 2.0 mm to 276.9 mm (x_s1 = 552.65)
+        # -> 535.8 mm (21.09 in) assembled = 523.9 mm (20 5/8 in) as-built daylight + ~6.0 mm per vertical slot, textured side out
         t_side = t_back
-        len_side = in_D + 2.5 + 2.0 * 6.9                           # 537.80 mm (21.17 in)
+        len_side = in_D + 2.5 + 2.0 * 6.9                           # nominal 537.80 mm reference before -2.0 mm front-edge trim
         xmid_side, lw_side = out_D / 2.0, 20.0                      # centered split at X = 285.75 mm (lap X = 275.75..295.75 mm)
-        x_s0, x_s1 = xmid_side - len_side / 2.0, xmid_side + len_side / 2.0
+        x_s0, x_s1 = xmid_side - len_side / 2.0, xmid_side + len_side / 2.0 - 2.0
         lap_t_side, lap_z_side, lap_clr_side = t_side / 2.0, 3.20, 0.15
         y_s_out, y_s_in = pm_back, out_W - pm_back - t_side
-        s_out = box(len_side, t_side, z_b1 - z_b0, (x_s0, y_s_out, z_b0))
-        s_in = box(len_side, t_side, z_b1 - z_b0, (x_s0, y_s_in, z_b0))
+        s_out = box(x_s1 - x_s0, t_side, z_b1 - z_b0, (x_s0, y_s_out, z_b0))
+        s_in = box(x_s1 - x_s0, t_side, z_b1 - z_b0, (x_s0, y_s_in, z_b0))
         for cx_n in (x_s0, x_s1):
             for cz_n in (z_b0, z_b1):
                 s_out = s_out.cut(cq.Workplane("XZ").center(cx_n, cz_n).circle(r_notch_back).extrude(-(t_side + 4.0)).translate((0, y_s_out - 2.0, 0)))
