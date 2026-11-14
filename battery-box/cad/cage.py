@@ -2839,6 +2839,7 @@ def v12_panels(a):
                 E = E_raw - 165.0 * np.sin((E_raw - 12050.0) / 140.0) * np.exp(-((E_raw - 12050.0) / 260.0) ** 2)
 
             inlay_d_side = 0.60
+            anchor_flange, anchor_d = 0.50, 0.60                    # internal T-anchor at depth 0.60..1.20 mm locks lines into black wall
             # Map local (u, v) to global (X, Z): u = X when out_sign=-1 (-Y exterior), u = out_D - X when out_sign=+1 (+Y exterior)
             orig_x = 0.0 if out_sign < 0 else out_D
             x_dir_v = (-out_sign, 0, 0)      # (1, 0, 0) for -Y face, (-1, 0, 0) for +Y face
@@ -2917,16 +2918,22 @@ def v12_panels(a):
                         str(lv), fontsize=8.0, distance=-inlay_d_side, font="Arial", kind="bold", halign="center", valign="center"
                     )
                     white_solids.extend(txt_w.solids().vals())
+                def _ribbon_solid(rs_pts: np.ndarray, is_closed: bool, half_w: float, depth: float, y_off: float) -> cq.Workplane:
+                    res_2d = chain_to_ribbon_2d(rs_pts, is_closed, half_w)
+                    if is_closed:
+                        outer, inner = res_2d
+                        s_o = cq.Workplane(pl_base).polyline(outer).close().extrude(-depth)
+                        s_i = cq.Workplane(pl_base).polyline(inner).close().extrude(-(depth + 0.2)).translate((0, out_sign * 0.1, 0))
+                        sol = s_o.cut(s_i)
+                    else:
+                        sol = cq.Workplane(pl_base).polyline(res_2d).close().extrude(-depth)
+                    return sol.translate((0, -out_sign * y_off, 0)) if y_off else sol
+
                 for ch in chains:
                     rs, closed = resample_smooth(ch, pitch=5.0)
-                    res = chain_to_ribbon_2d(rs, closed, hw)
-                    if closed:
-                        outer, inner = res
-                        s_o = cq.Workplane(pl_base).polyline(outer).close().extrude(-inlay_d_side)
-                        s_i = cq.Workplane(pl_base).polyline(inner).close().extrude(-inlay_d_side - 0.2).translate((0, out_sign * 0.1, 0))
-                        sh = s_o.cut(s_i)
-                    else:
-                        sh = cq.Workplane(pl_base).polyline(res).close().extrude(-inlay_d_side)
+                    sh_face = _ribbon_solid(rs, closed, hw, inlay_d_side + 0.02, 0.0)
+                    sh_anchor = _ribbon_solid(rs, closed, hw + anchor_flange, anchor_d, inlay_d_side)
+                    sh = sh_face.union(sh_anchor)
                     green_solids.extend(sh.solids().vals())
             return cq.Workplane(obj=cq.Compound.makeCompound(green_solids)), cq.Workplane(obj=cq.Compound.makeCompound(white_solids))
 
