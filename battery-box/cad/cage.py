@@ -55,6 +55,10 @@ VARIANTS = {
                    batt_layout="v12", dist_forward=False, inverter="multiplus_1200_up", card_plane="v12", col_on_plate=True,
                    card_style="solid", box="v13", batt="smart200", v14_single_200=True, inverter_long="multiplus_1200_long", stack_on_icebox=True,
                    perforated_back=True, clean_trays=True, plate_pilots=True, icebox_front="side", printed_ends=True, breaker_shelf=False, lap_bolts=False, tray_clr=0.5, strap=False),
+    # v15 (concept): full 30" IceBox footprint (762.0 x 488.1 mm), low-profile 6.5" frame (165.1 mm + 6 mm lift-off lid):
+    # Smart 200Ah laid on its 152 mm side, MultiPlus 12/1200 laid flat (101 mm), all charge/distribution gear single-layer on flat decks.
+    "v15":    dict(frame_source="icebox", frame_W=488.1, frame_H=165.1, frame_D=762.0, bar=25.0, cube=25.75, gx_touch=True, bed=(350.0, 320.0, 325.0),
+                   batt_layout="v15", dist_forward=False, inverter="multiplus_1200_up", card_plane="v15", batt="smart200", stack_on_icebox=True, show_icebox=True),
     "cube":   dict(frame_source="kit", frame_W=None, frame_H=None, frame_D=None,
                    batt_layout="row3_top1", dist_forward=False, inverter="multiplus"),
     "icebox": dict(frame_source="icebox", frame_W=487.4, frame_H=558.8, frame_D=762.0,
@@ -1023,6 +1027,13 @@ def build() -> cq.Assembly:
             n = f"d{next(di)}"; add_rail(a, n, "x", (C, y + B / 2, z + B / 2), runs[n], GRAY, ORANGE)
 
     # --- panels: floor on the bottom rails; everything else on the outside ----
+    if P["card_plane"] == "v15":
+        build_v15(a)
+        if P["show_icebox"]:
+            for nm, shp in icebox_parts():
+                col = BLACK if "cube" in nm else GRAY if "bar" in nm else (0.35, 0.35, 0.35)
+                add(a, shp, nm, col)
+        return a
     if P["card_plane"] not in ("v7", "v8", "v9", "v12"):
         floor = box(out_D, out_W, T, (0, 0, B))
         if P["col_on_plate"]:   # open floor under the battery column; trays sit on the Goose Gear plate
@@ -3547,6 +3558,102 @@ def icebox_diag_brace_max() -> cq.Workplane:
     )
     return plate.rotate((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), 47.0)
 
+
+def build_v15(a: cq.Assembly) -> None:
+    """Build v15 pancake concept: 30-inch full IceBox length (762 x 488.1 x 165.1 mm + 6 mm lift-off lid)."""
+    vent_z: float = 82.5
+
+    def vent_panel(panel: cq.Workplane, plane: str, xs: list[float], trans: tuple[float, float, float]) -> cq.Workplane:
+        for vx in xs:
+            cut: cq.Workplane = cq.Workplane(plane).center(vx, vent_z).slot2D(76.0, 14.0).extrude(T + 4.0).translate(trans)
+            panel = panel.cut(cut)
+        return panel
+
+    # Perimeter panels + lift-off top lid
+    add(a, box(out_D, out_W, T, (0.0, 0.0, out_H)), "lid_panel", PANEL)
+    for y_h in (out_W * 0.3, out_W * 0.7):
+        add(a, lid_handle().translate((out_D / 2 - 6.0, y_h - 30.0, out_H + T)), f"lid_handle_{int(y_h)}", BLACK)
+    outboard: cq.Workplane = vent_panel(box(out_D, T, out_H, (0.0, -T, 0.0)), "XZ", [110.0, 230.0, 350.0, 560.0], (0.0, 2.0, 0.0))
+    add(a, outboard, "panel_side_outboard", PANEL)
+    inboard: cq.Workplane = vent_panel(box(out_D, T, out_H, (0.0, out_W, 0.0)), "XZ", [110.0, 230.0, 350.0, 560.0], (0.0, out_W - 2.0, 0.0))
+    add(a, inboard, "panel_side_inboard", PANEL)
+    back: cq.Workplane = vent_panel(box(T, out_W, out_H, (-T, 0.0, 0.0)), "YZ", [90.0, 210.0], (-T - 2.0, 0.0, 0.0))
+    add(a, back, "panel_back_icebox_side", PANEL)
+    add(a, box(8.0, 128.0, 82.0, (-8.0, 310.0, 42.0)), "gx_touch_bezel", BLACK)
+    add(a, box(2.0, 114.0, 68.0, (-9.0, 317.0, 49.0)), "gx_touch_screen", BLUE)
+    front: cq.Workplane = vent_panel(box(T, out_W, out_H, (out_D, 0.0, 0.0)), "YZ", [90.0, 210.0], (out_D - 2.0, 0.0, 0.0))
+    add(a, front, "panel_front_removable", PANEL)
+    for idx, (sy, sw, sh, sd) in enumerate(((362.0, 56.0, 26.0, 40.0), (422.0, 37.0, 16.0, 36.0))):
+        add(a, box(sd, sw, sh, (out_D - sd, sy, 48.0)), f"socket_front_{idx}", (0.3, 0.3, 0.3))
+
+    # Printed mounting decks & battery cradle (z >= 2 mm, clear of rails)
+    inv_deck: cq.Workplane = box(435.0, in_W, 6.0, (25.0, y_in0, 2.0))
+    add(a, inv_deck, "tray_v15_bay_inverter", ORANGE)
+    dist_deck: cq.Workplane = box(268.0, 102.0, 6.0, (465.0, 360.0, 2.0))
+    garmin_pad: cq.Workplane = box(42.0, 134.0, 6.0, (450.0, 26.0, 2.0))
+    add(a, dist_deck.union(garmin_pad), "tray_v15_bay_dist", ORANGE)
+
+    batt_tray: cq.Workplane = box(249.0, 333.0, 34.0, (484.0, 26.0, 2.0)).cut(box(237.0, 321.0, 32.0, (490.0, 32.0, 6.0)))
+    add(a, batt_tray, "tray_v15_battery", ORANGE)
+
+    # Smart 200Ah on its 152 mm side (z = 6..158 mm)
+    add(
+        a,
+        victron_shape("smart200", 237.0, 321.0, 152.0, (490.0, 32.0, 6.0), box(237.0, 321.0, 152.0, (490.0, 32.0, 6.0)).edges("|X").fillet(4.0)),
+        "battery_0",
+        BATT,
+    )
+
+    # Bay 1: MultiPlus 12/1200 flat (101 mm) + MPPT + Orion + Cerbo + stacked busbars
+    add(
+        a,
+        victron_shape("multiplus_1200", 375.0, 249.0, 101.0, (35.0, 30.0, 10.0), box(375.0, 249.0, 101.0, (35.0, 30.0, 10.0))),
+        "victron_multiplus",
+        BLUE,
+    )
+    add(a, victron_shape("mppt", 186.0, 130.0, 70.0, (35.0, 320.0, 10.0), box(186.0, 130.0, 70.0, (35.0, 320.0, 10.0))), "victron_mppt", BLUE)
+    add(a, victron_shape("orion", 137.0, 123.0, 40.0, (232.0, 325.0, 10.0), box(137.0, 123.0, 40.0, (232.0, 325.0, 10.0))), "victron_orion", BLUE)
+    add(a, victron_shape("cerbo", 78.0, 154.0, 48.0, (378.0, 306.0, 10.0), box(78.0, 154.0, 48.0, (378.0, 306.0, 10.0))), "victron_cerbo", BLUE)
+
+    add(a, box(35.0, 155.0, 32.0, (418.0, 145.0, 10.0)), "power_busbar_pos", GOLD)
+    bus_bridge: cq.Workplane = box(40.0, 165.0, 6.0, (416.0, 140.0, 48.0)).union(box(40.0, 10.0, 40.0, (416.0, 132.0, 8.0))).union(box(40.0, 10.0, 40.0, (416.0, 303.0, 8.0)))
+    add(a, bus_bridge, "tray_v15_bus_bridge", ORANGE)
+    add(a, box(35.0, 155.0, 32.0, (418.0, 145.0, 54.0)), "power_busbar_neg", GOLD)
+
+    # Bay 2: Garmin on edge + BMS V2 + SmartShunt + elevated breaker bridge
+    garmin_s: cq.Workplane = garmin_shape(125.0, 32.0, 75.0, (0.0, 0.0, 0.0)).rotate((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), 90.0).translate((487.0, 28.0, 10.0))
+    add(a, garmin_s, "garmin_powerswitch", (0.08, 0.08, 0.08))
+    add(a, victron_shape("bms", 106.0, 95.0, 23.2, (468.0, 365.0, 10.0), box(106.0, 95.0, 23.2, (468.0, 365.0, 10.0))), "power_bms", DARK)
+    add(a, victron_shape("shunt", 120.0, 52.5, 46.5, (590.0, 402.0, 10.0), box(120.0, 52.5, 46.5, (590.0, 402.0, 10.0))), "power_shunt", DARK)
+
+    brk_bridge: cq.Workplane = (
+        box(188.0, 60.0, 8.0, (482.0, 380.0, 66.0))
+        .union(box(12.0, 16.0, 58.0, (576.0, 380.0, 8.0)))
+        .union(box(12.0, 16.0, 58.0, (662.0, 380.0, 8.0)))
+        .union(box(12.0, 16.0, 58.0, (576.0, 446.0, 8.0)))
+    )
+    add(a, brk_bridge, "tray_v15_breaker_deck", ORANGE)
+    add(a, breaker_shape(81.3, 48.1, 37.9, (490.0, 385.0, 74.0)), "power_breaker_a", GOLD)
+    add(a, breaker_shape(81.3, 48.1, 37.9, (585.0, 385.0, 74.0)), "power_breaker_b", GOLD)
+
+
+def dims_v15() -> list[dict]:
+    top: float = out_H + 35.0
+    return [
+        dict(a=[0, 0, top], b=[out_D, 0, top], label=f"30\" IceBox full length {out_D:.0f} mm ({out_D / 25.4:.1f} in)", off=[0, -55, 0]),
+        dict(a=[0, 0, top], b=[0, out_W, top], label=f"width {out_W:.0f} mm ({out_W / 25.4:.1f} in)", off=[-55, 0, 0]),
+        dict(a=[out_D + 50, 0, 0], b=[out_D + 50, 0, out_H], label=f"pancake frame {out_H:.0f} mm ({out_H / 25.4:.1f} in)", off=[40, 0, 0]),
+        dict(a=[35, -25, 20], b=[460, -25, 20], label="Bay 1 (425): MultiPlus flat + MPPT/Orion/Cerbo", off=[0, -35, 0]),
+        dict(a=[484, -25, 20], b=[733, -25, 20], label="Bay 2 (249): Smart 200Ah side + BMS/shunt/breakers", off=[0, -35, 0]),
+    ]
+
+
+def report_v15() -> None:
+    mm = lambda v: f"{v:.0f} mm ({v / 25.4:.2f} in)"
+    print(f"== Variant '{VARIANT}' (30\" full-length pancake concept): {mm(out_D)} x {mm(out_W)} x {mm(out_H)} (+6 mm lift-off lid) ==")
+    print("  Bay 1 (X=25..460) : MultiPlus 12/1200 flat (375x249x101) + MPPT 100/30 + Orion XS + Cerbo GX inline + stacked busbars")
+    print("  Bay 2 (X=465..735): Smart 12.8V/200Ah on 152mm side (237x321x152, z=6..158) + Garmin + VE.Bus BMS V2 + SmartShunt + 2x breakers")
+
 def build_v13(a):
     """v12 grown one inch (282 tall) for a 1500 W AC load, MultiPlus-II 12/3000/120-50 as asked.  The II is 578 x 277 x 148
     and does not fit the v12 box any way up, so it lies on its LONG SIDE along the inboard side of the box: back on a
@@ -4632,9 +4739,10 @@ def export(a: cq.Assembly):
             os.remove(os.path.join(STL, old))
     glb = os.path.join(OUT, "cage.glb"); a.export(glb, tolerance=1.5, angularTolerance=0.7)
     glb_to_json(glb, os.path.join(VIEWER, f"cage-{VARIANT}.json"))
-    if P["card_plane"] in ("xz", "v7", "v8", "v9", "v12"):
+    if P["card_plane"] in ("xz", "v7", "v8", "v9", "v12", "v15"):
         with open(os.path.join(VIEWER, f"dims-{VARIANT}.json"), "w") as f:
-            json.dump({"xz": dims_bookshelf, "v7": dims_v7, "v8": dims_v8, "v9": dims_v9, "v12": dims_v13 if P.get("box") == "v13" else dims_v12}[P["card_plane"]](), f)
+            json.dump({"xz": dims_bookshelf, "v7": dims_v7, "v8": dims_v8, "v9": dims_v9,
+                       "v12": dims_v13 if P.get("box") == "v13" else dims_v12, "v15": dims_v15}[P["card_plane"]](), f)
     bed = P.get("bed", (256.0, 256.0, 256.0))
     print(f"== Printed parts (bed {bed[0]:.0f} x {bed[1]:.0f} x {bed[2]:.0f}) ==")
     seen = {}
@@ -4793,6 +4901,8 @@ def report_v7():
 
 
 def report():
+    if P["card_plane"] == "v15":
+        return report_v15()
     if P["card_plane"] == "pack2":
         return report_pack2()
     if P["card_plane"] == "v12":
