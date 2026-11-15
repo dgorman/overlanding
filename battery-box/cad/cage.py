@@ -3519,16 +3519,17 @@ def stack_gusset_nongx() -> cq.Workplane:
 
 
 def icebox_diag_brace_max() -> cq.Workplane:
-    """Max H2D-length (340 x 28 x 8 mm) anti-parallelogramming diagonal brace for IceBox rear."""
+    """Max H2D-diagonal (415 x 28 x 8 mm, pre-rotated 47 deg to 292 x 311 mm) IceBox brace."""
     thick: float = 8.0
-    hole_xs: list[float] = [-156.0, -131.0, -106.0, 106.0, 131.0, 156.0]
-    plate: cq.Workplane = cq.Workplane("XY").slot2D(340.0, 28.0).extrude(thick)
-    return _drill_gusset_fasteners(
+    hole_xs: list[float] = [-193.5, -168.5, -143.5, -118.5, 118.5, 143.5, 168.5, 193.5]
+    plate: cq.Workplane = cq.Workplane("XY").slot2D(415.0, 28.0).extrude(thick)
+    plate = _drill_gusset_fasteners(
         plate,
         holes=[(x, 0.0) for x in hole_xs],
         slots=[],
         thick=thick,
     )
+    return plate.rotate((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), 47.0)
 
 def build_v13(a):
     """v12 grown one inch (282 tall) for a 1500 W AC load, MultiPlus-II 12/3000/120-50 as asked.  The II is 578 x 277 x 148
