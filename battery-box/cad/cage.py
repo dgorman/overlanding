@@ -3446,6 +3446,90 @@ def add_stack_straps(a):
         cq.exporters.exportDXF(flat.faces("<Z"), os.path.join(STL, "print_stack_strap.dxf"))
 
 
+def _drill_gusset_fasteners(
+    plate: cq.Workplane,
+    holes: list[tuple[float, float]],
+    slots: list[tuple[float, float]],
+    thick: float = 8.0,
+    hole_d: float = 6.8,
+    slot_travel: float = 2.0,
+) -> cq.Workplane:
+    """Cut 1/4-20 thru-holes and vertical travel slots through a flat gusset."""
+    if holes:
+        plate = (plate.faces(">Z").workplane().pushPoints(holes)
+                 .hole(hole_d, thick + 1.0))
+    if slots:
+        slot_len: float = hole_d + slot_travel
+        for sx, sy in slots:
+            cutter: cq.Workplane = (
+                cq.Workplane("XY").center(sx, sy)
+                .slot2D(slot_len, hole_d, angle=90.0)
+                .extrude(thick + 2.0).translate((0, 0, -1.0))
+            )
+            plate = plate.cut(cutter)
+    return plate
+
+
+def _gusset_blank(right_x: float, inner_pts: list[tuple[float, float]], thick: float = 8.0) -> cq.Workplane:
+    """Build a flat-faced gusset spanning from top post (12.5, 63.5) to right foot (right_x, -12.5)."""
+    top_cx, top_cy, end_r = 12.5, 63.5, 12.5
+    bot_cx, bot_cy = right_x, -12.5
+    dx, dy = bot_cx - top_cx, bot_cy - top_cy
+    hypot: float = math.hypot(dx, dy)
+    nx, ny = -dy / hypot, dx / hypot
+    pts: list[tuple[float, float]] = [
+        (top_cx, top_cy),
+        (top_cx + end_r * nx, top_cy + end_r * ny),
+        (bot_cx + end_r * nx, bot_cy + end_r * ny),
+        (bot_cx, bot_cy),
+        *inner_pts,
+    ]
+    body: cq.Workplane = cq.Workplane("XY").polyline(pts).close().extrude(thick)
+    top_cap: cq.Workplane = cq.Workplane("XY").center(top_cx, top_cy).circle(end_r).extrude(thick)
+    bot_cap: cq.Workplane = cq.Workplane("XY").center(bot_cx, bot_cy).circle(end_r).extrude(thick)
+    return body.union(top_cap).union(bot_cap)
+
+
+def stack_gusset_2x() -> cq.Workplane:
+    """2x-high corner stack gusset (76 x 101 x 8 mm), flat-faced for button-head + washer."""
+    plate: cq.Workplane = _gusset_blank(
+        right_x=63.5,
+        inner_pts=[(63.5, -25.0), (0.0, -25.0), (0.0, 63.5)],
+    )
+    plate = plate.edges("|Z").fillet(5.0)
+    return _drill_gusset_fasteners(
+        plate,
+        holes=[(38.5, -12.5), (63.5, -12.5)],
+        slots=[(12.5, 38.5), (12.5, 63.5)],
+    )
+
+
+def stack_gusset_nongx() -> cq.Workplane:
+    """Extended non-GX stack gusset (132.5 x 101 x 8 mm) bridging clear over factory IceBox gusset."""
+    plate: cq.Workplane = _gusset_blank(
+        right_x=120.0,
+        inner_pts=[(120.0, -25.0), (78.0, -25.0), (78.0, 1.5), (0.0, 1.5), (0.0, 63.5)],
+    )
+    plate = plate.edges(cq.selectors.NearestToPointSelector((78.0, -25.0, 4.0))).fillet(8.0)
+    return _drill_gusset_fasteners(
+        plate,
+        holes=[(50.0, 12.5), (92.5, -12.5), (117.5, -12.5)],
+        slots=[(12.5, 38.5), (12.5, 63.5)],
+    )
+
+
+def icebox_diag_brace_max() -> cq.Workplane:
+    """Max H2D-length (340 x 28 x 8 mm) anti-parallelogramming diagonal brace for IceBox rear."""
+    thick: float = 8.0
+    hole_xs: list[float] = [-156.0, -131.0, -106.0, 106.0, 131.0, 156.0]
+    plate: cq.Workplane = cq.Workplane("XY").slot2D(340.0, 28.0).extrude(thick)
+    return _drill_gusset_fasteners(
+        plate,
+        holes=[(x, 0.0) for x in hole_xs],
+        slots=[],
+        thick=thick,
+    )
+
 def build_v13(a):
     """v12 grown one inch (282 tall) for a 1500 W AC load, MultiPlus-II 12/3000/120-50 as asked.  The II is 578 x 277 x 148
     and does not fit the v12 box any way up, so it lies on its LONG SIDE along the inboard side of the box: back on a
@@ -4579,6 +4663,19 @@ def export(a: cq.Assembly):
         flag = "" if dims[0] <= bed[0] and dims[1] <= bed[1] and dims[2] <= bed[2] else "  <-- exceeds bed"
         print(f"  {n:2d} x {key:10s} {dims[0]:6.1f} x {dims[1]:6.1f} x {dims[2]:6.1f} tall{flag}")
     if any(c.name.startswith("print_") for c in a.children):
+        if P.get("stack_on_icebox"):
+            aux_brackets: list[tuple[str, cq.Workplane]] = [
+                ("print_gusset_stack_std", stack_gusset_2x()),
+                ("print_gusset_stack_nongx", stack_gusset_nongx()),
+                ("print_brace_icebox_diag_max", icebox_diag_brace_max()),
+            ]
+            for bname, bpart in aux_brackets:
+                bpath: str = os.path.join(STL, f"{bname}.stl")
+                cq.exporters.export(bpart, bpath)
+                btris = plates.reorient_file(bpath)
+                bdims = tuple(round(max(v[k] for t in btris for v in t), 1) for k in range(3))
+                bflag = "" if bdims[0] <= bed[0] and bdims[1] <= bed[1] and bdims[2] <= bed[2] else "  <-- exceeds bed"
+                print(f"  {1:2d} x {bname:28s} {bdims[0]:6.1f} x {bdims[1]:6.1f} x {bdims[2]:6.1f} tall{bflag}")
         try:
             plates.build_plates(STL, quiet=True)   # the plate_*.stl beds of grouped small parts
         except FileNotFoundError as e:

@@ -119,6 +119,8 @@ ORIENT_RULES = [   # (file-name prefix, orientation); first match wins; anything
     ("print_garmin_hanger", flat),
     ("print_touch_bezel", flat),
     ("print_stack_strap", flat),              # the 4 mm strap lies flat, holes vertical              # the 3 mm trim bezel lies flat            # the 6 mm hanger plate lies on its plain back, insert pilots up
+    ("print_gusset_", flat),                  # 8 mm corner stack gussets lie flat
+    ("print_brace_", flat),                   # 8 mm diagonal icebox braces lie flat
     ("print_tool_tap_guide", top_down),         # pocket up (modelled pocket-down)
 ]
 
