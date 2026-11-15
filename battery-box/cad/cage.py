@@ -3519,12 +3519,14 @@ def stack_gusset_2x() -> cq.Workplane:
 
 
 def stack_gusset_nongx() -> cq.Workplane:
-    """Extended non-GX stack gusset (132.5 x 101 x 8 mm) bridging clear over factory IceBox gusset."""
+    """Extended non-GX stack gusset (132.5 x 101 x 8 mm) with 45-deg lower-left cut bridging factory gusset."""
     plate: cq.Workplane = _gusset_blank(
         right_x=120.0,
-        inner_pts=[(120.0, -25.0), (78.0, -25.0), (78.0, 1.5), (0.0, 1.5), (0.0, 63.5)],
+        inner_pts=[(120.0, -25.0), (78.0, -25.0), (78.0, 1.5), (25.0, 1.5), (0.0, 26.5), (0.0, 63.5)],
     )
     plate = plate.edges(cq.selectors.NearestToPointSelector((78.0, -25.0, 4.0))).fillet(8.0)
+    for vx, vy in ((25.0, 1.5), (0.0, 26.5)):
+        plate = plate.edges(cq.selectors.NearestToPointSelector((vx, vy, 4.0))).fillet(4.0)
     return _drill_gusset_fasteners(
         plate,
         holes=[(50.0, 12.5), (92.5, -12.5), (117.5, -12.5)],
