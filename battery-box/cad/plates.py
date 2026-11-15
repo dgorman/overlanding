@@ -186,13 +186,14 @@ def build_plates(stl_dir, quiet=False):
                 expanded.append((fn, rotz, at))
         if not expanded:
             continue
+        row_limit = 160.0 if name == "plate_stack_straps" else bed_x  # 2x2 grid for the 4x 60mm straps (fits P1P 256mm)
         for fn, rotz, at in expanded:
             tris = read(os.path.join(stl_dir, fn))                       # already oriented by reorient_file
             if rotz:
                 tris, _ = normalise(rot_z(tris, rotz))
             w = max(v[0] for t in tris for v in t); d = max(v[1] for t in tris for v in t); h = max(v[2] for t in tris for v in t)
-            if at is None:                       # next in a row, wrapping to a new row when the bed is full
-                if x + w > bed_x:
+            if at is None:                       # next in a row, wrapping to a new row when full
+                if x + w > row_limit:
                     x, y_row, row_h = 0.0, y_row + row_h + GAP, 0.0
                 at = (x, y_row); x += w + GAP; row_h = max(row_h, d)
             tris = [[(v[0] + at[0], v[1] + at[1], v[2]) for v in t] for t in tris]
