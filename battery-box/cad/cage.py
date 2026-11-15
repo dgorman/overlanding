@@ -3454,10 +3454,16 @@ def _drill_gusset_fasteners(
     hole_d: float = 6.8,
     slot_travel: float = 2.0,
 ) -> cq.Workplane:
-    """Cut 1/4-20 thru-holes and vertical travel slots through a flat gusset."""
+    """Cut 1/4-20 thru-holes/slots and 82-deg flush countersinks on +Z face."""
+    csk_r_top, csk_r_bot, csk_depth = 7.0, hole_d / 2.0, 4.1
     if holes:
         plate = (plate.faces(">Z").workplane().pushPoints(holes)
                  .hole(hole_d, thick + 1.0))
+        for hx, hy in holes:
+            csk: cq.Workplane = cq.Workplane("XY").add(
+                cq.Solid.makeCone(csk_r_top, csk_r_bot, csk_depth, cq.Vector(hx, hy, thick + 0.5), cq.Vector(0, 0, -1))
+            )
+            plate = plate.cut(csk)
     if slots:
         slot_len: float = hole_d + slot_travel
         for sx, sy in slots:
@@ -3466,12 +3472,19 @@ def _drill_gusset_fasteners(
                 .slot2D(slot_len, hole_d, angle=90.0)
                 .extrude(thick + 2.0).translate((0, 0, -1.0))
             )
-            plate = plate.cut(cutter)
+            csk_slot: cq.Workplane = (
+                cq.Workplane("XY", origin=(sx, sy, thick + 0.5))
+                .slot2D(2.0 * csk_r_top + slot_travel, 2.0 * csk_r_top, 90.0)
+                .workplane(offset=-csk_depth)
+                .slot2D(2.0 * csk_r_bot + slot_travel, 2.0 * csk_r_bot, 90.0)
+                .loft(combine=True)
+            )
+            plate = plate.cut(cutter).cut(csk_slot)
     return plate
 
 
 def _gusset_blank(right_x: float, inner_pts: list[tuple[float, float]], thick: float = 8.0) -> cq.Workplane:
-    """Build a flat-faced gusset spanning from top post (12.5, 63.5) to right foot (right_x, -12.5)."""
+    """Build a gusset blank spanning from top post (12.5, 63.5) to right foot (right_x, -12.5)."""
     top_cx, top_cy, end_r = 12.5, 63.5, 12.5
     bot_cx, bot_cy = right_x, -12.5
     dx, dy = bot_cx - top_cx, bot_cy - top_cy
@@ -3491,12 +3504,13 @@ def _gusset_blank(right_x: float, inner_pts: list[tuple[float, float]], thick: f
 
 
 def stack_gusset_2x() -> cq.Workplane:
-    """2x-high corner stack gusset (76 x 101 x 8 mm), flat-faced for button-head + washer."""
+    """2x-high corner stack gusset (76 x 101 x 8 mm) with 45-deg lower-left cut and 82-deg flush bevels."""
     plate: cq.Workplane = _gusset_blank(
         right_x=63.5,
-        inner_pts=[(63.5, -25.0), (0.0, -25.0), (0.0, 63.5)],
+        inner_pts=[(63.5, -25.0), (25.0, -25.0), (0.0, 0.0), (0.0, 63.5)],
     )
-    plate = plate.edges("|Z").fillet(5.0)
+    for vx, vy in ((25.0, -25.0), (0.0, 0.0)):
+        plate = plate.edges(cq.selectors.NearestToPointSelector((vx, vy, 4.0))).fillet(4.0)
     return _drill_gusset_fasteners(
         plate,
         holes=[(38.5, -12.5), (63.5, -12.5)],
@@ -4665,9 +4679,13 @@ def export(a: cq.Assembly):
         print(f"  {n:2d} x {key:10s} {dims[0]:6.1f} x {dims[1]:6.1f} x {dims[2]:6.1f} tall{flag}")
     if any(c.name.startswith("print_") for c in a.children):
         if P.get("stack_on_icebox"):
+            std_g: cq.Workplane = stack_gusset_2x()
+            nongx_g: cq.Workplane = stack_gusset_nongx()
             aux_brackets: list[tuple[str, cq.Workplane]] = [
-                ("print_gusset_stack_std", stack_gusset_2x()),
-                ("print_gusset_stack_nongx", stack_gusset_nongx()),
+                ("print_gusset_stack_std", std_g),
+                ("print_gusset_stack_std_mirror", std_g.mirror("YZ")),
+                ("print_gusset_stack_nongx", nongx_g),
+                ("print_gusset_stack_nongx_mirror", nongx_g.mirror("YZ")),
                 ("print_brace_icebox_diag_max", icebox_diag_brace_max()),
             ]
             for bname, bpart in aux_brackets:
