@@ -1,7 +1,8 @@
 # Author: Dan Gorman / Antigravity CAD Generator
 # Description: Parametric Autodesk Fusion assembly generator for the 4Runner Overlanding
-#              Battery & Electronics Box (v12s / v12s_h2d for Bambu Lab H2D & P1P).
+#              Battery & Electronics Box (v14 single-200Ah & master dual-60Ah for Bambu Lab H2D).
 
+import math
 import os
 import sys
 import traceback
@@ -12,10 +13,13 @@ import adsk.fusion
 # 1. TOP-LEVEL PARAMETRIC ARCHITECTURE (ALL DIMENSIONS IN MILLIMETERS)
 # ==============================================================================
 
-# Printer Target Preset:
-#   "H2D" -> Bambu Lab H2D (350 x 320 x 325 mm bed): Inverter plate splits into 2 tiles (252.8 x 256 mm) + 2 splines, no horizontal lap.
-#   "P1P" -> Bambu Lab P1P/P1S (256 x 256 x 256 mm bed): Inverter plate splits into 6 tiles (168.5 x 140 mm) + 8 splines with 24 mm half-laps.
+# Variant & Feature Toggles:
+#   "v14"    -> Single Victron 200Ah Smart (Front) + VE.Bus BMS V2 & Elevated Breaker Deck (Back)
+#   "master" -> Dual Victron SuperPack 60Ah trays + 2x overhead Breaker Drop Shelves
+VARIANT: str = "v14"
 PRINTER_PRESET: str = "H2D"
+INCLUDE_FRONT_INLAYS: bool = True      # Cut 0.60 mm white PETG port outlines + inlay bodies on front panels
+INCLUDE_ELECTRICAL: bool = False       # Set True to also import Victron/Bussmann/Anderson models + 3D wires
 USE_REAL_VICTRON_STEPS: bool = True
 _LOCAL_STEPS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "step_models")
 STEP_MODELS_DIR: str = (
@@ -45,7 +49,7 @@ CORNER_CUBE: float = 25.75          # 25.75 mm 3-way corner cubes (stand 0.375-0
 PANEL_THICK: float = 6.0            # 6.0 mm phenolic-faced okoume marine plywood panels
 PANEL_TONGUE: float = 3.0           # 3.0 mm tongue captured inside rail centerline slots
 PANEL_OUTER_OFFSET: float = RAIL_PROFILE / 2.0 - PANEL_TONGUE / 2.0  # 9.5 mm from outer rail face
-LID_THICK: float = 6.0              # Flat 571.5 x 488.1 x 6.0 mm top lid resting on top rails
+LID_THICK: float = 6.25             # 4-piece half-lapped 6.25 mm printed H2D top roof resting on top rails
 
 # Derived Rail Cut Lengths (Outside dim - 2 * 25.75 mm corner cubes)
 HEIGHT_RAIL_LEN: float = BOX_HEIGHT_Z - 2.0 * CORNER_CUBE  # 230.2 mm
@@ -80,29 +84,43 @@ M5_FAR_RELIEF_DIA: float = 9.0      # Far-face pocket diameter in 6.0 mm inverte
 M5_FAR_RELIEF_DEPTH: float = 1.3    # Far-face pocket depth in 6.0 mm inverter plate
 M5_DECK_THICK: float = 11.0         # Deck thickness for Bus Shelf floor and Breaker Drop Shelves
 
-# Outboard Zone: Battery Trays (x2) & Breaker Hold-Down Drop Shelves (x2)
-BATT_L: float = 229.0               # Victron SuperPack 12.8V/60Ah length (along X)
-BATT_W: float = 138.0               # Victron SuperPack 12.8V/60Ah width (along Y)
-BATT_BODY_H: float = 208.0          # Flat case top height (M6 terminals add 5 mm to 213.0 mm total)
-BATT_TOTAL_H: float = 213.0
+# Outboard Zone: Variant-aware Battery Trays, BMS & Breakers
+#   master: 2x SuperPack 60Ah (229 x 138 x 213 mm) + 2x overhead Breaker Drop Shelves
+#   v14:    1x Smart 200Ah (321 x 152 x 237 mm) Front + VE.Bus BMS V2 & Elevated Breaker Deck Back
+IS_V14: bool = (VARIANT == "v14")
+BATT_L: float = 321.0 if IS_V14 else 229.0
+BATT_W: float = 152.0 if IS_V14 else 138.0
+BATT_BODY_H: float = 237.0 if IS_V14 else 208.0
+BATT_TOTAL_H: float = 237.0 if IS_V14 else 213.0
 TRAY_CLEARANCE: float = 0.5         # 0.5 mm per side snug pocket fit
 TRAY_WALL_THICK: float = 6.0        # Outboard & end wall thickness
-TRAY_INBOARD_WALL: float = 21.0     # Thickened inboard wall carrying M4 top & side inserts
+TRAY_INBOARD_WALL: float = 8.0 if IS_V14 else 21.0  # Inboard wall carrying M4 bus-shelf inserts
 TRAY_FLOOR_THICK: float = 6.0       # Tray floor thickness
 TRAY_LIP_H: float = 30.0            # Pocket wall height above floor (total tray height = 36.0 mm)
-TRAY_OUTER_LEN_X: float = BATT_L + 2.0 * TRAY_WALL_THICK + 2.0 * TRAY_CLEARANCE  # 242.0 mm
-TRAY_OUTER_WID_Y: float = 167.0     # Matches standard column boundary (6.0 + 139.0 pocket + 22.0 / 21.0 wall)
-TRAY_POCKET_LEN_X: float = BATT_L + 2.0 * TRAY_CLEARANCE  # 230.0 mm
-TRAY_POCKET_WID_Y: float = BATT_W + 2.0 * TRAY_CLEARANCE  # 139.0 mm
-TRAY_0_X0: float = INNER_X0                               # 25.0 mm (butts back width rail)
-TRAY_1_X0: float = INNER_X1 - TRAY_OUTER_LEN_X            # 304.5 mm (butts front width rail)
+TRAY_OUTER_LEN_X: float = BATT_L + 2.0 * TRAY_WALL_THICK + 2.0 * TRAY_CLEARANCE  # 334.0 mm (v14) / 242.0 mm (master)
+TRAY_OUTER_WID_Y: float = 167.0     # Matches standard column boundary (193.0 - 26.0 mm)
+TRAY_POCKET_LEN_X: float = BATT_L + 2.0 * TRAY_CLEARANCE  # 322.0 mm (v14) / 230.0 mm (master)
+TRAY_POCKET_WID_Y: float = BATT_W + 2.0 * TRAY_CLEARANCE  # 153.0 mm (v14) / 139.0 mm (master)
+V14_BMS_LEN_X: float = INNER_DEPTH_X - TRAY_OUTER_LEN_X   # 187.5 mm (Back -X zone)
+V14_BMS_PILLAR_Z: float = 56.0      # 4 corner pillars rise to Z = 56.0 mm above the 6 mm floor
+V14_BMS_DIMS: tuple[float, float, float] = (95.0, 105.8, 23.2)
+V14_BMS_PAD_H: float = 3.5          # Raised BMS floor pad (Z = 6.0..9.5 mm) for blind M4 bores
+V14_BMS_HOLES_XY: tuple[tuple[float, float], ...] = (
+    (23.87, 5.06), (71.15, 5.06), (23.87, 100.74), (71.15, 100.74),
+)
+V14_DECK_BREAKER_X: tuple[float, float] = (INNER_X0 + 10.0, INNER_X0 + 96.0)
+TRAY_0_X0: float = (INNER_X0 + V14_BMS_LEN_X) if IS_V14 else INNER_X0           # 212.5 mm (v14 Front) / 25.0 mm (master Back)
+TRAY_1_X0: float = INNER_X0 if IS_V14 else (INNER_X1 - TRAY_OUTER_LEN_X)       # 25.0 mm (v14 Back BMS) / 304.5 mm (master Front)
 TRAY_Y0: float = INNER_Y0 + 1.0                           # 26.0 mm (1 mm off outboard rail, walls bolt flush)
 TRAY_CUBE_NOTCH: float = 2.5        # 2.5 x 2.5 mm corner notch clearing the 25.75 mm corner cube
-TRAY_OUTBOARD_BOLT_DX: tuple[float, float] = (70.0, TRAY_OUTER_LEN_X - 70.0)  # (70.0, 172.0)
+TRAY_OUTBOARD_BOLT_DX: tuple[float, float] = (70.0, TRAY_OUTER_LEN_X - 70.0)
 TRAY_END_BOLT_DY: tuple[float, float] = (28.0, TRAY_OUTER_WID_Y - 28.0)       # (28.0, 139.0)
 TRAY_LIP_M4_DX: tuple[tuple[float, ...], tuple[float, ...]] = (
-    (40.0, 100.0, 140.0),           # Tray 0 (back) horizontal M4 insert X offsets (Z = 17.0 mm)
-    (40.0, 120.0, 200.0),           # Tray 1 (front) horizontal M4 insert X offsets (Z = 17.0 mm)
+    (42.0, 122.0, 202.0, 282.0),    # v14 Tray 0 (Front 334 mm): 4 equidistant M4 inserts (80 mm pitch)
+    (43.75, 93.75, 143.75),         # v14 Tray 1 (Back 187.5 mm): 3 equidistant M4 inserts (50 mm pitch)
+) if IS_V14 else (
+    (40.0, 100.0, 140.0),           # master Tray 0 (back) horizontal M4 insert X offsets (Z = 17.0 mm)
+    (40.0, 120.0, 200.0),           # master Tray 1 (front) horizontal M4 insert X offsets (Z = 17.0 mm)
 )
 
 # Breaker Drop Shelves (Hold-Down + Eaton Bussmann 285 Mount + 4 AWG Wire Channel)
@@ -240,14 +258,16 @@ COMP_SPECS: dict[str, dict] = {
 }
 
 # Front Panel Port Cutouts: (name, shape, y_center_mm, z_center_mm, size_tuple_mm, inward_depth_mm)
+# Matches cage.py: 2 clean columns on inboard (Y = 345 & 423) + 2 x SB50 stacked near half-lap on outboard (Y = 247)
 FRONT_PANEL_PORTS: list[tuple[str, str, float, float, tuple[float, ...], float]] = [
     ("l14_30_shore_in", "l14", 423.0, 61.0, (45.0,), 55.0),
     ("l14_30_inv_out", "l14", 423.0, 143.0, (45.0,), 55.0),
-    ("socket_usb_high", "circle", 423.0, 215.0, (29.5,), 40.0),
-    ("sb50_alt_in", "sb50", 355.0, 80.0, (29.0, 53.0), 48.0),
-    ("socket_12v_aux", "circle", 355.0, 154.0, (29.5,), 40.0),
-    ("socket_usb_low", "circle", 355.0, 215.0, (29.5,), 40.0),
-    ("sb50_pack2_umbilical", "sb50", 215.0, 107.5, (29.0, 53.0), 48.0),
+    ("socket_dc_out_top_inb", "circle", 423.0, 215.0, (29.5,), 40.0),
+    ("socket_dc_out_bot", "circle", 345.0, 61.0, (29.5,), 40.0),
+    ("socket_dc_out_mid", "circle", 345.0, 143.0, (29.5,), 40.0),
+    ("socket_dc_out_top", "circle", 345.0, 215.0, (29.5,), 40.0),
+    ("sb50_alt_in", "sb50", 247.0, 86.0, (29.0, 53.0), 48.0),
+    ("sb50_pack2_umbilical", "sb50", 247.0, 192.0, (29.0, 53.0), 48.0),
 ]
 
 # Rear Panel GX Touch 50 Cutout & Printed Bezel
@@ -282,10 +302,11 @@ def pt3d(x_mm: float, y_mm: float, z_mm: float) -> adsk.core.Point3D:
 def register_user_parameters(design: adsk.fusion.Design) -> None:
     """Register key top-level dimensions into Fusion's Change Parameters table."""
     params = [
+        ("VARIANT_IS_V14", 1 if IS_V14 else 0, "", "1 = v14 single 200Ah + VE.Bus BMS V2 + breaker deck; 0 = master dual 60Ah"),
         ("BOX_DEPTH_X", BOX_DEPTH_X, "mm", "Overall enclosure length/depth along X (front-to-back)"),
         ("BOX_WIDTH_Y", BOX_WIDTH_Y, "mm", "Overall enclosure width along Y (outboard-to-inboard)"),
-        ("BOX_HEIGHT_Z", BOX_HEIGHT_Z, "mm", "Overall enclosure frame height along Z (excluding 6mm lid)"),
-        ("LID_THICK", LID_THICK, "mm", "Top enclosure lid thickness"),
+        ("BOX_HEIGHT_Z", BOX_HEIGHT_Z, "mm", "Overall enclosure frame height along Z (excluding roof lid)"),
+        ("LID_THICK", LID_THICK, "mm", "Printed 4-piece roof panel thickness"),
         ("LID_LIP_DEPTH", PANEL_TONGUE, "mm", "Lid and panel tongue/lip registration depth"),
         ("RAIL_PROFILE", RAIL_PROFILE, "mm", "Metric 25-series MaxLite aluminum rail profile width"),
         ("RAIL_SLOT_W", RAIL_SLOT_W, "mm", "Metric 25-series T-slot opening width for 1/4-20 T-nuts"),
@@ -309,13 +330,13 @@ def register_user_parameters(design: adsk.fusion.Design) -> None:
         ("STRAP_FILLET_R", STRAP_FILLET_R, "mm", "IceBox stack strap corner fillet radius"),
         ("WINDOW_FILLET_R", WINDOW_FILLET_R, "mm", "70x70mm inverter plate cable window corner fillet radius"),
         ("COMP_FILLET_R", COMP_FILLET_R, "mm", "Component & busbar spacer corner fillet radius"),
-        ("BATT_FILLET_R", BATT_FILLET_R, "mm", "SuperPack 60Ah battery housing corner fillet radius"),
-        ("M6_TERM_DIA", 6.0, "mm", "Victron SuperPack M6 battery terminal post diameter"),
-        ("M6_BATT0_POS_X", 59.5, "mm", "Battery 0 (rear) M6 positive terminal X coordinate"),
-        ("M6_BATT0_NEG_X", 232.5, "mm", "Battery 0 (rear) M6 negative terminal X coordinate"),
-        ("M6_BATT1_POS_X", 339.0, "mm", "Battery 1 (front) M6 positive terminal X coordinate"),
-        ("M6_BATT1_NEG_X", 512.0, "mm", "Battery 1 (front) M6 negative terminal X coordinate"),
-        ("M6_BATT_TERM_Y", 101.5, "mm", "SuperPack 60Ah M6 terminal centerline Y coordinate"),
+        ("BATT_FILLET_R", BATT_FILLET_R, "mm", "Victron 200Ah Smart (v14) / SuperPack 60Ah (master) corner fillet radius"),
+        ("M6_TERM_DIA", 8.0 if IS_V14 else 6.0, "mm", "Battery terminal stud diameter (M8 on v14 200Ah Smart; M6 on master 60Ah)"),
+        ("M6_BATT0_POS_X", TRAY_0_X0 + 43.0 if IS_V14 else 59.5, "mm", "Battery 0 positive terminal X coordinate"),
+        ("M6_BATT0_NEG_X", TRAY_0_X0 + 291.0 if IS_V14 else 232.5, "mm", "Battery 0 negative terminal X coordinate"),
+        ("M6_BATT1_POS_X", 339.0, "mm", "Battery 1 (front 60Ah, master only) M6 positive terminal X coordinate"),
+        ("M6_BATT1_NEG_X", 512.0, "mm", "Battery 1 (front 60Ah, master only) M6 negative terminal X coordinate"),
+        ("M6_BATT_TERM_Y", 90.0 if IS_V14 else 101.5, "mm", "Battery terminal centerline Y coordinate"),
         ("M6_BREAKER_STUD_DIA", 6.4, "mm", "Eaton Bussmann 285 breaker M6/1/4-28 stud diameter"),
         ("M8_BUSBAR_STUD_DIA", 8.0, "mm", "5-stud 250A bus bar M8 terminal stud diameter"),
         ("M8_BUSBAR_POS_X0", BUSBAR_POS_X0, "mm", "Positive 5-stud M8 bus bar X origin on bus shelf"),
@@ -336,12 +357,13 @@ def register_user_parameters(design: adsk.fusion.Design) -> None:
     ]
     user_params = design.userParameters
     for name, number, unit, comment in params:
+        expr = f"{number} {unit}".strip()
         existing = user_params.itemByName(name)
         if existing:
-            existing.expression = f"{number} {unit}"
+            existing.expression = expr
             existing.comment = comment
         else:
-            user_params.add(name, adsk.core.ValueInput.createByString(f"{number} {unit}"), unit, comment)
+            user_params.add(name, adsk.core.ValueInput.createByString(expr), unit, comment)
 
 
 def create_subcomponent(parent_comp: adsk.fusion.Component, name: str) -> adsk.fusion.Component:
@@ -655,12 +677,72 @@ COL_ALUMINUM = ("Mat_MaxLite_Aluminum", (184, 189, 194))
 COL_CUBE_BLACK = ("Mat_Anodized_Black", (35, 35, 38))
 COL_PANEL_PLY = ("Mat_Phenolic_Plywood", (52, 52, 56))
 COL_PRINT_ORANGE = ("Mat_Printed_PETG_Orange", (217, 84, 31))
+COL_PRINT_WHITE = ("Mat_Printed_PETG_White", (245, 247, 250))
 COL_PLATE_DARK = ("Mat_Printed_PAHT_CF", (46, 48, 52))
 COL_VICTRON_BLUE = ("Mat_Victron_Blue", (38, 100, 235))
 COL_BATT_BLUE = ("Mat_SuperPack_Blue", (31, 128, 242))
 COL_POWER_GOLD = ("Mat_Bus_Breaker_Gold", (201, 163, 38))
 COL_PORT_GRAY = ("Mat_Port_Housing", (78, 80, 84))
 COL_FOAM_EPDM = ("Mat_EPDM_Foam", (40, 40, 40))
+
+
+def add_rounded_rect_on_yz_sketch(
+    sketch: adsk.fusion.Sketch,
+    x_mm: float,
+    yc: float,
+    zc: float,
+    w_y: float,
+    h_z: float,
+    r: float,
+) -> None:
+    """Draw a closed corner-rounded rectangle on a YZ sketch sharing exact vertex Point3D objects."""
+    lines = sketch.sketchCurves.sketchLines
+    arcs = sketch.sketchCurves.sketchArcs
+    hy, hz = w_y / 2.0, h_z / 2.0
+    d = r / math.sqrt(2.0)
+
+    def wp(yy: float, zz: float) -> adsk.core.Point3D:
+        return sketch_world_point(sketch, x_mm, yy, zz)
+
+    p_b0, p_b1 = wp(yc - hy + r, zc - hz), wp(yc + hy - r, zc - hz)
+    p_r0, p_r1 = wp(yc + hy, zc - hz + r), wp(yc + hy, zc + hz - r)
+    p_t0, p_t1 = wp(yc + hy - r, zc + hz), wp(yc - hy + r, zc + hz)
+    p_l0, p_l1 = wp(yc - hy, zc + hz - r), wp(yc - hy, zc - hz + r)
+
+    lines.addByTwoPoints(p_b0, p_b1)
+    arcs.addByThreePoints(p_b1, wp(yc + hy - r + d, zc - hz + r - d), p_r0)
+    lines.addByTwoPoints(p_r0, p_r1)
+    arcs.addByThreePoints(p_r1, wp(yc + hy - r + d, zc + hz - r + d), p_t0)
+    lines.addByTwoPoints(p_t0, p_t1)
+    arcs.addByThreePoints(p_t1, wp(yc - hy + r - d, zc + hz - r + d), p_l0)
+    lines.addByTwoPoints(p_l0, p_l1)
+    arcs.addByThreePoints(p_l1, wp(yc - hy + r - d, zc - hz + r - d), p_b0)
+
+
+def add_stadium_slot_on_yz_sketch(
+    sketch: adsk.fusion.Sketch,
+    x_mm: float,
+    yc: float,
+    zc: float,
+    slot_w: float,
+    slot_h: float,
+) -> None:
+    """Draw a closed horizontal stadium slot on a YZ sketch sharing exact vertex Point3D objects."""
+    lines = sketch.sketchCurves.sketchLines
+    arcs = sketch.sketchCurves.sketchArcs
+    r = slot_h / 2.0
+    dx = (slot_w - slot_h) / 2.0
+
+    def wp(yy: float, zz: float) -> adsk.core.Point3D:
+        return sketch_world_point(sketch, x_mm, yy, zz)
+
+    p_tl, p_tr = wp(yc - dx, zc + r), wp(yc + dx, zc + r)
+    p_br, p_bl = wp(yc + dx, zc - r), wp(yc - dx, zc - r)
+
+    lines.addByTwoPoints(p_tl, p_tr)
+    arcs.addByThreePoints(p_tr, wp(yc + dx + r, zc), p_br)
+    lines.addByTwoPoints(p_br, p_bl)
+    arcs.addByThreePoints(p_bl, wp(yc - dx - r, zc), p_tl)
 
 
 def color_imported_tree(
@@ -831,10 +913,10 @@ def build_frame_and_panels(
             comp, sketch, axis, length, adsk.fusion.FeatureOperations.NewBodyFeatureOperation, body_name=name
         )
 
-        # Cut the 4 T-slots (6.4 mm wide x 3.0 mm deep) along the 4 faces
+        # Cut the 4 T-slots (6.4 mm wide x 8.5 mm deep) along all 4 faces (matches cage.py bar())
         slot_sketch = comp.sketches.add(plane)
         s_lines = slot_sketch.sketchCurves.sketchLines
-        sw, sd = 6.4, 3.0
+        sw, sd = 6.4, 8.5
         mid = B / 2.0
         if axis == "x":
             rects = [
@@ -929,12 +1011,12 @@ def build_frame_and_panels(
     h_back = z_b1 - z_b0
     r_notch_back = 17.2
 
-    # 2 Solid H2D Side Panel Pairs (537.8 mm assembled = 524.0 mm as-built daylight + 2 x 6.9 mm tongues -> 278.9 x 245.5 x 6.25 mm per tile)
+    # 2 Solid H2D Side Panel Pairs: 278.9 mm back + 276.9 mm front (-2.0 mm front trim) -> 535.8 x 245.5 x 6.25 mm assembled
     len_side = INNER_DEPTH_X + 2.5 + 2.0 * 6.9
     side_lap_xmid = BOX_DEPTH_X / 2.0
     side_lap_w = 20.0
     x_s0 = side_lap_xmid - len_side / 2.0
-    x_s1 = side_lap_xmid + len_side / 2.0
+    x_s1 = side_lap_xmid + len_side / 2.0 - 2.0
     y_s_out = pm_back
     y_s_in = BOX_WIDTH_Y - pm_back - t_back
 
@@ -1073,17 +1155,18 @@ def build_frame_and_panels(
     )
     apply_color(app, design, p_back_in, *COL_PRINT_ORANGE)
 
-    # Front Port Panel: 2-tile H2D Printed Panel (6.25 mm thick, +7.8 mm bottom height = 245.5 mm, R=17.2 mm corner notches, 20 mm glued half-lap)
+    # Front Port Panel: 2-tile H2D Printed Panel (6.25 mm thick, 245.5 mm tall, 6.0 mm rail tongues -> 450.1 mm / 17.72" assembled)
     t_front = t_back
+    tongue_front = 6.0
     xf_inner = BOX_DEPTH_X - pm_back - t_front
     p_front_out = add_box_feature(
-        panel_comp, xf_inner, B - tongue, z_b0,
-        t_front, (end_lap_ymid + end_lap_w / 2.0) - (B - tongue), h_back,
+        panel_comp, xf_inner, B - tongue_front, z_b0,
+        t_front, (end_lap_ymid + end_lap_w / 2.0) - (B - tongue_front), h_back,
         body_name="print_panel_front_outboard",
     )
     cut_cylinders_on_plane(
         panel_comp, p_front_out, "x", xf_inner - 0.5, t_front + 1.0,
-        [(xf_inner, B - tongue, z_b0, r_notch_back), (xf_inner, B - tongue, z_b1, r_notch_back)],
+        [(xf_inner, B - tongue_front, z_b0, r_notch_back), (xf_inner, B - tongue_front, z_b1, r_notch_back)],
     )
     # Half-lap rabbet on outboard front tile: keep outer 3.125 mm (cut inner 3.125 mm across Y = 280..300 mm)
     add_box_feature(
@@ -1094,12 +1177,12 @@ def build_frame_and_panels(
 
     p_front_in = add_box_feature(
         panel_comp, xf_inner, end_lap_ymid - end_lap_w / 2.0, z_b0,
-        t_front, (B + INNER_WIDTH_Y + tongue) - (end_lap_ymid - end_lap_w / 2.0), h_back,
+        t_front, (B + INNER_WIDTH_Y + tongue_front) - (end_lap_ymid - end_lap_w / 2.0), h_back,
         body_name="print_panel_front_inboard_ports",
     )
     cut_cylinders_on_plane(
         panel_comp, p_front_in, "x", xf_inner - 0.5, t_front + 1.0,
-        [(xf_inner, B + INNER_WIDTH_Y + tongue, z_b0, r_notch_back), (xf_inner, B + INNER_WIDTH_Y + tongue, z_b1, r_notch_back)],
+        [(xf_inner, B + INNER_WIDTH_Y + tongue_front, z_b0, r_notch_back), (xf_inner, B + INNER_WIDTH_Y + tongue_front, z_b1, r_notch_back)],
     )
     # Half-lap rabbet on inboard front tile: Z = 3.20..6.10 mm flap when printed tex-out (+0.075 mm support relief + 0.15 mm seam relief -> 6.10 mm seam)
     add_box_feature(
@@ -1148,18 +1231,197 @@ def build_frame_and_panels(
     apply_color(app, design, p_front_out, *COL_PRINT_ORANGE)
     apply_color(app, design, p_front_in, *COL_PRINT_ORANGE)
 
-    # 4. Separate Top Lid Sub-Component (571.5 x 488.1 x 6.0 mm + perimeter T-nut holes)
-    lid_comp = create_subcomponent(root, "01c_Enclosure_Top_Lid")
-    lid = add_box_feature(lid_comp, 0.0, 0.0, BOX_HEIGHT_Z, BOX_DEPTH_X, BOX_WIDTH_Y, LID_THICK, body_name="lid_from_icebox_top")
-    fillet_parallel_edges(lid_comp, lid, "z", CUBE_FILLET_R)
-    lid_bolts = [
-        (120.0, B / 2.0, BOX_HEIGHT_Z + LID_THICK),
-        (BOX_DEPTH_X - 120.0, B / 2.0, BOX_HEIGHT_Z + LID_THICK),
-        (120.0, BOX_WIDTH_Y - B / 2.0, BOX_HEIGHT_Z + LID_THICK),
-        (BOX_DEPTH_X - 120.0, BOX_WIDTH_Y - B / 2.0, BOX_HEIGHT_Z + LID_THICK),
+    # Flush 0.60 mm White PETG front port outlines (circular rings + rounded SB50 frames matching cage.py)
+    if INCLUDE_FRONT_INLAYS:
+        x_front_face = xf_inner + t_front
+        inlay_d = 0.60
+        ring_w = 1.80
+        front_inlay_groups = [
+            (
+                p_front_in,
+                "print_panel_front_inboard_ports_inlay_white",
+                [
+                    ("circle", 423.0, 61.0 + z_shift_back, (32.50,)),
+                    ("circle", 423.0, 143.0 + z_shift_back, (32.50,)),
+                    ("circle", 423.0, 215.0 + z_shift_back, (21.75,)),
+                    ("circle", 345.0, 61.0 + z_shift_back, (21.75,)),
+                    ("circle", 345.0, 143.0 + z_shift_back, (21.75,)),
+                    ("circle", 345.0, 215.0 + z_shift_back, (21.75,)),
+                ],
+            ),
+            (
+                p_front_out,
+                "print_panel_front_outboard_inlay_white",
+                [
+                    ("rbox", 247.0, 86.0 + z_shift_back, (55.0, 79.0)),
+                    ("rbox", 247.0, 192.0 + z_shift_back, (55.0, 79.0)),
+                ],
+            ),
+        ]
+        for host_body, inl_base_name, ispecs in front_inlay_groups:
+            inl_plane = create_offset_plane(panel_comp, "x", x_front_face)
+            for idx_i, (ikind, iy, iz, isize) in enumerate(ispecs):
+                sk_out = panel_comp.sketches.add(inl_plane)
+                if ikind == "circle":
+                    r_in = isize[0]
+                    sk_out.sketchCurves.sketchCircles.addByCenterRadius(
+                        sketch_world_point(sk_out, x_front_face, iy, iz), cm(r_in + ring_w)
+                    )
+                else:
+                    wi, hi = isize
+                    add_rounded_rect_on_yz_sketch(sk_out, x_front_face, iy, iz, wi + 2.0 * ring_w, hi + 2.0 * ring_w, 9.3)
+                ring_body = extrude_all_profiles(
+                    panel_comp, sk_out, "x", -inlay_d,
+                    adsk.fusion.FeatureOperations.NewBodyFeatureOperation,
+                    body_name=f"{inl_base_name}_{idx_i}",
+                )
+                sk_in = panel_comp.sketches.add(inl_plane)
+                if ikind == "circle":
+                    sk_in.sketchCurves.sketchCircles.addByCenterRadius(
+                        sketch_world_point(sk_in, x_front_face, iy, iz), cm(isize[0])
+                    )
+                else:
+                    wi, hi = isize
+                    add_rounded_rect_on_yz_sketch(sk_in, x_front_face, iy, iz, wi, hi, 7.5)
+                extrude_all_profiles(
+                    panel_comp, sk_in, "x", -(inlay_d + 0.2),
+                    adsk.fusion.FeatureOperations.CutFeatureOperation, ring_body,
+                )
+                if ring_body is not None:
+                    try:
+                        comb_tools = adsk.core.ObjectCollection.create()
+                        comb_tools.add(ring_body)
+                        c_inp = panel_comp.features.combineFeatures.createInput(host_body, comb_tools)
+                        c_inp.operation = adsk.fusion.FeatureOperations.CutFeatureOperation
+                        c_inp.isKeepToolBodies = True
+                        panel_comp.features.combineFeatures.add(c_inp)
+                    except Exception:
+                        pass
+                    apply_color(app, design, ring_body, *COL_PRINT_WHITE)
+
+    # Removable Exterior MOLLE Panel (trimmed 4 cols x 8 rows = 32 MIL-STD PALS slots clearing SB50s at Y=247)
+    m_y0, m_y1 = 1.5, 210.0
+    m_z0, m_z1 = 1.5, BOX_HEIGHT_Z - 1.5
+    m_standoff, m_t = 4.0, t_front
+    molle = add_box_feature(
+        panel_comp, BOX_DEPTH_X + m_standoff, m_y0, m_z0,
+        m_t, m_y1 - m_y0, m_z1 - m_z0,
+        body_name="print_panel_front_outboard_molle",
+    )
+    fillet_parallel_edges(panel_comp, molle, "x", 8.0)
+    for px0, py0, pz0, pdx, pdy, pdz in (
+        (BOX_DEPTH_X, m_y0, C + 1.75, m_standoff, 22.0, (BOX_HEIGHT_Z - C - 1.75) - (C + 1.75)),
+        (BOX_DEPTH_X, C + 1.75, m_z0, m_standoff, (m_y1 - 2.0) - (C + 1.75), 22.0),
+        (BOX_DEPTH_X, C + 1.75, m_z1 - 22.0, m_standoff, (m_y1 - 2.0) - (C + 1.75), 22.0),
+        (BOX_DEPTH_X + 0.5, m_y1 - 12.0, C + 1.75, m_standoff - 0.5, 12.0, (BOX_HEIGHT_Z - C - 1.75) - (C + 1.75)),
+    ):
+        add_box_feature(
+            panel_comp, px0, py0, pz0, pdx, pdy, pdz,
+            adsk.fusion.FeatureOperations.JoinFeatureOperation, molle,
+        )
+    x_molle_face = BOX_DEPTH_X + m_standoff + m_t
+    molle_bolts = [
+        (x_molle_face, 65.0, B / 2.0), (x_molle_face, 175.0, B / 2.0),
+        (x_molle_face, 65.0, BOX_HEIGHT_Z - B / 2.0), (x_molle_face, 175.0, BOX_HEIGHT_Z - B / 2.0),
+        (x_molle_face, B / 2.0, 80.0), (x_molle_face, B / 2.0, BOX_HEIGHT_Z - 80.0),
     ]
-    cut_countersink_14_20(lid_comp, lid, "z", BOX_HEIGHT_Z + LID_THICK, -1.0, lid_bolts, LID_THICK)
-    apply_color(app, design, lid, *COL_PANEL_PLY)
+    cut_countersink_14_20(panel_comp, molle, "x", x_molle_face, -1.0, molle_bolts, m_t + m_standoff, with_floor_head_relief=False)
+    pals_plane = create_offset_plane(panel_comp, "x", BOX_DEPTH_X + m_standoff - 0.5)
+    pals_sketch = panel_comp.sketches.add(pals_plane)
+    for r_i in range(8):
+        for c_i in range(4):
+            add_stadium_slot_on_yz_sketch(
+                pals_sketch,
+                BOX_DEPTH_X + m_standoff - 0.5,
+                111.0 + (c_i - 1.5) * 38.1,
+                (BOX_HEIGHT_Z / 2.0) + (r_i - 3.5) * 25.4,
+                30.0,
+                13.4,
+            )
+    extrude_all_profiles(panel_comp, pals_sketch, "x", m_t + 1.0, adsk.fusion.FeatureOperations.CutFeatureOperation, molle)
+    apply_color(app, design, molle, *COL_PRINT_ORANGE)
+
+    # 4. Separate Top Lid Sub-Component: 4-Piece (2x2) Half-Lapped 6.25 mm Printed H2D Roof (16x 82-deg countersinks)
+    lid_comp = create_subcomponent(root, "01c_Enclosure_Top_Lid")
+    t_lid = t_back
+    lw_lid = 20.0
+    hx0, hx1 = BOX_DEPTH_X / 2.0 - lw_lid / 2.0, BOX_DEPTH_X / 2.0 + lw_lid / 2.0
+    hy0, hy1 = BOX_WIDTH_Y / 2.0 - lw_lid / 2.0, BOX_WIDTH_Y / 2.0 + lw_lid / 2.0
+    lap_t_lid, lap_z_lid, lap_clr_lid = t_lid / 2.0, 3.20, 0.15
+    z_mid_hi = BOX_HEIGHT_Z + t_lid - lap_t_lid
+    z_mid_lo = BOX_HEIGHT_Z + t_lid - lap_z_lid
+    z_top_lid = BOX_HEIGHT_Z + t_lid
+
+    lid_specs = [
+        (
+            "print_panel_lid_back_outboard",
+            0.0, hx1, 0.0, hy1,
+            [
+                (hx0 - lap_clr_lid, -2.0, BOX_HEIGHT_Z - 1.0, 40.0, hy1 + 5.0, z_mid_hi - (BOX_HEIGHT_Z - 1.0)),
+                (-2.0, hy0 - lap_clr_lid, BOX_HEIGHT_Z - 1.0, hx1 + 5.0, 40.0, z_mid_hi - (BOX_HEIGHT_Z - 1.0)),
+            ],
+            [(B / 2.0, 60.0), (B / 2.0, 195.0), (65.0, B / 2.0), (235.0, B / 2.0)],
+            (0.0, 0.0),
+        ),
+        (
+            "print_panel_lid_back_inboard",
+            0.0, hx1, hy0, BOX_WIDTH_Y,
+            [
+                (hx0 - lap_clr_lid, hy0 - 2.0, BOX_HEIGHT_Z - 1.0, 40.0, lw_lid + 5.0, t_lid + 2.0),
+                (-2.0, hy0 - 1.0, z_mid_lo, hx1 + 5.0, lw_lid + lap_clr_lid + 1.0, 10.0),
+                (-2.0, hy0 - 1.0, BOX_HEIGHT_Z - 1.0, hx1 + 5.0, lw_lid + lap_clr_lid + 1.0, lap_clr_lid + 1.0),
+                (hx0 - lap_clr_lid, hy0 - 2.0, BOX_HEIGHT_Z - 1.0, 40.0, BOX_WIDTH_Y + 5.0, z_mid_hi - (BOX_HEIGHT_Z - 1.0)),
+            ],
+            [(B / 2.0, 293.0), (B / 2.0, 428.0), (65.0, BOX_WIDTH_Y - B / 2.0), (235.0, BOX_WIDTH_Y - B / 2.0)],
+            (0.0, BOX_WIDTH_Y),
+        ),
+        (
+            "print_panel_lid_front_outboard",
+            hx0, BOX_DEPTH_X, 0.0, hy1,
+            [
+                (hx0 - 2.0, hy0 - lap_clr_lid, BOX_HEIGHT_Z - 1.0, lw_lid + 5.0, 40.0, t_lid + 2.0),
+                (hx0 - 1.0, -2.0, z_mid_lo, lw_lid + lap_clr_lid + 1.0, hy1 + 5.0, 10.0),
+                (hx0 - 1.0, -2.0, BOX_HEIGHT_Z - 1.0, lw_lid + lap_clr_lid + 1.0, hy1 + 5.0, lap_clr_lid + 1.0),
+                (hx0 - 2.0, hy0 - lap_clr_lid, BOX_HEIGHT_Z - 1.0, BOX_DEPTH_X + 5.0, 40.0, z_mid_hi - (BOX_HEIGHT_Z - 1.0)),
+            ],
+            [(BOX_DEPTH_X - B / 2.0, 60.0), (BOX_DEPTH_X - B / 2.0, 195.0), (336.5, B / 2.0), (506.5, B / 2.0)],
+            (BOX_DEPTH_X, 0.0),
+        ),
+        (
+            "print_panel_lid_front_inboard",
+            hx0, BOX_DEPTH_X, hy0, BOX_WIDTH_Y,
+            [
+                (hx0 - 1.0, hy0 - 2.0, z_mid_lo, lw_lid + lap_clr_lid + 1.0, BOX_WIDTH_Y + 5.0, 10.0),
+                (hx0 - 1.0, hy0 - 2.0, BOX_HEIGHT_Z - 1.0, lw_lid + lap_clr_lid + 1.0, BOX_WIDTH_Y + 5.0, lap_clr_lid + 1.0),
+                (hx0 - 2.0, hy0 - 1.0, z_mid_lo, BOX_DEPTH_X + 5.0, lw_lid + lap_clr_lid + 1.0, 10.0),
+                (hx0 - 2.0, hy0 - 1.0, BOX_HEIGHT_Z - 1.0, BOX_DEPTH_X + 5.0, lw_lid + lap_clr_lid + 1.0, lap_clr_lid + 1.0),
+            ],
+            [(BOX_DEPTH_X - B / 2.0, 293.0), (BOX_DEPTH_X - B / 2.0, 428.0), (336.5, BOX_WIDTH_Y - B / 2.0), (506.5, BOX_WIDTH_Y - B / 2.0)],
+            (BOX_DEPTH_X, BOX_WIDTH_Y),
+        ),
+    ]
+    for lname, lx0, lx1, ly0, ly1, lcuts, lbolts, (ccx, ccy) in lid_specs:
+        lbody = add_box_feature(
+            lid_comp, lx0, ly0, BOX_HEIGHT_Z,
+            lx1 - lx0, ly1 - ly0, t_lid,
+            body_name=lname,
+        )
+        fillet_parallel_edges(
+            lid_comp, lbody, "z", 3.0,
+            bbox_filter=(ccx - 1.0, ccx + 1.0, ccy - 1.0, ccy + 1.0, BOX_HEIGHT_Z - 1.0, z_top_lid + 1.0),
+        )
+        for cx0, cy0, cz0, cdx, cdy, cdz in lcuts:
+            add_box_feature(
+                lid_comp, cx0, cy0, cz0, cdx, cdy, cdz,
+                adsk.fusion.FeatureOperations.CutFeatureOperation, lbody,
+            )
+        cut_countersink_14_20(
+            lid_comp, lbody, "z", z_top_lid, -1.0,
+            [(bx_l, by_l, z_top_lid) for (bx_l, by_l) in lbolts],
+            t_lid,
+            with_floor_head_relief=False,
+        )
+        apply_color(app, design, lbody, *COL_PRINT_ORANGE)
 
     # 5. 4x Printed IceBox Stack Straps (60 x 46 x 6 mm across bottom depth rail seam, 82° countersunk)
     strap_xs = (
@@ -1200,10 +1462,97 @@ def build_battery_zone_outboard(
     design: adsk.fusion.Design,
     root: adsk.fusion.Component,
 ) -> adsk.fusion.Component:
-    """02_Battery_Zone_Outboard: 2 Single-Print Battery Trays, 2 Breaker Drop Shelves (with 4 AWG wire channels) & EPDM Pads."""
+    """02_Battery_Zone_Outboard: Variant-aware Battery Trays (v14 single-200Ah + BMS/Breaker Deck, or master 2x60Ah + Drop Shelves)."""
     comp = create_subcomponent(root, "02_Battery_Zone_Outboard")
-    fd, fw, fl, lip = TRAY_OUTER_LEN_X, TRAY_OUTER_WID_Y, TRAY_FLOOR_THICK, TRAY_LIP_H
+    fw, fl, lip = TRAY_OUTER_WID_Y, TRAY_FLOOR_THICK, TRAY_LIP_H
     wall, pw = TRAY_WALL_THICK, TRAY_POCKET_WID_Y
+    ty = TRAY_Y0
+
+    if IS_V14:
+        # 1. Front (+X) 200Ah Smart Battery Tray (334.0 x 167.0 x 36.0 mm, X = 212.5..546.5 mm)
+        fd0, tx0 = TRAY_OUTER_LEN_X, TRAY_0_X0
+        tray0 = add_box_feature(comp, tx0, ty, 0.0, fd0, fw, fl + lip, body_name="print_tray_battery_0")
+        add_box_feature(
+            comp, tx0 + wall, ty + wall, fl,
+            TRAY_POCKET_LEN_X, pw, lip + 1.0,
+            adsk.fusion.FeatureOperations.CutFeatureOperation, tray0,
+        )
+        add_box_feature(
+            comp, tx0 + fd0 - TRAY_CUBE_NOTCH + 0.5, ty - 0.5, -0.5,
+            TRAY_CUBE_NOTCH, TRAY_CUBE_NOTCH, fl + lip + 1.0,
+            adsk.fusion.FeatureOperations.CutFeatureOperation, tray0,
+        )
+        out_bolts0 = [(tx0 + sx, ty + wall, RAIL_PROFILE / 2.0) for sx in (67.0, 167.0, 267.0)]
+        cut_countersink_14_20(comp, tray0, "y", ty + wall, -1.0, out_bolts0, wall, with_floor_head_relief=True)
+        end_bolts0 = [(tx0 + fd0 - wall, ty + sy, RAIL_PROFILE / 2.0) for sy in TRAY_END_BOLT_DY]
+        cut_countersink_14_20(comp, tray0, "x", tx0 + fd0 - wall, 1.0, end_bolts0, wall, with_floor_head_relief=False)
+        m4_side0 = [(tx0 + hx, ty + fw, 17.0, M4_INSERT_BORE_DIA / 2.0) for hx in TRAY_LIP_M4_DX[0]]
+        cut_cylinders_on_plane(comp, tray0, "y", ty + fw + 0.5, -7.5, m4_side0)
+        apply_color(app, design, tray0, *COL_PRINT_ORANGE)
+
+        # 2. Back (-X) VE.Bus BMS V2 Tray Base (187.5 x 167.0 x 56.0 mm, X = 25.0..212.5 mm)
+        fd1, tx1, zd0 = V14_BMS_LEN_X, TRAY_1_X0, V14_BMS_PILLAR_Z
+        tray1 = add_box_feature(comp, tx1, ty, 0.0, fd1, fw, fl + lip, body_name="print_tray_battery_1")
+        add_box_feature(
+            comp, tx1 + wall, ty + wall, fl,
+            fd1 - 2.0 * wall, pw, lip + 1.0,
+            adsk.fusion.FeatureOperations.CutFeatureOperation, tray1,
+        )
+        bms_d, bms_w, _bms_h = V14_BMS_DIMS
+        bms_lx, bms_ly = (fd1 - bms_d) / 2.0, (fw - bms_w) / 2.0
+        add_box_feature(
+            comp, tx1 + bms_lx - 4.0, ty + bms_ly - 4.0, fl,
+            bms_d + 8.0, bms_w + 8.0, V14_BMS_PAD_H,
+            adsk.fusion.FeatureOperations.JoinFeatureOperation, tray1,
+        )
+        bms_bores = [
+            (tx1 + bms_lx + u, ty + bms_ly + v, fl + V14_BMS_PAD_H, M4_INSERT_BORE_DIA / 2.0)
+            for (u, v) in V14_BMS_HOLES_XY
+        ]
+        cut_cylinders_on_plane(comp, tray1, "z", fl + V14_BMS_PAD_H + 0.5, -8.5, bms_bores)
+        deck_bolts_l = ((10.0, 10.0), (10.0, fw - 10.0), (fd1 - 10.0, 10.0), (fd1 - 10.0, fw - 10.0))
+        for bx_l, by_l in deck_bolts_l:
+            add_box_feature(
+                comp, tx1 + bx_l - 10.0, ty + by_l - 10.0, fl,
+                20.0, 20.0, zd0 - fl,
+                adsk.fusion.FeatureOperations.JoinFeatureOperation, tray1,
+            )
+        pillar_bores = [(tx1 + bx_l, ty + by_l, zd0, M4_INSERT_BORE_DIA / 2.0) for (bx_l, by_l) in deck_bolts_l]
+        cut_cylinders_on_plane(comp, tray1, "z", zd0 + 0.5, -12.5, pillar_bores)
+        add_box_feature(
+            comp, tx1 - 0.5, ty - 0.5, -0.5,
+            TRAY_CUBE_NOTCH, TRAY_CUBE_NOTCH, zd0 + 1.0,
+            adsk.fusion.FeatureOperations.CutFeatureOperation, tray1,
+        )
+        out_bolts1 = [(tx1 + sx, ty + wall, RAIL_PROFILE / 2.0) for sx in (43.75, 143.75)]
+        cut_countersink_14_20(comp, tray1, "y", ty + wall, -1.0, out_bolts1, wall, with_floor_head_relief=True)
+        end_bolts1 = [(tx1 + wall, ty + sy, RAIL_PROFILE / 2.0) for sy in TRAY_END_BOLT_DY]
+        cut_countersink_14_20(comp, tray1, "x", tx1 + wall, -1.0, end_bolts1, wall, with_floor_head_relief=False)
+        m4_side1 = [(tx1 + hx, ty + fw, 17.0, M4_INSERT_BORE_DIA / 2.0) for hx in TRAY_LIP_M4_DX[1]]
+        cut_cylinders_on_plane(comp, tray1, "y", ty + fw + 0.5, -7.5, m4_side1)
+        apply_color(app, design, tray1, *COL_PRINT_ORANGE)
+
+        # 3. Elevated 11.0 mm Breaker Deck above BMS (187.5 x 167.0 x 11.0 mm, Z = 56.0..67.0 mm)
+        deck = add_box_feature(comp, tx1, ty, zd0, fd1, fw, M5_DECK_THICK, body_name="print_breaker_deck_0")
+        add_box_feature(
+            comp, tx1 - 0.5, ty - 0.5, zd0 - 0.5,
+            TRAY_CUBE_NOTCH, TRAY_CUBE_NOTCH, M5_DECK_THICK + 1.0,
+            adsk.fusion.FeatureOperations.CutFeatureOperation, deck,
+        )
+        deck_clr_holes = [(tx1 + bx_l, ty + by_l, zd0 + M5_DECK_THICK, M4_CLEAR_DIA / 2.0) for (bx_l, by_l) in deck_bolts_l]
+        cut_cylinders_on_plane(comp, deck, "z", zd0 + M5_DECK_THICK + 0.5, -(M5_DECK_THICK + 1.0), deck_clr_holes)
+        b_dx, b_dy, _b_dz = COMP_SPECS["breaker_285"]["dims"]
+        by_br = ty + (fw - b_dy) / 2.0
+        brk_xy = [
+            (bx_br + u, by_br + v)
+            for bx_br in V14_DECK_BREAKER_X
+            for (u, v) in COMP_SPECS["breaker_285"]["holes_xy"]
+        ]
+        cut_blind_m5_tapered_bores(comp, deck, zd0 + M5_DECK_THICK, brk_xy)
+        apply_color(app, design, deck, *COL_PRINT_ORANGE)
+        return comp
+
+    fd = TRAY_OUTER_LEN_X
     tray_xs = (TRAY_0_X0, TRAY_1_X0)
 
     for r in range(2):
@@ -1708,37 +2057,61 @@ def build_electrical_components(
     comp = create_subcomponent(root, "06_Electrical_Components")
     tray_xs = (TRAY_0_X0, TRAY_1_X0)
 
-    # 1. 2x Victron SuperPack 12.8V/60Ah Batteries (Real Victron STEP or parametric fallback)
-    for r in range(2):
-        bx0 = tray_xs[r] + TRAY_WALL_THICK + TRAY_CLEARANCE
+    # 1. Batteries & Eaton Bussmann 285 Breakers (v14 single 200Ah + BMS/Deck, or master dual 60Ah + Drop Shelves)
+    if IS_V14:
+        bx0 = TRAY_0_X0 + TRAY_WALL_THICK + TRAY_CLEARANCE
         by0 = TRAY_Y0 + TRAY_WALL_THICK + TRAY_CLEARANCE
         bz0 = TRAY_FLOOR_THICK
-        b_name = f"victron_superpack_60ah_{r}"
-        if not import_positioned_step(app, design, comp, f"{b_name}.step", b_name, COL_BATT_BLUE):
-            batt = add_box_feature(
-                comp, bx0, by0, bz0, BATT_L, BATT_W, BATT_BODY_H,
-                body_name=b_name,
-            )
+        if not import_positioned_step(app, design, comp, "victron_smart_200ah_v14.step", "victron_smart_200ah_0", COL_BATT_BLUE):
+            batt = add_box_feature(comp, bx0, by0, bz0, BATT_L, BATT_W, BATT_BODY_H, body_name="victron_smart_200ah_0")
             fillet_parallel_edges(comp, batt, "z", BATT_FILLET_R)
-            term_plane = create_offset_plane(comp, "z", bz0 + BATT_BODY_H)
-            term_sketch = comp.sketches.add(term_plane)
-            for tx_off in (28.0, BATT_L - 28.0):
-                term_sketch.sketchCurves.sketchCircles.addByCenterRadius(
-                    sketch_world_point(term_sketch, bx0 + tx_off, by0 + BATT_W / 2.0, bz0 + BATT_BODY_H), cm(6.0)
-                )
-            extrude_all_profiles(
-                comp, term_sketch, "z", BATT_TOTAL_H - BATT_BODY_H,
-                adsk.fusion.FeatureOperations.JoinFeatureOperation, batt,
-            )
             apply_color(app, design, batt, *COL_BATT_BLUE)
 
-        # 2. 2x Eaton Bussmann 285-Series 150A Breakers on Drop Shelves (Exact series drawing geometry)
-        xs_shelf = bx0 + (BATT_L - DROP_SHELF_LEN_X) / 2.0
-        br_x = xs_shelf + 24.0
-        br_y = INNER_Y0 + 92.0
-        br_z = DROP_SHELF_Z0 + M5_DECK_THICK  # 226.0 mm
+        bms_d, bms_w, bms_h = V14_BMS_DIMS
+        bms_x = TRAY_1_X0 + (V14_BMS_LEN_X - bms_d) / 2.0
+        bms_y = TRAY_Y0 + (TRAY_OUTER_WID_Y - bms_w) / 2.0
+        bms_z = TRAY_FLOOR_THICK + V14_BMS_PAD_H
+        if not import_positioned_step(app, design, comp, "victron_vebus_bms_v2_v14.step", "victron_vebus_bms_v2", COL_VICTRON_BLUE):
+            bms_body = add_box_feature(comp, bms_x, bms_y, bms_z, bms_d, bms_w, bms_h, body_name="victron_vebus_bms_v2")
+            fillet_parallel_edges(comp, bms_body, "z", 3.0)
+            apply_color(app, design, bms_body, *COL_VICTRON_BLUE)
+
         b_dx, b_dy, b_dz = COMP_SPECS["breaker_285"]["dims"]
-        build_bussmann_285_breaker(app, design, comp, br_x, br_y, br_z, b_dx, b_dy, b_dz, r)
+        by_br = TRAY_Y0 + (TRAY_OUTER_WID_Y - b_dy) / 2.0
+        bz_br = V14_BMS_PILLAR_Z + M5_DECK_THICK
+        for r_br, br_x in enumerate(V14_DECK_BREAKER_X):
+            build_bussmann_285_breaker(app, design, comp, br_x, by_br, bz_br, b_dx, b_dy, b_dz, r_br)
+    else:
+        for r in range(2):
+            bx0 = tray_xs[r] + TRAY_WALL_THICK + TRAY_CLEARANCE
+            by0 = TRAY_Y0 + TRAY_WALL_THICK + TRAY_CLEARANCE
+            bz0 = TRAY_FLOOR_THICK
+            b_name = f"victron_superpack_60ah_{r}"
+            if not import_positioned_step(app, design, comp, f"{b_name}.step", b_name, COL_BATT_BLUE):
+                batt = add_box_feature(
+                    comp, bx0, by0, bz0, BATT_L, BATT_W, BATT_BODY_H,
+                    body_name=b_name,
+                )
+                fillet_parallel_edges(comp, batt, "z", BATT_FILLET_R)
+                term_plane = create_offset_plane(comp, "z", bz0 + BATT_BODY_H)
+                term_sketch = comp.sketches.add(term_plane)
+                for tx_off in (28.0, BATT_L - 28.0):
+                    term_sketch.sketchCurves.sketchCircles.addByCenterRadius(
+                        sketch_world_point(term_sketch, bx0 + tx_off, by0 + BATT_W / 2.0, bz0 + BATT_BODY_H), cm(6.0)
+                    )
+                extrude_all_profiles(
+                    comp, term_sketch, "z", BATT_TOTAL_H - BATT_BODY_H,
+                    adsk.fusion.FeatureOperations.JoinFeatureOperation, batt,
+                )
+                apply_color(app, design, batt, *COL_BATT_BLUE)
+
+            # 2. 2x Eaton Bussmann 285-Series 150A Breakers on Drop Shelves (Exact series drawing geometry)
+            xs_shelf = bx0 + (BATT_L - DROP_SHELF_LEN_X) / 2.0
+            br_x = xs_shelf + 24.0
+            br_y = INNER_Y0 + 92.0
+            br_z = DROP_SHELF_Z0 + M5_DECK_THICK  # 226.0 mm
+            b_dx, b_dy, b_dz = COMP_SPECS["breaker_285"]["dims"]
+            build_bussmann_285_breaker(app, design, comp, br_x, br_y, br_z, b_dx, b_dy, b_dz, r)
 
     # 3. 2x Covered 5-Stud M8 Bus Bars (+ Red and - Black, lifted 15 mm on print_busbar_spacer_0..1) & Real Victron SmartShunt 500A STEP
     def add_m8_busbar_studs(bus_body: adsk.fusion.BRepBody, bx0: float, by0: float, bz_top: float) -> None:
@@ -1905,29 +2278,33 @@ def build_electrical_components(
     )
     apply_color(app, design, gxt, *COL_CUBE_BLACK)
 
-    # 7. Front Panel Port Inward Bodies (Real Anderson SB175 & SB50 STEP housings + Flanged AC Inlets & 12V/USB Sockets)
-    xf_inner = BOX_DEPTH_X - pm - PANEL_THICK  # 556.0 mm
+    # 7. Front Panel Port Inward Bodies (Flanged AC Inlets, 12V/USB Sockets, and Stacked SB50 Housings)
+    t_front = PANEL_THICK + 0.25
+    pm_back = RAIL_PROFILE / 2.0 - t_front / 2.0
+    xf_inner = BOX_DEPTH_X - pm_back - t_front  # 555.875 mm
+    z_shift_front = 3.9
     step_port_map = {
-        "sb50_pack2_umbilical": "anderson_sb50_pack2.step",
-        "sb50_alt_in": "anderson_sb50_alt.step",
+        "sb50_pack2_umbilical": "anderson_sb50_pack2_v14.step",
+        "sb50_alt_in": "anderson_sb50_alt_v14.step",
     }
-    for pname, pkind, py, pz, psize, pdepth in FRONT_PANEL_PORTS:
+    for pname, pkind, py, pz_raw, psize, pdepth in FRONT_PANEL_PORTS:
+        pz = pz_raw + z_shift_front
         if pname in step_port_map and import_positioned_step(
             app, design, comp, step_port_map[pname], f"port_{pname}", COL_PORT_GRAY
         ):
             continue
-        if pkind == "circle":
+        if pkind in ("circle", "l14"):
             r_hole = psize[0] / 2.0
-            is_ac = pname.startswith("l14")
-            r_flange = r_hole + (1.5 if is_ac else 2.5)
+            is_ac = pkind == "l14" or pname.startswith("l14")
+            r_flange = r_hole + (6.5 if is_ac else 2.5)
             t_flange = 3.5 if is_ac else 2.5
             r_barrel = (r_hole - 4.0) if is_ac else (r_hole - 0.2)
             d_barrel = 42.0 if is_ac else 28.0
             # Outer front flange on panel face (+X)
-            f_plane = create_offset_plane(comp, "x", xf_inner + PANEL_THICK)
+            f_plane = create_offset_plane(comp, "x", xf_inner + t_front)
             f_sketch = comp.sketches.add(f_plane)
             f_sketch.sketchCurves.sketchCircles.addByCenterRadius(
-                sketch_world_point(f_sketch, xf_inner + PANEL_THICK, py, pz), cm(r_flange)
+                sketch_world_point(f_sketch, xf_inner + t_front, py, pz), cm(r_flange)
             )
             pbody = extrude_all_profiles(
                 comp, f_sketch, "x", t_flange,
@@ -1935,13 +2312,13 @@ def build_electrical_components(
                 body_name=f"port_{pname}",
             )
             # Rear barrel (-X)
-            b_plane = create_offset_plane(comp, "x", xf_inner + PANEL_THICK)
+            b_plane = create_offset_plane(comp, "x", xf_inner + t_front)
             b_sketch = comp.sketches.add(b_plane)
             b_sketch.sketchCurves.sketchCircles.addByCenterRadius(
-                sketch_world_point(b_sketch, xf_inner + PANEL_THICK, py, pz), cm(r_barrel)
+                sketch_world_point(b_sketch, xf_inner + t_front, py, pz), cm(r_barrel)
             )
             extrude_all_profiles(
-                comp, b_sketch, "x", -(PANEL_THICK + d_barrel),
+                comp, b_sketch, "x", -(t_front + d_barrel),
                 adsk.fusion.FeatureOperations.JoinFeatureOperation,
                 target_body=pbody,
             )
@@ -1962,7 +2339,7 @@ def build_electrical_components(
             pw, ph = psize[0], psize[1]
             pbody = add_box_feature(
                 comp, xf_inner - pdepth, py - pw / 2.0, pz - ph / 2.0,
-                pdepth, pw, ph, body_name=f"port_{pname}",
+                pdepth + t_front, pw, ph, body_name=f"port_{pname}",
             )
         apply_color(app, design, pbody, *COL_PORT_GRAY)
 
@@ -2144,12 +2521,16 @@ def run(context: dict) -> None:
 
         root = design.rootComponent
 
-        # Build the clean Main Housing, Lid, side-wall port cutouts, and internal routing troughs
+        # Build the Main Housing, 4-piece Roof Lid, side/front panels w/ inlays & MOLLE, and internal routing
         build_frame_and_panels(app, design, root)
         build_battery_zone_outboard(app, design, root)
         _bus_comp, sill_holes_xz = build_center_bus_column(app, design, root)
         build_inverter_plate_assembly(app, design, root, sill_holes_xz)
         build_inboard_garmin_lane(app, design, root)
+        if INCLUDE_ELECTRICAL:
+            build_electrical_components(app, design, root)
+            if not IS_V14:
+                build_wiring_harness_3d_pipes(app, design, root)
 
         # Fit camera to full assembly in isometric view
         vp = app.activeViewport
@@ -2157,14 +2538,19 @@ def run(context: dict) -> None:
             vp.fit()
 
         tile_desc = "2-tile H2D (252.8 x 256 mm)" if PRINTER_PRESET == "H2D" else "6-tile P1P (168.5 x 140 mm)"
+        batt_desc = (
+            "1x Victron 200Ah Smart (334x167 tray) + VE.Bus BMS V2 + elevated breaker deck"
+            if IS_V14
+            else "2x Victron SuperPack 60Ah (dual 278.75x167 trays)"
+        )
         ui.messageBox(
-            f"4Runner Battery Box (master / {PRINTER_PRESET}) generated successfully!\n\n"
-            f"• Envelope: {BOX_DEPTH_X} × {BOX_WIDTH_Y} × {BOX_HEIGHT_Z} mm (+ {LID_THICK} mm lid)\n"
-            f"• Inverter Plate: {tile_desc} in 1-piece full-height slotted posts\n"
-            f"• All heat-set insert bores (incl. Blue Sea 2701 M4s), rail T-nut countersinks,\n"
-            f"  7 front ports (2× L14-30, 2× SB50, 3× round sockets), 70×70 mm cable window,\n"
-            f"  17 mm 4 AWG drop-shelf wire channels, and 57 mm bus-shelf wire trough modeled.",
-            "master / v12s_h2d Assembly Complete",
+            f"4Runner Battery Box ({VARIANT} / {PRINTER_PRESET}) generated successfully!\n\n"
+            f"- Envelope: {BOX_DEPTH_X} x {BOX_WIDTH_Y} x {BOX_HEIGHT_Z} mm (+ {LID_THICK} mm 4-piece lid)\n"
+            f"- Side Panels: 535.8 x 245.5 mm (-2.0 mm front trim); Front Panels: 450.1 x 245.5 mm\n"
+            f"- Front Outboard: 8 ports (2x L14-30, 4x round, 2x stacked SB50), white outlines, 4x8 MOLLE\n"
+            f"- Battery Zone: {batt_desc}\n"
+            f"- Inverter Plate: {tile_desc} in 1-piece full-height slotted posts",
+            f"BatteryBox_{VARIANT} ({PRINTER_PRESET}) Assembly Complete",
         )
 
     except Exception:
