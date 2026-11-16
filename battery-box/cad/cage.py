@@ -3581,69 +3581,82 @@ def build_v15(a: cq.Assembly) -> None:
     add(a, back, "panel_back_icebox_side", PANEL)
     add(a, box(8.0, 128.0, 82.0, (-8.0, 310.0, 42.0)), "gx_touch_bezel", BLACK)
     add(a, box(2.0, 114.0, 68.0, (-9.0, 317.0, 49.0)), "gx_touch_screen", BLUE)
-    front: cq.Workplane = vent_panel(box(T, out_W, out_H, (out_D, 0.0, 0.0)), "YZ", [90.0, 210.0], (out_D - 2.0, 0.0, 0.0))
-    add(a, front, "panel_front_removable", PANEL)
-    for idx, (sy, sw, sh, sd) in enumerate(((362.0, 56.0, 26.0, 40.0), (422.0, 37.0, 16.0, 36.0))):
-        add(a, box(sd, sw, sh, (out_D - sd, sy, 48.0)), f"socket_front_{idx}", (0.3, 0.3, 0.3))
 
-    # Printed mounting decks & battery cradle (z >= 2 mm, clear of rails)
-    inv_deck: cq.Workplane = box(445.0, in_W, 4.0, (25.0, y_in0, 2.0))
+    # Front (battery-side) panel with full master/v14 port complement (2 x L14-30, 2 x SB50, 4 x 12V/USB, SB175 aux)
+    front: cq.Workplane = box(T, out_W, out_H, (out_D, 0.0, 0.0))
+    for nm, fy, fz, dia in (("l14_in", 65.0, 82.5, 45.0), ("l14_out", 138.0, 82.5, 45.0)):
+        front = front.cut(cq.Workplane("YZ").center(fy, fz).circle(dia / 2.0).extrude(T + 2.0).translate((out_D - 1.0, 0.0, 0.0)))
+        add(a, cq.Workplane("YZ").center(fy, fz).circle(30.0).extrude(-55.0).translate((out_D, 0.0, 0.0)), f"socket_{nm}", (0.3, 0.3, 0.3))
+    for nm, fy, fz in (("sb50_alt", 200.0, 46.0), ("sb50_solar", 200.0, 88.0)):
+        front = front.cut(box(T + 2.0, 53.0, 29.0, (out_D - 1.0, fy, fz)))
+        add(a, box(48.0, 53.0, 29.0, (out_D - 48.0, fy, fz)), f"socket_{nm}", (0.3, 0.3, 0.3))
+    for fy in (286.0, 330.0):
+        for fz in (56.0, 108.0):
+            front = front.cut(cq.Workplane("YZ").center(fy, fz).circle(14.75).extrude(T + 2.0).translate((out_D - 1.0, 0.0, 0.0)))
+            add(a, cq.Workplane("YZ").center(fy, fz).circle(17.75).extrude(-40.0).translate((out_D, 0.0, 0.0)), f"socket_12v_{int(fy)}_{int(fz)}", (0.3, 0.3, 0.3))
+    front = front.cut(box(T + 2.0, 56.0, 26.0, (out_D - 1.0, 386.0, 68.0)))
+    add(a, box(79.0, 56.0, 26.0, (out_D - 79.0, 386.0, 68.0)), "socket_sb175_aux", (0.3, 0.3, 0.3))
+    add(a, front, "panel_front_removable", PANEL)
+
+    # Printed mounting decks & battery cradle (Smart 200Ah shifted inward to X=462..699, leaving 63 mm behind front ports)
+    inv_deck: cq.Workplane = box(430.0, in_W, 4.0, (25.0, y_in0, 2.0))
     add(a, inv_deck, "tray_v15_bay_inverter", ORANGE)
-    dist_deck: cq.Workplane = box(265.0, 102.0, 6.0, (470.0, 360.0, 2.0))
+    dist_deck: cq.Workplane = box(140.0, 102.0, 4.0, (462.0, 360.0, 2.0))
     add(a, dist_deck, "tray_v15_bay_dist", ORANGE)
 
-    batt_tray: cq.Workplane = box(249.0, 333.0, 34.0, (484.0, 26.0, 2.0)).cut(box(237.0, 321.0, 32.0, (490.0, 32.0, 6.0)))
+    batt_tray: cq.Workplane = box(249.0, 333.0, 34.0, (456.0, 26.0, 2.0)).cut(box(237.0, 321.0, 32.0, (462.0, 32.0, 6.0)))
     add(a, batt_tray, "tray_v15_battery", ORANGE)
 
-    # Smart 200Ah on its 152 mm side (z = 6..158 mm)
+    # Smart 200Ah on 152 mm side, flipped 180 deg about Z so M8 terminals face INWARD (-X) toward the center busbar bay
     add(
         a,
-        victron_shape("smart200", 237.0, 321.0, 152.0, (490.0, 32.0, 6.0), box(237.0, 321.0, 152.0, (490.0, 32.0, 6.0)).edges("|X").fillet(4.0)),
+        victron_shape("smart200", 237.0, 321.0, 152.0, (462.0, 32.0, 6.0), box(237.0, 321.0, 152.0, (462.0, 32.0, 6.0)).edges("|X").fillet(4.0), flip=("z", 180)),
         "battery_0",
         BATT,
     )
 
-    # Bay 1 lower floor: MultiPlus 12/1200 flat (z = 6..107 mm), MPPT right-side up (flip cancels STEP_FLIP), Orion rotated -90 (wires -> -Y)
+    # Lower floor: MultiPlus 12/1200 flat (z=6..107) + MPPT upright + SmartShunt + Ground Box + inline Dual Busbars + BMS V2
     add(
         a,
-        victron_shape("multiplus_1200", 375.0, 249.0, 101.0, (35.0, 30.0, 6.0), box(375.0, 249.0, 101.0, (35.0, 30.0, 6.0))),
+        victron_shape("multiplus_1200", 375.0, 249.0, 101.0, (33.0, 30.0, 6.0), box(375.0, 249.0, 101.0, (33.0, 30.0, 6.0))),
         "victron_multiplus",
         BLUE,
     )
     add(
         a,
-        victron_shape("mppt", 186.0, 130.0, 70.0, (45.0, 318.0, 6.0), box(186.0, 130.0, 70.0, (45.0, 318.0, 6.0)), flip=("x", 180)),
+        victron_shape("mppt", 186.0, 130.0, 70.0, (36.0, 324.0, 6.0), box(186.0, 130.0, 70.0, (36.0, 324.0, 6.0)), flip=("x", 180)),
         "victron_mppt",
         BLUE,
     )
+    add(a, victron_shape("shunt", 120.0, 52.5, 46.5, (238.0, 324.0, 6.0), box(120.0, 52.5, 46.5, (238.0, 324.0, 6.0))), "power_shunt", DARK)
+    gnd_flat: cq.Workplane = gnd_bus_shape(76.5, 25.0, 46.5, (0.0, 0.0, 0.0)).rotate((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), -90.0)
+    gnd_bb = gnd_flat.val().BoundingBox()
+    add(a, gnd_flat.translate((250.0 - gnd_bb.xmin, 396.0 - gnd_bb.ymin, 6.0 - gnd_bb.zmin)), "power_gnd_bus", DARK)
+
+    add(a, box(35.0, 155.0, 32.0, (417.0, 36.0, 6.0)), "power_busbar_pos", GOLD)
+    add(a, box(35.0, 155.0, 32.0, (417.0, 202.0, 6.0)), "power_busbar_neg", GOLD)
+    add(a, victron_shape("bms", 106.0, 95.0, 23.2, (468.0, 365.0, 6.0), box(106.0, 95.0, 23.2, (468.0, 365.0, 6.0))), "power_bms", DARK)
+
+    # Enlarged upper shelf over MultiPlus (X=25..416, Y=26..310, z=110..115): Cerbo GX, Garmin, Orion XS (-90 deg -> wires -Y), and 2 x breakers
+    inv_shelf: cq.Workplane = box(391.0, 284.0, 5.0, (25.0, 26.0, 110.0))
+    for lx in (25.0, 409.0):
+        for ly in (26.0, 284.0):
+            inv_shelf = inv_shelf.union(box(7.0, 12.0, 104.0, (lx, ly, 6.0)))
+    inv_shelf = inv_shelf.cut(cq.Workplane("XY").center(210.0, 175.0).slot2D(90.0, 16.0, angle=90.0).extrude(10.0).translate((0.0, 0.0, 108.0)))
+    add(a, inv_shelf, "tray_v15_inv_shelf", ORANGE)
+
+    add(a, victron_shape("cerbo", 154.0, 78.0, 48.0, (36.0, 36.0, 115.0), box(154.0, 78.0, 48.0, (36.0, 36.0, 115.0))), "victron_cerbo", BLUE)
+    garmin_flat: cq.Workplane = garmin_shape(125.0, 32.0, 75.0, (0.0, 0.0, 0.0)).rotate((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), -90.0)
+    gbb = garmin_flat.val().BoundingBox()
+    add(a, garmin_flat.translate((36.0 - gbb.xmin, 140.0 - gbb.ymin, 115.0 - gbb.zmin)), "garmin_powerswitch", (0.08, 0.08, 0.08))
+
     orion_raw: cq.Workplane = victron_shape("orion", 137.0, 123.0, 40.0, (0.0, 0.0, 0.0), box(137.0, 123.0, 40.0, (0.0, 0.0, 0.0)))
     orion_rot: cq.Workplane = orion_raw.rotate((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), -90.0)
     obb = orion_rot.val().BoundingBox()
-    add(a, orion_rot.translate((265.0 - obb.xmin, 315.0 - obb.ymin, 6.0 - obb.zmin)), "victron_orion", BLUE)
+    add(a, orion_rot.translate((275.0 - obb.xmin, 36.0 - obb.ymin, 115.0 - obb.zmin)), "victron_orion", BLUE)
 
-    # Single-layer center busbars (+ and - inline along Y between inverter and battery)
-    add(a, box(35.0, 155.0, 32.0, (425.0, 42.0, 6.0)), "power_busbar_pos", GOLD)
-    add(a, box(35.0, 155.0, 32.0, (425.0, 208.0, 6.0)), "power_busbar_neg", GOLD)
-
-    # Upper shelf directly over MultiPlus (z = 110..115 mm on 4 corner pillars clear of MultiPlus) carrying Cerbo GX, Garmin, and 2 x breakers
-    inv_shelf: cq.Workplane = box(397.0, 256.0, 5.0, (25.0, 26.0, 110.0))
-    for lx in (25.0, 412.0):
-        for ly in (26.0, 270.0):
-            inv_shelf = inv_shelf.union(box(9.0, 12.0, 104.0, (lx, ly, 6.0)))
-    for vx in (345.0, 385.0):
-        inv_shelf = inv_shelf.cut(cq.Workplane("XY").center(vx, 154.0).slot2D(160.0, 16.0, angle=90.0).extrude(10.0).translate((0.0, 0.0, 108.0)))
-    add(a, inv_shelf, "tray_v15_inv_shelf", ORANGE)
-
-    add(a, victron_shape("cerbo", 154.0, 78.0, 48.0, (42.0, 40.0, 115.0), box(154.0, 78.0, 48.0, (42.0, 40.0, 115.0))), "victron_cerbo", BLUE)
-    garmin_flat: cq.Workplane = garmin_shape(125.0, 32.0, 75.0, (0.0, 0.0, 0.0)).rotate((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), -90.0)
-    gbb = garmin_flat.val().BoundingBox()
-    add(a, garmin_flat.translate((45.0 - gbb.xmin, 150.0 - gbb.ymin, 115.0 - gbb.zmin)), "garmin_powerswitch", (0.08, 0.08, 0.08))
-    add(a, breaker_shape(81.3, 48.1, 37.9, (220.0, 122.0, 115.0)), "power_breaker_a", GOLD)
-    add(a, breaker_shape(81.3, 48.1, 37.9, (220.0, 186.0, 115.0)), "power_breaker_b", GOLD)
-
-    # Bay 2 inboard aisle: BMS V2 & SmartShunt 500A single-layer
-    add(a, victron_shape("bms", 106.0, 95.0, 23.2, (485.0, 365.0, 8.0), box(106.0, 95.0, 23.2, (485.0, 365.0, 8.0))), "power_bms", DARK)
-    add(a, victron_shape("shunt", 120.0, 52.5, 46.5, (602.0, 395.0, 8.0), box(120.0, 52.5, 46.5, (602.0, 395.0, 8.0))), "power_shunt", DARK)
+    add(a, breaker_shape(81.3, 48.1, 37.9, (205.0, 240.0, 115.0)), "power_breaker_a", GOLD)
+    add(a, breaker_shape(81.3, 48.1, 37.9, (305.0, 240.0, 115.0)), "power_breaker_b", GOLD)
 
 
 def dims_v15() -> list[dict]:
@@ -3652,17 +3665,17 @@ def dims_v15() -> list[dict]:
         dict(a=[0, 0, top], b=[out_D, 0, top], label=f"30\" IceBox full length {out_D:.0f} mm ({out_D / 25.4:.1f} in)", off=[0, -55, 0]),
         dict(a=[0, 0, top], b=[0, out_W, top], label=f"width {out_W:.0f} mm ({out_W / 25.4:.1f} in)", off=[-55, 0, 0]),
         dict(a=[out_D + 50, 0, 0], b=[out_D + 50, 0, out_H], label=f"pancake frame {out_H:.0f} mm ({out_H / 25.4:.1f} in)", off=[40, 0, 0]),
-        dict(a=[35, -25, 20], b=[460, -25, 20], label="Bay 1 (425): MultiPlus + MPPT/Orion + upper Garmin/Cerbo/breakers shelf", off=[0, -35, 0]),
-        dict(a=[484, -25, 20], b=[733, -25, 20], label="Bay 2 (249): Smart 200Ah side + BMS/shunt", off=[0, -35, 0]),
+        dict(a=[25, -25, 20], b=[452, -25, 20], label="Bay 1: MultiPlus + upper Orion/Cerbo/Garmin/breakers shelf; MPPT/Shunt/Gnd below", off=[0, -35, 0]),
+        dict(a=[462, -25, 20], b=[699, -25, 20], label="Bay 2: Smart 200Ah (terminals -X in) + 63 mm front port zone", off=[0, -35, 0]),
     ]
 
 
 def report_v15() -> None:
     mm = lambda v: f"{v:.0f} mm ({v / 25.4:.2f} in)"
     print(f"== Variant '{VARIANT}' (30\" full-length pancake concept): {mm(out_D)} x {mm(out_W)} x {mm(out_H)} (+6 mm lift-off lid) ==")
-    print("  Bay 1 lower (X=25..460): MultiPlus 12/1200 flat (z=6..107) + MPPT 100/30 right-side up + Orion XS (-90 deg, wires -> inverter) + inline busbars")
-    print("  Inverter shelf (z=115) : Cerbo GX (z=115..163) + Garmin PowerSwitch flat (z=115..147) + 2 x Bussmann 285 breakers (z=115..153)")
-    print("  Bay 2 (X=465..735)     : Smart 12.8V/200Ah on 152mm side (z=6..158) + VE.Bus BMS V2 + SmartShunt 500A")
+    print("  Bay 1 lower (X=25..452): MultiPlus flat (z=6..107) + MPPT upright + SmartShunt + BlueSea DualBus Gnd + inline Dual busbars")
+    print("  Inverter shelf (z=115) : Cerbo GX + Garmin PowerSwitch + Orion XS (-90 deg) + 2 x Bussmann 285 breakers (all over MultiPlus)")
+    print("  Bay 2 & Ports (X=462+) : Smart 200Ah (terminals facing -X inward) + BMS V2 + 63 mm front port zone (2x L14-30, 2x SB50, 4x 12V, SB175)")
 
 def build_v13(a):
     """v12 grown one inch (282 tall) for a 1500 W AC load, MultiPlus-II 12/3000/120-50 as asked.  The II is 578 x 277 x 148

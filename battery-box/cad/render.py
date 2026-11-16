@@ -141,7 +141,7 @@ if __name__ == "__main__":
     render(asm, os.path.join(d, "front.png"), 0, 0, hide=("lid", "panel", "icebox"),
            title=("Front elevation, panels hidden (v13): all components <= z 264 mm, clear below the z 266.2..272.2 mm slot-captured lid" if cage.P.get("lid_slot") else "Front elevation, panels hidden"))
     render(asm, os.path.join(d, "top.png"), 90, -90, hide=("lid", "icebox"),
-           title=("Top-down, lid off (v15 pancake): MultiPlus + upper Cerbo/Garmin/breakers shelf; MPPT upright + Orion toward inverter; inline busbars; Smart 200Ah + BMS/shunt" if cage.P["card_plane"] == "v15"
+           title=("Top-down, lid off (v15 pancake): enlarged shelf w/ Orion/Cerbo/Garmin/breakers over MultiPlus; MPPT/Shunt/Gnd below; Smart 200Ah flipped inward; all front ports" if cage.P["card_plane"] == "v15"
                   else "Top-down, lid off (v13): U-bridge breaker shelves on centered-pocket trays, bus shelf in column, MultiPlus 12/1200 + standing Garmin panel inboard" if cage.P.get("lid_slot")
                   else "Top-down, lid off: batteries and drop shelves along bottom edge, bus shelf in column, MultiPlus 12/1200 + Garmin hanger along top edge, ports at right" if cage.VARIANT.startswith("v12s")
                   else "Top-down, lid off: batteries along the bottom edge, bus column, MultiPlus-II along the top edge, ports at the right" if cage.P.get("box") == "v13"
