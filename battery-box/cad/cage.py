@@ -3566,6 +3566,65 @@ def icebox_diag_brace_max() -> cq.Workplane:
     return plate.rotate((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), 47.0)
 
 
+def front_port_guard_parts() -> list[tuple[str, cq.Workplane]]:
+    """Modular P1P-printable front Baja brush-bar guard (wings @ -45 deg + 250x224mm dual-divider grille)."""
+    depth, wing_t = 92.0, 9.0
+    z_bot, z_top = 27.0, 251.0
+    bar_d, bar_h = 16.0, 15.0
+    y_l_out, y_l_in = 209.0, 218.0
+    y_r_in, y_r_out = 468.0, 477.0
+    cross_zs: tuple[float, float, float] = (z_bot + bar_h / 2.0, 118.0, z_top - bar_h / 2.0)
+
+    def _wing_base() -> cq.Workplane:
+        pts: list[tuple[float, float]] = [
+            (0.0, 4.0), (22.0, 4.0), (depth, z_bot), (depth, z_top), (22.0, out_H - 4.0), (0.0, out_H - 4.0),
+        ]
+        w: cq.Workplane = cq.Workplane("XZ").polyline(pts).close().extrude(wing_t)
+        cut_pts: list[tuple[float, float]] = [(22.0, 44.0), (depth - 18.0, 52.0), (depth - 18.0, out_H - 52.0), (22.0, out_H - 44.0)]
+        w = w.cut(cq.Workplane("XZ").polyline(cut_pts).close().extrude(wing_t + 4.0).translate((0.0, 2.0, 0.0)))
+        return w.translate((0.0, wing_t, 0.0))   # now Y spans 0..wing_t
+
+    # Left wing (Y = 209..218): inboard 1/4-20 bolt tabs on top/bot front rails (Y = 218..234, Z = 12.5 & 269.2, 0 overhang!)
+    wl: cq.Workplane = _wing_base()
+    for z_rail in (12.5, out_H - 12.5):
+        wl = wl.union(box(14.0, 16.0, 22.0, (0.0, wing_t, z_rail - 11.0)))
+        wl = wl.cut(cq.Workplane("YZ").center(wing_t + 7.5, z_rail).circle(3.4).extrude(18.0).translate((-2.0, 0.0, 0.0)))
+    for cz in cross_zs:
+        wl = wl.cut(cq.Workplane("XZ").center(depth - bar_d / 2.0, cz).circle(2.4).extrude(-(wing_t + 4.0)).translate((0.0, wing_t + 2.0, 0.0)))
+        wl = wl.cut(cq.Workplane("XZ").center(depth - bar_d / 2.0, cz).circle(4.5).extrude(-4.2).translate((0.0, 4.0, 0.0)))
+    wl_print: cq.Workplane = wl.rotate((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), -90.0).rotate((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), -45.0)
+
+    # Right wing (Y = 468..477): post bolt tabs centered at Y = 475.6 on bare corner post (Z = 42, 140.8, 240, clear of cubes)
+    wr: cq.Workplane = _wing_base()
+    for z_post in (42.0, out_H / 2.0, out_H - 42.0):
+        wr = wr.union(box(14.0, 11.0, 22.0, (0.0, wing_t, z_post - 11.0)))
+        wr = wr.cut(cq.Workplane("YZ").center(7.6, z_post).circle(3.4).extrude(18.0).translate((-2.0, 0.0, 0.0)))
+    for cz in cross_zs:
+        wr = wr.cut(cq.Workplane("XZ").center(depth - bar_d / 2.0, cz).circle(2.4).extrude(-(wing_t + 4.0)).translate((0.0, wing_t + 2.0, 0.0)))
+        wr = wr.cut(cq.Workplane("XZ").center(depth - bar_d / 2.0, cz).circle(4.5).extrude(-4.2).translate((0.0, wing_t + 0.2, 0.0)))
+    wr_print: cq.Workplane = wr.rotate((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), 90.0).rotate((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), -45.0)
+
+    # Front grille (250.0 x 224.0 x 16.0 mm flat on P1P bed): 3 horizontal chamfered bars + 2 vertical dividers
+    gw: float = y_r_in - y_l_in                                     # 250.0 mm
+    gh: float = z_top - z_bot                                       # 224.0 mm
+    grille: cq.Workplane = box(bar_d, gw, bar_h, (0.0, 0.0, 0.0)).edges("|Y").fillet(2.5)
+    grille = grille.union(box(bar_d, gw, 14.0, (0.0, 0.0, 111.0 - z_bot)).edges("|Y").fillet(2.5))
+    grille = grille.union(box(bar_d, gw, bar_h, (0.0, 0.0, gh - bar_h)).edges("|Y").fillet(2.5))
+    # Vertical dividers at Y=296..308 (between SB50 & DC OUT) and Y=374..384 (between DC OUT & AC/DC)
+    grille = grille.union(box(bar_d - 2.0, 12.0, gh - 2.0, (1.0, 296.0 - y_l_in, 1.0)))
+    grille = grille.union(box(bar_d - 2.0, 10.0, gh - 2.0, (1.0, 374.0 - y_l_in, 1.0)))
+    for cz in cross_zs:
+        grille = grille.cut(cq.Workplane("XZ").center(bar_d / 2.0, cz - z_bot).circle(1.9).extrude(-16.5).translate((0.0, 16.0, 0.0)))
+        grille = grille.cut(cq.Workplane("XZ").center(bar_d / 2.0, cz - z_bot).circle(1.9).extrude(16.5).translate((0.0, gw - 16.0, 0.0)))
+    grille_print: cq.Workplane = grille.rotate((0.0, 0.0, 0.0), (0.0, 1.0, 0.0), -90.0).rotate((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), 90.0)
+
+    return [
+        ("print_guard_front_grille", grille_print),
+        ("print_guard_front_wing_l", wl_print),
+        ("print_guard_front_wing_r", wr_print),
+    ]
+
+
 def build_v15(a: cq.Assembly) -> None:
     """Build v15 pancake concept: 30-inch full IceBox length (762 x 488.1 x 165.1 mm + 6 mm lift-off lid)."""
     vent_z: float = 82.5
@@ -4827,6 +4886,7 @@ def export(a: cq.Assembly):
                 ("print_gusset_stack_nongx", nongx_g),
                 ("print_gusset_stack_nongx_mirror", nongx_g.mirror("YZ")),
                 ("print_brace_icebox_diag_max", icebox_diag_brace_max()),
+                *front_port_guard_parts(),
                 *BS.get("_side_blanks", ()),
             ]
             for bname, bpart in aux_parts:
