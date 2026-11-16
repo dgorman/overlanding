@@ -3618,10 +3618,44 @@ def front_port_guard_parts() -> list[tuple[str, cq.Workplane]]:
         grille = grille.cut(cq.Workplane("XZ").center(bar_d / 2.0, cz - z_bot).circle(1.9).extrude(16.5).translate((0.0, gw - 16.0, 0.0)))
     grille_print: cq.Workplane = grille.rotate((0.0, 0.0, 0.0), (0.0, 1.0, 0.0), -90.0).rotate((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), 90.0)
 
+    # One-piece H2D version (grille face down on Z_print=0, wings + 45-deg gusseted bolt tabs rising to Z_print=92 mm, support-free)
+    def _onepiece_wing() -> cq.Workplane:
+        pts: list[tuple[float, float]] = [
+            (0.0, 4.0), (22.0, 4.0), (depth, z_bot), (depth, z_top), (22.0, out_H - 4.0), (0.0, out_H - 4.0),
+        ]
+        w: cq.Workplane = cq.Workplane("XZ").polyline(pts).close().extrude(wing_t)
+        # Chevron/diamond truss window: slopes <=45 deg when standing grille-down (depth=0 at bed, X=0 at Z_print=92)
+        c_pts: list[tuple[float, float]] = [
+            (18.0, 140.8), (48.0, 48.0), (depth - 18.0, 140.8), (48.0, out_H - 48.0),
+        ]
+        w = w.cut(cq.Workplane("XZ").polyline(c_pts).close().extrude(wing_t + 4.0).translate((0.0, 2.0, 0.0)))
+        return w.translate((0.0, wing_t, 0.0))
+
+    one_wl: cq.Workplane = _onepiece_wing().translate((0.0, y_l_out, 0.0))
+    for z_rail in (12.5, out_H - 12.5):
+        # 45-deg sloped underside gusset from X=0 (Z_print=92) down-outboard to X=30 (Z_print=62) so tab needs 0 support
+        tab_pts: list[tuple[float, float]] = [(0.0, 0.0), (0.0, 16.0), (14.0, 16.0), (30.0, 0.0)]
+        tab: cq.Workplane = cq.Workplane("XY").polyline(tab_pts).close().extrude(22.0).translate((0.0, y_l_in, z_rail - 11.0))
+        one_wl = one_wl.union(tab).cut(cq.Workplane("YZ").center(y_l_in + 7.5, z_rail).circle(3.4).extrude(20.0).translate((-2.0, 0.0, 0.0)))
+
+    one_wr: cq.Workplane = _onepiece_wing().translate((0.0, y_r_in, 0.0))
+    for z_post in (42.0, out_H / 2.0, out_H - 42.0):
+        tab_pts = [(0.0, 0.0), (0.0, 11.0), (14.0, 11.0), (25.0, 0.0)]
+        tab = cq.Workplane("XY").polyline(tab_pts).close().extrude(22.0).translate((0.0, y_r_out, z_post - 11.0))
+        one_wr = one_wr.union(tab).cut(cq.Workplane("YZ").center(y_r_in + 7.6, z_post).circle(3.4).extrude(20.0).translate((-2.0, 0.0, 0.0)))
+
+    one_gr: cq.Workplane = box(bar_d, y_r_out - y_l_out, bar_h, (depth - bar_d, y_l_out, z_bot))
+    one_gr = one_gr.union(box(bar_d, y_r_out - y_l_out, 14.0, (depth - bar_d, y_l_out, 111.0)))
+    one_gr = one_gr.union(box(bar_d, y_r_out - y_l_out, bar_h, (depth - bar_d, y_l_out, z_top - bar_h)))
+    one_gr = one_gr.union(box(bar_d - 2.0, 12.0, gh - 2.0, (depth - bar_d + 1.0, 296.0, z_bot + 1.0)))
+    one_gr = one_gr.union(box(bar_d - 2.0, 10.0, gh - 2.0, (depth - bar_d + 1.0, 374.0, z_bot + 1.0)))
+    one_piece: cq.Workplane = one_wl.union(one_wr).union(one_gr).rotate((0.0, 0.0, 0.0), (0.0, 1.0, 0.0), 90.0)
+
     return [
         ("print_guard_front_grille", grille_print),
         ("print_guard_front_wing_l", wl_print),
         ("print_guard_front_wing_r", wr_print),
+        ("print_guard_front_onepiece", one_piece),
     ]
 
 
