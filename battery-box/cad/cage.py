@@ -2961,6 +2961,13 @@ def v12_panels(a):
                       .cut(box(lw_side, lap_z_side + 1, big_end, (xmid_side - lw_side / 2, y_s_in + t_side - lap_z_side, -20)))
                       .cut(box(lw_side, lap_clr_side + 1, big_end, (xmid_side - lw_side / 2, y_s_in - 1, -20))))
 
+        BS["_side_blanks"] = [
+            ("print_panel_side_outboard_back_blank", s_out_back),
+            ("print_panel_side_outboard_front_blank", s_out_front),
+            ("print_panel_side_inboard_back_blank", s_in_back),
+            ("print_panel_side_inboard_front_blank", s_in_front),
+        ]
+
         g_out_all, w_out_all = _make_side_topo_inlays("outboard", y_s_out, -1)
         g_in_all, w_in_all = _make_side_topo_inlays("inboard", y_s_in + t_side, +1)
         for s_name, s_tile, g_all, w_all in (
@@ -4814,14 +4821,15 @@ def export(a: cq.Assembly):
         if P.get("stack_on_icebox"):
             std_g: cq.Workplane = stack_gusset_2x()
             nongx_g: cq.Workplane = stack_gusset_nongx()
-            aux_brackets: list[tuple[str, cq.Workplane]] = [
+            aux_parts: list[tuple[str, cq.Workplane]] = [
                 ("print_gusset_stack_std", std_g),
                 ("print_gusset_stack_std_mirror", std_g.mirror("YZ")),
                 ("print_gusset_stack_nongx", nongx_g),
                 ("print_gusset_stack_nongx_mirror", nongx_g.mirror("YZ")),
                 ("print_brace_icebox_diag_max", icebox_diag_brace_max()),
+                *BS.get("_side_blanks", ()),
             ]
-            for bname, bpart in aux_brackets:
+            for bname, bpart in aux_parts:
                 bpath: str = os.path.join(STL, f"{bname}.stl")
                 cq.exporters.export(bpart, bpath)
                 btris = plates.reorient_file(bpath)
