@@ -3834,11 +3834,10 @@ def build_v13(a):
             tray0 = tray0.cut(countersink("print_tray_battery_0", (tx0 + xw0, ty + sy, B / 2), (1, 0, 0)).translate((-tx0, -ty, 0)))
         for hx in lip_holes[0]:                                        # 4 equidistant M4 heat-set insert holes (80.0 mm pitch: 42, 122, 202, 282 mm; 7 mm blind in 8 mm wall)
             tray0 = tray0.cut(cq.Workplane("XZ").center(hx, 17.0).circle(M4S_BORE_R).extrude(-8.0).translate((0, fw - 7.0, 0)))
-        # 3 raised M4 hold-down lugs on tray0's inboard wall (X = 291.5, 379.5, 467.5 mm, Y = 185.5..199.0 mm, Z = 36..52 mm; M4 at Y=194.8, 4.8 mm clear of Y=190.0 leg)
+        # 3 x M4 heat-set insert bores straight down into tray0's 8 mm inboard wall top (Z = 36 mm, no raised standoffs; Y = 189.0, X = 291.5, 379.5, 467.5 mm)
         hd_xs_l = (79.0, 167.0, 255.0)
         for hdx in hd_xs_l:
-            lug = box(22.0, 13.5, 16.0, (hdx - 11.0, fw - 7.5, lip + fl))
-            tray0 = tray0.union(lug).cut(cq.Workplane("XY").center(hdx, fw + 1.8).circle(M4S_BORE_R).extrude(13.0).translate((0, 0, lip + fl + 16.0 - 12.0)))
+            tray0 = tray0.cut(cq.Workplane("XY").center(hdx, fw - 4.0).circle(M4S_BORE_R).extrude(13.0).translate((0, 0, lip + fl - 12.0)))
         add(a, tray0.translate((tx0, ty, 0)), "print_tray_battery_0", ORANGE)
         at0 = (tx0 + wall + clr, ty + wall + clr, fl)
         add(a, victron_shape(bkey, b.d, b.w, b.h, at0, box(b.d, b.w, b.h, at0).edges("|Z").fillet(6)), "battery_0", BATT)
@@ -3851,20 +3850,22 @@ def build_v13(a):
         hb, rel = 13.0, 7.5
         yf = y_in0 + hb                                                # 38.0 mm
         hz = out_H - B / 2.0                                           # 269.2 mm
-        hd = box(hd_w, (ty + fw - 3.0) - (y_in0 + rel), hd_pl_t, (hd_x0, y_in0 + rel, hd_z0))     # top plate ends at Y=190.0 (flush with drop leg, clear of M4 heads)
+        wt0 = lip + fl                                                 # 36.0 mm: tray0 wall top (no raised standoffs)
+        hd = box(hd_w, (ty + fw + 5.5) - (y_in0 + rel), hd_pl_t, (hd_x0, y_in0 + rel, hd_z0))     # top plate spans Y = 32.5..198.5 mm
         hd = hd.union(box(hd_w, hb - rel, (out_H - B) - hd_z0, (hd_x0, y_in0 + rel, hd_z0)))
         hd = hd.union(box(hd_w, hb, B - 3.0, (hd_x0, y_in0, out_H - B)))
-        hd = hd.union(box(hd_w, 5.0, zd_hd - 52.0, (hd_x0, ty + fw - 8.0, 52.0)))                # inboard drop leg Y=185.0..190.0 (0.5 clear of battery, 4.8 from M4 center)
-        hd = hd.union(box(hd_w, 13.5, 6.0, (hd_x0, ty + fw - 7.5, 52.0)))                        # inboard bolt flange Y=185.5..199.0 at Z=52..58 mm over tray0's 3 raised lugs
-        for hx_bolt, lug_x in zip((28.0, 116.0, 204.0), hd_xs_l):                                # 3 x 1/4-20 outboard + 3 x M4 inboard (X = 291.5, 379.5, 467.5 mm)
-            hd = hd.cut(cq.Workplane("XZ").center(hd_x0 + hx_bolt, hz).circle(3.4).extrude(-(hb + 2.0)).translate((0, y_in0 - 1.0, 0)))
-            hd = hd.cut(countersink("print_battery_holddown_0", (hd_x0 + hx_bolt, yf, hz), (0, -1, 0)))
-            hd = hd.cut(cq.Workplane("XY").center(tx0 + lug_x, ty + fw + 1.8).circle(2.3).extrude(8.0).translate((0, 0, 51.0)))
-        for (gy, dy, rs) in ((yf, 1, 5.0), (ty + fw - 8.0, -1, 5.0)):   # Z <= 260.7 < hz - 7 (262.2) so outboard 1/4-20 heads clear cleanly
+        hd = hd.union(box(hd_w, 5.0, zd_hd - wt0, (hd_x0, ty + fw + 0.5, wt0)))                   # inboard drop leg Y=193.5..198.5 (2 above bus_shelf Z=34, 1.5 clear of busbar_nx Y=200)
+        hd = hd.union(box(hd_w, 13.5, 6.0, (hd_x0, ty + fw - 8.0, wt0)))                          # inboard foot Y=185.0..198.5 at Z=36..42 mm bearing directly on tray0 wall top
+        for (gy, dy, rs) in ((yf, 1, 5.0), (ty + fw + 0.5, -1, 5.0)):   # Z <= 260.7 < hz - 7 (262.2) so outboard 1/4-20 heads clear cleanly
             rib = cq.Workplane("YZ").polyline([(gy, zd_hd), (gy + rs * dy, zd_hd), (gy, zd_hd + rs)]).close().extrude(hd_w).translate((hd_x0, 0, 0))
             hd = hd.union(rib)
+        for hx_bolt, lug_x in zip((28.0, 116.0, 204.0), hd_xs_l):                                # 3 x 1/4-20 outboard + 3 x M4 inboard into tray0 wall top (X = 291.5, 379.5, 467.5 mm)
+            hd = hd.cut(cq.Workplane("XZ").center(hd_x0 + hx_bolt, hz).circle(3.4).extrude(-(hb + 2.0)).translate((0, y_in0 - 1.0, 0)))
+            hd = hd.cut(countersink("print_battery_holddown_0", (hd_x0 + hx_bolt, yf, hz), (0, -1, 0)))
+            hd = hd.cut(cq.Workplane("XY").center(tx0 + lug_x, ty + fw - 4.0).circle(2.3).extrude(8.0).translate((0, 0, wt0 - 1.0)))     # Ø4.6 M4 hole in Z=36..42 foot
+            hd = hd.cut(cq.Workplane("XY").center(tx0 + lug_x, ty + fw - 4.0).circle(4.5).extrude(hd_pl_t + 8.0).translate((0, 0, hd_z0 - 1.0)))   # concentric Ø9.0 wrench/screw access through top plate (stops at Y=193.5 leg)
         cb_hd = COMPONENTS["breaker_a"]
-        by_hd = y_in0 + 92.0                                           # Y = 117.0 mm (reset lever free at Y=107..117, clear of ribs & bolts)
+        by_hd = y_in0 + 92.0                                           # Y = 117.0 mm (reset lever free at Y=107..117, clear of ribs & tool holes)
         for r_hd, bx_hd in enumerate((hd_x0 + 12.0, hd_x0 + 138.7)):   # 2 x Eaton Bussmann 285 breakers (X = 275.5 & 402.2 mm, 45.4 mm center gap)
             for (u, v) in HOLES["breaker_a"]:
                 hd = hd.cut(m5_bore(bx_hd + u, by_hd + v, zd_hd, M5_BLIND))
@@ -4286,11 +4287,12 @@ def report_v13():
     mm = lambda v: f"{v:.0f} mm ({v / 25.4:.2f} in)"
     g = BS.get("_g12") or {}
     if P.get("v14_single_200"):
-        print(f"== Variant '{VARIANT}': single Victron BAT512120610 LiFePO4 12.8V/200Ah Smart (Front) + VE.Bus BMS V2 & Elevated Breaker Deck (Back) ==")
+        print(f"== Variant '{VARIANT}': single Victron BAT512120610 LiFePO4 12.8V/200Ah Smart (Front) + VE.Bus BMS V2 & Blank Accessory Deck (Back) ==")
         print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}; bank 1 x 200 Ah = 200 Ah (2.56 kWh), 200 A continuous / 400 A peak")
-        print("  battery tray  : print_tray_battery_0 (334.0 x 167.0 x 36.0 mm, X = 212.5..546.5 mm, Front +X end); 3 equidistant 1/4-20 outboard rail holes (X = 279.5, 379.5, 479.5 mm) + 4 equidistant M4 bus_shelf_1..2 holes (X = 254.5, 334.5, 414.5, 494.5 mm)")
+        print("  battery tray  : print_tray_battery_0 (334.0 x 167.0 x 36.0 mm, X = 212.5..546.5 mm, closed 4-sided box; requires H2D dual-nozzle full 350 mm X); 3 x 1/4-20 outboard + 4 x M4 bus_shelf_1..2 + 3 x M4 top-wall hold-down inserts (Y=189.0)")
+        print("  hold-down     : print_battery_holddown_0 (232.0 mm wide, X = 263.5..495.5 mm, Z_top = 255.7 mm); carries 2 x Eaton Bussmann 285 breakers (X = 275.5, 402.2 mm; 45.4 mm gap) + 3 x 1/4-20 outboard + 3 x M4 inboard (O9.0 mm top wrench bores)")
         print("  back BMS tray : print_tray_battery_1 (187.5 x 167.0 x 56.0 mm, X = 25.0..212.5 mm, Back -X end); carries VE.Bus BMS V2 on floor (Z = 9.5..33.3 mm) + 2 equidistant 1/4-20 outboard rail holes + 3 equidistant M4 bus_shelf_0 holes (X = 68.75, 118.75, 168.75 mm)")
-        print("  breaker deck  : print_breaker_deck_0 (187.5 x 167.0 x 11.0 mm, Z = 56.0..67.0 mm) bolted to print_tray_battery_1's 4 corner pillars (4 x M4); carries 2 x Eaton Bussmann 285 breakers (4 x M5 blind bores) above the BMS")
+        print("  BMS deck      : print_breaker_deck_0 (187.5 x 167.0 x 11.0 mm, Z = 56.0..67.0 mm) blank accessory deck bolted to print_tray_battery_1's 4 corner pillars (4 x M4) above the BMS")
         return
     if P.get("batt") == "battery":
         ii = P.get("inverter_long") == "multiplus_ii_long"
@@ -4938,6 +4940,8 @@ def export(a: cq.Assembly):
             print(f"wrote {base_nm}_multicolor.3mf")
     for (key, dims), n in seen.items():
         flag = "" if dims[0] <= bed[0] and dims[1] <= bed[1] and dims[2] <= bed[2] else "  <-- exceeds bed"
+        if not flag and bed[0] >= 350.0 and dims[0] > 325.0:
+            flag = "  <-- H2D dual-nozzle X (>325 single-nozzle)"
         print(f"  {n:2d} x {key:10s} {dims[0]:6.1f} x {dims[1]:6.1f} x {dims[2]:6.1f} tall{flag}")
     if any(c.name.startswith("print_") for c in a.children):
         if P.get("stack_on_icebox"):
