@@ -160,3 +160,20 @@ While **PETG Basic** is used for test-fitting and prototyping, the final product
      - **Support/object xy distance:** `0.6 mm` *(keeps supports clear of the vertical `3.20 mm` mating lap wall)*
      - **Support/object first layer gap:** `0.6 mm` *(keeps Layer 1 support clear of the visible `Z = 0` Textured PEI seam edge)*
      - **Independent support layer height:** `Checked`
+
+### `v14` H2D Dual-Nozzle Stitching (`stl/v14_delta/print_tray_battery_0.stl`, `> 325 mm` X)
+In `v14`, [`stl/v14_delta/`](stl/v14_delta/) contains the **7 delta STLs** needed to adapt a `master`/`v13` box for a single Smart 200Ah + VE.Bus BMS V2 (`print_tray_battery_0`, `print_tray_battery_1`, `print_breaker_deck_0`, `print_battery_holddown_0`, `print_bus_shelf_0..2`). Six fit single-nozzle H2D (`<= 325 mm`); **`print_tray_battery_0.stl` (`334.0 × 167.0 × 36.0 mm`)** stays a closed 4-sided box for rigidity over the open bottom (`20 kg` battery) and therefore spans both H2D extruders (`Left: X = 0..325 mm`, `Right: X = 25..350 mm`).
+
+- **Filaments:** Load identical material/color (**`PETG Basic`**, or `ABS-GF`) in both **Filament `1`** and **Filament `2`** and map **`1` -> Left Nozzle**, **`2` -> Right Nozzle**.
+- **Orientation:** Place flat with the **`334.0 mm`** long axis left-to-right along **`X`** (`350 mm` bed axis; **`Y` is `320 mm`** so do **not** rotate `90°`).
+- **Modifier Split (`Process` -> `Objects`):**
+  1. Keep parent `print_tray_battery_0.stl` assigned to Filament **`1`**.
+  2. Right-click `print_tray_battery_0.stl` -> **`Add Modifier` -> `Cube`** (nested inside the tray, **not** a standalone object).
+  3. Set **`Generic-Cube`** to Filament **`2`**, uncheck **Uniform scale**, set **`Size = 170 × 180 × 42 mm`**, and position over the right half (**Object coordinates `X = 85, Y = 0, Z = 0`**) so it covers the entire right wall cleanly past the `X = 325 mm` left-nozzle limit.
+  4. On **`Click here to regroup`** (`Filament grouping`), choose **`Custom`** -> **`1` in Left Extruder**, **`2` in Right Extruder**.
+- **Slicer Settings Used (`0.20mm Standard @BBL H2D`, `~14 h` print):**
+  - **`Strength` -> `Wall loops`:** **`5`**
+  - **`Strength` -> `Sparse infill`:** **`35–40%` Gyroid**
+  - **`Others` -> `Prime tower`:** **`Enable` unchecked** *(same filament in both nozzles; also clears the `Precise Z height` prime-tower warning)*
+  - **`Others` -> `Advanced` -> `Use beam interlocking`:** **Checked** *(weaves Left/Right nozzle passes layer-by-layer across the mid-tray seam)*
+  - **Recommended on [`print_battery_holddown_0.stl`](stl/v14_delta/print_battery_holddown_0.stl) (`242.7 × 173.5 × 232.0 mm`, single-nozzle):** match **`5` walls** and **`35–40%` Gyroid** for clamp & breaker stiffness.
