@@ -131,8 +131,8 @@ const GROUPS = {
   icebox:   ['IceBox 1.3 (reference)',      0x7a7f86, 0.45],
   cube:     ['Corner cubes (from the second IceBox)', 0x202020, 1],
   bar:      ['Kit extrusion bars (12, uncut)', 0xb8bcc2, 1],
-  print:    ['Printed parts', 0xd9541f, 1],
-  panel:    ['6 mm panels from the second IceBox (sides, perforated back)', 0x2a2a2a, 0.3],
+  print:    ['Internal printed parts (trays, plate, shelves, posts)', 0xd9541f, 1],
+  panel:    ['Outer panels (front, back, sides, inlays, MOLLE)', 0x2a2a2a, 0.3],
   lid:      ['Lid',                         0x2a2a2a, 0.25],
   card:     ['Cards: distribution · inverter/charger · upper', 0x3a3a3a, 0.95],
   victron:  ['Victron units',               0x2563eb, 1],
@@ -144,7 +144,8 @@ const GROUPS = {
 };
 // Sub-assemblies: what is built on the bench and goes into the box as one piece (v12/v12s/v13 naming; other variants fall into "Everything else")
 const SUBS = {
-  frame:   ['Frame: cubes, rails, panels, lid',                  /^(cube_|bar_|panel_|lid_|icebox_|print_panel_|print_cube|print_bar)/],
+  frame:   ['Frame: cubes, rails, IceBox',                       /^(cube_|bar_|icebox_|print_cube|print_bar)/],
+  skin:    ['Outer skin: side, front, back panels & lid',        /^(panel_|lid_|print_panel_)/],
   tray0:   ['Tray 0 (back) + battery',                           /(tray_battery_0|^battery_0)/],
   tray1:   ['Tray 1 (front) + battery / breaker & BMS deck',     /(tray_battery_1|^battery_1|print_breaker_deck|power_bms_deck|power_breaker_shelf)/],
   shelf:   ['Bus shelf: plates, bus bars, shunt',                /(print_bus_shelf|print_busbar_spacer|power_shunt_shelf|power_busbar_pos_shelf|power_busbar_neg_shelf)/],
@@ -299,7 +300,10 @@ function setVariant(v) {
     if (!o.isMesh) return;
     if (!o.geometry.getAttribute('normal')) o.geometry.computeVertexNormals();
     const name = (o.name || o.parent?.name || '').toLowerCase().replace('print_pack_panel', 'panel_pack').replace('print_pack_lid', 'lid_pack');
-    const key = name === 'power_bms_deck' ? 'victron' : (Object.keys(GROUPS).find(k => name.startsWith(k)) || 'print');
+    const key = name === 'power_bms_deck' ? 'victron'
+      : name.startsWith('print_panel_lid_') ? 'lid'
+      : name.startsWith('print_panel_') ? 'panel'
+      : (Object.keys(GROUPS).find(k => name.startsWith(k)) || 'print');
     const [, col, op] = GROUPS[key];
     o.material = new THREE.MeshStandardMaterial({ color: col, roughness: 0.6, metalness: key === 'bar' ? 0.5 : 0.05,
       transparent: op < 1, opacity: op, depthWrite: op >= 1, side: THREE.DoubleSide });
