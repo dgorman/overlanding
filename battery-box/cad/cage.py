@@ -3834,11 +3834,11 @@ def build_v13(a):
             tray0 = tray0.cut(countersink("print_tray_battery_0", (tx0 + xw0, ty + sy, B / 2), (1, 0, 0)).translate((-tx0, -ty, 0)))
         for hx in lip_holes[0]:                                        # 4 equidistant M4 heat-set insert holes (80.0 mm pitch: 42, 122, 202, 282 mm; 7 mm blind in 8 mm wall)
             tray0 = tray0.cut(cq.Workplane("XZ").center(hx, 17.0).circle(M4S_BORE_R).extrude(-8.0).translate((0, fw - 7.0, 0)))
-        # 3 raised M4 hold-down lugs on tray0's inboard wall (X = 291.5, 379.5, 467.5 mm, Z = 36..52 mm, Y = 186..198 mm: 2 mm clear of busbar/shunt & above Z=34 bus_shelf)
+        # 3 raised M4 hold-down lugs on tray0's inboard wall (X = 291.5, 379.5, 467.5 mm, Y = 185.5..199.0 mm, Z = 36..52 mm; M4 at Y=194.8, 4.8 mm clear of Y=190.0 leg)
         hd_xs_l = (79.0, 167.0, 255.0)
         for hdx in hd_xs_l:
-            lug = box(22.0, 12.0, 16.0, (hdx - 11.0, fw - 7.0, lip + fl))
-            tray0 = tray0.union(lug).cut(cq.Workplane("XY").center(hdx, fw - 1.0).circle(M4S_BORE_R).extrude(13.0).translate((0, 0, lip + fl + 16.0 - 12.0)))
+            lug = box(22.0, 13.5, 16.0, (hdx - 11.0, fw - 7.5, lip + fl))
+            tray0 = tray0.union(lug).cut(cq.Workplane("XY").center(hdx, fw + 1.8).circle(M4S_BORE_R).extrude(13.0).translate((0, 0, lip + fl + 16.0 - 12.0)))
         add(a, tray0.translate((tx0, ty, 0)), "print_tray_battery_0", ORANGE)
         at0 = (tx0 + wall + clr, ty + wall + clr, fl)
         add(a, victron_shape(bkey, b.d, b.w, b.h, at0, box(b.d, b.w, b.h, at0).edges("|Z").fillet(6)), "battery_0", BATT)
@@ -3851,16 +3851,16 @@ def build_v13(a):
         hb, rel = 13.0, 7.5
         yf = y_in0 + hb                                                # 38.0 mm
         hz = out_H - B / 2.0                                           # 269.2 mm
-        hd = box(hd_w, (ty + fw - 1.0) - (y_in0 + rel), hd_pl_t, (hd_x0, y_in0 + rel, hd_z0))
+        hd = box(hd_w, (ty + fw - 3.0) - (y_in0 + rel), hd_pl_t, (hd_x0, y_in0 + rel, hd_z0))     # top plate ends at Y=190.0 (flush with drop leg, clear of M4 heads)
         hd = hd.union(box(hd_w, hb - rel, (out_H - B) - hd_z0, (hd_x0, y_in0 + rel, hd_z0)))
         hd = hd.union(box(hd_w, hb, B - 3.0, (hd_x0, y_in0, out_H - B)))
-        hd = hd.union(box(hd_w, 6.0, zd_hd - 52.0, (hd_x0, ty + fw - 7.5, 52.0)))                # inboard drop leg down to Z = 52 mm lug top (0.3 mm clear of battery Y=185.2)
-        hd = hd.union(box(hd_w, 12.0, 6.0, (hd_x0, ty + fw - 7.0, 52.0)))                        # inboard bolt flange at Z = 52..58 mm over tray0's 3 raised lugs
+        hd = hd.union(box(hd_w, 5.0, zd_hd - 52.0, (hd_x0, ty + fw - 8.0, 52.0)))                # inboard drop leg Y=185.0..190.0 (0.5 clear of battery, 4.8 from M4 center)
+        hd = hd.union(box(hd_w, 13.5, 6.0, (hd_x0, ty + fw - 7.5, 52.0)))                        # inboard bolt flange Y=185.5..199.0 at Z=52..58 mm over tray0's 3 raised lugs
         for hx_bolt, lug_x in zip((28.0, 116.0, 204.0), hd_xs_l):                                # 3 x 1/4-20 outboard + 3 x M4 inboard (X = 291.5, 379.5, 467.5 mm)
             hd = hd.cut(cq.Workplane("XZ").center(hd_x0 + hx_bolt, hz).circle(3.4).extrude(-(hb + 2.0)).translate((0, y_in0 - 1.0, 0)))
             hd = hd.cut(countersink("print_battery_holddown_0", (hd_x0 + hx_bolt, yf, hz), (0, -1, 0)))
-            hd = hd.cut(cq.Workplane("XY").center(tx0 + lug_x, ty + fw - 1.0).circle(2.3).extrude(8.0).translate((0, 0, 51.0)))
-        for (gy, dy, rs) in ((yf, 1, 5.0), (ty + fw - 7.5, -1, 5.0)):   # Z <= 260.7 < hz - 7 (262.2) so outboard 1/4-20 heads clear cleanly
+            hd = hd.cut(cq.Workplane("XY").center(tx0 + lug_x, ty + fw + 1.8).circle(2.3).extrude(8.0).translate((0, 0, 51.0)))
+        for (gy, dy, rs) in ((yf, 1, 5.0), (ty + fw - 8.0, -1, 5.0)):   # Z <= 260.7 < hz - 7 (262.2) so outboard 1/4-20 heads clear cleanly
             rib = cq.Workplane("YZ").polyline([(gy, zd_hd), (gy + rs * dy, zd_hd), (gy, zd_hd + rs)]).close().extrude(hd_w).translate((hd_x0, 0, 0))
             hd = hd.union(rib)
         cb_hd = COMPONENTS["breaker_a"]
