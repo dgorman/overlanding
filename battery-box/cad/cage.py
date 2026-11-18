@@ -4974,7 +4974,15 @@ def export(a: cq.Assembly):
         for old_f in os.listdir(delta_dir):
             if old_f.endswith(".stl"):
                 os.remove(os.path.join(delta_dir, old_f))
-        delta_names = ("print_tray_battery_0.stl", "print_tray_battery_1.stl", "print_breaker_deck_0.stl", "print_battery_holddown_0.stl")
+        delta_names = (
+            "print_tray_battery_0.stl",
+            "print_tray_battery_1.stl",
+            "print_breaker_deck_0.stl",
+            "print_battery_holddown_0.stl",
+            "print_bus_shelf_0.stl",
+            "print_bus_shelf_1.stl",
+            "print_bus_shelf_2.stl",
+        )
         for fn in delta_names:
             src_f = os.path.join(STL, fn)
             if os.path.exists(src_f):
