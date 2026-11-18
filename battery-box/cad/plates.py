@@ -105,6 +105,7 @@ def side_inboard_tex_out(tris: list[list[tuple[float, float, float]]]) -> list[l
 
 ORIENT_RULES = [   # (file-name prefix, orientation); first match wins; anything else prints as modelled
     ("print_breaker_shelf", edge_x_up),         # 130 mm edge vertical: every wall upright, the plate and leg need no support
+    ("print_battery_holddown", edge_x_up),      # 130 mm edge vertical: v14 200Ah top clamp prints support-free on P1P/H2D
     ("print_busbar_spacer", flat_y_long),       # 35 mm (X) x 155 mm (Y) x 10 mm (Z) so H2D X-arrange packs them 82 x 155 mm
     ("print_post_inverter", flat),              # on the solid back, slot up, sill bolt hole vertical
     ("print_post_clip", flat),                  # on the plain outer face, countersink up

@@ -3567,12 +3567,12 @@ def icebox_diag_brace_max() -> cq.Workplane:
 
 
 def front_port_guard_parts() -> list[tuple[str, cq.Workplane]]:
-    """Modular P1P-printable front Baja brush-bar guard (wings @ -45 deg + 250x224mm dual-divider grille)."""
+    """Modular P1P & 1-piece H2D Baja brush-bar guard with straight-in outside 1/4-20 bolt access."""
     depth, wing_t = 92.0, 9.0
     z_bot, z_top = 27.0, 251.0
     bar_d, bar_h = 16.0, 15.0
     y_l_out, y_l_in = 209.0, 218.0
-    y_r_in, y_r_out = 468.0, 477.0
+    y_r_in, y_r_out = 458.5, 467.5                                  # 1.2 mm clear of AC ring (457.3); leaves Y=467.5..488.1 corner post open outside!
     cross_zs: tuple[float, float, float] = (z_bot + bar_h / 2.0, 118.0, z_top - bar_h / 2.0)
 
     def _wing_base() -> cq.Workplane:
@@ -3584,33 +3584,32 @@ def front_port_guard_parts() -> list[tuple[str, cq.Workplane]]:
         w = w.cut(cq.Workplane("XZ").polyline(cut_pts).close().extrude(wing_t + 4.0).translate((0.0, 2.0, 0.0)))
         return w.translate((0.0, wing_t, 0.0))   # now Y spans 0..wing_t
 
-    # Left wing (Y = 209..218): inboard 1/4-20 bolt tabs on top/bot front rails (Y = 218..234, Z = 12.5 & 269.2, 0 overhang!)
+    # Left wing (Y = 209..218): inboard 1/4-20 ears (Y = 218..234, Z = 12.5 & 269.2) outside top/bot bars -> 100% open from +X!
     wl: cq.Workplane = _wing_base()
     for z_rail in (12.5, out_H - 12.5):
-        wl = wl.union(box(14.0, 16.0, 22.0, (0.0, wing_t, z_rail - 11.0)))
-        wl = wl.cut(cq.Workplane("YZ").center(wing_t + 7.5, z_rail).circle(3.4).extrude(18.0).translate((-2.0, 0.0, 0.0)))
+        wl = wl.union(box(12.0, 16.0, 22.0, (0.0, wing_t, z_rail - 11.0)))
+        wl = wl.cut(cq.Workplane("YZ").center(wing_t + 7.5, z_rail).circle(3.4).extrude(100.0).translate((-2.0, 0.0, 0.0)))
     for cz in cross_zs:
         wl = wl.cut(cq.Workplane("XZ").center(depth - bar_d / 2.0, cz).circle(2.4).extrude(-(wing_t + 4.0)).translate((0.0, wing_t + 2.0, 0.0)))
         wl = wl.cut(cq.Workplane("XZ").center(depth - bar_d / 2.0, cz).circle(4.5).extrude(-4.2).translate((0.0, 4.0, 0.0)))
     wl_print: cq.Workplane = wl.rotate((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), -90.0).rotate((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), -45.0)
 
-    # Right wing (Y = 468..477): post bolt tabs centered at Y = 475.6 on bare corner post (Z = 42, 140.8, 240, clear of cubes)
+    # Right wing (Y = 458.5..467.5): outboard +Y ears reaching corner post center Y = 475.6 (Z = 42, 140.8, 240) -> 100% open from +X!
     wr: cq.Workplane = _wing_base()
     for z_post in (42.0, out_H / 2.0, out_H - 42.0):
-        wr = wr.union(box(14.0, 11.0, 22.0, (0.0, wing_t, z_post - 11.0)))
-        wr = wr.cut(cq.Workplane("YZ").center(7.6, z_post).circle(3.4).extrude(18.0).translate((-2.0, 0.0, 0.0)))
+        wr = wr.union(box(12.0, 18.0, 22.0, (0.0, wing_t, z_post - 11.0)))
+        wr = wr.cut(cq.Workplane("YZ").center(wing_t + 8.1, z_post).circle(3.4).extrude(100.0).translate((-2.0, 0.0, 0.0)))
     for cz in cross_zs:
         wr = wr.cut(cq.Workplane("XZ").center(depth - bar_d / 2.0, cz).circle(2.4).extrude(-(wing_t + 4.0)).translate((0.0, wing_t + 2.0, 0.0)))
         wr = wr.cut(cq.Workplane("XZ").center(depth - bar_d / 2.0, cz).circle(4.5).extrude(-4.2).translate((0.0, wing_t + 0.2, 0.0)))
     wr_print: cq.Workplane = wr.rotate((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), 90.0).rotate((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), -45.0)
 
-    # Front grille (250.0 x 224.0 x 16.0 mm flat on P1P bed): 3 horizontal chamfered bars + 2 vertical dividers
-    gw: float = y_r_in - y_l_in                                     # 250.0 mm
+    # Front grille (240.5 x 224.0 x 16.0 mm flat on P1P bed): 3 horizontal chamfered bars + 2 vertical dividers
+    gw: float = y_r_in - y_l_in                                     # 240.5 mm
     gh: float = z_top - z_bot                                       # 224.0 mm
     grille: cq.Workplane = box(bar_d, gw, bar_h, (0.0, 0.0, 0.0)).edges("|Y").fillet(2.5)
     grille = grille.union(box(bar_d, gw, 14.0, (0.0, 0.0, 111.0 - z_bot)).edges("|Y").fillet(2.5))
     grille = grille.union(box(bar_d, gw, bar_h, (0.0, 0.0, gh - bar_h)).edges("|Y").fillet(2.5))
-    # Vertical dividers at Y=296..308 (between SB50 & DC OUT) and Y=374..384 (between DC OUT & AC/DC)
     grille = grille.union(box(bar_d - 2.0, 12.0, gh - 2.0, (1.0, 296.0 - y_l_in, 1.0)))
     grille = grille.union(box(bar_d - 2.0, 10.0, gh - 2.0, (1.0, 374.0 - y_l_in, 1.0)))
     for cz in cross_zs:
@@ -3618,13 +3617,12 @@ def front_port_guard_parts() -> list[tuple[str, cq.Workplane]]:
         grille = grille.cut(cq.Workplane("XZ").center(bar_d / 2.0, cz - z_bot).circle(1.9).extrude(16.5).translate((0.0, gw - 16.0, 0.0)))
     grille_print: cq.Workplane = grille.rotate((0.0, 0.0, 0.0), (0.0, 1.0, 0.0), -90.0).rotate((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), 90.0)
 
-    # One-piece H2D version (grille face down on Z_print=0, wings + 45-deg gusseted bolt tabs rising to Z_print=92 mm, support-free)
+    # One-piece H2D version (grille down Z=0, wings + 45-deg gusseted ears rising to Z=92 mm; all 5 x 1/4-20 holes open straight from front +X!)
     def _onepiece_wing() -> cq.Workplane:
         pts: list[tuple[float, float]] = [
             (0.0, 4.0), (22.0, 4.0), (depth, z_bot), (depth, z_top), (22.0, out_H - 4.0), (0.0, out_H - 4.0),
         ]
         w: cq.Workplane = cq.Workplane("XZ").polyline(pts).close().extrude(wing_t)
-        # Chevron/diamond truss window: slopes <=45 deg when standing grille-down (depth=0 at bed, X=0 at Z_print=92)
         c_pts: list[tuple[float, float]] = [
             (18.0, 140.8), (48.0, 48.0), (depth - 18.0, 140.8), (48.0, out_H - 48.0),
         ]
@@ -3633,16 +3631,19 @@ def front_port_guard_parts() -> list[tuple[str, cq.Workplane]]:
 
     one_wl: cq.Workplane = _onepiece_wing().translate((0.0, y_l_out, 0.0))
     for z_rail in (12.5, out_H - 12.5):
-        # 45-deg sloped underside gusset from X=0 (Z_print=92) down-outboard to X=30 (Z_print=62) so tab needs 0 support
-        tab_pts: list[tuple[float, float]] = [(0.0, 0.0), (0.0, 16.0), (14.0, 16.0), (30.0, 0.0)]
+        tab_pts: list[tuple[float, float]] = [(0.0, 0.0), (0.0, 16.0), (12.0, 16.0), (28.0, 0.0)]
         tab: cq.Workplane = cq.Workplane("XY").polyline(tab_pts).close().extrude(22.0).translate((0.0, y_l_in, z_rail - 11.0))
-        one_wl = one_wl.union(tab).cut(cq.Workplane("YZ").center(y_l_in + 7.5, z_rail).circle(3.4).extrude(20.0).translate((-2.0, 0.0, 0.0)))
+        one_wl = one_wl.union(tab)
+        one_wl = one_wl.cut(cq.Workplane("YZ").center(y_l_in + 7.5, z_rail).circle(3.4).extrude(100.0).translate((-2.0, 0.0, 0.0)))
+        one_wl = one_wl.cut(cq.Workplane("YZ").center(y_l_in + 7.5, z_rail).circle(6.8).extrude(88.0).translate((12.0, 0.0, 0.0)))
 
     one_wr: cq.Workplane = _onepiece_wing().translate((0.0, y_r_in, 0.0))
     for z_post in (42.0, out_H / 2.0, out_H - 42.0):
-        tab_pts = [(0.0, 0.0), (0.0, 11.0), (14.0, 11.0), (25.0, 0.0)]
+        tab_pts = [(0.0, 0.0), (0.0, 18.0), (12.0, 18.0), (30.0, 0.0)]
         tab = cq.Workplane("XY").polyline(tab_pts).close().extrude(22.0).translate((0.0, y_r_out, z_post - 11.0))
-        one_wr = one_wr.union(tab).cut(cq.Workplane("YZ").center(y_r_in + 7.6, z_post).circle(3.4).extrude(20.0).translate((-2.0, 0.0, 0.0)))
+        one_wr = one_wr.union(tab)
+        one_wr = one_wr.cut(cq.Workplane("YZ").center(y_r_out + 8.1, z_post).circle(3.4).extrude(100.0).translate((-2.0, 0.0, 0.0)))
+        one_wr = one_wr.cut(cq.Workplane("YZ").center(y_r_out + 8.1, z_post).circle(6.8).extrude(88.0).translate((12.0, 0.0, 0.0)))
 
     one_gr: cq.Workplane = box(bar_d, y_r_out - y_l_out, bar_h, (depth - bar_d, y_l_out, z_bot))
     one_gr = one_gr.union(box(bar_d, y_r_out - y_l_out, 14.0, (depth - bar_d, y_l_out, 111.0)))
@@ -3833,9 +3834,44 @@ def build_v13(a):
             tray0 = tray0.cut(countersink("print_tray_battery_0", (tx0 + xw0, ty + sy, B / 2), (1, 0, 0)).translate((-tx0, -ty, 0)))
         for hx in lip_holes[0]:                                        # 4 equidistant M4 heat-set insert holes (80.0 mm pitch: 42, 122, 202, 282 mm; 7 mm blind in 8 mm wall)
             tray0 = tray0.cut(cq.Workplane("XZ").center(hx, 17.0).circle(M4S_BORE_R).extrude(-8.0).translate((0, fw - 7.0, 0)))
+        # 2 raised M4 hold-down lugs on tray0's inboard wall (X = 312.0 & 447.0 mm, Z = 36..52 mm, Y = 186..198 mm: 2 mm clear of busbar/shunt & above Z=34 bus_shelf)
+        hd_xs_l = (99.5, 234.5)
+        for hdx in hd_xs_l:
+            lug = box(22.0, 12.0, 16.0, (hdx - 11.0, fw - 7.0, lip + fl))
+            tray0 = tray0.union(lug).cut(cq.Workplane("XY").center(hdx, fw - 1.0).circle(M4S_BORE_R).extrude(13.0).translate((0, 0, lip + fl + 16.0 - 12.0)))
         add(a, tray0.translate((tx0, ty, 0)), "print_tray_battery_0", ORANGE)
         at0 = (tx0 + wall + clr, ty + wall + clr, fl)
         add(a, victron_shape(bkey, b.d, b.w, b.h, at0, box(b.d, b.w, b.h, at0).edges("|Z").fillet(6)), "battery_0", BATT)
+        # V14 Smart 200Ah top hold-down U-bridge carrying 2 x Eaton Bussmann 285 breakers (battery top Z=242.7, 39.0 mm below 281.7 mm lid)
+        hd_w = 195.0
+        hd_x0 = tx0 + (fd0 - hd_w) / 2.0                               # X = 282.0..477.0 mm (centered on Smart 200Ah, clear of end terminals)
+        hd_pad_t, hd_pl_t = 2.0, M5_DECK                               # 2.0 mm foam pad (Z = 242.7..244.7 mm) + 11.0 mm deck (Z = 244.7..255.7 mm, blind M5 bores)
+        hd_z0 = fl + 236.7 + hd_pad_t                                  # 244.7 mm
+        zd_hd = hd_z0 + hd_pl_t                                        # 255.7 mm
+        hb, rel = 13.0, 7.5
+        yf = y_in0 + hb                                                # 38.0 mm
+        hz = out_H - B / 2.0                                           # 269.2 mm
+        hd = box(hd_w, (ty + fw - 1.0) - (y_in0 + rel), hd_pl_t, (hd_x0, y_in0 + rel, hd_z0))
+        hd = hd.union(box(hd_w, hb - rel, (out_H - B) - hd_z0, (hd_x0, y_in0 + rel, hd_z0)))
+        hd = hd.union(box(hd_w, hb, B - 3.0, (hd_x0, y_in0, out_H - B)))
+        hd = hd.union(box(hd_w, 6.0, zd_hd - 52.0, (hd_x0, ty + fw - 7.5, 52.0)))                # inboard drop leg down to Z = 52 mm lug top (0.3 mm clear of battery Y=185.2)
+        hd = hd.union(box(hd_w, 12.0, 6.0, (hd_x0, ty + fw - 7.0, 52.0)))                        # inboard bolt flange at Z = 52..58 mm over tray0's raised lugs
+        for hx_bolt, lug_x in ((30.0, hd_xs_l[0]), (165.0, hd_xs_l[1])):                         # X = 312.0 & 447.0 mm
+            hd = hd.cut(cq.Workplane("XZ").center(hd_x0 + hx_bolt, hz).circle(3.4).extrude(-(hb + 2.0)).translate((0, y_in0 - 1.0, 0)))
+            hd = hd.cut(countersink("print_battery_holddown_0", (hd_x0 + hx_bolt, yf, hz), (0, -1, 0)))
+            hd = hd.cut(cq.Workplane("XY").center(tx0 + lug_x, ty + fw - 1.0).circle(2.3).extrude(8.0).translate((0, 0, 51.0)))
+        for (gy, dy, rs) in ((yf, 1, 5.0), (ty + fw - 7.5, -1, 5.0)):   # Z <= 260.7 < hz - 7 (262.2) so outboard 1/4-20 heads clear cleanly
+            rib = cq.Workplane("YZ").polyline([(gy, zd_hd), (gy + rs * dy, zd_hd), (gy, zd_hd + rs)]).close().extrude(hd_w).translate((hd_x0, 0, 0))
+            hd = hd.union(rib)
+        cb_hd = COMPONENTS["breaker_a"]
+        by_hd = y_in0 + 92.0                                           # Y = 117.0 mm (reset lever free at Y=107..117, clear of ribs & bolts)
+        for r_hd, bx_hd in enumerate((hd_x0 + 10.0, hd_x0 + 103.5)):   # 2 x Eaton Bussmann 285 breakers (X = 292.0 & 385.5 mm)
+            for (u, v) in HOLES["breaker_a"]:
+                hd = hd.cut(m5_bore(bx_hd + u, by_hd + v, zd_hd, M5_BLIND))
+            at_hd = (bx_hd, by_hd, zd_hd)
+            add(a, victron_shape("breaker_a", cb_hd.d, cb_hd.w, cb_hd.h, at_hd, unit_fallback("breaker_a", cb_hd.d, cb_hd.w, cb_hd.h, at_hd)), f"power_breaker_holddown_{r_hd}", GOLD)
+        add(a, hd, "print_battery_holddown_0", ORANGE)
+        add(a, box(hd_w, b.w + 2 * clr, hd_pad_t, (hd_x0, ty + wall, fl + 236.7)), "pad_battery_holddown_0", (0.15, 0.15, 0.15))
         # 2. Back VE.Bus BMS V2 Tray Base (print_tray_battery_1: 187.5 x 167.0 x 56.0 mm, X = 25.0..212.5 mm)
         tray1 = box(fd1, fw, lip + fl).cut(box(fd1 - 2 * wall, pw0, lip + fl + 1, (wall, wall, fl)))
         for sx in (43.75, 143.75):                                     # 2 equidistant 1/4-20 outboard 8020 rail holes (100.0 mm pitch; world X = 68.75, 168.75 mm)
@@ -4934,6 +4970,19 @@ def export(a: cq.Assembly):
             plates.build_plates(STL, quiet=True)   # the plate_*.stl beds of grouped small parts
         except FileNotFoundError as e:
             print("  (no plates for this variant:", e.filename, ")")
+    if VARIANT == "v14":
+        import shutil
+        delta_dir: str = os.path.join(HERE, "..", "stl", "v14_delta")
+        os.makedirs(delta_dir, exist_ok=True)
+        for old_f in os.listdir(delta_dir):
+            if old_f.endswith(".stl"):
+                os.remove(os.path.join(delta_dir, old_f))
+        delta_names = ("print_tray_battery_0.stl", "print_tray_battery_1.stl", "print_breaker_deck_0.stl", "print_battery_holddown_0.stl")
+        for fn in delta_names:
+            src_f = os.path.join(STL, fn)
+            if os.path.exists(src_f):
+                shutil.copy2(src_f, os.path.join(delta_dir, fn))
+        print("== v14 delta-only STLs written to", os.path.abspath(delta_dir), "==", ", ".join(delta_names))
 
 
 def report_bookshelf():
