@@ -3834,17 +3834,17 @@ def build_v13(a):
             tray0 = tray0.cut(countersink("print_tray_battery_0", (tx0 + xw0, ty + sy, B / 2), (1, 0, 0)).translate((-tx0, -ty, 0)))
         for hx in lip_holes[0]:                                        # 4 equidistant M4 heat-set insert holes (80.0 mm pitch: 42, 122, 202, 282 mm; 7 mm blind in 8 mm wall)
             tray0 = tray0.cut(cq.Workplane("XZ").center(hx, 17.0).circle(M4S_BORE_R).extrude(-8.0).translate((0, fw - 7.0, 0)))
-        # 2 raised M4 hold-down lugs on tray0's inboard wall (X = 312.0 & 447.0 mm, Z = 36..52 mm, Y = 186..198 mm: 2 mm clear of busbar/shunt & above Z=34 bus_shelf)
-        hd_xs_l = (99.5, 234.5)
+        # 3 raised M4 hold-down lugs on tray0's inboard wall (X = 291.5, 379.5, 467.5 mm, Z = 36..52 mm, Y = 186..198 mm: 2 mm clear of busbar/shunt & above Z=34 bus_shelf)
+        hd_xs_l = (79.0, 167.0, 255.0)
         for hdx in hd_xs_l:
             lug = box(22.0, 12.0, 16.0, (hdx - 11.0, fw - 7.0, lip + fl))
             tray0 = tray0.union(lug).cut(cq.Workplane("XY").center(hdx, fw - 1.0).circle(M4S_BORE_R).extrude(13.0).translate((0, 0, lip + fl + 16.0 - 12.0)))
         add(a, tray0.translate((tx0, ty, 0)), "print_tray_battery_0", ORANGE)
         at0 = (tx0 + wall + clr, ty + wall + clr, fl)
         add(a, victron_shape(bkey, b.d, b.w, b.h, at0, box(b.d, b.w, b.h, at0).edges("|Z").fillet(6)), "battery_0", BATT)
-        # V14 Smart 200Ah top hold-down U-bridge carrying 2 x Eaton Bussmann 285 breakers (battery top Z=242.7, 39.0 mm below 281.7 mm lid)
-        hd_w = 195.0
-        hd_x0 = tx0 + (fd0 - hd_w) / 2.0                               # X = 282.0..477.0 mm (centered on Smart 200Ah, clear of end terminals)
+        # V14 Smart 200Ah top hold-down U-bridge carrying 2 x Eaton Bussmann 285 breakers (232 mm wide; battery top Z=242.7, 39.0 mm below 281.7 mm lid)
+        hd_w = 232.0
+        hd_x0 = tx0 + (fd0 - hd_w) / 2.0                               # X = 263.5..495.5 mm (~44.5 mm clear at each end of 321 mm battery for M8 terminals)
         hd_pad_t, hd_pl_t = 2.0, M5_DECK                               # 2.0 mm foam pad (Z = 242.7..244.7 mm) + 11.0 mm deck (Z = 244.7..255.7 mm, blind M5 bores)
         hd_z0 = fl + 236.7 + hd_pad_t                                  # 244.7 mm
         zd_hd = hd_z0 + hd_pl_t                                        # 255.7 mm
@@ -3855,8 +3855,8 @@ def build_v13(a):
         hd = hd.union(box(hd_w, hb - rel, (out_H - B) - hd_z0, (hd_x0, y_in0 + rel, hd_z0)))
         hd = hd.union(box(hd_w, hb, B - 3.0, (hd_x0, y_in0, out_H - B)))
         hd = hd.union(box(hd_w, 6.0, zd_hd - 52.0, (hd_x0, ty + fw - 7.5, 52.0)))                # inboard drop leg down to Z = 52 mm lug top (0.3 mm clear of battery Y=185.2)
-        hd = hd.union(box(hd_w, 12.0, 6.0, (hd_x0, ty + fw - 7.0, 52.0)))                        # inboard bolt flange at Z = 52..58 mm over tray0's raised lugs
-        for hx_bolt, lug_x in ((30.0, hd_xs_l[0]), (165.0, hd_xs_l[1])):                         # X = 312.0 & 447.0 mm
+        hd = hd.union(box(hd_w, 12.0, 6.0, (hd_x0, ty + fw - 7.0, 52.0)))                        # inboard bolt flange at Z = 52..58 mm over tray0's 3 raised lugs
+        for hx_bolt, lug_x in zip((28.0, 116.0, 204.0), hd_xs_l):                                # 3 x 1/4-20 outboard + 3 x M4 inboard (X = 291.5, 379.5, 467.5 mm)
             hd = hd.cut(cq.Workplane("XZ").center(hd_x0 + hx_bolt, hz).circle(3.4).extrude(-(hb + 2.0)).translate((0, y_in0 - 1.0, 0)))
             hd = hd.cut(countersink("print_battery_holddown_0", (hd_x0 + hx_bolt, yf, hz), (0, -1, 0)))
             hd = hd.cut(cq.Workplane("XY").center(tx0 + lug_x, ty + fw - 1.0).circle(2.3).extrude(8.0).translate((0, 0, 51.0)))
@@ -3865,7 +3865,7 @@ def build_v13(a):
             hd = hd.union(rib)
         cb_hd = COMPONENTS["breaker_a"]
         by_hd = y_in0 + 92.0                                           # Y = 117.0 mm (reset lever free at Y=107..117, clear of ribs & bolts)
-        for r_hd, bx_hd in enumerate((hd_x0 + 10.0, hd_x0 + 103.5)):   # 2 x Eaton Bussmann 285 breakers (X = 292.0 & 385.5 mm)
+        for r_hd, bx_hd in enumerate((hd_x0 + 12.0, hd_x0 + 138.7)):   # 2 x Eaton Bussmann 285 breakers (X = 275.5 & 402.2 mm, 45.4 mm center gap)
             for (u, v) in HOLES["breaker_a"]:
                 hd = hd.cut(m5_bore(bx_hd + u, by_hd + v, zd_hd, M5_BLIND))
             at_hd = (bx_hd, by_hd, zd_hd)
@@ -3901,19 +3901,12 @@ def build_v13(a):
         add(a, tray1.translate((tx1, ty, 0)), "print_tray_battery_1", ORANGE)
         bms_at = (tx1 + bms_lx, ty + bms_ly, fl + bms_pad_h)
         add(a, victron_shape("bms_flat", cbms.d, cbms.w, cbms.h, bms_at, box(cbms.d, cbms.w, cbms.h, bms_at).edges("|Z").fillet(3)), "power_bms_deck", BLUE)
-        # 3. Elevated 11 mm Breaker Deck above the BMS (print_breaker_deck_0: 187.5 x 167.0 x 11.0 mm, Z = 56.0..67.0 mm)
+        # 3. Elevated 11 mm blank accessory deck above the BMS (print_breaker_deck_0: 187.5 x 167.0 x 11.0 mm, Z = 56.0..67.0 mm)
         deck = box(fd1, fw, M5_DECK, (tx1, ty, zd0))
         if P.get("cube", B) > B + 0.05:
             deck = deck.cut(box(2.5, 2.5, M5_DECK + 2, (tx1 - 1.0, ty - 1.0, zd0 - 1.0)))
         for (bx_l, by_l) in deck_bolts_l:                              # 4 x Ø4.6 mm M4 clearance holes into tray1's 4 corner pillars
             deck = deck.cut(cq.Workplane("XY").center(tx1 + bx_l, ty + by_l).circle(2.3).extrude(M5_DECK + 2.0).translate((0, 0, zd0 - 1.0)))
-        cb = COMPONENTS["breaker_a"]
-        for r_br, bx_br in enumerate((tx1 + 10.0, tx1 + 96.0)):        # 2 x Eaton Bussmann 285 breakers centered in Y with generous wire room all around
-            by_br = ty + (fw - cb.w) / 2.0
-            for (u, v) in HOLES["breaker_a"]:
-                deck = deck.cut(m5_bore(bx_br + u, by_br + v, zd0 + M5_DECK, M5_BLIND))
-            at_br = (bx_br, by_br, zd0 + M5_DECK)
-            add(a, victron_shape("breaker_a", cb.d, cb.w, cb.h, at_br, unit_fallback("breaker_a", cb.d, cb.w, cb.h, at_br)), f"power_breaker_shelf_{r_br}", GOLD)
         add(a, deck, "print_breaker_deck_0", ORANGE)
     for r in (() if P.get("v14_single_200") else range(2)):
         tx = txs[r]
