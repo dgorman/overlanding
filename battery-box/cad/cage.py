@@ -3876,6 +3876,8 @@ def build_v13(a):
             tray1 = tray1.cut(countersink("print_tray_battery_1", (tx1 + wall, ty + sy, B / 2), (-1, 0, 0)).translate((-tx1, -ty, 0)))
         for hx in lip_holes[1]:                                        # 3 equidistant M4 heat-set insert holes (50.0 mm pitch: 43.75, 93.75, 143.75 mm; 7 mm blind in 8 mm wall)
             tray1 = tray1.cut(cq.Workplane("XZ").center(hx, 17.0).circle(M4S_BORE_R).extrude(-8.0).translate((0, fw - 7.0, 0)))
+        for tie_y in (55.0, 112.0):                                    # 2 x short M4 heat-set insert through-bores (94180A351, 4.7 mm) across tray1's 6 mm +X wall (drill-guide alignment for tray0; Y_local = 55, 112; Z = 21.0 mm)
+            tray1 = tray1.cut(cq.Workplane("YZ").center(tie_y, 21.0).circle(M4S_BORE_R).extrude(-8.0).translate((fd1 + 1.0, 0, 0)))
         # Raised 3.5 mm BMS mounting pad on tray1 floor (Z = 6.0..9.5 mm) so 4 x Ø5.6 x 8.0 mm blind M4 bores leave 1.5 mm solid bottom skin
         cbms = COMPONENTS["bms_flat"]
         bms_pad_h = 3.5
