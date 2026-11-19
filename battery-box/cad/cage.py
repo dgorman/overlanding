@@ -3841,36 +3841,28 @@ def build_v13(a):
         add(a, tray0.translate((tx0, ty, 0)), "print_tray_battery_0", ORANGE)
         at0 = (tx0 + wall + clr, ty + wall + clr, fl)
         add(a, victron_shape(bkey, b.d, b.w, b.h, at0, box(b.d, b.w, b.h, at0).edges("|Z").fillet(6)), "battery_0", BATT)
-        # V14 Smart 200Ah top hold-down U-bridge carrying 2 x Eaton Bussmann 285 breakers (232 mm wide; battery top Z=242.7, 39.0 mm below 281.7 mm lid)
+        # V14 Smart 200Ah top hold-down U-bridge (232 mm wide; battery top Z=242.7, clean v13-style +Y L-foot onto 36 mm bus_shelf bosses)
         hd_w = 232.0
         hd_x0 = tx0 + (fd0 - hd_w) / 2.0                               # X = 263.5..495.5 mm (~44.5 mm clear at each end of 321 mm battery for M8 terminals)
-        hd_pad_t, hd_pl_t = 2.0, M5_DECK                               # 2.0 mm foam pad (Z = 242.7..244.7 mm) + 11.0 mm deck (Z = 244.7..255.7 mm, blind M5 bores)
+        hd_pad_t, hd_pl_t = 2.0, 8.0                                   # 2.0 mm foam pad (Z = 242.7..244.7 mm) + 8.0 mm plate (Z = 244.7..252.7 mm, 29.0 mm clear to lid)
         hd_z0 = fl + 236.7 + hd_pad_t                                  # 244.7 mm
-        zd_hd = hd_z0 + hd_pl_t                                        # 255.7 mm
+        zd_hd = hd_z0 + hd_pl_t                                        # 252.7 mm
         hb, rel = 13.0, 7.5
         yf = y_in0 + hb                                                # 38.0 mm
         hz = out_H - B / 2.0                                           # 269.2 mm
         wt0 = lip + fl                                                 # 36.0 mm: tray0 wall top (no raised standoffs)
-        hd = box(hd_w, (ty + fw + 5.5) - (y_in0 + rel), hd_pl_t, (hd_x0, y_in0 + rel, hd_z0))     # top plate spans Y = 32.5..198.5 mm
+        hd = box(hd_w, (ty + fw - 3.0) - (y_in0 + rel), hd_pl_t, (hd_x0, y_in0 + rel, hd_z0))     # top plate spans Y = 32.5..190.0 mm (flush with drop leg, v13 style)
         hd = hd.union(box(hd_w, hb - rel, (out_H - B) - hd_z0, (hd_x0, y_in0 + rel, hd_z0)))
         hd = hd.union(box(hd_w, hb, B - 3.0, (hd_x0, y_in0, out_H - B)))
-        hd = hd.union(box(hd_w, 5.0, zd_hd - wt0, (hd_x0, ty + fw + 0.5, wt0)))                   # inboard drop leg Y=193.5..198.5 (2 above bus_shelf Z=34, 1.5 clear of busbar_nx Y=200)
-        hd = hd.union(box(hd_w, 13.5, 6.0, (hd_x0, ty + fw - 8.0, wt0)))                          # inboard foot Y=185.0..198.5 at Z=36..42 mm bearing directly on tray0 wall top
-        for (gy, dy, rs) in ((yf, 1, 5.0), (ty + fw + 0.5, -1, 5.0)):   # Z <= 260.7 < hz - 7 (262.2) so outboard 1/4-20 heads clear cleanly
+        hd = hd.union(box(hd_w, 5.0, zd_hd - wt0, (hd_x0, ty + fw - 8.0, wt0)))                   # inboard drop leg Y=185.0..190.0 (battery side, 0.5 clear of battery; NO L facing battery)
+        hd = hd.union(box(hd_w, 16.0, 6.0, (hd_x0, ty + fw - 8.0, wt0)))                          # inboard L foot Y=185.0..201.0 protruding +Y into cable channel at Z=36..42 (flush on tray0 + 36mm bus_shelf)
+        for (gy, dy, rs) in ((yf, 1, 5.0), (ty + fw - 8.0, -1, 5.0)):   # Z <= 257.7 < hz - 7 (262.2) so outboard 1/4-20 heads clear cleanly
             rib = cq.Workplane("YZ").polyline([(gy, zd_hd), (gy + rs * dy, zd_hd), (gy, zd_hd + rs)]).close().extrude(hd_w).translate((hd_x0, 0, 0))
             hd = hd.union(rib)
-        for hx_bolt, lug_x in zip((28.0, 116.0, 204.0), hd_xs_l):                                # 3 x 1/4-20 outboard + 3 x M4 inboard into tray0 wall top (X = 291.5, 379.5, 467.5 mm)
+        for hx_bolt, lug_x in zip((28.0, 116.0, 204.0), hd_xs_l):                                # 3 x 1/4-20 outboard + 3 x M4 into flush Z=36mm bus_shelf_1..2 bosses (X = 291.5, 379.5, 467.5 mm)
             hd = hd.cut(cq.Workplane("XZ").center(hd_x0 + hx_bolt, hz).circle(3.4).extrude(-(hb + 2.0)).translate((0, y_in0 - 1.0, 0)))
             hd = hd.cut(countersink("print_battery_holddown_0", (hd_x0 + hx_bolt, yf, hz), (0, -1, 0)))
-            hd = hd.cut(cq.Workplane("XY").center(tx0 + lug_x, ty + fw - 4.0).circle(2.3).extrude(8.0).translate((0, 0, wt0 - 1.0)))     # Ø4.6 M4 hole in Z=36..42 foot
-            hd = hd.cut(cq.Workplane("XY").center(tx0 + lug_x, ty + fw - 4.0).circle(4.5).extrude(hd_pl_t + 8.0).translate((0, 0, hd_z0 - 1.0)))   # concentric Ø9.0 wrench/screw access through top plate (stops at Y=193.5 leg)
-        cb_hd = COMPONENTS["breaker_a"]
-        by_hd = y_in0 + 92.0                                           # Y = 117.0 mm (reset lever free at Y=107..117, clear of ribs & tool holes)
-        for r_hd, bx_hd in enumerate((hd_x0 + 12.0, hd_x0 + 138.7)):   # 2 x Eaton Bussmann 285 breakers (X = 275.5 & 402.2 mm, 45.4 mm center gap)
-            for (u, v) in HOLES["breaker_a"]:
-                hd = hd.cut(m5_bore(bx_hd + u, by_hd + v, zd_hd, M5_BLIND))
-            at_hd = (bx_hd, by_hd, zd_hd)
-            add(a, victron_shape("breaker_a", cb_hd.d, cb_hd.w, cb_hd.h, at_hd, unit_fallback("breaker_a", cb_hd.d, cb_hd.w, cb_hd.h, at_hd)), f"power_breaker_holddown_{r_hd}", GOLD)
+            hd = hd.cut(cq.Workplane("XY").center(tx0 + lug_x, ty + fw + 4.0).circle(2.3).extrude(8.0).translate((0, 0, wt0 - 1.0)))     # Ø4.6 M4 hole in +Y foot at Y=197.0 (open from above!)
         add(a, hd, "print_battery_holddown_0", ORANGE)
         add(a, box(hd_w, b.w + 2 * clr, hd_pad_t, (hd_x0, ty + wall, fl + 236.7)), "pad_battery_holddown_0", (0.15, 0.15, 0.15))
         # 2. Back VE.Bus BMS V2 Tray Base (print_tray_battery_1: 187.5 x 167.0 x 56.0 mm, X = 25.0..212.5 mm)
@@ -3902,12 +3894,19 @@ def build_v13(a):
         add(a, tray1.translate((tx1, ty, 0)), "print_tray_battery_1", ORANGE)
         bms_at = (tx1 + bms_lx, ty + bms_ly, fl + bms_pad_h)
         add(a, victron_shape("bms_flat", cbms.d, cbms.w, cbms.h, bms_at, box(cbms.d, cbms.w, cbms.h, bms_at).edges("|Z").fillet(3)), "power_bms_deck", BLUE)
-        # 3. Elevated 11 mm blank accessory deck above the BMS (print_breaker_deck_0: 187.5 x 167.0 x 11.0 mm, Z = 56.0..67.0 mm)
+        # 3. Elevated 11 mm Breaker Deck above the BMS (print_breaker_deck_0: 187.5 x 167.0 x 11.0 mm, Z = 56.0..67.0 mm)
         deck = box(fd1, fw, M5_DECK, (tx1, ty, zd0))
         if P.get("cube", B) > B + 0.05:
             deck = deck.cut(box(2.5, 2.5, M5_DECK + 2, (tx1 - 1.0, ty - 1.0, zd0 - 1.0)))
         for (bx_l, by_l) in deck_bolts_l:                              # 4 x Ø4.6 mm M4 clearance holes into tray1's 4 corner pillars
             deck = deck.cut(cq.Workplane("XY").center(tx1 + bx_l, ty + by_l).circle(2.3).extrude(M5_DECK + 2.0).translate((0, 0, zd0 - 1.0)))
+        cb = COMPONENTS["breaker_a"]
+        for r_br, bx_br in enumerate((tx1 + 10.0, tx1 + 96.0)):        # 2 x Eaton Bussmann 285 breakers centered in Y above the BMS (214.7 mm headroom to lid)
+            by_br = ty + (fw - cb.w) / 2.0
+            for (u, v) in HOLES["breaker_a"]:
+                deck = deck.cut(m5_bore(bx_br + u, by_br + v, zd0 + M5_DECK, M5_BLIND))
+            at_br = (bx_br, by_br, zd0 + M5_DECK)
+            add(a, victron_shape("breaker_a", cb.d, cb.w, cb.h, at_br, unit_fallback("breaker_a", cb.d, cb.w, cb.h, at_br)), f"power_breaker_shelf_{r_br}", GOLD)
         add(a, deck, "print_breaker_deck_0", ORANGE)
     for r in (() if P.get("v14_single_200") else range(2)):
         tx = txs[r]
@@ -4043,17 +4042,27 @@ def build_v13(a):
     E = P.get("shelf_end_len", seg)                                    # v12s: the two END plates stay 194.7 as already printed for the
     bounds = [(xs0, xs0 + E), (xs0 + E, xs1 - E), (xs1 - E, xs1)]      # 635 box; the MIDDLE plate alone takes up the depth change
     assert bounds[1][1] - bounds[1][0] >= 100, "middle bus shelf plate too short for its two sill holes"
+    v14_mode = bool(P.get("v14_single_200"))
+    sh_lip_h = lip + fl if v14_mode else 34.0                                # v14: flush 36.0 mm with battery tray top (0 daylight; master stays 34.0 mm)
+    col_defs = (V13_SHORT["col"] if short else V13_COL)
+    if v14_mode:
+        col_defs = [dict(pl, y=3.0) if pl["comp"] == "busbar_nx" else dict(pl) for pl in col_defs]   # +2 mm +Y clear of 3 x M4 hold-down bosses (Y=201)
     for i in range(n_pl):
         xa, xb = bounds[i]
         xa_body = (xa - 2.5) if i == 1 else xa                                # bus_shelf_1 is 2.5 mm longer on the -X (MPPT) end; all bolt holes stay fixed
         w_body = xb - xa_body
         sh = box(w_body, y1s - y0s, M5_DECK, (xa_body, y0s, 0))               # 11 mm floor (6 until 2026-11-01: the 6.7 mm M5 inserts and the bar screws'
-        sh = sh.union(box(w_body, 6, 34, (xa_body, y0s, 0)))                  # tips came out the bottom; now blind bores); lip against the trays' inboard walls (M4 inserts)
+        sh = sh.union(box(w_body, 6, sh_lip_h, (xa_body, y0s, 0)))            # tips came out the bottom; now blind bores); lip against the trays' inboard walls (M4 inserts)
         for r in range(2):
             for hx in lip_holes[r]:
                 hxa = g[f"tx{r}"] + hx
                 if xa + 6 < hxa < xb - 6:
                     sh = sh.cut(cq.Workplane("XZ").center(hxa, 17).circle(2.3).extrude(-8).translate((0, y0s - 1, 0)))
+        if v14_mode:                                                          # 3 x integral M4 hold-down bosses on flush 36 mm lip (X = 291.5, 379.5, 467.5 mm; Y = 193..201)
+            for hx_hd in (g["tx0"] + 79.0, g["tx0"] + 167.0, g["tx0"] + 255.0):
+                if xa + 20.0 < hx_hd < xb - 6.0:                              # clear of the 20 mm wall half-lap seam
+                    sh = sh.union(box(13.0, 8.0, sh_lip_h, (hx_hd - 6.5, y0s, 0)))
+                    sh = sh.cut(cq.Workplane("XY").center(hx_hd, y0s + 4.0).circle(M4S_BORE_R).extrude(13.0).translate((0, 0, sh_lip_h - 12.0)))
         if i in (0, n_pl - 1):   # end plates: a 30 mm wall on the width rail's inner face, two countersunk 1/4-20 into its inner slot,
             xw0 = xa if i == 0 else xb - 6                                                   # the corner notched around the plate's post
             sh = sh.union(box(6, y1s - 11 - y0s, 30, (xw0, y0s, 0)))
@@ -4078,17 +4087,18 @@ def build_v13(a):
         # Tongues point forward (+X) from plates 0 and 1 into the back ends of plates 1 and 2. 0.3 mm thickness clearance, butts touch.
         cw = V13["col_wall"]
         for (yt, tw, out) in ((y0s, 3.0, -1), (y1s - cw / 2, cw / 2, +1)):   # (tongue y0, tongue thickness, which side is outside)
+            wh_lap = sh_lip_h if out < 0 else 34.0
             if i < n_pl - 1:
-                sh = sh.union(box(20, tw, 34, (xb, yt, 0)))
+                sh = sh.union(box(20, tw, wh_lap, (xb, yt, 0)))
             if i > 0:
-                sh = sh.cut(box(21, tw + 1.3, 36, (xa_body - 1, yt - (1.0 if out < 0 else 0.3), -1)))   # notch: wall half + 0.3, 1 mm past the face
+                sh = sh.cut(box(21, tw + 1.3, wh_lap + 2, (xa_body - 1, yt - (1.0 if out < 0 else 0.3), -1)))   # notch: wall half + 0.3, 1 mm past the face
             for sx in (([xb + 10] if i < n_pl - 1 else []) + ([xa + 10] if i > 0 else [])) if P.get("lap_bolts", True) else []:
                 sh = sh.cut(cq.Workplane("XZ").center(sx, 26).circle(2.3).extrude(-8).translate((0, yt - (1 if out < 0 else 7 - tw), 0)))   # (not v12s)
         for xj in (bounds[1][0], bounds[2][0]):   # the trays' lip bolts must stay clear of the laps (hole in only one of the two wall halves)
             for r in range(2):
                 for hx in lip_holes[r]:
                     assert not (xj - 6 < g[f"tx{r}"] + hx < xj + 26), f"shelf lip hole at x {g[f'tx{r}'] + hx:.1f} lands in the lap at {xj:.1f}"
-        for pl in (V13_SHORT["col"] if short else V13_COL):   # pre-printed Ø7.5 x 9.5 BLIND (8° tapered mouth) M5 heat-set insert bores in the 11 mm shelf floor
+        for pl in col_defs:   # pre-printed Ø7.5 x 9.5 BLIND (8° tapered mouth) M5 heat-set insert bores in the 11 mm shelf floor
             hkey = {"busbar_px": "busbar_p", "busbar_nx": "busbar_n"}.get(pl["comp"], pl["comp"])   # (shunt_x has its own, off-centre pattern)
             for (hu, hv) in HOLES.get(hkey, ()):
                 hx_s, hy_s = pl["x"] + hu, y0s + 6 + pl["y"] + hv
@@ -4096,7 +4106,7 @@ def build_v13(a):
                     sh = sh.cut(m5_bore(hx_s, hy_s, M5_DECK, M5_BLIND))   # BLIND from the top, 8° tapered mouth
         add(a, sh, f"print_bus_shelf_{i}", ORANGE)
     bus_sp_idx = 0
-    for pl in (V13_SHORT["col"] if short else V13_COL):
+    for pl in col_defs:
         c = COMPONENTS[pl["comp"]]
         is_busbar = pl["comp"].startswith("busbar_")
         sp_h = 15.0 if is_busbar else 0.0                                     # 15.0 mm tall bus bar riser spacer (was 10.0 mm)
@@ -4287,12 +4297,12 @@ def report_v13():
     mm = lambda v: f"{v:.0f} mm ({v / 25.4:.2f} in)"
     g = BS.get("_g12") or {}
     if P.get("v14_single_200"):
-        print(f"== Variant '{VARIANT}': single Victron BAT512120610 LiFePO4 12.8V/200Ah Smart (Front) + VE.Bus BMS V2 & Blank Accessory Deck (Back) ==")
+        print(f"== Variant '{VARIANT}': single Victron BAT512120610 LiFePO4 12.8V/200Ah Smart (Front) + VE.Bus BMS V2 & Elevated Breaker Deck (Back) ==")
         print(f"outer D x W x H : {mm(out_D)} x {mm(out_W)} x {mm(out_H)}; bank 1 x 200 Ah = 200 Ah (2.56 kWh), 200 A continuous / 400 A peak")
-        print("  battery tray  : print_tray_battery_0 (334.0 x 167.0 x 36.0 mm, X = 212.5..546.5 mm, closed 4-sided box; requires H2D dual-nozzle full 350 mm X); 3 x 1/4-20 outboard + 4 x M4 bus_shelf_1..2 + 3 x M4 top-wall hold-down inserts (Y=189.0)")
-        print("  hold-down     : print_battery_holddown_0 (232.0 mm wide, X = 263.5..495.5 mm, Z_top = 255.7 mm); carries 2 x Eaton Bussmann 285 breakers (X = 275.5, 402.2 mm; 45.4 mm gap) + 3 x 1/4-20 outboard + 3 x M4 inboard (O9.0 mm top wrench bores)")
-        print("  back BMS tray : print_tray_battery_1 (187.5 x 167.0 x 56.0 mm, X = 25.0..212.5 mm, Back -X end); carries VE.Bus BMS V2 on floor (Z = 9.5..33.3 mm) + 2 equidistant 1/4-20 outboard rail holes + 3 equidistant M4 bus_shelf_0 holes (X = 68.75, 118.75, 168.75 mm)")
-        print("  BMS deck      : print_breaker_deck_0 (187.5 x 167.0 x 11.0 mm, Z = 56.0..67.0 mm) blank accessory deck bolted to print_tray_battery_1's 4 corner pillars (4 x M4) above the BMS")
+        print("  battery tray  : print_tray_battery_0 (334.0 x 167.0 x 36.0 mm, X = 212.5..546.5 mm, closed 4-sided box; requires H2D dual-nozzle full 350 mm X); 3 x 1/4-20 outboard + 2 x 1/4-20 front + 4 x M4 bus_shelf_1..2")
+        print("  hold-down     : print_battery_holddown_0 (232.0 mm wide, X = 263.5..495.5 mm, Z_top = 252.7 mm, 29.0 mm clear to lid); 3 x 1/4-20 outboard + 3 x M4 inboard +Y L-foot into flush 36.0 mm bus_shelf_1..2 bosses (Y = 197.0 mm, open from above)")
+        print("  back BMS tray : print_tray_battery_1 (187.5 x 167.0 x 56.0 mm, X = 25.0..212.5 mm, Back -X end); carries VE.Bus BMS V2 on floor (Z = 9.5..33.3 mm) + 2 x 1/4-20 outboard + 2 x 1/4-20 back + 3 x M4 bus_shelf_0")
+        print("  breaker deck  : print_breaker_deck_0 (187.5 x 167.0 x 11.0 mm, Z = 56.0..67.0 mm) bolted to print_tray_battery_1's 4 corner pillars (4 x M4); carries 2 x Eaton Bussmann 285 breakers (4 x M5 blind bores, 214.7 mm headroom) above the BMS")
         return
     if P.get("batt") == "battery":
         ii = P.get("inverter_long") == "multiplus_ii_long"
